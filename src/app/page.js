@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import { Card, CardContent, CardHeader, Divider } from '@mui/material';
+import { Alert, Card, CardContent, CardHeader, Divider } from '@mui/material';
 import { SimpleAuthGuard } from '@/guards/simple-auth-guard';
 
 // My Hometown Initiative Utah
@@ -36,7 +36,7 @@ export default function Home() {
   return (
     <main>
       <SimpleAuthGuard>
-        <Grid container spacing={2} px={10} pt={5}>
+        <Grid container spacing={2} px={10} pt={2}>
         
           <Grid item xs={12}>
             <Box display="flex" justifyContent="center">
@@ -46,8 +46,16 @@ export default function Home() {
             </Box>
           </Grid>
 
+          <Alert severity="warning" sx={{mb:2, width:"100%", mx:2, justifyContent:"center"}}>
+            <Typography variant="h5" component="h2">
+              THIS A DEVELOPMENT ENVIRONMENT
+            </Typography>
+          </Alert>
+
           <Divider style={{width:'100%'}} />
-          
+
+
+
           <Grid item xs={6}>
             <Card>
               <CardHeader
@@ -174,21 +182,7 @@ export default function Home() {
                   </Typography>
                 </Link>
 
-                <Link
-                  href={'/api/airtable'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  underline="hover"
-                  color="inherit"
-                  sx={{ display: 'block', marginBottom: 2 }}
-                >
-                  <Typography variant="h5" component="h2">
-                    Airtable Demo →
-                  </Typography>
-                  <Typography>
-                    Click here to see the Airtable API in action
-                  </Typography>
-                </Link>
+                
               </CardContent>  
             </Card>
           </Grid>
