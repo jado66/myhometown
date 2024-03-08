@@ -1,10 +1,12 @@
-import * as React from 'react';
+'use client'
+
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import { Divider } from '@mui/material';
+import { Card, CardContent, CardHeader, Divider } from '@mui/material';
+import { SimpleAuthGuard } from '@/guards/simple-auth-guard';
 
 // My Hometown Initiative Utah
 // https://myhometownut.com/
@@ -33,149 +35,165 @@ import { Divider } from '@mui/material';
 export default function Home() {
   return (
     <main>
-      <Grid container spacing={2} px={10} pt={5}>
-       
-        <Grid item xs={12}>
-          <Box display="flex" justifyContent="center">
-            <Typography variant="h3" component="h1" gutterBottom >
-              MyHometown - OurHometown
-            </Typography>
-          </Box>
-        </Grid>
-
-        <Divider style={{width:'100%'}} />
+      <SimpleAuthGuard>
+        <Grid container spacing={2} px={10} pt={5}>
         
-        <Grid item xs={6}>
-          <Typography variant="h4" component="h1" gutterBottom textAlign='center'>
-            Current Sites
-          </Typography>
+          <Grid item xs={12}>
+            <Box display="flex" justifyContent="center">
+              <Typography variant="h3" component="h1" gutterBottom >
+                MyHometown - OurHometown
+              </Typography>
+            </Box>
+          </Grid>
+
+          <Divider style={{width:'100%'}} />
           
-          <Link
-            href={'https://www.our-hometown.org/'}
-            rel="noopener noreferrer"
-            underline="hover"
-            color="inherit"
-            sx={{ display: 'block', marginBottom: 2 }}
-            target="_blank"
-          >
-            <Typography variant="h5" component="h2">
-              OurHometown →
-            </Typography>
-          </Link>
+          <Grid item xs={6}>
+            <Card>
+              <CardHeader
+                title = {
+                  <Typography variant="h4" component="h1" gutterBottom textAlign='center'>
+                    Current Sites
+                  </Typography>
+                }
+              />    
+              <Divider style={{width:'100%'}} />
 
-          <Link
-            href={'https://myhometownut.com/'}
-            rel="noopener noreferrer"
-            underline="hover"
-            color="inherit"
-            sx={{ display: 'block', marginBottom: 2}}
-            target="_blank"
-          >
-            <Typography variant="h5" component="h2">
-              MyHometown Utah →
-            </Typography>
-          </Link>
+              <CardContent>
+                <Link
+                  href={'https://www.our-hometown.org/'}
+                  rel="noopener noreferrer"
+                  underline="hover"
+                  color="inherit"
+                  sx={{ display: 'block', marginBottom: 2 }}
+                  target="_blank"
+                >
+                  <Typography variant="h5" component="h2">
+                    OurHometown →
+                  </Typography>
+                </Link>
 
-          <Divider style={{width:'40%'}} />
+                <Link
+                  href={'https://myhometownut.com/'}
+                  rel="noopener noreferrer"
+                  underline="hover"
+                  color="inherit"
+                  sx={{ display: 'block', marginBottom: 2}}
+                  target="_blank"
+                >
+                  <Typography variant="h5" component="h2">
+                    MyHometown Utah →
+                  </Typography>
+                </Link>
 
-          <Link
-            href={'https://www.wvc-ut.gov/1789/My-Hometown-Initiative'}
-            rel="noopener noreferrer"
-            underline="hover"
-            color="inherit"
-            target="_blank"
-            sx={{ display: 'block', marginBottom: 2, marginTop: 2 }}
-          >
-            <Typography variant="h5" component="h2">
-              MyHometown West Valley City →
-            </Typography>
-          </Link>
+                <Divider style={{width:'100%'}} />
 
-          <Link
-            href={'https://www.facebook.com/myhometownprovo/'}
-            rel="noopener noreferrer"
-            underline="hover"
-            color="inherit"
-            target="_blank"
-            sx={{ display: 'block', marginBottom: 2 }}
-          >
-            <Typography variant="h5" component="h2">
-              MyHometown Provo →
-            </Typography>
-          </Link>
+                <Link
+                  href={'https://www.wvc-ut.gov/1789/My-Hometown-Initiative'}
+                  rel="noopener noreferrer"
+                  underline="hover"
+                  color="inherit"
+                  target="_blank"
+                  sx={{ display: 'block', marginBottom: 2, marginTop: 2 }}
+                >
+                  <Typography variant="h5" component="h2">
+                    MyHometown West Valley City →
+                  </Typography>
+                </Link>
 
-          <Link
-            href={'https://www.facebook.com/MyHometownOgden/'}
-            rel="noopener noreferrer"
-            underline="hover"
-            color="inherit"
-            sx={{ display: 'block', marginBottom: 2 }}
-            target="_blank"
-          >
-            <Typography variant="h5" component="h2">
-              MyHometown Ogden →
-            </Typography>
+                <Link
+                  href={'https://www.facebook.com/myhometownprovo/'}
+                  rel="noopener noreferrer"
+                  underline="hover"
+                  color="inherit"
+                  target="_blank"
+                  sx={{ display: 'block', marginBottom: 2 }}
+                >
+                  <Typography variant="h5" component="h2">
+                    MyHometown Provo →
+                  </Typography>
+                </Link>
 
-          </Link>
+                <Link
+                  href={'https://www.facebook.com/MyHometownOgden/'}
+                  rel="noopener noreferrer"
+                  underline="hover"
+                  color="inherit"
+                  sx={{ display: 'block', marginBottom: 2 }}
+                  target="_blank"
+                >
+                  <Typography variant="h5" component="h2">
+                    MyHometown Ogden →
+                  </Typography>
 
-          <Link
-            href={'https://myhometownslc.org/about-us/'}
-            rel="noopener noreferrer"
-            underline="hover"
-            color="inherit"
-            sx={{ display: 'block', marginBottom: 2 }}
-            target="_blank"
-          >
-            <Typography variant="h5" component="h2">
-              MyHometown Salt Lake City →
-            </Typography>
-          </Link>
+                </Link>
 
+                <Link
+                  href={'https://myhometownslc.org/about-us/'}
+                  rel="noopener noreferrer"
+                  underline="hover"
+                  color="inherit"
+                  sx={{ display: 'block', marginBottom: 2 }}
+                  target="_blank"
+                >
+                  <Typography variant="h5" component="h2">
+                    MyHometown Salt Lake City →
+                  </Typography>
+                </Link>
 
+              </CardContent>
 
+            </Card>
+          
+          </Grid>
 
-        
+          <Grid item xs={6} >
+
+            <Card>
+              <CardHeader
+                title = {
+                  <Typography variant="h4" component="h1" gutterBottom textAlign='center'>
+                    Resources
+                  </Typography>
+                }
+              />
+              <Divider style={{width:'100%'}} />
+              <CardContent>
+                <Link
+                  href={'/api/givebutter'}
+                  rel="noopener noreferrer"
+                  underline="hover"
+                  color="inherit"
+                  sx={{ display: 'block', marginBottom: 2 }}
+                >
+                  <Typography variant="h5" component="h2">
+                    GiveButter Demo →
+                  </Typography>
+                  <Typography>
+                    Click here to see the GiveButter API in action
+                  </Typography>
+                </Link>
+
+                <Link
+                  href={'/api/airtable'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  underline="hover"
+                  color="inherit"
+                  sx={{ display: 'block', marginBottom: 2 }}
+                >
+                  <Typography variant="h5" component="h2">
+                    Airtable Demo →
+                  </Typography>
+                  <Typography>
+                    Click here to see the Airtable API in action
+                  </Typography>
+                </Link>
+              </CardContent>  
+            </Card>
+          </Grid>
         </Grid>
-
-        <Grid item xs={6} >
-          <Typography variant="h4" component="h1" gutterBottom textAlign='center'>
-            API Demos
-          </Typography>
-          
-          <Link
-            href={'/api/givebutter'}
-            target="_blank"
-            rel="noopener noreferrer"
-            underline="hover"
-            color="inherit"
-            sx={{ display: 'block', marginBottom: 2 }}
-          >
-            <Typography variant="h5" component="h2">
-              GiveButter Demo →
-            </Typography>
-            <Typography>
-              Click here to see the GiveButter API in action
-            </Typography>
-          </Link>
-
-          <Link
-            href={'/api/airtable'}
-            target="_blank"
-            rel="noopener noreferrer"
-            underline="hover"
-            color="inherit"
-            sx={{ display: 'block', marginBottom: 2 }}
-          >
-            <Typography variant="h5" component="h2">
-              Airtable Demo →
-            </Typography>
-            <Typography>
-              Click here to see the Airtable API in action
-            </Typography>
-          </Link>
-          
-        </Grid>
-      </Grid>
+      </SimpleAuthGuard>
     </main>
   );
 }
