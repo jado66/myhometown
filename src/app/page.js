@@ -3,34 +3,9 @@
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import { Alert, Card, CardContent, CardHeader, Divider } from '@mui/material';
 import { SimpleAuthGuard } from '@/guards/simple-auth-guard';
-
-// My Hometown Initiative Utah
-// https://myhometownut.com/
- 
-// Our Hometown Communities Foundation
-// http://our-hometown.org/
- 
-// My Hometown West Valley City
-// https://www.wvc-ut.gov/1789/My-Hometown-Initiative
- 
-// My Hometown Provo
-// https://www.facebook.com/myhometownprovo/
- 
-// https://www.provo.org/community/my-hometown-initiative
- 
-// My Hometown Ogden
-// https://www.youtube.com/watch?v=lgCRObBrT4g
-// https://myhometownogdencrc.wixsite.com/myhometownogden-1
-// https://www.facebook.com/MyHometownOgden/
- 
-// My Hometown is Salt Lake City
-// https://myhometownslc.org/about-us/
- 
- 
 
 export default function Home() {
   return (
@@ -168,6 +143,48 @@ export default function Home() {
               <Divider style={{width:'100%'}} />
               <CardContent>
                 <Link
+                  href={'/api/users'}
+                  rel="noopener noreferrer"
+                  underline="hover"
+                  color="inherit"
+                  sx={{ display: 'block', marginBottom: 2 }}
+                >
+                  <Typography variant="h5" component="h2">
+                    Users Management →
+                  </Typography>
+                  <Typography>
+                    Click manage users
+                  </Typography>
+                </Link>
+                <Link
+                  href={'/api/cities'}
+                  rel="noopener noreferrer"
+                  underline="hover"
+                  color="inherit"
+                  sx={{ display: 'block', marginBottom: 2 }}
+                >
+                  <Typography variant="h5" component="h2">
+                    City Management →
+                  </Typography>
+                  <Typography>
+                    Click to manage cities
+                  </Typography>
+                </Link>
+                <Link
+                  href={'/api/communities'}
+                  rel="noopener noreferrer"
+                  underline="hover"
+                  color="inherit"
+                  sx={{ display: 'block', marginBottom: 2 }}
+                >
+                  <Typography variant="h5" component="h2">
+                    Community Management →
+                  </Typography>
+                  <Typography>
+                    Click to manage communities
+                  </Typography>
+                </Link>
+                <Link
                   href={'/api/givebutter'}
                   rel="noopener noreferrer"
                   underline="hover"
@@ -181,6 +198,7 @@ export default function Home() {
                     Click here to see the GiveButter API in action
                   </Typography>
                 </Link>
+                
 
                 
               </CardContent>  

@@ -1,27 +1,20 @@
 'use client'
 
-import { useRouter } from 'next/navigation';
-import { Grid, Typography, IconButton, Divider } from '@mui/material';
+import { Grid, Typography, Divider } from '@mui/material';
 import useGiveButterScripts from '@/hooks/use-give-butter-scripts';
 import { UnrestrictedDonateButton, UnrestrictedDonateForm, WebsiteTestDonateButton, WebsiteTestDonateForm, WebsiteTestDonateGoalBar } from '@/constants/give-butter/constants';
 import { UnrestrictedDonateLink, WebsiteTestDonateLink } from '@/components/give-butter/DonateLinks';
+import BackButton from '@/components/BackButton';
 
 function DonatePage() {
-  const router = useRouter();
 
   useGiveButterScripts();
 
-  const handleGoBack = () => {
-    router.push('/');
-  };
-
   return (
     <div>
-      <IconButton onClick={handleGoBack} sx={{ marginBottom: '1rem' }}>
-        {"<-Back"}
-      </IconButton>
+      <BackButton />
 
-      <Grid container spacing={2} px={5} pt={2}>
+      <Grid container spacing={2} px={5} pt={8}>
         <Grid item xs={6}>
           <Grid container spacing={2} px={5} direction='column'>
             <Typography variant="h4">Unrestricted Campaign</Typography>

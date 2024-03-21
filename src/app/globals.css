@@ -38,3 +38,11 @@ html {
 body {
   background: rgb(var(--background-start-rgb)); /* Use a solid light color */
 }
+
+html, body{
+  height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
