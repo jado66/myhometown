@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Drawer from '@mui/material/Drawer';
 import Box from '@mui/material/Box';
-import { SidebarNav } from '.';
+import SidebarNav from './SidebarNav';
 
 const Sidebar = (props) => {
   const { pages, open, variant, onClose, ...rest } = props;
