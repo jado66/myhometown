@@ -89,7 +89,7 @@ const Form = () => {
                   size={'large'}
                   variant={'outlined'}
                   component={Link}
-                  href={'/admin-login'}
+                  href={'/admin-dashboard'}
                 >
                   Back to login
                 </Button>
