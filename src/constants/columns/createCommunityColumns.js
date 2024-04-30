@@ -1,5 +1,6 @@
 import { OnwersCell } from "../../components/data-tables/CityOrCommunityOwnersCell";
 import { Button, Grid } from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const createCommunityColumns = (handleAskDeleteCommunity, setCommunityToEdit) => {
 return(
@@ -21,7 +22,7 @@ return(
             field: "actions",
             headerName: "Actions",
             sortable: false,
-            width: 150,
+            width: 200,
             disableClickEventBubbling: true,
             renderCell: (params) => {
                 const onClickDelete = () => {
@@ -35,21 +36,23 @@ return(
                 return (
                     <Grid>
                         <Button 
-                            variant="contained" 
+                            variant="outlined" 
                             size="small" 
-                            color="info"
+                            color="secondary"
+                            sx = {{color: "grey"}}
                             onClick={onClickEdit}
                         >
                             Edit
                         </Button>
                         <Button 
-                            variant="contained" 
+                            variant="outlined" 
                             color="error" 
                             size="small"  
                             onClick={onClickDelete}
                             sx = {{marginLeft: 1}}
                         >
                             Delete
+                            <DeleteIcon fontSize="small" sx = {{ml:'5px'}} />
                         </Button>
                     </Grid>
                 );

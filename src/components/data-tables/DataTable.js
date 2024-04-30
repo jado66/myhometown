@@ -57,7 +57,8 @@ const DataTable = ({ rows, columns, id, hiddenColumns }) => {
                 columns={columns}
                 pageSize={5}
                 rowsPerPageOptions={[5, 10, 20, 50, 100]}
-                disableSelectionOnClick
+                disableRowSelectionOnClick 
+                disableCellSelectionOnClick
                 disableDensitySelector
                 pageSizeOptions={[5, 10, 20,50,100]} // Sets options for rows per page
                 slots={{ toolbar: GridToolbar }}
@@ -70,7 +71,11 @@ const DataTable = ({ rows, columns, id, hiddenColumns }) => {
                 initialState={initialState}
                 onColumnVisibilityModelChange={handleColumnVisibilityChange} // Added this handler
                 onPaginationModelChange={handlePaginationModelChange}
-                sx = {{mb:9}}
+                sx={{
+                    "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
+                       outline: "none !important",
+                    },
+                 }}
             />
         )
     }

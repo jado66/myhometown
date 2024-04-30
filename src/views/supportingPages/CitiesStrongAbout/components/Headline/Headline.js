@@ -1,0 +1,63 @@
+import React from 'react';
+import { useTheme } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+
+const Headline = () => {
+  const theme = useTheme();
+
+  return (
+    <Box>
+      <Box position="relative" zIndex={2}>
+        <Typography
+          sx={{
+            textTransform: 'uppercase',
+            fontWeight: 'medium',
+          }}
+          gutterBottom
+          color={'textSecondary'}
+          align={'center'}
+        >
+          About us
+        </Typography>
+        <Box marginBottom={2}>
+          <Typography
+            variant="h2"
+            align={'center'}
+            sx={{
+              fontWeight: 700,
+            }}
+          >
+            Building communities{' '}
+            <Typography
+              color={'primary'}
+              component={'span'}
+              variant={'inherit'}
+            >
+              together.
+              </Typography>
+          </Typography>
+        </Box>
+        <Box marginBottom={4}>
+          <Typography variant="h6" align={'center'} >
+          Cities Strong Foundation is directed by a dedicated group of business, church and education leaders who are passionate about making Utah a special place to live and raise a family for all residents.
+
+          </Typography>
+        </Box>
+        <Box display="flex" justifyContent={'center'}>
+          <Box
+            component={Button}
+            variant="contained"
+            color="primary"
+            size="large"
+          >
+            Learn more
+          </Box>
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+export default Headline;

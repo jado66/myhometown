@@ -1,10 +1,20 @@
-import { el } from '@faker-js/faker';
 import { useState, useEffect } from 'react';
 
 export default function useCities(email = null) {
     const [cities, setCities] = useState([]);
     const [selectOptions, setSelectOptions] = useState([]);
     const [hasLoaded, setHasLoaded] = useState(false);
+
+    const groupedCityStrings = cities.reduce((acc, city) => {
+        const { state, name } = city;
+    
+        if (!acc[state]) {
+            acc[state] = [];
+        }
+        
+        acc[state].push(name);
+        return acc;
+    }, {});
 
     useEffect(() => {
         // Fetch cities from localStorage
@@ -80,6 +90,7 @@ export default function useCities(email = null) {
         cities,
         hasLoaded,
         selectOptions,
+        groupedCityStrings,
         handleAddCity,
         handleEditCity,
         handleDeleteCity,
@@ -169,7 +180,7 @@ const mockCities = [
             // more coordinates...
         ],
         cityOwners: [
-            { name: 'Owner 5', email: 'owner5@example.com', contactNumber: '555-666-7777' },
+            {id: 1, name: "Jadon Erwin", email: "jd@japps.dev", contactNumber: "123-456-7890"},
             { name: 'Owner 6', email: 'owner6@example.com', contactNumber: '777-888-9999' },
             // more city owners...
         ]
@@ -850,7 +861,7 @@ const mockCities = [
     },
     {
         id: 39,
-        name: 'Draper',
+        name: 'Honeyville',
         state: 'Utah',
         country: 'USA',
         upcomingEvents: [
@@ -1061,6 +1072,25 @@ const mockCities = [
         id: 50,
         name: 'Idaho Falls',
         state: 'Idaho',
+        country: 'USA',
+        upcomingEvents: [
+            { name: 'Event 27', date: '2024-03-01', description: 'Description 15' },
+            { name: 'Event 28', date: '2024-04-01', description: 'Description 16' },
+        ],
+        coordinates: { lat: 12.345, long: 789.012 },
+        boundingShape: [
+            { lat: 78.901, long: 56.789 },
+            { lat: 89.012, long: 67.890 },
+        ],
+        cityOwners: [
+            { name: 'Owner 27', email: 'owner27@example.com', contactNumber: '777-888-9999' },
+            { name: 'Owner 28', email: 'owner28@example.com', contactNumber: '111-222-3333' },
+        ]
+    },
+    {
+        id: 50,
+        name: 'Las Vegas',
+        state: 'Nevada',
         country: 'USA',
         upcomingEvents: [
             { name: 'Event 27', date: '2024-03-01', description: 'Description 15' },

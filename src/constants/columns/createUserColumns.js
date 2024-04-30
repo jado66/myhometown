@@ -1,4 +1,5 @@
 import { Button, Grid } from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const createUserColumns = (handleAskDeleteUser, setUserToEdit) => [
     { field: 'id', headerName: 'ID', width: 90, visible: false},
@@ -24,20 +25,22 @@ const createUserColumns = (handleAskDeleteUser, setUserToEdit) => [
             return (
                 <Grid>
                     <Button 
-                        variant="contained" 
+                        variant="outlined" 
                         size="small" 
-                        color="info"
+                        color="secondary"
+                        sx = {{color: "grey"}}
                         onClick={onClickEdit}
                     >
                         Edit
                     </Button>
                     <Button 
-                        variant="contained" 
+                        variant="outlined" 
                         color="error" 
                         size="small"  
                         onClick={onClickDelete}
                         sx = {{marginLeft: 1}}
                     >
+                        <DeleteIcon fontSize="small" sx = {{ml:'5px'}} />
                         Delete
                     </Button>
                 </Grid>

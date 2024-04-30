@@ -1,4 +1,4 @@
-import { Dialog, DialogTitle, TextField, DialogContent, DialogActions, Button } from '@mui/material';
+import { Dialog, DialogTitle, TextField, DialogContent, DialogActions, Button, Grid } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import UserSelect from './selects/UserSelect';
 
@@ -87,6 +87,33 @@ const AddEditCityDialog = ({ open, handleClose, onSubmitForm, initialCityState }
                         onChange={handleSelectChange}
                     />
                     {/* Add similar TextFields for other attributes... */}
+
+                    <Grid container >
+                       
+                            <Button 
+                                variant="outlined" 
+                                size="small" 
+                                color="secondary"
+                                sx = {{color: "grey",marginTop: 1}}
+                                href={`/${city.state.toLowerCase()}/${city.name.toLowerCase().replaceAll(/\s/g, "-")}`}
+                            >
+                                View Landing Page
+                            </Button>
+                        
+                        
+                            <Button 
+                                variant="contained" 
+                                size="small" 
+                                color="primary"
+                                sx = {{marginTop: 1, marginLeft: 1}}
+                                href={`/edit/${city.state.toLowerCase()}/${city.name.toLowerCase().replaceAll(/\s/g, "-")}`}
+                            >
+                                Edit Landing Page
+                            </Button>
+                        
+                    </Grid>
+
+                    
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary">
