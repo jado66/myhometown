@@ -6,10 +6,11 @@ import { NotFound } from '@/views/supportingPages';
 
 export default function HomePage() {
   return (
-    <SimpleAuthGuard>
-      <MainLayout>
-        <NotFound />
-      </MainLayout>
-    </SimpleAuthGuard>
+    <h1>404 Not Found</h1>
+    // <SimpleAuthGuard>
+    //   <MainLayout>
+    //     <NotFound />
+    //   </MainLayout>
+    // </SimpleAuthGuard>
   );
 }
