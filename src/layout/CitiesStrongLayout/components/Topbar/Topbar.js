@@ -1,49 +1,12 @@
-'use client'
 
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
-import Menu from '@mui/material/Menu';
 import Link from '@mui/material/Link';
-import { useTheme } from '@mui/material/styles';
-import { MenuItem, TextField, Typography, colors } from '@mui/material';
-import Divider from '@mui/material/Divider';
-import useCities from '@/hooks/use-cities';
 import CitiesStrongLogo from '@/assets/svg/logos/CitiesStrong';
 
 const Topbar = () => {
 
-  const { groupedCityStrings } = useCities();
-
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [search, setSearch] = useState("");
-
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-   
-  const handleSearch = (event) => {
-    setSearch(event.target.value);
-    event.stopPropagation();
-  };
-
-  let filteredGroupedCityStrings = Object.fromEntries(
-    Object.entries(groupedCityStrings).map(([state, cities]) => {
-      return [
-        state,
-        cities
-          .filter(city => city.toLowerCase().includes(search.toLowerCase()))
-          .sort()  
-      ];
-    }).filter(([state, cities]) => cities.length > 0)
-  );  
-
-  const theme = useTheme();
   return (
     <Box
       display={'flex'}

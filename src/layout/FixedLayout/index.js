@@ -1,5 +1,4 @@
-'use-client'
-
+"use client";
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
