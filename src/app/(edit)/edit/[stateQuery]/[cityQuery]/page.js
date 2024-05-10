@@ -10,16 +10,34 @@ import { EventsCalendar } from '@/components/events/EventsCalendar';
 import { EventDialog } from '@/components/events/EventDialog';
 import { EventDialog_NewEdit } from '@/components/events/EventDialog_NewEdit';
 import useEvents from '@/hooks/use-events';
+import useCity from '@/hooks/use-city';
+import Loading from '@/components/util/Loading';
+import { useEditCity } from '@/hooks/use-edit-city';
+
+const cityDataContentTemplate = {
+    paragraph1Text: faker.lorem.paragraph(),
+    paragraph2Text: faker.lorem.paragraph()
+}
 
 const Page = ({ params }) =>{
-    const { state, city } = params
+
+    const { stateQuery, cityQuery } = params
+
+    const {city, hasLoaded} = useCity(cityQuery, stateQuery)
+
+    const {cityData, setCityData} = useEditCity()
+
+    useEffect(() => {
+        if (city){
+            setCityData({
+                content:{...cityDataContentTemplate},
+                ...city
+            })
+        }
+    }, [city])
 
     const paragraph1Ref = useRef()
     const paragraph2Ref = useRef()
-
-    const [paragraph1Text, setParagraph1Text] = useState(faker.lorem.paragraph())
-    const [paragraph2Text, setParagraph2Text] = useState(faker.lorem.paragraph())
-
 
     const [selectedEvent, setSelectedEvent] = useState(null)
 
@@ -51,29 +69,43 @@ const Page = ({ params }) =>{
         setIsCreatingNewEvent(false)
     }
 
-    useEffect(() => {
-        const storedParagraph1 = localStorage.getItem('paragraph1')
-        const storedParagraph2 = localStorage.getItem('paragraph2')
-
-        if(storedParagraph1){
-            setParagraph1Text(storedParagraph1)
-        }
-
-        if(storedParagraph2){
-            setParagraph2Text(storedParagraph2)
-        }
-    }, [])
-
     const handleParagraphChange = (e, name) => {
         const { value } = e.target
 
         if(name === 'paragraph1'){
-            setParagraph1Text(value)
-        }else{
-            setParagraph2Text(value)
-        }
+            setCityData({
+                ...cityData,
+                content:{
+                    ...cityData.content,
+                    paragraph1Text:value
+                }
+            })
 
-        localStorage.setItem(name, value)
+        }else{
+            setCityData({
+                ...cityData,
+                content:{
+                    ...cityData.content,
+                    paragraph2Text:value
+                }
+            })
+        }
+    }
+
+    if (!hasLoaded){
+        return (
+            <div style = {{height:'100vh', padding: '5em', justifyContent:'center', display:'flex'}}>
+                <Loading size = {100}/>
+            </div>
+        )
+    }
+
+    if (hasLoaded && !city){
+        return (
+            <div style = {{height:'100vh', padding: '5em', justifyContent:'center', display:'flex'}}>
+                <Typography variant="h2" align="center" sx = {{my:3}}>City not found</Typography>
+            </div>
+            )
     }
 
     return (
@@ -81,7 +113,7 @@ const Page = ({ params }) =>{
             
             <Container  sx = {{paddingTop:3, marginBottom:2}}>
                 <Typography variant="h2" align="center" sx = {{textTransform:"capitalize"}}>
-                    MyHometown {city.replaceAll('-',' ')} - {state}
+                    MyHometown {cityQuery.replaceAll('-',' ')} - {stateQuery.replaceAll('-',' ')}
                 </Typography>
                 <GallerySLC />
                 
@@ -93,7 +125,7 @@ const Page = ({ params }) =>{
 
                         <ContentEditable
                            innerRef={paragraph1Ref}
-                           html={paragraph1Text}
+                           html={cityData.content.paragraph1Text}
                            disabled={false}
                            onChange={(event) => handleParagraphChange(event, 'paragraph1')}
                            tagName="p"
@@ -102,7 +134,7 @@ const Page = ({ params }) =>{
                         <Divider/>
                         <ContentEditable
                               innerRef={paragraph2Ref}
-                              html={paragraph2Text}
+                              html={cityData.content.paragraph2Text}
                               disabled={false}
                               onChange={(event) => handleParagraphChange(event, 'paragraph2')}
                               tagName="p"

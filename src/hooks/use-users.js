@@ -1,85 +1,89 @@
 import { useState, useEffect } from 'react';
-import { faker } from '@faker-js/faker';
+import { toast } from 'react-toastify';
 
 export default function useUsers() {
     const [users, setUsers] = useState([]);
-    const [selectOptions, setSelectOptions] = useState([]);
+    const [userSelectOptions, setUserSelectOptions] = useState([]);
     const [hasLoaded, setHasLoaded] = useState(false);
-
+  
     useEffect(() => {
-        // Fetch users from localStorage
-        const storedUsers = JSON.parse(localStorage.getItem('users'));
-        if (storedUsers) {
-            setUsers(storedUsers);
-        }
-        else {
-            setUsers(mockUsers);
-            localStorage.setItem('users', JSON.stringify(mockUsers));
+        async function fetchUsers() {
+            try {
+            const res = await fetch('/api/database/users');
+            const data = await res.json();
+            setUsers(data.map((u) => ({ ...u, id: u._id })));
 
+            const selectOptions = data.map((user) => ({ value: user._id, label: user.name, data: user }));
+            setUserSelectOptions(selectOptions);
+            
+            } catch (e) {
+            console.error('Error occurred while fetching users', e);
+            }
+            
+            setHasLoaded(true);
         }
 
-        setHasLoaded(true);
+        fetchUsers();
+      
     }, []);
+  
+    // const handleAddUser = async (user) => {
+    //   try {
+    //     const res = await fetch('/api/database/users', {
+    //       method: 'POST',
+    //       headers: {
+    //         'Content-Type': 'application/json'
+    //       },
+    //       body: JSON.stringify(user)
+    //     });
+        
+    //     const newUser = await res.json();
+    //     setUsers([...users, newUser]);
+        
+    //   } catch (e) {
+    //     console.error('Error occurred while adding a user', e);
+    //   }
+    // };
+  
+    const handleEditUser = async (user) => {
+      try {
+        const res = await fetch(`/api/database/users`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            user
+          })
+        });
+  
+        const updatedUser = await res.json();
+        setUsers(prevUsers => prevUsers.map((u) => u._id === user._id ? user : u));
+        toast.success('User updated successfully');
 
-    useEffect(() => {
-        // Save users to localStorage
-        if (hasLoaded) {
-            localStorage.setItem('users', JSON.stringify(users));
-        }
-
-        const newSelectOptions = users.map((user) => ({
-            value: user.id,
-            label: user.name,
-            data: user,
-        }));
-
-        setSelectOptions(newSelectOptions);
-
-    }, [users]);
-
-    const handleAddUser = (user) => {
-        setUsers([...users, user]);
+      } catch (e) {
+        console.error('Error occurred while editing a user', e);
+      }
     };
-
-    const handleEditUser = (id, user) => {
-        setUsers(users.map((u) => (u.id === id ? user : u)));
-    };
-
-    const handleDeleteUser = (id) => {
+  
+    const handleDeleteUser = async (id) => {
+      try {
+        await fetch(`/api/database/users/${id}`, {
+          method: 'DELETE'
+        });
+  
         setUsers(users.filter((u) => u.id !== id));
+        
+      } catch (e) {
+        console.error('Error occurred while deleting a user', e);
+      }
     };
-
+  
     return {
-        users,
-        hasLoaded,
-        selectOptions,
-        handleAddUser,
-        handleEditUser,
-        handleDeleteUser,
+      users,
+      hasLoaded,
+      userSelectOptions,
+      handleEditUser,
+      handleDeleteUser,
     };
-}
-
-const mockUsers = [
-    {
-        id: 1,
-        name: 'JD Erwin',
-        email: 'JD@japps.dev',
-        contactNumber: '801-254-8871',
-        role: 'Admin',
-    },
-    {
-        id: 2,
-        name: 'Jerry Craven',
-        email: 'jerry.craven@gmail.com',
-        contactNumber: '123-456-7890',
-        role: 'Admin',
-    },
-    ...Array.from({length: 35}, (_, id) => ({
-        id: id + 3,
-        name: faker.person.fullName(),	// generates random name
-        email: faker.internet.email(),	// generates random email
-        contactNumber: faker.phone.number(),	// generates random phone number
-        role: ['Admin', 'Community Owner', 'City Owner'][Math.floor(Math.random() * 3)]
-    }))
-];
-
+  }

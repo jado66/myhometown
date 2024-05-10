@@ -54,6 +54,7 @@ const DataTable = ({ rows, columns, id, hiddenColumns }) => {
         return (
             <DataGrid
                 rows={rows}
+                getRowId={(row) => row._id}
                 columns={columns}
                 pageSize={5}
                 rowsPerPageOptions={[5, 10, 20, 50, 100]}

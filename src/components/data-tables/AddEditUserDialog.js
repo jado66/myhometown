@@ -1,5 +1,7 @@
-import { Dialog, DialogTitle, TextField, DialogContent, DialogActions, Button, FormControl, RadioGroup, FormControlLabel, Radio } from '@mui/material';
+import { Dialog, DialogTitle, TextField, Link, DialogContent, DialogActions, FormLabel, Button, FormControl, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 import React, { useState, useEffect } from 'react';
+import NextLink from 'next/link';
+import { CityOrCommunityCell } from './CityOrCommunityCell';
 
 const initialState = {
     id: '',
@@ -25,7 +27,7 @@ const AddEditUserDialog = ({ open, handleClose, onSubmitForm, initialUserState }
         event.preventDefault();
 
         if (initialUserState) {
-            onSubmitForm(user.id, user);
+            onSubmitForm(user);
             setUser(initialState);
             handleClose();
             return;
@@ -43,24 +45,29 @@ const AddEditUserDialog = ({ open, handleClose, onSubmitForm, initialUserState }
             <DialogTitle>{title}</DialogTitle>
             <form onSubmit={handleSubmit}>
                 <DialogContent>
+
+                    <TextField
+                        margin="dense"
+                        id="email"
+                        label="Email (Readonly)"
+                        type="email"
+                        fullWidth
+                        value={user.email}
+                        InputProps={{
+                            readOnly: true,
+                        }}
+                        disabled
+                    />
+
                     <TextField
                         autoFocus
                         margin="dense"
                         id="name"
-                        label="User Name"
+                        label="Name"
                         type="text"
                         fullWidth
                         value={user.name}
                         onChange={(e) => setUser({ ...user, name: e.target.value })}
-                    />
-                    <TextField
-                        margin="dense"
-                        id="email"
-                        label="Email"
-                        type="email"
-                        fullWidth
-                        value={user.email}
-                        onChange={(e) => setUser({ ...user, email: e.target.value })}
                     />
 
                     <TextField
@@ -73,13 +80,44 @@ const AddEditUserDialog = ({ open, handleClose, onSubmitForm, initialUserState }
                         onChange={(e) => setUser({ ...user, contactNumber: e.target.value })}
                     />
 
-                    <FormControl component="fieldset">
+                    {/* MUI Label for user role */}
+                    
+                    {/* <FormControl component="fieldset"> */}
+
+
+
+                    <FormControl component="fieldset" sx = {{mt:2}} fullWidth>
+                        <FormLabel component="legend">User Role</FormLabel>
+
                         <RadioGroup row aria-label="role" id = 'role' name="role" value={user.role} onChange={(e) => setUser({ ...user, role: e.target.value })}>
                             <FormControlLabel value="Admin" control={<Radio />} label="Admin" />
-                            <FormControlLabel value="Community Owner" control={<Radio />} label="Community Owner" />
                             <FormControlLabel value="City Owner" control={<Radio />} label="City Owner" />
+                            <FormControlLabel value="Community Owner" control={<Radio />} label="Community Owner" />
                         </RadioGroup>
                     </FormControl>
+
+                    {
+                        user.cities && user.cities.length > 0 && (
+                            <FormControl component="fieldset" sx = {{mt:2}} fullWidth>
+                                <FormLabel component="legend" sx = {{mb:1}}>Cities Managing</FormLabel>
+                                <CityOrCommunityCell params={{value:user.cities}} type='city' />
+                            </FormControl>
+                        )
+                    }
+                  
+                    {
+                        user.communities && user.communities.length > 0 && (
+                            <FormControl component="fieldset" sx = {{mt:2}} fullWidth>
+                                <FormLabel component="legend">Communities Managing</FormLabel>
+                                <CityOrCommunityCell  params={{value:user.communities}} type='community' />
+                                   
+                            </FormControl>
+                        )
+                    }
+
+
+                        
+                   
                     {/* Add similar TextFields for other attributes... */}
                 </DialogContent>
                 <DialogActions>

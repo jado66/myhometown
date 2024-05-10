@@ -14,23 +14,18 @@ import Loading from '@/components/util/Loading';
 import { faker } from '@faker-js/faker';
 import { useTheme } from '@mui/material/styles';
 import { useUser } from '@/hooks/use-user';
+import RoleGuard from '@/guards/role-guard';
 
 export default function Management() {
 
     const theme = useTheme();
 
-    const { user, hasLoaded: userHasLoaded } = useUser();
+    const { user, isLoading } = useUser();
 
     // Initial state for cityToEdit is null.
     const [cityToEdit, setCityToEdit] = useState(null);
-    
-    // Dynamically determine which email to pass to useCities.
-    let emailParam = '';
-    if (userHasLoaded && user && user.role !== 'admin') {
-      emailParam = user.email;
-    }
-    
-    const { cities, handleAddCity, handleEditCity, handleDeleteCity, hasLoaded } = useCities(emailParam);
+
+    const { cities, handleAddCity, handleEditCity, handleDeleteCity, hasLoaded } = useCities(user);
     const [showAddCityForm, setShowAddCityForm] = useState(false);
     const [showConfirmDeleteCity, setShowConfirmDeleteCity] = useState(false);
     const [confirmDeleteCityProps, setConfirmDeleteCityProps] = useState({});
@@ -39,13 +34,13 @@ export default function Management() {
 
     const handleAskDeleteCity = (cityId) => {
         
-        const city = cities.find((c) => c.id === cityId);
+        const city = cities.find((c) => c._id === cityId);
         
         setConfirmDeleteCityProps({
             title: "Delete City",
             description: `Are you sure you want to delete ${city.name}?`,
             onConfirm: () => {
-                handleDeleteCity(cityId)
+                handleDeleteCity(city)
                 setShowConfirmDeleteCity(false);
             },
             onCancel: () => setShowConfirmDeleteCity(false),
@@ -54,9 +49,36 @@ export default function Management() {
         setShowConfirmDeleteCity(true);
     }
 
+    const handleEditCitySubmit = (city) => {
+        handleEditCity(cityToEdit,city);
+        setCityToEdit(null);
+    }
+
     const handleCloseCityForm = () => {
         setShowAddCityForm(false);
         setCityToEdit(null);
+    }
+
+    const toggleVisibility = (cityId) => {
+        const city = cities.find((c) => c._id === cityId);
+
+        // Call the function to toggle the visibility of the city.
+        const updatedCity = { ...city, visibility: !city.visibility };
+
+        setConfirmDeleteCityProps({
+            title: "Update City Visibility",
+            description: `Are you sure you want to make ${city.name} ${updatedCity.visibility ? 'public' : 'hidden'}?`,
+            onConfirm: () => {
+                handleEditCity(city, updatedCity);
+                setShowConfirmDeleteCity(false);
+            },
+            onCancel: () => setShowConfirmDeleteCity(false),
+            onClose: () => setShowConfirmDeleteCity(false),
+        });
+        setShowConfirmDeleteCity(true);
+
+        // Call the function to update the city.
+        
     }
 
     useEffect(() => {
@@ -65,7 +87,7 @@ export default function Management() {
         }
     }, [cityToEdit]);
 
-    const cityColumns = createCityColumns(handleAskDeleteCity, setCityToEdit);
+    const cityColumns = createCityColumns(handleAskDeleteCity, setCityToEdit, toggleVisibility);
 
     return (
         <Grid container item sm = {12} display = 'flex' sx = {{position:"relative"}}>
@@ -79,7 +101,7 @@ export default function Management() {
             <AddEditCityDialog
                 open={showAddCityForm}
                 handleClose={handleCloseCityForm}
-                onSubmitForm={cityToEdit? handleEditCity : handleAddCity}
+                onSubmitForm={cityToEdit? handleEditCitySubmit : handleAddCity}
                 initialCityState = {cityToEdit}
             />
         
@@ -125,7 +147,7 @@ export default function Management() {
                             align={'center'}
                             gutterBottom
                         >
-                            You don&apos;t have any cities asigned to your account.
+                            You don&apos;t have any cities assigned to your account.
                         </Typography>
                         <Typography variant={'subtitle2'} align={'center'}>
                             Expected something different?{' '}
@@ -195,7 +217,7 @@ export default function Management() {
                                         </Box>
                                         <Box component={CardActions} justifyContent={'flex-end'}>
                                             <Button size="small" 
-                                                href={`/edit/utah/${city.name.toLowerCase().replaceAll(/\s/g, '-')}`}
+                                                href=''
                                             >
                                                 Edit
                                             </Button>
@@ -209,7 +231,7 @@ export default function Management() {
                 }
 
                 {
-                    cities.length >= 3 && hasLoaded &&
+                     hasLoaded && cities.length >= 3 &&
                     <DataTable
                         id = "city"
                         rows={cities}
@@ -217,6 +239,20 @@ export default function Management() {
                         hiddenColumns = {['id', 'country']}
                     />
                 }
+
+                <RoleGuard requiredRole = 'admin' user = {user}>
+                    <Grid sx = {{mt:3}}>
+                        <Box display = 'flex' justifyContent = 'center' width='100%'>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() => setShowAddCityForm(true)}
+                            >
+                                Add a City
+                            </Button>
+                        </Box>
+                    </Grid>
+                </RoleGuard>
             </Card>
         </Grid>
     );

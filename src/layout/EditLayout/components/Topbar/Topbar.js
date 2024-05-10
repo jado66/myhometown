@@ -5,8 +5,11 @@ import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import MyHometownLogo from '@/assets/svg/logos/MyHometown';
+import { useEditCity } from '@/hooks/use-edit-city';
 
 const Topbar = () => {
+
+  const { saveCityData, isDirty } = useEditCity();
 
   return (
     <Box
@@ -50,6 +53,8 @@ const Topbar = () => {
               variant="contained"
               component="a"
               color="primary"
+              onClick={saveCityData}
+              disabled={!isDirty}
             >
               Save Changes
             </Button>

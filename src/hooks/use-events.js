@@ -1,7 +1,7 @@
 import createFakeEvents from '@/util/events/create-fake-events';
 import { useState, useEffect } from 'react';
 
-const useEvents = () => {
+const useEvents = (cityName) => {
     const [events, setEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -17,7 +17,7 @@ const useEvents = () => {
 
                     const randomInt = Math.floor(Math.random() * 15)+5
 
-                    const fakeEvents = createFakeEvents(randomInt, 'My Hometown');
+                    const fakeEvents = createFakeEvents(randomInt, cityName);
                     setEvents(fakeEvents);
                     localStorage.setItem('events', JSON.stringify(fakeEvents));
                 }

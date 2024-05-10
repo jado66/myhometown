@@ -61,7 +61,7 @@ export default function Management() {
             <AddEditUserDialog
                 open={showAddUserForm}
                 handleClose={handleCloseUserForm}
-                onSubmitForm={userToEdit? handleEditUser : handleAddUser}
+                onSubmitForm={handleEditUser}
                 initialUserState = {userToEdit}
             />
         
@@ -96,7 +96,6 @@ export default function Management() {
                         Here you can add, remove, or edit users and their roles.
                     </Typography>
                 </Box>
-
                 {
                 !hasLoaded ?
                     <Box display = 'flex' justifyContent = 'center'>
@@ -107,7 +106,7 @@ export default function Management() {
                         id = "user"
                         rows={users}
                         columns={userColumns}
-                        hiddenColumns = {['id', 'country']}
+                        hiddenColumns = {['id', 'country', 'cities', 'communities']}
                     />
                 }
                   

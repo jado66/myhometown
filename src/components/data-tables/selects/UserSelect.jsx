@@ -5,11 +5,11 @@ import MultiSelect from "./MultiSelect";
 
 const UserSelect = ({value, onChange, defaultValue}) => {
 
-    const { selectOptions, hasLoaded } = useUsers();
+    const { userSelectOptions, hasLoaded } = useUsers();
 
     return (
        <MultiSelect 
-            options={selectOptions} 
+            options={userSelectOptions} 
             placeholder='Select a User'
             isLoading={!hasLoaded}
             value={value}

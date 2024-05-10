@@ -1,12 +1,21 @@
 import { Button, Grid } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
+import { CityOrCommunityCell } from "@/components/data-tables/CityOrCommunityCell";
 
 const createUserColumns = (handleAskDeleteUser, setUserToEdit) => [
-    { field: 'id', headerName: 'ID', width: 90, visible: false},
-    { field: 'name', headerName: 'Name', width: 250 },
-    { field: 'email', headerName: 'Email', width: 250 },
-    { field: 'role', headerName: 'Role', width: 150 },
-    { field: 'contactNumber', headerName: 'Contact Number', width: 250 },
+    { field: 'id', headerName: 'ID', width: 300, visible: false},
+    { field: 'name', headerName: 'Name', width: 200 },
+    { field: 'email', headerName: 'Email', width: 225 },
+    { field: 'role', headerName: 'Role', width: 175 },
+    { field: 'contactNumber', headerName: 'Contact Number', width: 200 },
+    { 
+        field: 'cities', headerName: 'Cities', width: 350,visible: false,
+        renderCell: (params) => <CityOrCommunityCell params={params} type='city'/>
+    },
+    { 
+        field: 'communities', headerName: 'Communities', width: 350,visible: false,
+        renderCell: (params) => <CityOrCommunityCell params={params}  type='community'/>
+    },
     {
         field: "actions",
         headerName: "Actions",

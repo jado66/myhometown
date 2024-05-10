@@ -9,6 +9,7 @@ const ContainerStyled = styled(Container)({
     flexGrow: 1,
     padding: "2em",
     backgroundColor: "#fafafa", 
+    height: "100%",
     minHeight: "100vh",
 });
 

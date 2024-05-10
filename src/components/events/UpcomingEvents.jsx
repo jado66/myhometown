@@ -29,7 +29,7 @@ const UpcomingEvents = ({ events, isLoading, maxEvents }) => {
 
   if (events.length === 0) {
     return (
-      <Typography variant="h5" component="h2" color = 'primary' textAlign='center' gutterBottom>
+      <Typography variant="h4" component="h2" color = 'primary' textAlign='center' gutterBottom>
         No upcoming events
       </Typography>
     );
@@ -37,7 +37,7 @@ const UpcomingEvents = ({ events, isLoading, maxEvents }) => {
 
   return (
    <>
-    <Typography variant="h5" component="h2" color = 'primary' textAlign='center' gutterBottom>
+    <Typography variant="h4" component="h2" color = 'primary' textAlign='center' gutterBottom>
       Upcoming Events
     </Typography>
     <List>
@@ -61,7 +61,13 @@ const UpcomingEvents = ({ events, isLoading, maxEvents }) => {
           endDate = endDateObj.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric' });
         }
         return (
-          <Card key={index} sx = {{p:2, mb:1, display:'flex', flexDirection:'row'}} >
+          <Card key={index} 
+            sx = {{
+              p:2, mb:1, display:'flex', flexDirection:'row',
+              '&:hover':{
+                backgroundColor : '#f8f8f8' //TODO make this a theme pallete color
+              }  
+            }} >
             <Box display="flex" sx = {{minWidth:'300px'}} flexDirection='column'>
               <Typography variant="body2" sx={{ color: '#777', minWidth:"275px" }} gutterBottom>
                 {`${startDate}`}

@@ -19,7 +19,9 @@ import Loading from '@/components/util/Loading';
 const AdminDashboardPages = () => {
   const theme = useTheme();
 
-  const { user, hasLoaded: userHasLoaded } = useUser();
+  const { user, isLoading } = useUser();
+
+ 
 
   return (
     <Box>
@@ -41,7 +43,7 @@ const AdminDashboardPages = () => {
                 color={'primary'}
                 align={'center'}
               >
-                Admin dashboard
+                Admin dashboard 
               </Typography>
               <Box
                 component={Typography}
@@ -63,7 +65,7 @@ const AdminDashboardPages = () => {
             </Box>
             
             {
-              !userHasLoaded &&
+              isLoading &&
               <Grid container spacing={4} justifyContent={'center'} alignItems={'center'} mt = {5}>
                 <Loading size={50} />
               </Grid>
@@ -71,7 +73,7 @@ const AdminDashboardPages = () => {
             
             <Grid container spacing={4}
               sx = {{
-                visibility: userHasLoaded ? 'visible' : 'hidden'
+                visibility: !isLoading ? 'visible' : 'hidden'
               }}
             >
              
@@ -124,7 +126,7 @@ const AdminDashboardPages = () => {
                 
               ].map((item, i) => (
                 item.hasOwnProperty('requiredRole') ?
-                <RoleGuard requiredRole={item.requiredRole} key={i}>
+                <RoleGuard requiredRole={item.requiredRole} key={i} user = {user}>
                   <AdminDashboardCard item={item} i={i} />
                 </RoleGuard>
                 :

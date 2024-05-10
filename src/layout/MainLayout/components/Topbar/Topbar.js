@@ -16,7 +16,7 @@ import useCities from '@/hooks/use-cities';
 
 const Topbar = () => {
 
-  const { groupedCityStrings } = useCities();
+  const { groupedCityStrings } = useCities(null, true);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [search, setSearch] = useState("");

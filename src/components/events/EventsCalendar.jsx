@@ -56,12 +56,12 @@ export const EventsCalendar = ({events, onSelectEvent, onSelectSlot, isLoading})
 
     return (
        <>
-            <Typography variant="h5" component="h2" color = 'primary' textAlign='center' gutterBottom>
+            <Typography variant="h4" component="h2" color = 'primary' textAlign='center' gutterBottom>
                 Event Calendar
             </Typography>
          
             <Card sx = {{padding:2, marginTop:2}}>
-                <Grid item xs={12} sx = {{height:'600px'}}>
+                <Grid item xs={12} sx = {{height:'500px'}}>
                     <StyledCalendar
                         localizer={localizer}
                         defaultView="month"

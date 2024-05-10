@@ -1,14 +1,15 @@
-import { useUser } from "@/hooks/use-user";
+const RoleGuard = ({ requiredRole, children, user }) => {
 
-const RoleGuard = ({ requiredRole, children }) => {
-    const { user, hasLoaded } = useUser();
-
-    if (!hasLoaded) {
-        // Show loading state if user data is still being fetched
+    if (!user) {
         return null;
+    } 
+    
+    if (!requiredRole) {
+        // If no role is required, allow access
+        return children;
     }
 
-    const userRole = user.role;
+    const userRole = user?.role.toLowerCase().replace(' ', '-');
 
     if (userRole === 'admin') {
         // Admin has access to everything

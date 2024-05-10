@@ -1,33 +1,47 @@
-import { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useEffect } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 // Create a new context for the user
 export const UserContext = createContext();
 
 // Create a UserProvider component
 export const UserProvider = ({ children }) => {
-    // State to store the user data
-    const [user, setUser] = useState(null);
-    const [hasLoaded, setHasLoaded] = useState(false);
+    
+    const { user: authUser, error: authError, isLoading: isAuthError } = useUser();
 
-    // Function to update the user data
-    const updateUser = (userData) => {
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
+    const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const fetchUser = async (authUser) => {
+        // Fetch user data from an API
+        const { sub, email } = authUser;
+
+        const response = await fetch('/api/database/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ sub, email })
+        });
+        const data = await response.json();
+    
+        // Set the user data
+        setUser(data);
+        setIsLoading(false);
+    
+        return;
     };
 
-    // Load data from localStorage upon mount
     useEffect(() => {
-        const userData = JSON.parse(localStorage.getItem('user'));
-        if (userData) {
-            setUser(userData);
+        if (authUser) {
+            fetchUser(authUser);
+            return;
         }
-
-        setHasLoaded(true);
-    }, []);
+    }, [authUser]);
 
     return (
         // Provide the user data and update function to the children components
-        <UserContext.Provider value={{ user, updateUser, hasLoaded }}>
+        <UserContext.Provider value={{ user, isLoading }}>
             {children}
         </UserContext.Provider>
     );

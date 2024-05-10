@@ -6,14 +6,17 @@ export const pages = [
         {
           title: 'User Management',
           href: '/admin-dashboard/users',
+          requiredRole: 'admin'
         },
         {
           title: 'City Management',
           href: '/admin-dashboard/cities',
+          requiredRole: 'city-owner'
         },
         {
           title: 'Community Management',
           href: '/admin-dashboard/communities',
+          requiredRole: 'community-owner'
         },
       ]
     },
