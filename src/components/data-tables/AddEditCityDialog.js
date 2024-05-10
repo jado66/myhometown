@@ -41,11 +41,11 @@ const AddEditCityDialog = ({ open, handleClose, onSubmitForm, initialCityState }
             return false;
         }
 
-        // City must have a city owner
-        if (city.cityOwners.length === 0) {
-            toast.error("City must have at least one owner");
-            return false;
-        }
+        // // City must have a city owner
+        // if (city.cityOwners.length === 0) {
+        //     toast.error("City must have at least one owner");
+        //     return false;
+        // }
 
         return true;
     }
