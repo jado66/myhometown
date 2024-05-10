@@ -56,7 +56,7 @@ const DataTable = ({ rows, columns, id, hiddenColumns }) => {
                 rows={rows}
                 getRowId={(row) => row._id}
                 columns={columns}
-                pageSize={5}
+                pageSize={10}
                 rowsPerPageOptions={[5, 10, 20, 50, 100]}
                 disableRowSelectionOnClick 
                 disableCellSelectionOnClick
