@@ -7,8 +7,12 @@ import Visibility from "@mui/icons-material/Visibility";
 const createCommunityColumns = (handleAskDeleteCommunity, setCommunityToEdit, toggleVisibility, user) => [
     { field: '_id', headerName: 'ID', width: 90, visible: false},
     { field: 'name', headerName: 'Community Name', width: 150 },
-    { field: 'city', headerName: 'City', width: 125 },
-    { field: 'state', headerName: 'State', width: 100 },
+    { field: 'city', headerName: 'City', width: 125,
+        renderCell: (params) => params.row.city?.name || "" 
+    },
+    { field: 'state', headerName: 'State', width: 100,
+        renderCell: (params) => params.row.city?.state || "" 
+    }, 
     { field: 'country', headerName: 'Country', width: 150 },
     { field: 'visibility', headerName: 'Status', width: 100,
         renderCell: (params) => params.row.visibility ? 'Published' : 'Draft'
@@ -38,8 +42,13 @@ const createCommunityColumns = (handleAskDeleteCommunity, setCommunityToEdit, to
                 setCommunityToEdit(params.row);
             };
 
+            const href = 
+                params.row.city ?
+                `/${params.row.city.state.toLowerCase().replaceAll(/\s/g, "-")}/${params.row.city.name.toLowerCase().replaceAll(/\s/g, "-")}/${params.row.name.toLowerCase().replaceAll(/\s/g, "-")}`
+                :
+                ''
             
-            if (user?.role !== 'admin' && params.row.state && params.row.city && params.row.name) {
+            if (user?.role !== 'Admin' && params.row.city && params.row.name) {
                 return (
                     <Grid>
                         <Button 
@@ -47,7 +56,8 @@ const createCommunityColumns = (handleAskDeleteCommunity, setCommunityToEdit, to
                             size="small" 
                             color="secondary"
                             sx = {{color: "grey"}}
-                            href={`/${params.row.state.toLowerCase().replaceAll(/\s/g, "-")}/${params.row.city.toLowerCase().replaceAll(/\s/g, "-")}/${params.row.name.toLowerCase().replaceAll(/\s/g, "-")}`}
+                            href={href}
+                            disabled = {!href}
                         >
                             View Page
                         </Button>
@@ -55,8 +65,8 @@ const createCommunityColumns = (handleAskDeleteCommunity, setCommunityToEdit, to
                             variant="outlined" 
                             color="error" 
                             size="small"  
-                            onClick={onClickDelete}
-                            sx = {{marginLeft: 1}}
+                            href = {'/edit'+href}
+                            disabled = {!href}
                         >
                             <DeleteIcon fontSize="small" sx = {{ml:'5px'}} />
                             Edit Page

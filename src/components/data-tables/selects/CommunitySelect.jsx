@@ -4,7 +4,7 @@ import MultiSelect from "./MultiSelect";
 
 const CommunitySelect = ({value, onChange, defaultValue}) => {
 
-    const { communitySelectOptions, hasLoaded } = useCommunities();
+    const { communitySelectOptions, hasLoaded } = useCommunities(null, true);
 
     return (
        <MultiSelect 

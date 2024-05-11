@@ -103,7 +103,8 @@ export default function useCities(userfilter, forDropDownCityMenu = false) {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            city
+            city,
+            previousCity
           })
         });
 

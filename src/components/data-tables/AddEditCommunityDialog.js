@@ -8,8 +8,7 @@ import { WarningRounded } from '@mui/icons-material';
 
 const initialState = {
     name: '',
-    state: 'Utah',
-    country: 'USA',
+    city: null,
     upcomingEvents: [],
     coordinates: {},
     boundingShape: [],
@@ -89,6 +88,12 @@ const AddEditCommunityDialog = ({ open, handleClose, onSubmitForm, initialCommun
 
     const title = initialCommunityState ? "Edit Community Details" : "Add Community Details";
 
+    const href = 
+    initialCommunityState && initialCommunityState.city ?
+    `/${initialCommunityState.city.state.toLowerCase().replaceAll(/\s/g, "-")}/${initialCommunityState.city.name.toLowerCase().replaceAll(/\s/g, "-")}/${initialCommunityState.name.toLowerCase().replaceAll(/\s/g, "-")}`
+    :
+    ''
+
     return (
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle>{title}</DialogTitle>
@@ -161,19 +166,19 @@ const AddEditCommunityDialog = ({ open, handleClose, onSubmitForm, initialCommun
                     justifyContent:'space-between',
                 }}>
                     <Box>
-                        {initialCommunityState && 
+                        {initialCommunityState && community.city &&
                             <>
                                 <Button 
                                     onClick={handleClose} 
                                     color="primary"
-                                    href={`/${community.state.toLowerCase()}/${community.name.toLowerCase().replaceAll(/\s/g, "-")}`}
+                                    href={`/${community.city.state.toLowerCase()}/${community.name.toLowerCase().replaceAll(/\s/g, "-")}`}
                                 >
                                     View Page
                                 </Button>
                                 <Button 
                                     type="submit" 
                                     color="primary" 
-                                    href={`/edit/${community.state.toLowerCase()}/${community.name.toLowerCase().replaceAll(/\s/g, "-")}`}
+                                    href={`/edit/${community.city.state.toLowerCase()}/${community.name.toLowerCase().replaceAll(/\s/g, "-")}`}
                                 >
                                     Edit Landing Page
                                 </Button>

@@ -47,14 +47,41 @@ export async function POST(req, res) {
 }
 
 export async function PUT(req, res) {
-  const { city } = await req.json();
+  const { city, previousCity } = await req.json();
   const { db } = await connectToMongoDatabase();
   const cities = db.collection('Cities');
+  const communitiesCollection = db.collection('Communities');
   
   const { _id, ...cityWithoutId } = city;
 
   const updateCity = await cities.updateOne({ _id: new ObjectId(_id) }, { $set: cityWithoutId });
   
+  // Check if communities have been added or removed
+  const addedCommunities = city.communities.filter(c => !previousCity.communities.includes(c));
+  const removedCommunities = previousCity.communities.filter(c => !city.communities.includes(c));
+
+  // Process added communities
+  for (let community of addedCommunities) {
+
+    console.log('Adding city to community:', community);
+
+    await communitiesCollection.findOneAndUpdate(
+      { _id: new ObjectId(community._id) },
+      { $set: { city: { _id: city._id, name: city.name, state: city.state } } }
+    );
+  }
+
+  // Process removed communities
+  for (let community of removedCommunities) {
+
+    console.log('Removing city from community:', community);
+
+    await communitiesCollection.findOneAndUpdate(
+      { _id: new ObjectId(community._id) },
+      { $set: { city: '' } }
+    );
+  }
+
   return new Response(JSON.stringify(updateCity), { status: 200 });
 }
 

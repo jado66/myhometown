@@ -14,7 +14,13 @@ export default function useCommunities(userfilter, forDropDownCommunityMenu = fa
           const data = await res.json();
           setCommunities(data);
 
-          const selectOptions = data.map((community) => ({ value: community._id, label: community.name, data: community }));
+          const selectOptions = data
+            .filter((community) => !Boolean(community.city)) // Filter here 
+            .map((community) => ({ 
+                value: community._id, 
+                label: community.name, 
+                data: community 
+            }));
           setCommunitySelectOptions(selectOptions);
         
         } catch (e) {
