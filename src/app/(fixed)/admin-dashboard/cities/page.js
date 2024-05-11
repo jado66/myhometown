@@ -89,6 +89,15 @@ export default function Management() {
 
     const cityColumns = createCityColumns(handleAskDeleteCity, setCityToEdit, toggleVisibility);
 
+    if (!hasLoaded){
+        return (
+            <Box display = 'flex' justifyContent = 'center'
+                sx = {{height:'100vh', padding: '5em',}}
+            >
+            <Loading size = {50}/>
+        </Box>)   
+    }
+
     return (
         <Grid container item sm = {12} display = 'flex' sx = {{position:"relative"}}>
            
@@ -129,12 +138,6 @@ export default function Management() {
                     </Box>
                    
                 </Box>
-
-                {   !hasLoaded &&
-                    <Box display = 'flex' justifyContent = 'center'>
-                        <Loading size = {50}/>
-                    </Box>
-                }
 
                 {
                     cities.length === 0 && hasLoaded &&

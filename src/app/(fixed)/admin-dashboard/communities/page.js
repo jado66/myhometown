@@ -95,7 +95,7 @@ export default function Management() {
         }
     }, [user]);
     
-     if (!hasLoaded){
+    if (!hasLoaded){
         return (
             <Box display = 'flex' justifyContent = 'center'
                 sx = {{height:'100vh', padding: '5em',}}

@@ -92,7 +92,7 @@ const AddEditCityDialog = ({ open, handleClose, onSubmitForm, initialCityState }
         <Dialog open={open} onClose={handleClose} >
             <DialogTitle>{title}</DialogTitle>
             <form onSubmit={handleSubmit}>
-                <DialogContent sx = {{height: 700}}>
+                <DialogContent >
                     <TextField
                         sx = {{mt:1}}
                         autoFocus
