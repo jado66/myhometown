@@ -1,43 +1,68 @@
-import { Dialog, DialogTitle, TextField, DialogContent, DialogActions, Button } from '@mui/material';
+import { Dialog, DialogTitle, TextField, DialogContent, DialogActions, Button, Grid, FormControl, InputLabel, Tooltip, Box } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import UserSelect from './selects/UserSelect';
+import StateSelect from './StateSelect';
+import { toast } from 'react-toastify';
+import CommunitySelect from './selects/CommunitySelect';
+import { WarningRounded } from '@mui/icons-material';
 
 const initialState = {
-    id: '',
     name: '',
-    cityName: '',
-    cityId: '',
-    googleCalendarId: '',
-    classes: [],
+    state: 'Utah',
+    country: 'USA',
+    upcomingEvents: [],
+    coordinates: {},
     boundingShape: [],
     communityOwners: []
 };
 
 const AddEditCommunityDialog = ({ open, handleClose, onSubmitForm, initialCommunityState }) => {
     const [community, setCommunity] = useState(initialCommunityState || initialState);
-    const [isDirty, setIsDirty] = useState(false); // New state
 
-    // Set community to communityProp when dialog is opened or communityProp changes.
     useEffect(() => {
         if (open) {
             setCommunity(initialCommunityState || initialState);
         }
     }, [open, initialCommunityState]);
 
-    
-    useEffect(() => {
-        if (JSON.stringify(community) !== JSON.stringify(initialCommunityState)) {
-            setIsDirty(true);
-        } else {
-            setIsDirty(false);
+    const validateForm = () => {
+
+        // community can't be empty and cant have special characters
+        if (!community.name ) {
+            toast.error("Community name can't be empty");
+            return false;
         }
-    }, [community, initialCommunityState]);
+
+        if (!community.name.match(/^[a-zA-Z\s]*$/)){
+            toast.error("Community name can't have special characters");
+            return false;
+        }
+
+        if(community.name !== community.name.trim()){
+            toast.error("Community name can't have leading or trailing spaces");
+            return false;
+        }
+
+        // // Community must have a community owner
+        // if (community.communityOwners.length === 0) {
+        //     toast.error("Community must have at least one owner");
+        //     return false;
+        // }
+
+        return true;
+    }
+
 
     const handleSubmit = (event) => {
         event.preventDefault();
-
+        
+        if (!validateForm()) {
+            return;
+        }
+        
         if (initialCommunityState) {
-            onSubmitForm(community.id, community);
+
+            onSubmitForm(community);
             setCommunity(initialState);
             handleClose();
             return;
@@ -48,15 +73,21 @@ const AddEditCommunityDialog = ({ open, handleClose, onSubmitForm, initialCommun
         handleClose();
     };
 
-    const handleSelectChange = (selectedUsers) => {
-        setCommunity({ ...community, communityOwners: selectedUsers.map(user => user.data) });
+    const handleUserSelectChange = (selectedUsers) => {
+        setCommunity({
+             ...community, 
+             communityOwners: selectedUsers.map(user => user.data)
+        });
     };
 
-    const userSelectValues = community.communityOwners.length?
-        community.communityOwners.map(user => ({ value: user.id, label: user.name, data: user }))
-        : [];
+    const handleCommunitySelectChange = (selectedCommunities) => {
+        setCommunity({
+            ...community,
+            communities: selectedCommunities.map(community => community.data)
+        });
+    };
 
-    const title = initialCommunityState ? "Edit Community" : "Add Community";
+    const title = initialCommunityState ? "Edit Community Details" : "Add Community Details";
 
     return (
         <Dialog open={open} onClose={handleClose}>
@@ -64,6 +95,7 @@ const AddEditCommunityDialog = ({ open, handleClose, onSubmitForm, initialCommun
             <form onSubmit={handleSubmit}>
                 <DialogContent>
                     <TextField
+                        sx = {{mt:1}}
                         autoFocus
                         margin="dense"
                         id="name"
@@ -73,47 +105,89 @@ const AddEditCommunityDialog = ({ open, handleClose, onSubmitForm, initialCommun
                         value={community.name}
                         onChange={(e) => setCommunity({ ...community, name: e.target.value })}
                     />
+                    
+                    
                     <TextField
+                        sx = {{mt:1}}
+                        autoFocus
                         margin="dense"
-                        id="cityName"
+                        id="name"
                         label="City Name"
                         type="text"
                         fullWidth
-                        value={community.cityName}
-                        onChange={(e) => setCommunity({ ...community, cityName: e.target.value })}
+                        value={community.city || " Not Connected to a City"}
+                        disabled
+                        InputProps={{
+                            startAdornment: (
+                                <Tooltip title="Cities are managed in the City Management Page." arrow>
+                                    <WarningRounded />
+                                </Tooltip>
+                            )
+                        }}
                     />
-                    <TextField
+                    {/* <TextField
+                        disabled
+                        sx = {{mt:1}}
                         margin="dense"
-                        id="cityId"
-                        label="City ID"
+                        id="country"
+                        label="Country"
                         type="text"
                         fullWidth
-                        value={community.cityId}
-                        onChange={(e) => setCommunity({ ...community, cityId: e.target.value })}
-                    />
-                    <TextField
-                        margin="dense"
-                        id="googleCalendarId"
-                        label="Google Calendar ID"
-                        type="text"
-                        fullWidth
-                        value={community.googleCalendarId}
-                        onChange={(e) => setCommunity({ ...community, googleCalendarId: e.target.value })}
-                    />
-                    <UserSelect 
-                        label="Community Owners"
-                        value={userSelectValues}
-                        onChange={handleSelectChange}
-                    />
-                    {/* Add similar TextFields for other attributes... */}
+                        value={community.country}
+                        onChange={(e) => setCommunity({ ...community, country: e.target.value })}
+                    /> */}
+
+                    <FormControl fullWidth sx = {{mt:-1, mb:3}}>
+                        <InputLabel>Community Owners</InputLabel>
+                    </FormControl>
+                    
+                    <FormControl fullWidth sx = {{mt:1.5}}>
+                        <UserSelect 
+                            label="Community Owners"
+                            value={
+                                community.communityOwners.length > 0 
+                                    ? community.communityOwners.map(user => ({ value: user._id, label: user.name, data: user}))
+                                    : []
+                            }
+                            onChange={handleUserSelectChange}
+                        />
+                    </FormControl>
+
+                  
+                    
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose} color="primary">
-                        Cancel
-                    </Button>
-                    <Button type="submit" color="primary" disabled = {!isDirty}>
-                        {initialCommunityState ? "Save" : "Add"}
-                    </Button>
+                <DialogActions sx = {{
+                    display:'flex',
+                    justifyContent:'space-between',
+                }}>
+                    <Box>
+                        {initialCommunityState && 
+                            <>
+                                <Button 
+                                    onClick={handleClose} 
+                                    color="primary"
+                                    href={`/${community.state.toLowerCase()}/${community.name.toLowerCase().replaceAll(/\s/g, "-")}`}
+                                >
+                                    View Page
+                                </Button>
+                                <Button 
+                                    type="submit" 
+                                    color="primary" 
+                                    href={`/edit/${community.state.toLowerCase()}/${community.name.toLowerCase().replaceAll(/\s/g, "-")}`}
+                                >
+                                    Edit Landing Page
+                                </Button>
+                            </>
+                        }
+                    </Box>
+                    <Box>
+                        <Button onClick={handleClose} color="primary">
+                            Cancel
+                        </Button>
+                        <Button type="submit" color="primary">
+                            {initialCommunityState ? "Save" : "Add"}
+                        </Button>
+                    </Box>
                 </DialogActions>
             </form>
         </Dialog>

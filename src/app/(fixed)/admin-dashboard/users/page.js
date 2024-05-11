@@ -106,7 +106,7 @@ export default function Management() {
                         id = "user"
                         rows={users}
                         columns={userColumns}
-                        hiddenColumns = {['id', 'country', 'cities', 'communities']}
+                        hiddenColumns = {['_id', 'country', 'cities', 'communities']}
                     />
                 }
                   

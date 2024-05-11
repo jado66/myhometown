@@ -53,11 +53,15 @@ export const pages = [
       ],
     },
     {
-      title: 'Developer Tools',
+      title: 'Need Help',
       id: 'debug',
       pages: [
         {
-          title: 'User Testing',
+          title: 'Bug Report',
+          href: '/dev/user-testing',
+        },
+        {
+          title: 'Request a Feature',
           href: '/dev/user-testing',
         }
       ],

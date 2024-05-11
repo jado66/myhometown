@@ -2,9 +2,10 @@
 
 import Select from 'react-select';
 
-const MultiSelect = ({ options, value, onChange, placeholder, isLoading, defaultValue }) => {
+const MultiSelect = ({ options, value, onChange, placeholder, isLoading, defaultValue, direction, isMulti = true  }) => {
     return (
         <Select
+            direction 
             options={options}
             value={value}
             onChange={onChange}
@@ -14,9 +15,9 @@ const MultiSelect = ({ options, value, onChange, placeholder, isLoading, default
             className="basic-multi-select"
             classNamePrefix="select"    
             isClearable
-            isMulti
+            isMulti = {isMulti}
             isSearchable
-
+            menuPlacement={direction === 'up' ? 'top': 'auto'}
         />
     );
 }

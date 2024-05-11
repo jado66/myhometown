@@ -15,6 +15,7 @@ const UserSelect = ({value, onChange, defaultValue}) => {
             value={value}
             onChange={onChange}
             defaultValue={defaultValue}
+            direction='up'
         />
     );
 }

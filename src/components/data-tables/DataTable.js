@@ -13,7 +13,7 @@ const DataTable = ({ rows, columns, id, hiddenColumns }) => {
                 return obj;
             }, {}),
         },
-        pagination: { paginationModel: { pageSize: 5 } },
+        pagination: { paginationModel: { pageSize: 15 } },
     });
 
     useEffect(() => {
@@ -56,7 +56,7 @@ const DataTable = ({ rows, columns, id, hiddenColumns }) => {
                 rows={rows}
                 getRowId={(row) => row._id}
                 columns={columns}
-                pageSize={10}
+                pageSize={15}
                 rowsPerPageOptions={[5, 10, 20, 50, 100]}
                 disableRowSelectionOnClick 
                 disableCellSelectionOnClick

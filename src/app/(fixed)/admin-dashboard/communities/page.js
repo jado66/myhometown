@@ -1,5 +1,6 @@
 
 'use client'
+
 import { useEffect, useState } from 'react';
 import Card from '@mui/material/Card';
 import useCommunities from '@/hooks/use-communities';
@@ -7,27 +8,40 @@ import AskYesNoDialog from '@/components/util/AskYesNoDialog';
 import AddEditCommunityDialog from '@/components/data-tables/AddEditCommunityDialog';
 import { DataTable } from '@/components/data-tables/DataTable';
 import { createCommunityColumns } from '@/constants/columns';
-import { Grid, Box, Typography } from '@mui/material';
+import { Grid, CardContent, Box, Typography, Link, Divider, CardMedia, CardActions, Button } from '@mui/material';
 import BackButton from '@/components/BackButton';
+import Loading from '@/components/util/Loading';
+import { faker } from '@faker-js/faker';
+import { useTheme } from '@mui/material/styles';
+import { useUser } from '@/hooks/use-user';
+import RoleGuard from '@/guards/role-guard';
 
 export default function Management() {
-    const { communities, handleAddCommunity, handleEditCommunity, handleDeleteCommunity } = useCommunities();
 
-    const [communityToEdit, setCommunityToEdit] = useState(null);
+    const theme = useTheme();
 
+    const { user, isLoading } = useUser();
+
+    // Initial state for communityToEdit is null.
+    const [communityToEdit, setCommunityToEdit] = useState(null); 
+    const [communityTableColumns, setCommunityTableColumns] = useState([{}]);
+
+    const { communities, handleAddCommunity, handleEditCommunity, handleDeleteCommunity, hasLoaded } = useCommunities(user);
     const [showAddCommunityForm, setShowAddCommunityForm] = useState(false);
     const [showConfirmDeleteCommunity, setShowConfirmDeleteCommunity] = useState(false);
     const [confirmDeleteCommunityProps, setConfirmDeleteCommunityProps] = useState({});
     
+    const fakeCommunityImages = Array.from({ length: 3 }, () => faker.image.urlLoremFlickr({ category: 'community' }));
+
     const handleAskDeleteCommunity = (communityId) => {
         
-        const community = communities.find((c) => c.id === communityId);
+        const community = communities.find((c) => c._id === communityId);
         
         setConfirmDeleteCommunityProps({
             title: "Delete Community",
             description: `Are you sure you want to delete ${community.name}?`,
             onConfirm: () => {
-                handleDeleteCommunity(communityId)
+                handleDeleteCommunity(community)
                 setShowConfirmDeleteCommunity(false);
             },
             onCancel: () => setShowConfirmDeleteCommunity(false),
@@ -36,9 +50,36 @@ export default function Management() {
         setShowConfirmDeleteCommunity(true);
     }
 
+    const handleEditCommunitySubmit = (community) => {
+        handleEditCommunity(communityToEdit,community);
+        setCommunityToEdit(null);
+    }
+
     const handleCloseCommunityForm = () => {
         setShowAddCommunityForm(false);
         setCommunityToEdit(null);
+    }
+
+    const toggleVisibility = (communityId) => {
+        const community = communities.find((c) => c._id === communityId);
+
+        // Call the function to toggle the visibility of the community.
+        const updatedCommunity = { ...community, visibility: !community.visibility };
+
+        setConfirmDeleteCommunityProps({
+            title: "Update Community Visibility",
+            description: `Are you sure you want to make ${community.name} ${updatedCommunity.visibility ? 'public' : 'hidden'}?`,
+            onConfirm: () => {
+                handleEditCommunity(community, updatedCommunity);
+                setShowConfirmDeleteCommunity(false);
+            },
+            onCancel: () => setShowConfirmDeleteCommunity(false),
+            onClose: () => setShowConfirmDeleteCommunity(false),
+        });
+        setShowConfirmDeleteCommunity(true);
+
+        // Call the function to update the community.
+        
     }
 
     useEffect(() => {
@@ -47,78 +88,182 @@ export default function Management() {
         }
     }, [communityToEdit]);
 
-    const communityColumns = createCommunityColumns(handleAskDeleteCommunity, setCommunityToEdit);
+    useEffect(() => {
+        if (user){
+            const columns = createCommunityColumns(handleAskDeleteCommunity, setCommunityToEdit, toggleVisibility, user);
+            setCommunityTableColumns(columns);
+        }
+    }, [user]);
+    
+     if (!hasLoaded){
+        return (
+            <Box display = 'flex' justifyContent = 'center'
+                sx = {{height:'100vh', padding: '5em',}}
+            >
+            <Loading size = {50}/>
+        </Box>)   
+    }
+
 
     return (
+        <Grid container item sm = {12} display = 'flex' sx = {{position:"relative"}}>
            
-    <Grid container item sm = {12} display = 'flex' sx = {{position:"relative"}}>           
-        <BackButton />
+            <BackButton />
 
-        <AskYesNoDialog 
-            {...confirmDeleteCommunityProps}
-            open={showConfirmDeleteCommunity}
-        />
-        <AddEditCommunityDialog
-            open={showAddCommunityForm}
-            handleClose={handleCloseCommunityForm}
-            onSubmitForm={communityToEdit? handleEditCommunity : handleAddCommunity}
-            initialCommunityState = {communityToEdit}
-        />
-    
-        <Card sx={{width: '100%', height:'100%', m:3, p: 3, display:'flex', flexDirection:'column', boxShadow:'none', overflowX:'auto'}} >
-            <Box marginBottom={4}>
-                <Typography
-                    sx={{
-                    textTransform: 'uppercase',
-                    fontWeight: 'medium',
-                    }}
-                    gutterBottom
-                    color={'primary'}
-                    align={'center'}
-                >
-                    Admin Community Management
-                </Typography>
-                <Box
-                    component={Typography}
-                    fontWeight={700}
-                    variant={'h3'}
-                    align={'center'}
-                    gutterBottom
-                >
-                    Manage your communities. 
-                </Box>
-                <Typography
-                    variant={'h6'}
-                    component={'p'}
-                    color={'textSecondary'}
-                    align={'center'}
-                >
-                    Here you can add, remove, or edit community information.
-                </Typography>
-            </Box>
-            
-            <DataTable
-                id = "community"
-                rows={communities}
-                columns={communityColumns}
-                hiddenColumns = {['id', 'country']}
+            <AskYesNoDialog 
+                {...confirmDeleteCommunityProps}
+                open={showConfirmDeleteCommunity}
             />
-              
-        </Card>
-    </Grid>
-    );
-}
+            <AddEditCommunityDialog
+                open={showAddCommunityForm}
+                handleClose={handleCloseCommunityForm}
+                onSubmitForm={communityToEdit? handleEditCommunitySubmit : handleAddCommunity}
+                initialCommunityState = {communityToEdit}
+            />
+        
+            <Card sx={{width: '100%', m:3, p: 3, display:'flex', flexDirection:'column', boxShadow:'none', overflowX:'auto'}} >
+                <Box marginBottom={4}>
+                    <Typography
+                        sx={{
+                        textTransform: 'uppercase',
+                        fontWeight: 'medium',
+                        }}
+                        gutterBottom
+                        color={'primary'}
+                        align={'center'}
+                    >
+                        Admin Community Management
+                    </Typography>
+                    <Box
+                        component={Typography}
+                        fontWeight={700}
+                        variant={'h3'}
+                        align={'center'}
+                        gutterBottom
+                    >
+                        Manage your communities. 
+                    </Box>
+                   
+                </Box>
 
+                {
+                    communities.length === 0 && hasLoaded &&
+                    <>
+                        <Divider width = '50%' sx = {{mx:'auto', mb:3}}/>
+                        <Typography
+                            variant={'subtitle1'} 
+                            component={'p'}
+                            color={'textSecondary'}
+                            align={'center'}
+                            gutterBottom
+                        >
+                            You don&apos;t have any communities assigned to your account.
+                        </Typography>
+                        <Typography variant={'subtitle2'} align={'center'}>
+                            Expected something different?{' '}
+                            <Link
+                                component={'a'}
+                                color={'primary'}
+                                href={"mailto:admin-representative@myhometown.org"}
+                                underline={'none'}
+                            >
+                                Contact a MyHometown Admin.
+                            </Link>
+                        </Typography>
+                    </>
+                    
+                }
 
-    
+                {
+                    (communities.length < 3 && user.role !== 'Admin') && communities.length > 0 && hasLoaded &&
+                    <Box display = 'flex' justifyContent = 'center' width='100%'>
 
+                        {communities.map((community, i) =>
+                            <Grid item xs={12} sm={6} md={4} key={i} mx = {2}>
+                                <Box
+                                    display={'block'}
+                                    width={'100%'}
+                                    height={'100%'}
+                                    sx={{
+                                        textDecoration: 'none',
+                                        transition: 'all .2s ease-in-out',
+                                        '&:hover': {
+                                        transform: `translateY(-${theme.spacing(1 / 2)})`,
+                                        },
 
+                                    }}
+                                >
+                                    <Box
+                                        component={Card}
+                                        width={'100%'}
+                                        height={'100%'}
+                                        data-aos={'fade-up'}
+                                        borderRadius={3}
+                                    >
+                                        <CardMedia
+                                            image={fakeCommunityImages[i]}
+                                            title={community.name}
+                                            sx={{
+                                                height: 140,
+                                            }}
+                                        />
+                                        <Box component={CardContent}>
+                                            <Box
+                                                component={Typography}
+                                                variant={'h6'}
+                                                gutterBottom
+                                                fontWeight={500}
+                                                align={'left'}
+                                            >
+                                                {community.name}
+                                            </Box>
+                                            <Typography
+                                                align={'left'}
+                                                variant={'body2'}
+                                                color="textSecondary"
+                                            >
+                                                Description
+                                            </Typography>
+                                        </Box>
+                                        <Box component={CardActions} justifyContent={'flex-end'}>
+                                            <Button size="small" 
+                                                href=''
+                                            >
+                                                Edit
+                                            </Button>
+                                        </Box>
+                                    </Box>
+                                </Box>
+                            </Grid>
+                        )}
+                    </Box>
 
+                }
 
-  {/* <DataTable
+                {
+                     hasLoaded && (communities.length >= 3 || user.role === "Admin") &&
+                    <DataTable
                         id = "community"
                         rows={communities}
-                        columns={communityColumns}
-                        onEdit={setCommunityToEdit}
-                        hiddenColumns = {['id', 'country']}
-                    /> */}
+                        columns={communityTableColumns}
+                        hiddenColumns = {['_id', 'country', 'state']}
+                    />
+                }
+
+                <RoleGuard requiredRole = 'admin' user = {user}>
+                    <Grid sx = {{mt:3}}>
+                        <Box display = 'flex' justifyContent = 'center' width='100%'>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() => setShowAddCommunityForm(true)}
+                            >
+                                Add a Community
+                            </Button>
+                        </Box>
+                    </Grid>
+                </RoleGuard>
+            </Card>
+        </Grid>
+    );
+}

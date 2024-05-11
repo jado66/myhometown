@@ -165,7 +165,7 @@ export default function Management() {
                 }
 
                 {
-                    cities.length < 3 && cities.length > 0 && hasLoaded &&
+                    (cities.length < 3 && user.role !== 'Admin') && cities.length > 0 && hasLoaded &&
                     <Box display = 'flex' justifyContent = 'center' width='100%'>
 
                         {cities.map((city, i) =>
@@ -231,12 +231,12 @@ export default function Management() {
                 }
 
                 {
-                     hasLoaded && cities.length >= 3 &&
+                     hasLoaded && (cities.length >= 3 || user.role === 'Admin') &&
                     <DataTable
                         id = "city"
                         rows={cities}
                         columns={cityColumns}
-                        hiddenColumns = {['id', 'country']}
+                        hiddenColumns = {['_id', 'country', 'state']}
                     />
                 }
 

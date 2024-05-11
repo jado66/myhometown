@@ -9,12 +9,12 @@ export default function useUsers() {
     useEffect(() => {
         async function fetchUsers() {
             try {
-            const res = await fetch('/api/database/users');
-            const data = await res.json();
-            setUsers(data.map((u) => ({ ...u, id: u._id })));
+              const res = await fetch('/api/database/users');
+              const data = await res.json();
+              setUsers(data.map((u) => ({ ...u, id: u._id })));
 
-            const selectOptions = data.map((user) => ({ value: user._id, label: user.name, data: user }));
-            setUserSelectOptions(selectOptions);
+              const selectOptions = data.map((user) => ({ value: user._id, label: user.name, data: user }));
+              setUserSelectOptions(selectOptions);
             
             } catch (e) {
             console.error('Error occurred while fetching users', e);

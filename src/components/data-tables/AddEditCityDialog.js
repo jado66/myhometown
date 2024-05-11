@@ -1,8 +1,9 @@
-import { Dialog, DialogTitle, TextField, DialogContent, DialogActions, Button, Grid } from '@mui/material';
+import { Dialog, DialogTitle, TextField, DialogContent, DialogActions, Button, Grid, FormControl, InputLabel, Divider, Box } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import UserSelect from './selects/UserSelect';
 import StateSelect from './StateSelect';
 import { toast } from 'react-toastify';
+import CommunitySelect from './selects/CommunitySelect';
 
 const initialState = {
     name: '',
@@ -71,21 +72,27 @@ const AddEditCityDialog = ({ open, handleClose, onSubmitForm, initialCityState }
         handleClose();
     };
 
-    const handleSelectChange = (selectedUsers) => {
-
+    const handleUserSelectChange = (selectedUsers) => {
         setCity({
              ...city, 
              cityOwners: selectedUsers.map(user => user.data)
         });
     };
 
+    const handleCommunitySelectChange = (selectedCommunities) => {
+        setCity({
+            ...city,
+            communities: selectedCommunities.map(community => community.data)
+        });
+    };
+
     const title = initialCityState ? "Edit City Details" : "Add City Details";
 
     return (
-        <Dialog open={open} onClose={handleClose}>
+        <Dialog open={open} onClose={handleClose} >
             <DialogTitle>{title}</DialogTitle>
             <form onSubmit={handleSubmit}>
-                <DialogContent>
+                <DialogContent sx = {{height: 700}}>
                     <TextField
                         sx = {{mt:1}}
                         autoFocus
@@ -99,7 +106,7 @@ const AddEditCityDialog = ({ open, handleClose, onSubmitForm, initialCityState }
                     />
                     
                     <StateSelect
-                        sx = {{my:1}}
+                        sx = {{mt:1, mb:0}}
                         margin="dense"
                         id="state"
                         label="State"
@@ -120,51 +127,70 @@ const AddEditCityDialog = ({ open, handleClose, onSubmitForm, initialCityState }
                         onChange={(e) => setCity({ ...city, country: e.target.value })}
                     /> */}
 
-                    <UserSelect 
-                        label="City Owners"
-                        value={
-                            city.cityOwners.length > 0 
-                                ? city.cityOwners.map(user => ({ value: user._id, label: user.name, data: user}))
-                                : []
-                        }
-                        onChange={handleSelectChange}
-                    />
-                    {/* Add similar TextFields for other attributes... */}
+                    <FormControl fullWidth sx = {{mt:-1, mb:3}}>
+                        <InputLabel>City Owners</InputLabel>
+                    </FormControl>
+                    
+                    <FormControl fullWidth sx = {{mt:1.5}}>
+                        <UserSelect 
+                            label="City Owners"
+                            value={
+                                city.cityOwners.length > 0 
+                                    ? city.cityOwners.map(user => ({ value: user._id, label: user.name, data: user}))
+                                    : []
+                            }
+                            onChange={handleUserSelectChange}
+                        />
+                    </FormControl>
 
-                    {initialCityState && <Grid container >
-                       
-                            <Button 
-                                variant="outlined" 
-                                size="small" 
-                                color="secondary"
-                                sx = {{color: "grey",marginTop: 1}}
-                                href={`/${city.state.toLowerCase()}/${city.name.toLowerCase().replaceAll(/\s/g, "-")}`}
-                            >
-                                View Landing Page
-                            </Button>
-                        
-                        
-                            <Button 
-                                variant="contained" 
-                                size="small" 
-                                color="primary"
-                                sx = {{marginTop: 1, marginLeft: 1}}
-                                href={`/edit/${city.state.toLowerCase()}/${city.name.toLowerCase().replaceAll(/\s/g, "-")}`}
-                            >
-                                Edit Landing Page
-                            </Button>
-                        
-                    </Grid>}
-
+                    <FormControl fullWidth sx = {{mt:-1, mb:3}}>
+                        <InputLabel>Linked Communities</InputLabel>
+                    </FormControl>
+                    
+                    <FormControl fullWidth sx = {{mt:1.5}}>
+                        <CommunitySelect 
+                            value={
+                                city?.communities?.length > 0 
+                                    ? city.communities.map(community => ({ value: community._id, label: community.name, data: community}))
+                                    : []
+                            }
+                            onChange={handleCommunitySelectChange}
+                        />
+                    </FormControl>
                     
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose} color="primary">
-                        Cancel
-                    </Button>
-                    <Button type="submit" color="primary">
-                        {initialCityState ? "Save" : "Add"}
-                    </Button>
+                <DialogActions sx = {{
+                    display:'flex',
+                    justifyContent:'space-between',
+                }}>
+                    <Box>
+                        {initialCityState && 
+                            <>
+                                <Button 
+                                    onClick={handleClose} 
+                                    color="primary"
+                                    href={`/${city.state.toLowerCase()}/${city.name.toLowerCase().replaceAll(/\s/g, "-")}`}
+                                >
+                                    View Page
+                                </Button>
+                                <Button 
+                                    type="submit" 
+                                    color="primary" 
+                                    href={`/edit/${city.state.toLowerCase()}/${city.name.toLowerCase().replaceAll(/\s/g, "-")}`}
+                                >
+                                    Edit Landing Page
+                                </Button>
+                            </>
+                        }
+                    </Box>
+                    <Box>
+                        <Button onClick={handleClose} color="primary">
+                            Cancel
+                        </Button>
+                        <Button type="submit" color="primary">
+                            {initialCityState ? "Save" : "Add"}
+                        </Button>
+                    </Box>
                 </DialogActions>
             </form>
         </Dialog>

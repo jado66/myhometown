@@ -15,6 +15,7 @@ import { Container } from '@mui/material';
 import RoleGuard from '@/guards/role-guard';
 import { useUser } from '@/hooks/use-user';
 import Loading from '@/components/util/Loading';
+import NextLink from 'next/link';
 
 const AdminDashboardPages = () => {
   const theme = useTheme();
@@ -125,12 +126,10 @@ const AdminDashboardPages = () => {
                 // },
                 
               ].map((item, i) => (
-                item.hasOwnProperty('requiredRole') ?
-                <RoleGuard requiredRole={item.requiredRole} key={i} user = {user}>
-                  <AdminDashboardCard item={item} i={i} />
-                </RoleGuard>
-                :
-                <AdminDashboardCard item={item} i={i} />
+                
+                  <RoleGuard requiredRole={item.requiredRole} user = {user}>
+                    <AdminDashboardCard item={item} i={i} />
+                  </RoleGuard>
               ))}
              
             </Grid>
@@ -150,55 +149,57 @@ const AdminDashboardCard = ({ item, i }) => {
   
   return (
     <Grid item xs={12} sm={6} md={4} key={i}>
-    <Box
-      display={'block'}
-      width={'100%'}
-      height={'100%'}
-      sx={{
-        textDecoration: 'none',
-        transition: 'all .2s ease-in-out',
-        '&:hover': {
-          transform: `translateY(-${theme.spacing(1 / 2)})`,
-        },
-      }}
-    >
-      <Box
-        component={Card}
-        width={'100%'}
-        height={'100%'}
-        data-aos={'fade-up'}
-        borderRadius={3}
-      >
-        <CardMedia
-          image={item.media}
-          title={item.title}
+      <NextLink href={item.href} key={i} style={{textDecoration:'none'}}>
+        <Box
+          display={'block'}
+          width={'100%'}
+          height={'100%'}
           sx={{
-            height: 140,
+            textDecoration: 'none',
+            transition: 'all .2s ease-in-out',
+            '&:hover': {
+              transform: `translateY(-${theme.spacing(1 / 2)})`,
+            },
           }}
-        />
-        <Box component={CardContent}>
+        >
           <Box
-            component={Typography}
-            variant={'h6'}
-            gutterBottom
-            fontWeight={500}
-            align={'left'}
+            component={Card}
+            width={'100%'}
+            height={'100%'}
+            data-aos={'fade-up'}
+            borderRadius={3}
           >
-            {item.title}
+            <CardMedia
+              image={item.media}
+              title={item.title}
+              sx={{
+                height: 140,
+              }}
+            />
+            <Box component={CardContent}>
+              <Box
+                component={Typography}
+                variant={'h6'}
+                gutterBottom
+                fontWeight={500}
+                align={'left'}
+              >
+                {item.title}
+              </Box>
+              <Typography
+                align={'left'}
+                variant={'body2'}
+                color="textSecondary"
+              >
+                {item.subtitle}
+              </Typography>
+            </Box>
+            <Box component={CardActions} justifyContent={'flex-end'}>
+              <Button size="small" href={item.href}>Manage</Button>
+            </Box>
           </Box>
-          <Typography
-            align={'left'}
-            variant={'body2'}
-            color="textSecondary"
-          >
-            {item.subtitle}
-          </Typography>
         </Box>
-        <Box component={CardActions} justifyContent={'flex-end'}>
-          <Button size="small" href={item.href}>Manage</Button>
-        </Box>
-      </Box>
-    </Box>
+      </NextLink>
     </Grid>
   )
 }
