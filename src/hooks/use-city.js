@@ -39,7 +39,7 @@ export default function useCity(cityQuery, stateQuery) {
           }
           
           const data = await res.json();
-          setCity(data);
+          setCity(data[0]);
           setHasLoaded(true);
         } catch (e) {
           console.error('Error occurred while fetching city', e);

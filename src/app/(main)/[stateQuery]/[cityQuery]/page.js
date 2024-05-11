@@ -143,6 +143,7 @@ const Page = ({ params }) =>{
 
 
                 <Grid container spacing={2} paddingY = {3} >
+                
                 {
                     city.communities && city.communities.map((community, index) => 
                         <CommunityCard
@@ -180,7 +181,7 @@ const CommunityCard = ({city, community, gridProps, index}) => {
 
     const url = `/images/community-${index}.jfif`
 
-    const {name, id, pictureHref} = community
+    const {name, _id, pictureHref} = community
 
     const href = `${city}/${name.toLowerCase().replace(' ','-')}`
 

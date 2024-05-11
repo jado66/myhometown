@@ -117,10 +117,10 @@ const AddEditCommunityDialog = ({ open, handleClose, onSubmitForm, initialCommun
                         autoFocus
                         margin="dense"
                         id="name"
-                        label="City Name"
+                        label="City"
                         type="text"
                         fullWidth
-                        value={community.city || " Not Connected to a City"}
+                        value={community.city.name || " Not Connected to a City"}
                         disabled
                         InputProps={{
                             startAdornment: (
