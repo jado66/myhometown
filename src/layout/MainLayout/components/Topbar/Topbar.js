@@ -12,11 +12,11 @@ import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import Divider from '@mui/material/Divider';
 import MyHometownLogo from '@/assets/svg/logos/MyHometown';
-import useCities from '@/hooks/use-cities';
+import useManageCities from '@/hooks/use-manage-cities';
 
-const Topbar = () => {
+const Topbar = (onSidebarOpen) => {
 
-  const { groupedCityStrings } = useCities(null, true);
+  const { groupedCityStrings } = useManageCities(null, true);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [search, setSearch] = useState("");
@@ -47,14 +47,16 @@ const Topbar = () => {
   );  
 
   const theme = useTheme();
+
   return (
     <Box
       display={'flex'}
       justifyContent={'space-between'}
       alignItems={'center'}
       width={'100%'}
+      sx = {{position:'position'}}
     >
-      <Box display={'flex'} alignItems={'center'}>
+      <Box display={'flex'} alignItems={'center'} sx = {{flexGrow:1, justifyContent:'space-between'}}>
         
         <Box
           display={'flex'}
@@ -65,12 +67,19 @@ const Topbar = () => {
           title="myhometown"
           height={{ xs: 28, md: 32 }}
           width={45}
+          sx = {{position:'relative'}}
         >
           <MyHometownLogo height='100%' width='100%' />
         </Box>
+        <Box marginRight={{ xs: 1, sm: 2 }} sx = {{display: { xs: 'flex', md: 'none' }}}>
+          <IconButton aria-label="Menu" onClick = {onSidebarOpen}>
+            <MenuIcon />
+          </IconButton>
+        </Box>
       </Box>
+
+
       <Box display="flex" alignItems={'center'}>
-      
         <Box sx={{ display: { xs: 'none', md: 'flex' } }} alignItems={'center'}>
           <Box>
             <Link underline="none" component="a" href="/" color="textPrimary">

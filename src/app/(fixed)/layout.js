@@ -1,13 +1,15 @@
 import ProviderWrapper from "@/contexts/ProviderWrapper";
+import AuthGuard from "@/guards/auth-guard";
 import { FixedLayout } from "@/layout";
-import { withPageAuthRequired } from "@auth0/nextjs-auth0";
 
-export default withPageAuthRequired(function Layout({ children }){
+export default function Layout({ children }){
   return (
     <ProviderWrapper>
-      <FixedLayout>
-        {children}
-      </FixedLayout>
+      <AuthGuard>
+        <FixedLayout>
+            {children}
+        </FixedLayout>
+      </AuthGuard>
     </ProviderWrapper>
   );
-})
+}

@@ -42,7 +42,7 @@ const AddEditCommunityDialog = ({ open, handleClose, onSubmitForm, initialCommun
             return false;
         }
 
-        // // Community must have a community owner
+        // // Community must have a Community Admin
         // if (community.communityOwners.length === 0) {
         //     toast.error("Community must have at least one owner");
         //     return false;
@@ -120,7 +120,7 @@ const AddEditCommunityDialog = ({ open, handleClose, onSubmitForm, initialCommun
                         label="City"
                         type="text"
                         fullWidth
-                        value={community.city.name || " Not Connected to a City"}
+                        value={community.city?.name || " Not Connected to a City"}
                         disabled
                         InputProps={{
                             startAdornment: (
@@ -143,12 +143,12 @@ const AddEditCommunityDialog = ({ open, handleClose, onSubmitForm, initialCommun
                     /> */}
 
                     <FormControl fullWidth sx = {{mt:-1, mb:3}}>
-                        <InputLabel>Community Owners</InputLabel>
+                        <InputLabel>Community Admins</InputLabel>
                     </FormControl>
                     
                     <FormControl fullWidth sx = {{mt:1.5}}>
                         <UserSelect 
-                            label="Community Owners"
+                            label="Community Admins"
                             value={
                                 community.communityOwners.length > 0 
                                     ? community.communityOwners.map(user => ({ value: user._id, label: user.name, data: user}))
@@ -171,7 +171,7 @@ const AddEditCommunityDialog = ({ open, handleClose, onSubmitForm, initialCommun
                                 <Button 
                                     onClick={handleClose} 
                                     color="primary"
-                                    href={`/${community.city.state.toLowerCase()}/${community.name.toLowerCase().replaceAll(/\s/g, "-")}`}
+                                    href={href}
                                 >
                                     View Page
                                 </Button>

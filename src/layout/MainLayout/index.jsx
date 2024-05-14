@@ -54,7 +54,9 @@ const MainLayout = ({
           elevation={1}
         >
           <Container paddingY={{ xs: 1 / 2, sm: 1 }}>
-            <Topbar/>
+            <Topbar
+              onSidebarOpen = {handleSidebarOpen}
+            />
           </Container>
         </AppBar>
       </HideOnScroll>

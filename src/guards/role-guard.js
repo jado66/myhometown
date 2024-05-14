@@ -15,7 +15,7 @@ const RoleGuard = ({ requiredRole, children, user }) => {
         // Admin has access to everything
         return children;
     } else if (userRole === 'city-owner') {
-        // City owner has access to city-owner and community-owner
+        // City Admin has access to city-owner and community-owner
         if (requiredRole === 'city-owner' || requiredRole === 'community-owner') {
             return children;
         } else {
@@ -23,7 +23,7 @@ const RoleGuard = ({ requiredRole, children, user }) => {
             return null;
         }
     } else if (userRole === 'community-owner') {
-        // Community owner has access to community-owner
+        // Community Admin has access to community-owner
         if (requiredRole === 'community-owner') {
             return children;
         } else {

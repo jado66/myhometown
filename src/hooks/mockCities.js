@@ -18,7 +18,7 @@ export const mockCities = [
         cityOwners: [
             { id: 1, name: 'Jadon Erwin', email: 'jd@japps.dev', contactNumber: '123-456-7890' },
             { id: 2, name: 'Jerry Craven', email: 'owner2@example.com', contactNumber: '987-654-3210' },
-            // more city owners...
+            // more City Admins...
         ],
         communities: [
             {
@@ -51,7 +51,7 @@ export const mockCities = [
         cityOwners: [
             { name: 'Owner 3', email: 'owner3@example.com', contactNumber: '111-222-3333' },
             { name: 'Owner 4', email: 'owner4@example.com', contactNumber: '444-555-6666' },
-            // more city owners...
+            // more City Admins...
         ],
         communities: [
             {
@@ -83,7 +83,7 @@ export const mockCities = [
         cityOwners: [
             {id: 1, name: "Jadon Erwin", email: "jd@japps.dev", contactNumber: "123-456-7890"},
             { name: 'Owner 6', email: 'owner6@example.com', contactNumber: '777-888-9999' },
-            // more city owners...
+            // more City Admins...
         ]
     },
     {
@@ -105,7 +105,7 @@ export const mockCities = [
         cityOwners: [
             { name: 'Owner 7', email: 'owner7@example.com', contactNumber: '777-777-7777' },
             { name: 'Owner 8', email: 'owner8@example.com', contactNumber: '888-888-8888' },
-            // more city owners...
+            // more City Admins...
         ]
     },
     {
@@ -127,7 +127,7 @@ export const mockCities = [
         cityOwners: [
             { name: 'Owner 9', email: 'owner9@example.com', contactNumber: '999-999-9999' },
             { name: 'Owner 10', email: 'owner10@example.com', contactNumber: '100-200-3000' },
-            // more city owners...
+            // more City Admins...
         ]
     },
     {
@@ -149,7 +149,7 @@ export const mockCities = [
         cityOwners: [
             { name: 'Owner 11', email: 'owner11@example.com', contactNumber: '111-222-3333' },
             { name: 'Owner 12', email: 'owner12@example.com', contactNumber: '444-555-6666' },
-            // more city owners...
+            // more City Admins...
         ]
     },
     {

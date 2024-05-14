@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 
-export default function useCities(userfilter, forDropDownCityMenu = false) {
+export default function useManageCities(userfilter, forDropDownCityMenu = false) {
     const [groupedCityStrings, setGroupedCityStrings] = useState({});
     const [cities, setCities] = useState([]);
     const [hasLoaded, setHasLoaded] = useState(false);

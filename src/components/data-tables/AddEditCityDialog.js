@@ -42,7 +42,7 @@ const AddEditCityDialog = ({ open, handleClose, onSubmitForm, initialCityState }
             return false;
         }
 
-        // // City must have a city owner
+        // // City must have a City Admin
         // if (city.cityOwners.length === 0) {
         //     toast.error("City must have at least one owner");
         //     return false;
@@ -128,12 +128,12 @@ const AddEditCityDialog = ({ open, handleClose, onSubmitForm, initialCityState }
                     /> */}
 
                     <FormControl fullWidth sx = {{mt:-1, mb:3}}>
-                        <InputLabel>City Owners</InputLabel>
+                        <InputLabel>City Admins</InputLabel>
                     </FormControl>
                     
                     <FormControl fullWidth sx = {{mt:1.5}}>
                         <UserSelect 
-                            label="City Owners"
+                            label="City Admins"
                             value={
                                 city.cityOwners.length > 0 
                                     ? city.cityOwners.map(user => ({ value: user._id, label: user.name, data: user}))

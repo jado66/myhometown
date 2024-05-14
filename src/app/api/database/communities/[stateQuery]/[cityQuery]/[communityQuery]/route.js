@@ -8,8 +8,8 @@ export async function GET(req, { params }) {
     // Prepare the query using community city and state:
     let query = {
         name: communityQuery.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-        state: stateQuery.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-        city: cityQuery.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+        "city.name": cityQuery.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+        "city.state": stateQuery.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
     };
 
      // Connect to mongodb and fetch communities

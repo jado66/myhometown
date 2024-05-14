@@ -10,31 +10,31 @@ import { EventsCalendar } from '@/components/events/EventsCalendar';
 import { EventDialog } from '@/components/events/EventDialog';
 import { EventDialog_NewEdit } from '@/components/events/EventDialog_NewEdit';
 import useEvents from '@/hooks/use-events';
-import useCity from '@/hooks/use-city';
+import useCommunity from '@/hooks/use-community';
 import Loading from '@/components/util/Loading';
-import { useEditCity } from '@/hooks/use-edit';
+import { useEditCommunity } from '@/hooks/use-edit-community';
 
-const cityDataContentTemplate = {
+const communityDataContentTemplate = {
     paragraph1Text: faker.lorem.paragraph(),
     paragraph2Text: faker.lorem.paragraph()
 }
 
 const Page = ({ params }) =>{
 
-    const { stateQuery, cityQuery } = params
+    const { stateQuery, communityQuery } = params
 
-    const {city, hasLoaded} = useCity(cityQuery, stateQuery)
+    const {community, hasLoaded} = useCommunity(communityQuery, stateQuery)
 
-    const {cityData, setCityData} = useEditCity()
+    const {communityData, setCommunityData} = useEditCommunity()
 
     useEffect(() => {
-        if (city){
-            setCityData({
-                content:{...cityDataContentTemplate},
-                ...city
+        if (community){
+            setCommunityData({
+                content:{...communityDataContentTemplate},
+                ...community
             })
         }
-    }, [city])
+    }, [community])
 
     const paragraph1Ref = useRef()
     const paragraph2Ref = useRef()
@@ -73,19 +73,19 @@ const Page = ({ params }) =>{
         const { value } = e.target
 
         if(name === 'paragraph1'){
-            setCityData({
-                ...cityData,
+            setCommunityData({
+                ...communityData,
                 content:{
-                    ...cityData.content,
+                    ...communityData.content,
                     paragraph1Text:value
                 }
             })
 
         }else{
-            setCityData({
-                ...cityData,
+            setCommunityData({
+                ...communityData,
                 content:{
-                    ...cityData.content,
+                    ...communityData.content,
                     paragraph2Text:value
                 }
             })
@@ -100,10 +100,10 @@ const Page = ({ params }) =>{
         )
     }
 
-    if (hasLoaded && !city){
+    if (hasLoaded && !community){
         return (
             <div style = {{height:'100vh', padding: '5em', justifyContent:'center', display:'flex'}}>
-                <Typography variant="h2" align="center" sx = {{my:3}}>City not found</Typography>
+                <Typography variant="h2" align="center" sx = {{my:3}}>Community not found</Typography>
             </div>
             )
     }
@@ -113,7 +113,7 @@ const Page = ({ params }) =>{
             
             <Container  sx = {{paddingTop:3, marginBottom:2}}>
                 <Typography variant="h2" align="center" sx = {{textTransform:"capitalize"}}>
-                    MyHometown {cityQuery.replaceAll('-',' ')} - {stateQuery.replaceAll('-',' ')}
+                    MyHometown {communityQuery.replaceAll('-',' ')} - {stateQuery.replaceAll('-',' ')}
                 </Typography>
                 <GallerySLC />
                 
@@ -125,7 +125,7 @@ const Page = ({ params }) =>{
 
                         <ContentEditable
                            innerRef={paragraph1Ref}
-                           html={cityData.content.paragraph1Text}
+                           html={communityData.content.paragraph1Text}
                            disabled={false}
                            onChange={(event) => handleParagraphChange(event, 'paragraph1')}
                            tagName="p"
@@ -134,7 +134,7 @@ const Page = ({ params }) =>{
                         <Divider/>
                         <ContentEditable
                               innerRef={paragraph2Ref}
-                              html={cityData.content.paragraph2Text}
+                              html={communityData.content.paragraph2Text}
                               disabled={false}
                               onChange={(event) => handleParagraphChange(event, 'paragraph2')}
                               tagName="p"

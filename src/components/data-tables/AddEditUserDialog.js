@@ -91,8 +91,8 @@ const AddEditUserDialog = ({ open, handleClose, onSubmitForm, initialUserState }
 
                         <RadioGroup row aria-label="role" id = 'role' name="role" value={user.role} onChange={(e) => setUser({ ...user, role: e.target.value })}>
                             <FormControlLabel value="Admin" control={<Radio />} label="Admin" />
-                            <FormControlLabel value="City Owner" control={<Radio />} label="City Owner" />
-                            <FormControlLabel value="Community Owner" control={<Radio />} label="Community Owner" />
+                            <FormControlLabel value="City Admin" control={<Radio />} label="City Admin" />
+                            <FormControlLabel value="Community Admin" control={<Radio />} label="Community Admin" />
                         </RadioGroup>
                     </FormControl>
 

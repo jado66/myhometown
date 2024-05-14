@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import Card from '@mui/material/Card';
-import useCities from '@/hooks/use-cities';
+import useManageCities from '@/hooks/use-manage-cities';
 import AskYesNoDialog from '@/components/util/AskYesNoDialog';
 import AddEditCityDialog from '@/components/data-tables/AddEditCityDialog';
 import { DataTable } from '@/components/data-tables/DataTable';
@@ -25,7 +25,7 @@ export default function Management() {
     // Initial state for cityToEdit is null.
     const [cityToEdit, setCityToEdit] = useState(null);
 
-    const { cities, handleAddCity, handleEditCity, handleDeleteCity, hasLoaded } = useCities(user);
+    const { cities, handleAddCity, handleEditCity, handleDeleteCity, hasLoaded } = useManageCities(user);
     const [showAddCityForm, setShowAddCityForm] = useState(false);
     const [showConfirmDeleteCity, setShowConfirmDeleteCity] = useState(false);
     const [confirmDeleteCityProps, setConfirmDeleteCityProps] = useState({});

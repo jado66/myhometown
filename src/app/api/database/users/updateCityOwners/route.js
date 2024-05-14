@@ -37,7 +37,7 @@ export async function POST(req, res) {
     }
   }
 
-  return new Response(JSON.stringify({message:`Successfully updated city owners`}),{status: 200});
+  return new Response(JSON.stringify({message:`Successfully updated City Admins`}),{status: 200});
 }
   
   export async function DELETE(req, res) {
