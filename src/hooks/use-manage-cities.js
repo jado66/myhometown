@@ -28,7 +28,12 @@ export default function useManageCities(userfilter, forDropDownCityMenu = false)
       async function fetchAllCities() {
         try {
           const res = await fetch(`/api/database/cities`);
-          const data = await res.json();
+          let data = await res.json();
+
+          if (data.length === 0){
+
+          }
+
           setCities(data);
         
         } catch (e) {

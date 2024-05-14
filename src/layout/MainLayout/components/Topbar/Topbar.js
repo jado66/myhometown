@@ -14,7 +14,7 @@ import Divider from '@mui/material/Divider';
 import MyHometownLogo from '@/assets/svg/logos/MyHometown';
 import useManageCities from '@/hooks/use-manage-cities';
 
-const Topbar = (onSidebarOpen) => {
+const Topbar = ({onSidebarOpen}) => {
 
   const { groupedCityStrings } = useManageCities(null, true);
 

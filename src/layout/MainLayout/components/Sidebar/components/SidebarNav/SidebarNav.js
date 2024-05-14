@@ -1,20 +1,41 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Link from '@mui/material/Link';
+import NextLink from 'next/link';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import { ExpandLess } from '@mui/icons-material';
+import useManageCities from '@/hooks/use-manage-cities';
 
-const SidebarNav = ({ pages, onClose }) => {
+const SidebarNav = ({  onClose }) => {
+
+  const [expandCities, setExpandCities] = useState(false)
+
+  const toggleExpandCities = () => setExpandCities(p => !p)
+  const { groupedCityStrings } = useManageCities(null, true);
+
   const theme = useTheme();
   const [activeLink, setActiveLink] = useState('');
   useEffect(() => {
     setActiveLink(window && window.location ? window.location.pathname : '');
   }, []);
+
+  let filteredGroupedCityStrings = Object.fromEntries(
+    Object.entries(groupedCityStrings).map(([state, cities]) => {
+      return [
+        state,
+        cities
+          .sort()  
+      ];
+    }).filter(([state, cities]) => cities.length > 0)
+  );  
 
   return (
     <Box>
@@ -29,55 +50,113 @@ const SidebarNav = ({ pages, onClose }) => {
       </Box>
       <Box paddingX={2} paddingBottom={2}>
         <Box>
-          {pages.map((item, i) => (
-            <Box key={i} marginBottom={4}>
+         
+          <Box marginBottom={4}>
+            <NextLink href = "/"  style = {{textDecoration:'none', color: '#686868'}}>
               <Typography
-                variant="caption"
+                variant="h5"
                 sx={{
                   fontWeight: 700,
-                  textTransform: 'uppercase',
+                  marginBottom: 1,
+                  display: 'block',
+                  textDecoration:'none'
+                }}
+              >
+                Home
+              </Typography>
+            </NextLink>
+          </Box>
+          <Box marginBottom={4}>
+            <Button 
+              variant='link'
+              onClick={toggleExpandCities}
+              sx = {{ml:0, pl:0}}
+            >
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  marginBottom: 1,
+                  display: 'flex',
+                  alignItems:'flex-start',
+                
+                }}
+               
+              >
+                Cities
+                {
+                  expandCities?
+                  <ExpandLess/>
+                  :
+                  <ExpandMore/>
+                }
+              </Typography>
+            </Button>
+            {
+              expandCities && 
+              <div style={{marginLeft:'2em'}}>
+                 {Object.entries(filteredGroupedCityStrings).map(([state, cities], index) => (
+                  <React.Fragment key={state}>
+                    {index > 0 && <Divider /> }
+                    {/* <Typography variant="h6" color="textSecondary">
+                      {state}
+                    </Typography> */}
+                    {cities.map(city => (
+                      <NextLink 
+                        key={city} 
+                        href={`/${state.toLowerCase()}/${city.toLowerCase().replaceAll(' ', '-')}`} 
+                        style={{textDecoration:'none', color: '#686868'}}
+                      >
+                        <Typography
+                          variant="h5"
+                          sx={{
+                            fontWeight: 700,
+                            marginBottom: 1,
+                            display: 'block',
+                          }}
+                        >
+                          {city}
+                        </Typography>
+                      </NextLink>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </div>
+            }
+          </Box>
+          <Box marginBottom={4}>
+            <NextLink href = "/about-us"  style = {{textDecoration:'none', color: '#686868'}}>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  marginBottom: 1,
+                  display: 'block',
+                  textDecoration:'none'
+                }}
+              >
+                About Us
+              </Typography>
+            </NextLink>
+          </Box>
+          <Box marginBottom={4}>
+            <NextLink href = "/donate" style = {{textDecoration:'none', color: '#686868'}}>
+
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
                   marginBottom: 1,
                   display: 'block',
                 }}
               >
-                {item.title}
+                Donate
               </Typography>
-              <Grid container spacing={1}>
-                {item.pages.map((p, i) => (
-                  <Grid item xs={6} key={i}>
-                    <Link
-                      variant="body2"
-                      component={'a'}
-                      href={p.href}
-                      color={activeLink === p.href ? 'primary' : 'textPrimary'}
-                      underline={'none'}
-                      sx={{
-                        fontWeight: activeLink === p.href ? 600 : 400,
-                        '&:hover': {
-                          textDecoration: 'none',
-                          color: theme.palette.primary.dark,
-                        },
-                      }}
-                      onClick={() => onClose()}
-                    >
-                      {p.title}
-                    </Link>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-          ))}
+            </NextLink>
+          </Box>
+        
         </Box>
-        <Box>
-          <Button
-            variant="outlined"
-            fullWidth
-            component="a"
-            href="/docs-introduction"
-          >
-            Documentation
-          </Button>
-        </Box>
+       
         
       </Box>
     </Box>
