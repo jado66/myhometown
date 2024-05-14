@@ -12,7 +12,7 @@ import { EventDialog_NewEdit } from '@/components/events/EventDialog_NewEdit';
 import useEvents from '@/hooks/use-events';
 import useCommunity from '@/hooks/use-community';
 import Loading from '@/components/util/Loading';
-import { useEditCommunity } from '@/hooks/use-edit-community';
+import { useEdit } from '@/hooks/use-edit';
 
 const communityDataContentTemplate = {
     paragraph1Text: faker.lorem.paragraph(),
@@ -25,7 +25,7 @@ const Page = ({ params }) =>{
 
     const {community, hasLoaded} = useCommunity(communityQuery, stateQuery)
 
-    const {communityData, setCommunityData} = useEditCommunity()
+    const {data: communityData, setData: setCommunityData} = useEdit()
 
     useEffect(() => {
         if (community){
