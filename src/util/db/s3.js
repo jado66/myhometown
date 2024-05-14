@@ -1,8 +1,8 @@
 import AWS from 'aws-sdk';
 
 // Check the AWS Credentials
-if (!process.env.AWS_ACCESS_KEY) {
-    throw new Error('Define the AWS_ACCESS_KEY environmental variable');
+if (!process.env.AWS_PUBLIC_ACCESS_KEY) {
+    throw new Error('Define the AWS_PUBLIC_ACCESS_KEY environmental variable');
 }
 if (!process.env.AWS_SECRET_ACCESS_KEY) {
     throw new Error('Define the AWS_SECRET_ACCESS_KEY environmental variable');
@@ -22,7 +22,7 @@ export function connectToS3Bucket() {
     }
 
     AWS.config.update({
-        accessKeyId: process.env.AWS_ACCESS_KEY,
+        accessKeyId: process.env.AWS_PUBLIC_ACCESS_KEY,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
         region: process.env.AWS_REGION
     });

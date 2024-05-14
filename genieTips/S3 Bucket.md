@@ -38,7 +38,7 @@ import AWS from 'aws-sdk';
 
 // configure the AWS environment
 AWS.config.update({
-    accessKeyId: process.env.AWS_ACCESS_KEY,
+    accessKeyId: process.env.AWS_PUBLIC_ACCESS_KEY,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     region: process.env.REGION
 });
@@ -77,7 +77,7 @@ export default async (req, res) => {
 }
 This function reads the image data from the request body and uploads it to your S3 bucket. The ACL option is set to 'public-read' so that the file is accessible by URL after upload.
 
-You'll need to provide your access keys and bucket names as environment variables (AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, REGION and BUCKET_NAME). Never include these directly in your code.
+You'll need to provide your access keys and bucket names as environment variables (AWS_PUBLIC_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, REGION and BUCKET_NAME). Never include these directly in your code.
 
 Please note that real-world applications require additional error handling, validation, and security measures not present in this simplified example.
 
