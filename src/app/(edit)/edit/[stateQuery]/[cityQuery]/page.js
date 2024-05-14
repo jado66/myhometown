@@ -12,7 +12,7 @@ import { EventDialog_NewEdit } from '@/components/events/EventDialog_NewEdit';
 import useEvents from '@/hooks/use-events';
 import useCity from '@/hooks/use-city';
 import Loading from '@/components/util/Loading';
-import { useEditCity } from '@/hooks/use-edit';
+import { useEdit } from '@/hooks/use-edit';
 
 const cityDataContentTemplate = {
     paragraph1Text: faker.lorem.paragraph(),
@@ -25,7 +25,7 @@ const Page = ({ params }) =>{
 
     const {city, hasLoaded} = useCity(cityQuery, stateQuery)
 
-    const {cityData, setCityData} = useEditCity()
+    const {data: cityData, setData: setCityData} = useEdit()
 
     useEffect(() => {
         if (city){

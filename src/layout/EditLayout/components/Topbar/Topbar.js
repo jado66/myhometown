@@ -5,11 +5,11 @@ import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import MyHometownLogo from '@/assets/svg/logos/MyHometown';
-import { useEditCity } from '@/hooks/use-edit';
+import { useEdit } from '@/hooks/use-edit';
 
 const Topbar = () => {
 
-  const { saveCityData, isDirty } = useEditCity();
+  const { saveData: saveCityData, isDirty } = useEdit();
 
   return (
     <Box
