@@ -92,7 +92,7 @@ const Page = ({ params }) =>{
                 <GallerySLC />
                 
                 <Grid container spacing={2} paddingY = {3}>
-                    <Grid item xs={6}>
+                    <Grid item xs={12} sm = {6} >
                         <Typography variant="h4"  align="center">
                             Description
                         </Typography>
@@ -115,7 +115,7 @@ const Page = ({ params }) =>{
                             name="paragraph2"
                         />
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid item xs={12} sm = {6}>
                         <Card sx = {{height:"300px", alignContent:"center", justifyContent:"center"}}>
                             <Typography 
                                 variant="h4" 
@@ -150,7 +150,7 @@ const Page = ({ params }) =>{
                             key = {community.name}
                             community={community}
                             city = {cityQuery}
-                            gridProps = {{sm:communityCardSize}}
+                            gridProps = {{xs: 12, sm:communityCardSize}}
 
                             index = {index}
                         />
@@ -189,6 +189,7 @@ const CommunityCard = ({city, community, gridProps, index}) => {
         <Grid 
             item
             sm = {gridProps.sm}
+            xs = {gridProps.xs}
         >    
             <Link
                 component={NextLink}
