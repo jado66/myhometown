@@ -9,7 +9,7 @@ const Sidebar = (props) => {
 
   return (
     <Drawer
-      anchor="left"
+      anchor="top"
       onClose={() => onClose()}
       open={open}
       variant={variant}
