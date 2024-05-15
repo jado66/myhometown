@@ -9,7 +9,7 @@ import { useEdit } from '@/hooks/use-edit';
 
 const Topbar = () => {
 
-  const { saveData: saveCityData, isDirty } = useEdit();
+  const { saveData, isDirty } = useEdit();
 
   return (
     <Box
@@ -35,7 +35,7 @@ const Topbar = () => {
       </Box>
       <Box display="flex" alignItems={'center'}>
       
-        <Box sx={{ display: { xs: 'none', md: 'flex' } }} alignItems={'center'}>
+        <Box sx={{ display:  'flex' }} alignItems={'center'}>
           <Box>
             <Button
               variant="outlined"
@@ -53,7 +53,7 @@ const Topbar = () => {
               variant="contained"
               component="a"
               color="primary"
-              onClick={saveCityData}
+              onClick={saveData}
               disabled={!isDirty}
             >
               Save Changes

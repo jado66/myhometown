@@ -25,7 +25,7 @@ const Page = ({ params }) =>{
 
     const {city, hasLoaded} = useCity(cityQuery, stateQuery)
 
-    const {data: cityData, setData: setCityData} = useEdit()
+    const {data: cityData, setData: setCityData, setEntityType} = useEdit()
 
     useEffect(() => {
         if (city){
@@ -33,6 +33,7 @@ const Page = ({ params }) =>{
                 content:{...cityDataContentTemplate},
                 ...city
             })
+            setEntityType('city')
         }
     }, [city])
 
@@ -109,8 +110,7 @@ const Page = ({ params }) =>{
     }
 
     return (
-        <>
-            
+        <>          
             <Container  sx = {{paddingTop:3, marginBottom:2}}>
                 <Typography variant="h2" align="center" sx = {{textTransform:"capitalize"}}>
                     MyHometown {cityQuery.replaceAll('-',' ')} - {stateQuery.replaceAll('-',' ')}
@@ -118,7 +118,7 @@ const Page = ({ params }) =>{
                 <GallerySLC />
                 
                 <Grid container spacing={2} paddingY = {3}>
-                    <Grid item xs={6}>
+                    <Grid item xs={12} md = {6}>
                         <Typography variant="h4"  align="center">
                             Description
                         </Typography>
@@ -141,7 +141,7 @@ const Page = ({ params }) =>{
                               name="paragraph2"
                         />
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid item xs={12} md = {6}>
                         <Card sx = {{height:"300px", alignContent:"center", justifyContent:"center"}}>
                             <Typography 
                                 variant="h4" 
@@ -155,7 +155,6 @@ const Page = ({ params }) =>{
                     </Grid>
                 </Grid>
 
-                <Divider/>
 
                 <EventDialog_NewEdit 
                     show = {isCreatingNewEvent || selectedEvent !== null}
@@ -165,7 +164,18 @@ const Page = ({ params }) =>{
                     isEdit={!isCreatingNewEvent}
                 />
 
-                <UpcomingEvents events={events} maxEvents={3}/>
+                <Divider sx = {{my:5}}/>
+
+                <UpcomingEvents 
+                    events={events} 
+                    maxEvents = {5} 
+                    isLoading = {isLoading}
+                    onSelect={onSelectEvent}
+                    onAdd={startCreatingNewEvent}
+                    isEdit
+                />
+
+                <Divider sx = {{my:5}}/>
 
                 <EventsCalendar 
                     events={events} 

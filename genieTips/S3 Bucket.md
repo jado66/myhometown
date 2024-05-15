@@ -193,3 +193,104 @@ const url = s3.getSignedUrl('getObject', {
 
 console.log(url);
 In the above code, replace 'your-access-key-id', 'your-secret-access-key', 'your-region', 'your-bucket-name' and 'your-object-key' with your actual values.
+
+
+From Vercel
+
+'use client';
+ 
+import { type PutBlobResult } from '@vercel/blob';
+import { upload } from '@vercel/blob/client';
+import { useState, useRef } from 'react';
+ 
+export default function AvatarUploadPage() {
+  const inputFileRef = useRef<HTMLInputElement>(null);
+  const [blob, setBlob] = useState<PutBlobResult | null>(null);
+  return (
+    <>
+      <h1>Upload Your Avatar</h1>
+ 
+      <form
+        onSubmit={async (event) => {
+          event.preventDefault();
+ 
+          const file = inputFileRef.current.files[0];
+ 
+          const newBlob = await upload(file.name, file, {
+            access: 'public',
+            handleUploadUrl: '/api/avatar/upload',
+          });
+ 
+          setBlob(newBlob);
+        }}
+      >
+        <input name="file" ref={inputFileRef} type="file" required />
+        <button type="submit">Upload</button>
+      </form>
+      {blob && (
+        <div>
+          Blob url: <a href={blob.url}>{blob.url}</a>
+        </div>
+      )}
+    </>
+  );
+}
+
+
+import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
+import { NextResponse } from 'next/server';
+ 
+export async function POST(request: Request): Promise<NextResponse> {
+  const body = (await request.json()) as HandleUploadBody;
+ 
+  try {
+    const jsonResponse = await handleUpload({
+      body,
+      request,
+      onBeforeGenerateToken: async (
+        pathname: string,
+        /* clientPayload?: string, */
+      ) => {
+        // Generate a client token for the browser to upload the file
+ 
+        // ⚠️ Authenticate users before generating the token.
+        // Otherwise, you're allowing anonymous uploads.
+        const { user } = await auth(request);
+        const userCanUpload = canUpload(user, pathname);
+        if (!userCanUpload) {
+          throw new Error('Not authorized');
+        }
+ 
+        return {
+          allowedContentTypes: ['image/jpeg', 'image/png', 'image/gif'],
+          tokenPayload: JSON.stringify({
+            // optional, sent to your server on upload completion
+            userId: user.id,
+          }),
+        };
+      },
+      onUploadCompleted: async ({ blob, tokenPayload }) => {
+        // Get notified of client upload completion
+        // ⚠️ This will not work on `localhost` websites,
+        // Use ngrok or similar to get the full upload flow
+ 
+        console.log('blob upload completed', blob, tokenPayload);
+ 
+        try {
+          // Run any logic after the file upload completed
+          // const { userId } = JSON.parse(tokenPayload);
+          // await db.update({ avatar: blob.url, userId });
+        } catch (error) {
+          throw new Error('Could not update user');
+        }
+      },
+    });
+ 
+    return NextResponse.json(jsonResponse);
+  } catch (error) {
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 400 }, // The webhook will retry 5 times waiting for a 200
+    );
+  }
+}

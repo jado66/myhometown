@@ -25,7 +25,7 @@ const Page = ({ params }) =>{
 
     const {community, hasLoaded} = useCommunity(communityQuery, stateQuery)
 
-    const {data: communityData, setData: setCommunityData} = useEdit()
+    const {data: communityData, setData: setCommunityData, setEntityType} = useEdit()
 
     useEffect(() => {
         if (community){
@@ -33,6 +33,7 @@ const Page = ({ params }) =>{
                 content:{...communityDataContentTemplate},
                 ...community
             })
+            setEntityType('community')
         }
     }, [community])
 

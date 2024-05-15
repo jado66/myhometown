@@ -4,6 +4,7 @@ export const EditContext = createContext();
 
 const EditProvider = ({ children }) => {
     const [initialData, setInitialData] = useState({}); // [1
+    const [entityType, setEntityType] = useState(null); // [2
     const [data, setData] = useState(null);
     const [hasLoaded, setHasLoaded] = useState(false);
 
@@ -21,10 +22,21 @@ const EditProvider = ({ children }) => {
         }
     }, [data]);
 
+    const saveData = async () => {
+        if (entityType === 'city') {
+            saveCityData();
+        } else if (entityType === 'community') {
+            saveCommunityData();
+        }
+    };
+
     const saveCityData = async () => {
+
+
+
         try {
             const response = await fetch(`/api/database/cities/${data.state}/${data.name}`, {
-                method: 'POST',
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -67,8 +79,8 @@ const EditProvider = ({ children }) => {
             value={{ 
                 data, 
                 setData, 
-                saveCityData,
-                saveCommunityData, 
+                setEntityType,
+                saveData, 
                 isDirty 
             }}
         >

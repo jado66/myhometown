@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { Box, Card, CardContent, Typography, List, ListItem, Divider } from '@mui/material';
+import { Box, Card, Grid, Typography, List, Button, Divider } from '@mui/material';
 import Loading from '../util/Loading';
 
-const UpcomingEvents = ({ events, isLoading, maxEvents }) => {
+const UpcomingEvents = ({ events, isLoading, maxEvents, onSelect, isEdit, onAdd }) => {
   
   // This function formats the date and time in an easily readable format
   const dateFormatter = (date, allDay) => {
@@ -42,54 +42,81 @@ const UpcomingEvents = ({ events, isLoading, maxEvents }) => {
     </Typography>
     <List>
       {sortedEvents.map((event, index) => {
-        const startDateObj = new Date(event.start);
-        const endDateObj = new Date(event.end);
-      
-        // Check if they are valid date objects
-        if (isNaN(startDateObj) || isNaN(endDateObj)) {
-          return null; 
-        }
         
-        const startDate = dateFormatter(startDateObj, event.allDay);
-        let endDate;
-
-        if(endDateObj.getDate() != startDateObj.getDate()){
-          // If event spans multiple days, show end date
-          endDate = dateFormatter(event.end, event.allDay);
-        }else{
-          // If event is within a single day, show end time only
-          endDate = endDateObj.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric' });
-        }
         return (
-          <Card key={index} 
-            sx = {{
-              p:2, mb:1, display:'flex', flexDirection:'row',
-              '&:hover':{
-                backgroundColor : '#f8f8f8' //TODO make this a theme pallete color
-              }  
-            }} >
-            <Box display="flex" sx = {{minWidth:'300px'}} flexDirection='column'>
-              <Typography variant="body2" sx={{ color: '#777', minWidth:"275px" }} gutterBottom>
-                {`${startDate}`}
-                {!event.allDay ? ` - ${endDate}` : ", All Day Event"}
-              </Typography>
-             
-              <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{event.location.replaceAll('-',' ')}</Typography>
-
-            </Box>
-
-            <Divider orientation="vertical" flexItem sx = {{mx:3}}/>
-
-            <Box display="flex" flexDirection='column'>
-              <Typography variant="body1" gutterBottom>{event.title}</Typography>
-              <Typography variant="body2">{event.description}</Typography>
-            </Box>
-          </Card>
+          <UpcomingEventCard 
+            event={event} 
+            key={index} 
+            dateFormatter = {dateFormatter}
+            onSelect = {onSelect}
+          />
         );
       })}
       </List>
+
+      {
+        isEdit &&
+        <Box display="flex" justifyContent="center" mt={2}>
+          <Button variant="outlined" onClick={onAdd}>Add New Event</Button>
+        </Box>
+      }
     </>
   );
 };
 
 export default UpcomingEvents;
+
+const UpcomingEventCard = ({event, key, dateFormatter, onSelect}) => {
+  const startDateObj = new Date(event.start);
+  const endDateObj = new Date(event.end);
+
+  // Check if they are valid date objects
+  if (isNaN(startDateObj) || isNaN(endDateObj)) {
+    return null; 
+  }
+  
+  const startDate = dateFormatter(startDateObj, event.allDay);
+  let endDate;
+
+  if(endDateObj.getDate() != startDateObj.getDate()){
+    // If event spans multiple days, show end date
+    endDate = dateFormatter(event.end, event.allDay);
+  }else{
+    // If event is within a single day, show end time only
+    endDate = endDateObj.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric' });
+  }
+
+  return (
+    <Card key={key} 
+      sx={{
+        p:2, mb:1, display:'flex', flexDirection:'row',
+        '&:hover':{
+          backgroundColor : '#f8f8f8' //TODO make this a theme pallete color
+        }  
+      }}
+      onClick = {()=>onSelect(event)}
+    >
+      <Grid container >
+        <Grid item xs={12} sm={6}>
+          <Box display="flex" sx={{minWidth:'300px'}} flexDirection='column'>
+            <Typography variant="body2" sx={{ color: '#777', minWidth:"275px" }} gutterBottom>
+              {`${startDate}`}
+              {!event.allDay ? ` - ${endDate}` : ", All Day Event"}
+            </Typography>
+          
+
+            <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{event.location.replaceAll('-',' ')}</Typography>
+          </Box>
+        </Grid>
+        <Grid item xs={12} sx = {{display: { xs: 'block', sm: 'none' }}}>
+          <Divider sx = {{my:2}} />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Box display="flex" flexDirection='column'>
+            <Typography variant="body1" gutterBottom>{event.title}</Typography>
+            <Typography variant="body2">{event.description}</Typography>
+          </Box>
+        </Grid>
+      </Grid>
+    </Card>
+  )};
