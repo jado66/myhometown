@@ -4,6 +4,7 @@ import { Grid, IconButton } from '@mui/material';
 import { useUploadFile } from '@/hooks/use-upload-file';
 import { AddPhotoAlternateTwoTone } from '@mui/icons-material';
 import Loading from './Loading';
+import { toast } from 'react-toastify';
 
 function UploadImage({ setUrl }) {
     const { uploadToS3, loading, error } = useUploadFile();
@@ -19,7 +20,7 @@ function UploadImage({ setUrl }) {
     
             if (result) {
                 console.log("Successfully uploaded file.");
-                alert("Successfully uploaded file.+" + result.url)
+                toast.success('Image uploaded successfully. Make sure to save your changes.');
                 setUrl(result.url); // Assuming setUrl is a function passed as prop to update the URL
             }
         } else {

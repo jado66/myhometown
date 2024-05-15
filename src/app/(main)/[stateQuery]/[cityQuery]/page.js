@@ -11,6 +11,50 @@ import useEvents from '@/hooks/use-events';
 import useCity from '@/hooks/use-city';
 import NextLink from 'next/link';
 import Loading from '@/components/util/Loading';
+import PhotoGallery from '@/components/PhotoGallery';
+
+const cityDataContentTemplate = {
+    paragraph1Text: faker.lorem.paragraph(),
+    paragraph2Text: faker.lorem.paragraph(),
+    galleryPhotos: [
+        {
+            key: '1',
+            src: '',
+            alt: 'placeholder',
+            rows: 2,
+            cols: 1,
+        },
+        {
+            key: '2',
+            src: '',
+            alt: 'placeholder',
+            rows: 1,
+            cols: 2,
+        },
+        {
+            key: '3',
+            src: '',
+            alt: 'placeholder',
+            rows: 1,
+            cols: 1,
+        },
+        {
+            key: '4',
+            src: '',
+            alt: 'placeholder',
+            rows: 1,
+            cols: 1,
+        },
+        {
+            key: '5',
+            src: '',
+            alt: 'placeholder',
+            rows: 1,
+        cols: 2,
+        },
+       
+    ]
+}
 
 const Page = ({ params }) =>{
     const { stateQuery, cityQuery } = params; //TODO change me to stateQuery... VsCode hates renaming folders
@@ -89,8 +133,8 @@ const Page = ({ params }) =>{
                 <Typography variant="h2" align="center" sx = {{textTransform:"capitalize"}}>
                     MyHometown {cityQuery.replaceAll('-',' ')} - {stateQuery.replaceAll('-',' ')}
                 </Typography>
-                <GallerySLC />
-                
+                <PhotoGallery photos={city.content.galleryPhotos} />
+
                 <Grid container spacing={2} paddingY = {3}>
                     <Grid item xs={12} sm = {6} >
                         <Typography variant="h4"  align="center">

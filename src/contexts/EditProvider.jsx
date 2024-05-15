@@ -1,4 +1,5 @@
 import React, { createContext, useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 export const EditContext = createContext();
 
@@ -45,6 +46,7 @@ const EditProvider = ({ children }) => {
 
             if (response.ok) {
                 console.log(' data saved successfully');
+                toast.success('Data saved successfully');
             } else {
                 console.error('Failed to save  data');
             }
@@ -65,6 +67,7 @@ const EditProvider = ({ children }) => {
 
             if (response.ok) {
                 console.log(' data saved successfully');
+                toast.success('Data saved successfully');
             } else {
                 console.error('Failed to save  data');
             }
