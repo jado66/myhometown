@@ -13,10 +13,49 @@ import useEvents from '@/hooks/use-events';
 import useCity from '@/hooks/use-city';
 import Loading from '@/components/util/Loading';
 import { useEdit } from '@/hooks/use-edit';
+import PhotoGallery from '@/components/PhotoGallery';
 
 const cityDataContentTemplate = {
     paragraph1Text: faker.lorem.paragraph(),
-    paragraph2Text: faker.lorem.paragraph()
+    paragraph2Text: faker.lorem.paragraph(),
+    galleryPhotos: [
+        {
+            key: '1',
+            src: '',
+            alt: 'placeholder',
+            rows: 2,
+            cols: 1,
+        },
+        {
+            key: '2',
+            src: '',
+            alt: 'placeholder',
+            rows: 1,
+            cols: 2,
+        },
+        {
+            key: '3',
+            src: '',
+            alt: 'placeholder',
+            rows: 1,
+            cols: 1,
+        },
+        {
+            key: '4',
+            src: '',
+            alt: 'placeholder',
+            rows: 1,
+            cols: 1,
+        },
+        {
+            key: '5',
+            src: '',
+            alt: 'placeholder',
+            rows: 1,
+        cols: 2,
+        },
+       
+    ]
 }
 
 const Page = ({ params }) =>{
@@ -30,8 +69,8 @@ const Page = ({ params }) =>{
     useEffect(() => {
         if (city){
             setCityData({
-                content:{...cityDataContentTemplate},
-                ...city
+                ...city,
+                content:{...cityDataContentTemplate, ...city.content},
             })
             setEntityType('city')
         }
@@ -69,6 +108,30 @@ const Page = ({ params }) =>{
         setSelectedEvent(null)
         setIsCreatingNewEvent(false)
     }
+
+    const handleChangePhoto = (url, key) => {
+        setCityData(prevState => {
+            
+            const newPhotos = prevState.content.galleryPhotos.map(photo => {
+                if (photo.key === key){
+                    return {
+                        ...photo,
+                        src: url
+                    }
+                }
+                return photo
+            })
+
+            return {
+                ...prevState,
+                content:{
+                    ...prevState.content,
+                    galleryPhotos: newPhotos
+                }
+            }
+        })
+    }
+
 
     const handleParagraphChange = (e, name) => {
         const { value } = e.target
@@ -110,12 +173,19 @@ const Page = ({ params }) =>{
     }
 
     return (
-        <>          
+        <>   
+               
             <Container  sx = {{paddingTop:3, marginBottom:2}}>
                 <Typography variant="h2" align="center" sx = {{textTransform:"capitalize"}}>
                     MyHometown {cityQuery.replaceAll('-',' ')} - {stateQuery.replaceAll('-',' ')}
                 </Typography>
-                <GallerySLC />
+
+
+                <PhotoGallery 
+                    photos ={cityData.content.galleryPhotos} 
+                    changePhoto={handleChangePhoto}
+                    isEdit
+                />
                 
                 <Grid container spacing={2} paddingY = {3}>
                     <Grid item xs={12} md = {6}>

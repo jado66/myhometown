@@ -5,8 +5,9 @@ import Box from '@mui/material/Box';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import Button from '@mui/material/Button';
+import UploadImage from '@/components/util/UploadImage';
 
-const GallerySLC = () => {
+const GallerySLC = ({isEdit}) => {
   const theme = useTheme();
 
   const isMd = useMediaQuery(theme.breakpoints.up('md'), {
@@ -57,7 +58,11 @@ const GallerySLC = () => {
               key={i}
               cols={isMd ? item.cols || 1 : 2}
               rows={isMd ? item.rows || 1 : 1}
+              sx = {{position: 'relative'}}
             >
+              {isEdit && (
+                <UploadImage setUrl = {(url)=>{alert(url)}}/>
+              )}
               <img
                 height={'100%'}
                 width={'100%'}
@@ -70,6 +75,7 @@ const GallerySLC = () => {
                   borderRadius: 4,
                 }}
               />
+             
             </ImageListItem>
           ))}
         </ImageList>
