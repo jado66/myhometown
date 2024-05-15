@@ -17,12 +17,15 @@ const PhotoGallery = ({isEdit, photos, changePhoto}) => {
 
   if (!photos) {
     return null
-    }
-
-  const photosToShow = isMd ? photos : photos.slice(0, photos.length - 1);
+  }
 
   const handlePhotoChange = (url, index) => {
     changePhoto(url, index)
+  }
+
+  // if md reorder from 0,1,2,3,4 to 1, 0, 2, 3 ,4
+  if (!isMd) {
+    photos = [photos[1], photos[0], photos[2], photos[3], photos[4]]
   }
 
   return (
@@ -30,15 +33,15 @@ const PhotoGallery = ({isEdit, photos, changePhoto}) => {
       <Box>
         <ImageList
           variant="quilted"
-          cols={4}
+          cols={2}
           rowHeight={isMd ? 300 : 220}
           gap={isMd ? 16 : 8}
         >
-          {photosToShow.map((item, i) => (
+          {photos.map((item, i) => (
             <ImageListItem
               key={item.key}
-              cols={isMd ? item.cols || 1 : 2}
-              rows={isMd ? item.rows || 1 : 1}
+              cols={item.cols}
+              rows={item.rows}
               sx = {{position: 'relative'}}
             >
               {isEdit && (

@@ -42,8 +42,6 @@ const GallerySLC = ({isEdit}) => {
     },
   ];
 
-  const photosToShow = isMd ? photos : photos.slice(0, photos.length - 1);
-
   return (
     <Box>
       <Box>
@@ -56,8 +54,8 @@ const GallerySLC = ({isEdit}) => {
           {photosToShow.map((item, i) => (
             <ImageListItem
               key={i}
-              cols={isMd ? item.cols || 1 : 2}
-              rows={isMd ? item.rows || 1 : 1}
+              cols={item.cols}
+              rows={item.rows}
               sx = {{position: 'relative'}}
             >
               {isEdit && (
