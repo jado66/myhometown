@@ -5,8 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 export async function POST(request) {
   const { filename, contentType } = await request.json()
 
-  console.log('Region:', process.env.AWS_REGION);
-  console.log('Bucket:', process.env.AWS_BUCKET_NAME);
+  console.log('All Env Variables:', process.env);
 
   try {
     const client = new S3Client({ region: process.env.AWS_REGION })
