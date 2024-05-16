@@ -61,28 +61,25 @@ function UploadImage({ setUrl }) {
             {
                 !loading ?
                 <>
-                    {   
-                        !isXs ?
-                        <IconButton
-                            sx={{ 
-                                position: 'absolute', 
-                                top: '0%', 
-                                right: '0%', 
-                                color:'black', 
-                                backgroundColor:'lightgrey',
-                                margin: '0.5em',
-                                display: { xs: 'flex', md: isVisible  ? 'flex' : 'none'},
-                                '&:hover': {
-                                    backgroundColor: 'white',
-                                }
-                            }}
-                            onClick={handleClick}
-                        >
-                            <AddPhotoAlternateTwoTone fontSize='12px' />
-                        </IconButton>
-                        :
-                        null
-                    }
+                     
+                    <IconButton
+                        sx={{ 
+                            position: 'absolute', 
+                            top: '0%', 
+                            right: '0%', 
+                            color:'black', 
+                            backgroundColor:'lightgrey',
+                            margin: '0.5em',
+                            display: { xs: 'flex', md: isVisible  ? 'flex' : 'none'},
+                            '&:hover': {
+                                backgroundColor: 'white',
+                            }
+                        }}
+                        onClick={handleClick}
+                    >
+                        <AddPhotoAlternateTwoTone fontSize='12px' />
+                    </IconButton>
+                
                 </>
                 :
                 <IconButton
