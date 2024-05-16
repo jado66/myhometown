@@ -71,7 +71,7 @@ function UploadImage({ setUrl }) {
                                 color:'black', 
                                 backgroundColor:'lightgrey',
                                 margin: '0.5em',
-                                display: { xs: 'none', md: isVisible  ? 'flex' : 'none'},
+                                display: { xs: 'flex', md: isVisible  ? 'flex' : 'none'},
                                 '&:hover': {
                                     backgroundColor: 'white',
                                 }
