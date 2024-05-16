@@ -23,10 +23,7 @@ const PhotoGallery = ({isEdit, photos, changePhoto}) => {
     changePhoto(url, key);
   }
 
-  // if md reorder
-  if (!isMd) {
-    photos = {'2': photos['1'], '1': photos['0'], ...photos}
-  }
+  const photoOrder = isMd ? [1, 2, 3, 4, 5] : [2, 1, 3, 4, 5];
 
   return (
     <Box>
@@ -37,20 +34,22 @@ const PhotoGallery = ({isEdit, photos, changePhoto}) => {
           rowHeight={isMd ? 300 : 220}
           gap={isMd ? 16 : 8}
         >
-          {Object.keys(photos).map((key) => {
+          {photoOrder.map((key) => {
             let item = photos[key];
             return (
-              <ImageListItem
+               <ImageListItem
                 key={key}
-                cols={item.cols}
-                rows={item.rows}
+                cols={item?.cols}
+                rows={item?.rows}
                 sx = {{position: 'relative'}}
               >
+
                 {isEdit && (
                   <UploadImage setUrl={(url)=>handlePhotoChange(url, key)}/>
                 )}
                 {
-                  item.src !== "" ?
+                  item?.src !== "" ?
+                 
                   <img
                     height={'100%'}
                     width={'100%'}
@@ -79,3 +78,4 @@ const PhotoGallery = ({isEdit, photos, changePhoto}) => {
 };
 
 export default PhotoGallery;
+

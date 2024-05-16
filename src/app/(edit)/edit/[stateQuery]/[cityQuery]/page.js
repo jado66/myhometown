@@ -14,64 +14,20 @@ import useCity from '@/hooks/use-city';
 import Loading from '@/components/util/Loading';
 import { useEdit } from '@/hooks/use-edit';
 import PhotoGallery from '@/components/PhotoGallery';
+import { cityTemplate } from '@/constants/templates/cityTemplate';
 
-const cityDataContentTemplate = {
-    paragraph1Text: faker.lorem.paragraph(),
-    paragraph2Text: faker.lorem.paragraph(),
-    galleryPhotos: [
-        {
-            key: '1',
-            src: '',
-            alt: 'placeholder',
-            rows: 2,
-            cols: 1,
-        },
-        {
-            key: '2',
-            src: '',
-            alt: 'placeholder',
-            rows: 1,
-            cols: 2,
-        },
-        {
-            key: '3',
-            src: '',
-            alt: 'placeholder',
-            rows: 1,
-            cols: 1,
-        },
-        {
-            key: '4',
-            src: '',
-            alt: 'placeholder',
-            rows: 1,
-            cols: 1,
-        },
-        {
-            key: '5',
-            src: '',
-            alt: 'placeholder',
-            rows: 1,
-        cols: 2,
-        },
-       
-    ]
-}
 
 const Page = ({ params }) =>{
 
     const { stateQuery, cityQuery } = params
 
-    const {city, hasLoaded} = useCity(cityQuery, stateQuery)
+    const {city, hasLoaded} = useCity(cityQuery, stateQuery, cityTemplate)
 
     const {data: cityData, setData: setCityData, setEntityType} = useEdit()
 
     useEffect(() => {
         if (city){
-            setCityData({
-                ...city,
-                content:{...cityDataContentTemplate, ...city.content},
-            })
+            setCityData(city)
             setEntityType('city')
         }
     }, [city])
@@ -110,27 +66,25 @@ const Page = ({ params }) =>{
     }
 
     const handleChangePhoto = (url, key) => {
-        setCityData(prevState => {
-            
-            const newPhotos = prevState.content.galleryPhotos.map(photo => {
-                if (photo.key === key){
-                    return {
-                        ...photo,
-                        src: url
-                    }
-                }
-                return photo
-            })
-
-            return {
-                ...prevState,
-                content:{
-                    ...prevState.content,
-                    galleryPhotos: newPhotos
+        setCityData((prevState) => {
+            const newPhotos = { ...prevState.content.galleryPhotos };
+            if (newPhotos[key]) {
+                newPhotos[key] = { 
+                ...newPhotos[key], 
+                src: url 
                 }
             }
-        })
-    }
+        
+            return {
+                ...prevState,
+                content: {
+                ...prevState.content,
+                galleryPhotos: newPhotos,
+                },
+            };
+        });
+    };
+      
 
 
     const handleParagraphChange = (e, name) => {
@@ -173,16 +127,16 @@ const Page = ({ params }) =>{
     }
 
     return (
-        <>   
-               
+        <>                 
             <Container  sx = {{paddingTop:3, marginBottom:2}}>
+                
                 <Typography variant="h2" align="center" sx = {{textTransform:"capitalize"}}>
                     MyHometown {cityQuery.replaceAll('-',' ')} - {stateQuery.replaceAll('-',' ')}
                 </Typography>
 
 
                 <PhotoGallery 
-                    photos ={cityData.content.galleryPhotos} 
+                    photos ={cityData.content?.galleryPhotos} 
                     changePhoto={handleChangePhoto}
                     isEdit
                 />
@@ -195,7 +149,7 @@ const Page = ({ params }) =>{
 
                         <ContentEditable
                            innerRef={paragraph1Ref}
-                           html={cityData.content.paragraph1Text}
+                           html={cityData.content?.paragraph1Text}
                            disabled={false}
                            onChange={(event) => handleParagraphChange(event, 'paragraph1')}
                            tagName="p"
@@ -204,7 +158,7 @@ const Page = ({ params }) =>{
                         <Divider/>
                         <ContentEditable
                               innerRef={paragraph2Ref}
-                              html={cityData.content.paragraph2Text}
+                              html={cityData.content?.paragraph2Text}
                               disabled={false}
                               onChange={(event) => handleParagraphChange(event, 'paragraph2')}
                               tagName="p"

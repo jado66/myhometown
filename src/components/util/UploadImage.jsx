@@ -21,7 +21,9 @@ function UploadImage({ setUrl }) {
     
             if (result) {
                 console.log("Successfully uploaded file.");
-                toast.success('Image uploaded successfully. Make sure to save your changes.');
+                toast.success('Image uploaded successfully. Make sure to save your changes.',{
+                    toastId: 'image-uploaded-successfully', // Your unique ID for the toast
+                });
                 setUrl(result.url); // Assuming setUrl is a function passed as prop to update the URL
             }
         } else {
@@ -69,7 +71,7 @@ function UploadImage({ setUrl }) {
                                 color:'black', 
                                 backgroundColor:'lightgrey',
                                 margin: '0.5em',
-                                display: { xs: 'flex', md: isVisible  ? 'flex' : 'none'},
+                                display: { xs: 'none', md: isVisible  ? 'flex' : 'none'},
                                 '&:hover': {
                                     backgroundColor: 'white',
                                 }
