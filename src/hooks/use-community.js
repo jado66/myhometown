@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export default function useCommunity(communityQuery, cityQuery, stateQuery) {
+export default function useCommunity(communityQuery, cityQuery, stateQuery, template = {}) {
     const [community, setCommunity] = useState({});
     const [hasLoaded, setHasLoaded] = useState(false);
 
@@ -38,7 +38,9 @@ export default function useCommunity(communityQuery, cityQuery, stateQuery) {
           }
           
           const data = await res.json();
-          setCommunity(data[0]);
+          const mergedCommunity = mergeObjectTemplate(data[0], template);
+
+          setCommunity(mergedCommunity);
           setHasLoaded(true);
         } catch (e) {
           console.error('Error occurred while fetching community', e);

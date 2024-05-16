@@ -16,16 +16,16 @@ const PhotoGallery = ({isEdit, photos, changePhoto}) => {
   });
 
   if (!photos) {
-    return null
+    return null;
   }
 
-  const handlePhotoChange = (url, index) => {
-    changePhoto(url, index)
+  const handlePhotoChange = (url, key) => {
+    changePhoto(url, key);
   }
 
-  // if md reorder from 0,1,2,3,4 to 1, 0, 2, 3 ,4
+  // if md reorder
   if (!isMd) {
-    photos = [photos[1], photos[0], photos[2], photos[3], photos[4]]
+    photos = {'2': photos['1'], '1': photos['0'], ...photos}
   }
 
   return (
@@ -33,43 +33,45 @@ const PhotoGallery = ({isEdit, photos, changePhoto}) => {
       <Box>
         <ImageList
           variant="quilted"
-          cols={2}
+          cols={isMd ? 4 : 2}
           rowHeight={isMd ? 300 : 220}
           gap={isMd ? 16 : 8}
         >
-          {photos.map((item, i) => (
-            <ImageListItem
-              key={item.key}
-              cols={item.cols}
-              rows={item.rows}
-              sx = {{position: 'relative'}}
-            >
-              {isEdit && (
-                <UploadImage setUrl = {(url)=>handlePhotoChange(url,item.key)}/>
-              )}
-              {
-                item.src !== "" ?
-                <img
-                  height={'100%'}
-                  width={'100%'}
-                  src={item.src}
-                  alt="..."
-                  loading="lazy"
-                  style={{
-                    objectFit: 'cover',
-                    cursor: 'poiner',
-                    borderRadius: 4,
-                  }}
-                />
-                :
-                // TODO: Add a placeholder image
-                <div style={{ height: '100%', width: '100%', display:'flex', justifyContent:'center', alignItems:'center', backgroundColor: 'lightgrey', fontSize: '48px' }}>
-                  <Image fontSize='inherit' />
-                </div>
-                  
-              }
-            </ImageListItem>
-          ))}
+          {Object.keys(photos).map((key) => {
+            let item = photos[key];
+            return (
+              <ImageListItem
+                key={key}
+                cols={item.cols}
+                rows={item.rows}
+                sx = {{position: 'relative'}}
+              >
+                {isEdit && (
+                  <UploadImage setUrl={(url)=>handlePhotoChange(url, key)}/>
+                )}
+                {
+                  item.src !== "" ?
+                  <img
+                    height={'100%'}
+                    width={'100%'}
+                    src={item.src}
+                    alt="..."
+                    loading="lazy"
+                    style={{
+                      objectFit: 'cover',
+                      cursor: 'pointer',
+                      borderRadius: 4,
+                    }}
+                  />
+                  :
+                  // TODO: Add a placeholder image
+                  <div style={{ height: '100%', width: '100%', display:'flex', justifyContent:'center', alignItems:'center', backgroundColor: 'lightgrey', fontSize: '48px' }}>
+                    <Image fontSize='inherit' />
+                  </div>
+                }
+              </ImageListItem>
+            );
+          })}
         </ImageList>
       </Box>
     </Box>

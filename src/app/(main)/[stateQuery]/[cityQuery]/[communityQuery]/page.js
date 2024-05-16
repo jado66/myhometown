@@ -15,7 +15,11 @@ import BackButton from '@/components/BackButton';
 const Page = ({ params }) =>{
     const { stateQuery, cityQuery, communityQuery } = params; //TODO change me to stateQuery... VsCode hates renaming folders
 
+
+
     const {community, hasLoaded} = useCommunity(communityQuery, cityQuery, stateQuery, )
+
+
 
     // Call the useCities function with the community parameter to fetch the data 
     const paragraph1Ref = useRef()

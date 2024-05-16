@@ -12,54 +12,14 @@ import useCity from '@/hooks/use-city';
 import NextLink from 'next/link';
 import Loading from '@/components/util/Loading';
 import PhotoGallery from '@/components/PhotoGallery';
+import { cityTemplate } from '@/constants/templates/cityTemplate';
 
-const cityDataContentTemplate = {
-    paragraph1Text: faker.lorem.paragraph(),
-    paragraph2Text: faker.lorem.paragraph(),
-    galleryPhotos: [
-        {
-            key: '1',
-            src: '',
-            alt: 'placeholder',
-            rows: 2,
-            cols: 1,
-        },
-        {
-            key: '2',
-            src: '',
-            alt: 'placeholder',
-            rows: 1,
-            cols: 2,
-        },
-        {
-            key: '3',
-            src: '',
-            alt: 'placeholder',
-            rows: 1,
-            cols: 1,
-        },
-        {
-            key: '4',
-            src: '',
-            alt: 'placeholder',
-            rows: 1,
-            cols: 1,
-        },
-        {
-            key: '5',
-            src: '',
-            alt: 'placeholder',
-            rows: 1,
-        cols: 2,
-        },
-       
-    ]
-}
+
 
 const Page = ({ params }) =>{
     const { stateQuery, cityQuery } = params; //TODO change me to stateQuery... VsCode hates renaming folders
 
-    const {city, hasLoaded} = useCity(cityQuery, stateQuery)
+    const {city, hasLoaded} = useCity(cityQuery, stateQuery, cityTemplate)
 
     // Call the useCities function with the city parameter to fetch the data 
     const paragraph1Ref = useRef()

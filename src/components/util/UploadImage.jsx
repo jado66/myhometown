@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useRef } from 'react';
-import { Grid, IconButton } from '@mui/material';
+import { Grid, IconButton, Tooltip, useMediaQuery } from '@mui/material';
 import { useUploadFile } from '@/hooks/use-upload-file';
 import { AddPhotoAlternateTwoTone } from '@mui/icons-material';
 import Loading from './Loading';
@@ -11,6 +11,7 @@ function UploadImage({ setUrl }) {
     const fileInput = useRef();
 
     const [isVisible , setIsVisible] = useState(false);
+    const isXs = useMediaQuery('(max-width:600px)');
 
     // Handle file upload
     const handleFileUpload = async (event) => {
@@ -57,23 +58,30 @@ function UploadImage({ setUrl }) {
             />
             {
                 !loading ?
-                <IconButton
-                    sx={{ 
-                        position: 'absolute', 
-                        top: '0%', 
-                        right: '0%', 
-                        color:'black', 
-                        backgroundColor:'lightgrey',
-                        margin: '0.5em',
-                        display: { xs: 'flex', md: isVisible  ? 'flex' : 'none'},
-                        '&:hover': {
-                            backgroundColor: 'white',
-                        }
-                    }}
-                    onClick={handleClick}
-                > 
-                    <AddPhotoAlternateTwoTone fontSize='12px' />
-                </IconButton>
+                <>
+                    {   
+                        !isXs ?
+                        <IconButton
+                            sx={{ 
+                                position: 'absolute', 
+                                top: '0%', 
+                                right: '0%', 
+                                color:'black', 
+                                backgroundColor:'lightgrey',
+                                margin: '0.5em',
+                                display: { xs: 'flex', md: isVisible  ? 'flex' : 'none'},
+                                '&:hover': {
+                                    backgroundColor: 'white',
+                                }
+                            }}
+                            onClick={handleClick}
+                        >
+                            <AddPhotoAlternateTwoTone fontSize='12px' />
+                        </IconButton>
+                        :
+                        null
+                    }
+                </>
                 :
                 <IconButton
                     sx={{ 

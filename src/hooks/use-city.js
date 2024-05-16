@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { mockCities } from './mockCities';
+import { mergeObjectTemplate } from '@/util/mergeObjectTemplate';
 
-export default function useCity(cityQuery, stateQuery) {
+export default function useCity(cityQuery, stateQuery, template = {}) {
     const [city, setCity] = useState({});
     const [hasLoaded, setHasLoaded] = useState(false);
 
@@ -39,7 +40,10 @@ export default function useCity(cityQuery, stateQuery) {
           }
           
           const data = await res.json();
-          setCity(data[0]);
+
+          const mergedCity = mergeObjectTemplate(data[0], template);
+
+          setCity(mergedCity);
           setHasLoaded(true);
         } catch (e) {
           console.error('Error occurred while fetching city', e);
