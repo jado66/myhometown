@@ -159,14 +159,14 @@ const Page = ({ params }) =>{
     const communityCardSize = city?.communities?.length ? 
     12 / city.communities.length : 12
 
-    
+    const cityName = cityQuery.replaceAll('-',' ')
 
     return (
         <>                 
             <Container  sx = {{paddingTop:3, marginBottom:2}}>
 
-                <Typography variant="h2" align="center" sx = {{textTransform:"capitalize"}}>
-                    MyHometown {cityQuery.replaceAll('-',' ')} - {stateQuery.replaceAll('-',' ')}
+                <Typography variant="h2" align="center" sx = {{textTransform:"capitalize"}} color = 'primary'>
+                    MyHometown {cityName} - {stateQuery.replaceAll('-',' ')}
                 </Typography>
 
 
@@ -176,18 +176,21 @@ const Page = ({ params }) =>{
                     isEdit
                 />
                 
-                <Grid container spacing={2} paddingY = {3} sx = {{textTransform:"capitalize"}}>
+                <Grid container spacing={2} paddingY = {3} >
                     <Grid item xs={12} md = {6}>
-                        <Typography variant="h4"  align="center">
-                            What is MyHometown {cityQuery.replaceAll('-',' ')}?
+                        <Typography variant="h4"  align="center" color='primary' sx = {{textTransform:"capitalize"}}>
+                            What is MyHometown {cityName}?
                         </Typography>
 
                         <TextField
+                            variant='standard'
                             defaultValue={content?.paragraph1Text}
                             onChange={(event) => handleParagraphChange(event, 'paragraph1')}
                             multiline
                             InputProps={{
                                 disableUnderline: true,
+                                sx: {fontSize: '1rem'}
+                                
                             }}
                             fullWidth
                             sx={{
@@ -195,7 +198,7 @@ const Page = ({ params }) =>{
                                 fontSize: '1rem',
                                 border: 'none',
                                 margin: 0,
-                                padding: 0,
+                                padding: '10px 16px',
                                 '& .MuiInput-underline:before': {
                                   borderBottom: 'none',
                                 },
@@ -209,6 +212,7 @@ const Page = ({ params }) =>{
                         />
                         <Divider />
                         <TextField
+                            variant='standard'
                             defaultValue={cityData.content?.paragraph2Text}
                             onChange={(event) => handleParagraphChange(event, 'paragraph2')}
                             multiline
@@ -221,7 +225,7 @@ const Page = ({ params }) =>{
                                 fontSize: '1rem',
                                 border: 'none',
                                 margin: 0,
-                                padding: 0,
+                                padding: '10px 16px',
                                 '& .MuiInput-underline:before': {
                                   borderBottom: 'none',
                                 },
@@ -290,13 +294,13 @@ const Page = ({ params }) =>{
                     textAlign="center"
                     color = 'primary'
                     gutterBottom
+                    sx = {{textTransform:'capitalize'}}
                 >
-                    Communities
+                    {cityName}&apos;s Communities
                 </Typography>
 
 
                 <Grid container spacing={2} paddingY = {3} >
-                
                 {
                     city.communities && city.communities.map((community, index) => 
                         <CommunityCard

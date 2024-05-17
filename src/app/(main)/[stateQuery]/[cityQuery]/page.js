@@ -67,8 +67,8 @@ const Page = ({ params }) =>{
 
                 <Grid container spacing={2} paddingY = {3}>
                     <Grid item xs={12} sm = {6} >
-                        <Typography variant="h4"  align="center">
-                            Description
+                        <Typography variant="h4"  align="center" color='primary' sx = {{textTransform:"capitalize"}}>
+                            What is MyHometown {cityName}?
                         </Typography>
 
                         <MultiLineTypography text={city.content.paragraph1Text} /> 
