@@ -28,6 +28,8 @@ export const cityTemplate = {
                 rows: 1,
                 cols: 2,
             }
-        }
-    }
+        },
+        mapUrl: '',
+    },
+    events: [],
 }

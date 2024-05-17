@@ -11,7 +11,6 @@ function UploadImage({ setUrl }) {
     const fileInput = useRef();
 
     const [isVisible , setIsVisible] = useState(false);
-    const isXs = useMediaQuery('(max-width:600px)');
 
     // Handle file upload
     const handleFileUpload = async (event) => {
@@ -70,7 +69,8 @@ function UploadImage({ setUrl }) {
                             color:'black', 
                             backgroundColor:'lightgrey',
                             margin: '0.5em',
-                            display: { xs: 'flex', md: isVisible  ? 'flex' : 'none'},
+                            opacity: isVisible ? 1 : 0,
+                            transition: 'visibility 0.05s, opacity 0.5s linear',
                             '&:hover': {
                                 backgroundColor: 'white',
                             }

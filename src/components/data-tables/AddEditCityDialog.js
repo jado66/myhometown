@@ -9,7 +9,6 @@ const initialState = {
     name: '',
     state: 'Utah',
     country: 'USA',
-    upcomingEvents: [],
     coordinates: {},
     boundingShape: [],
     cityOwners: []

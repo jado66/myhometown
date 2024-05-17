@@ -1,5 +1,5 @@
 'use client'
-import { Card, Container, Divider, Grid, Typography } from '@mui/material';
+import { Box, Card, Container, Divider, Grid, IconButton, TextField, Tooltip, Typography } from '@mui/material';
 import { fa, faker } from '@faker-js/faker';
 import GallerySLC from '@/views/supportingPages/About/components/GallerySLC/Gallery';
 import ContentEditable from 'react-contenteditable'
@@ -15,15 +15,29 @@ import Loading from '@/components/util/Loading';
 import { useEdit } from '@/hooks/use-edit';
 import PhotoGallery from '@/components/PhotoGallery';
 import { cityTemplate } from '@/constants/templates/cityTemplate';
+import { useHandleEvents } from '@/hooks/use-handle-events';
+import RoleGuard from '@/guards/role-guard';
+import { useUser } from '@/hooks/use-user';
+import { Info } from '@mui/icons-material';
+import UploadImage from '@/components/util/UploadImage';
+import { CommunityCard } from '@/components/CommunityCard';
 
 
 const Page = ({ params }) =>{
+
+    const { user } = useUser()
 
     const { stateQuery, cityQuery } = params
 
     const {city, hasLoaded} = useCity(cityQuery, stateQuery, cityTemplate)
 
     const {data: cityData, setData: setCityData, setEntityType} = useEdit()
+
+    let events, content; 
+
+    if(cityData) {
+        ({events, content} = cityData);
+    }
 
     useEffect(() => {
         if (city){
@@ -42,8 +56,16 @@ const Page = ({ params }) =>{
     const startCreatingNewEvent = () => {
         setIsCreatingNewEvent(true)
     }
+    
+    const setEvents = (events) => {
+        // this is cityData.events
+        setCityData({
+            ...cityData,
+            events
+        })
+    }
 
-    const {events, isLoading, error, deleteEvent, modifyEvent, updateEvent} = useEvents()
+    const {deleteEvent, modifyEvent, addEvent} = useHandleEvents(setEvents)
 
     const closeEventDialog = () => {
         setSelectedEvent(null)
@@ -56,13 +78,23 @@ const Page = ({ params }) =>{
 
     const handleSaveEvent = (event) => {
         if (isCreatingNewEvent) {
-            setEvents([...events, event])
+            addEvent(event)
         }
         else{
-            setEvents(events.map(e => e.id === event.id ? event : e))
+            modifyEvent(event)
         }
         setSelectedEvent(null)
         setIsCreatingNewEvent(false)
+    }
+
+    const handleChangeMap = (url) => {
+        setCityData({
+            ...cityData,
+            content:{
+                ...cityData.content,
+                mapUrl:url
+            }
+        })
     }
 
     const handleChangePhoto = (url, key) => {
@@ -77,16 +109,14 @@ const Page = ({ params }) =>{
         
             return {
                 ...prevState,
-                content: {
-                ...prevState.content,
-                galleryPhotos: newPhotos,
+                    content: {
+                        ...prevState.content,
+                        galleryPhotos: newPhotos,
                 },
             };
         });
     };
       
-
-
     const handleParagraphChange = (e, name) => {
         const { value } = e.target
 
@@ -126,59 +156,160 @@ const Page = ({ params }) =>{
             )
     }
 
+    const communityCardSize = city?.communities?.length ? 
+    12 / city.communities.length : 12
+
+    
+
     return (
         <>                 
             <Container  sx = {{paddingTop:3, marginBottom:2}}>
-                
+
                 <Typography variant="h2" align="center" sx = {{textTransform:"capitalize"}}>
                     MyHometown {cityQuery.replaceAll('-',' ')} - {stateQuery.replaceAll('-',' ')}
                 </Typography>
 
 
                 <PhotoGallery 
-                    photos ={cityData.content?.galleryPhotos} 
+                    photos ={content?.galleryPhotos} 
                     changePhoto={handleChangePhoto}
                     isEdit
                 />
                 
-                <Grid container spacing={2} paddingY = {3}>
+                <Grid container spacing={2} paddingY = {3} sx = {{textTransform:"capitalize"}}>
                     <Grid item xs={12} md = {6}>
                         <Typography variant="h4"  align="center">
-                            Description
+                            What is MyHometown {cityQuery.replaceAll('-',' ')}?
                         </Typography>
 
-                        <ContentEditable
-                           innerRef={paragraph1Ref}
-                           html={cityData.content?.paragraph1Text}
-                           disabled={false}
-                           onChange={(event) => handleParagraphChange(event, 'paragraph1')}
-                           tagName="p"
-                           name="paragraph1"
+                        <TextField
+                            defaultValue={content?.paragraph1Text}
+                            onChange={(event) => handleParagraphChange(event, 'paragraph1')}
+                            multiline
+                            InputProps={{
+                                disableUnderline: true,
+                            }}
+                            fullWidth
+                            sx={{
+                                fontFamily: 'inherit',
+                                fontSize: '1rem',
+                                border: 'none',
+                                margin: 0,
+                                padding: 0,
+                                '& .MuiInput-underline:before': {
+                                  borderBottom: 'none',
+                                },
+                                '& .MuiInput-underline:hover:not(.Mui-disabled):before': {
+                                  borderBottom: 'none',
+                                },
+                                '& .MuiInput-underline:after': {
+                                  borderBottom: 'none',
+                                }
+                            }}
                         />
-                        <Divider/>
-                        <ContentEditable
-                              innerRef={paragraph2Ref}
-                              html={cityData.content?.paragraph2Text}
-                              disabled={false}
-                              onChange={(event) => handleParagraphChange(event, 'paragraph2')}
-                              tagName="p"
-                              name="paragraph2"
+                        <Divider />
+                        <TextField
+                            defaultValue={cityData.content?.paragraph2Text}
+                            onChange={(event) => handleParagraphChange(event, 'paragraph2')}
+                            multiline
+                            InputProps={{
+                                disableUnderline: true,
+                            }}
+                            fullWidth
+                            sx={{
+                                fontFamily: 'inherit',
+                                fontSize: '1rem',
+                                border: 'none',
+                                margin: 0,
+                                padding: 0,
+                                '& .MuiInput-underline:before': {
+                                  borderBottom: 'none',
+                                },
+                                '& .MuiInput-underline:hover:not(.Mui-disabled):before': {
+                                  borderBottom: 'none',
+                                },
+                                '& .MuiInput-underline:after': {
+                                  borderBottom: 'none',
+                                }
+                            }}
                         />
                     </Grid>
                     <Grid item xs={12} md = {6}>
-                        <Card sx = {{height:"300px", alignContent:"center", justifyContent:"center"}}>
-                            <Typography 
-                                variant="h4" 
-                                component="h2" 
-                                align="center"
+                        <Card 
+                            sx = {{
+                                height:"569px", 
+                                alignContent:"center", 
+                                justifyContent:"center",
+                                position:'relative'
+                            }}
+                        >
+                        
+                            <RoleGuard 
+                                roles={['admin']} 
+                                user = {user}
+                                alternateContent={
+                                    <Tooltip title="Only an Admin can modify this." placement='top' arrow>
+                                        <Info                                         
+                                            style = {{position:'absolute', top:0, right:0, margin: '0.5em'}}
+                                        />
+                                    </Tooltip>
+                                }
                             >
-                                Community map
-                            </Typography>
+                                <Box 
+                                    display="flex"
+                                    justifyContent="center"
+                                    alignItems="center"
+                                    position='relative'
+                                    sx = {{width: '100%', height:"100%", backgroundColor:'transparent'}}
+                                >
+                                    <UploadImage setUrl={handleChangeMap}/>
+                                    {
+                                        cityData.content?.mapUrl ?
+                                        <img 
+                                            src={cityData.content.mapUrl} 
+                                            style={{width:'100%', height:'auto', objectFit:'cover'}}
+                                        />
+                                        :
+                                        <Typography 
+                                            variant="h4" 
+                                            component="h2" 
+                                            align="center"
+                                        >
+                                            Community map
+                                        </Typography> 
+                                    }
+                                </Box>
+                            </RoleGuard>
                         </Card>
-
                     </Grid>
                 </Grid>
 
+                <Typography 
+                    variant="h4" 
+                    component="h2" 
+                    textAlign="center"
+                    color = 'primary'
+                    gutterBottom
+                >
+                    Communities
+                </Typography>
+
+
+                <Grid container spacing={2} paddingY = {3} >
+                
+                {
+                    city.communities && city.communities.map((community, index) => 
+                        <CommunityCard
+                            key = {community.name}
+                            community={community}
+                            city = {cityQuery}
+                            gridProps = {{xs: 12, sm:communityCardSize}}
+                            index = {index}
+                            isEdit
+                        />
+                    )
+                }
+                </Grid> 
 
                 <EventDialog_NewEdit 
                     show = {isCreatingNewEvent || selectedEvent !== null}
@@ -191,9 +322,9 @@ const Page = ({ params }) =>{
                 <Divider sx = {{my:5}}/>
 
                 <UpcomingEvents 
-                    events={events} 
+                    events={cityData.events} 
                     maxEvents = {5} 
-                    isLoading = {isLoading}
+                    isLoading = {false}
                     onSelect={onSelectEvent}
                     onAdd={startCreatingNewEvent}
                     isEdit
@@ -214,3 +345,9 @@ const Page = ({ params }) =>{
 };
 
 export default Page;
+
+function onPasteAsPlainText(event) {
+    event.preventDefault();
+    var text = event.clipboardData.getData('text/plain');
+    document.execCommand("insertHTML", false, text);
+  }

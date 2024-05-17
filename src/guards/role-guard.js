@@ -1,4 +1,4 @@
-const RoleGuard = ({ requiredRole, children, user }) => {
+const RoleGuard = ({ requiredRole, children, user, alternateContent }) => {
 
     if (!user) {
         return null;
@@ -30,7 +30,12 @@ const RoleGuard = ({ requiredRole, children, user }) => {
             // Redirect to unauthorized page for other roles
             return null;
         }
-    } else {
+    } else if (alternateContent){
+        // return alternate
+        return alternateContent;
+    }
+    
+    else{
         // Redirect to unauthorized page if user's role is not recognized
         return null;
     }

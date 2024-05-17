@@ -6,12 +6,9 @@ import { CityOrCommunityCell } from './CityOrCommunityCell';
 const initialState = {
     id: '',
     name: '',
-    state: '',
-    country: '',
-    upcomingEvents: [],
-    coordinates: {},
-    boundingShape: [],
-    userOwners: []
+    email: '',
+    contactNumber: '',
+    role: 'None',
 };
 
 const AddEditUserDialog = ({ open, handleClose, onSubmitForm, initialUserState }) => {

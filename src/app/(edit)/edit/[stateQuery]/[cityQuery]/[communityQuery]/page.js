@@ -13,6 +13,7 @@ import useEvents from '@/hooks/use-events';
 import useCommunity from '@/hooks/use-community';
 import Loading from '@/components/util/Loading';
 import { useEdit } from '@/hooks/use-edit';
+import { useHandleEvents } from '@/hooks/use-handle-events';
 
 const communityDataContentTemplate = {
     paragraph1Text: faker.lorem.paragraph(),
@@ -26,6 +27,8 @@ const Page = ({ params }) =>{
     const {community, hasLoaded} = useCommunity(communityQuery, stateQuery)
 
     const {data: communityData, setData: setCommunityData, setEntityType} = useEdit()
+
+    const {content, events} = communityData
 
     useEffect(() => {
         if (community){
@@ -48,7 +51,15 @@ const Page = ({ params }) =>{
         setIsCreatingNewEvent(true)
     }
 
-    const {events, isLoading, error, deleteEvent, modifyEvent, updateEvent} = useEvents()
+    const setEvents = (events) => {
+        // this is cityData.events
+        setCommunityData({
+            ...communityData,
+            events
+        })
+    }
+
+    const {deleteEvent, modifyEvent, addEvent} = useHandleEvents(setEvents)
 
     const closeEventDialog = () => {
         setSelectedEvent(null)
@@ -61,10 +72,10 @@ const Page = ({ params }) =>{
 
     const handleSaveEvent = (event) => {
         if (isCreatingNewEvent) {
-            setEvents([...events, event])
+            addEvent(event)
         }
         else{
-            setEvents(events.map(e => e.id === event.id ? event : e))
+            modifyEvent(event.id, event)
         }
         setSelectedEvent(null)
         setIsCreatingNewEvent(false)

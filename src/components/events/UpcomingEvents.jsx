@@ -21,17 +21,27 @@ const UpcomingEvents = ({ events, isLoading, maxEvents, onSelect, isEdit, onAdd 
   };
 
   // Sort events by start date, then slice array to contain at most maxEvents items
-  const sortedEvents = [...events].sort((a, b) => a.start - b.start).slice(0, maxEvents);
+  const sortedEvents = events?.length 
+  ? [...events].sort((a, b) => a.start - b.start).slice(0, maxEvents)
+  : [];
 
   if (isLoading) {
     return <Loading />;
   }
 
-  if (events.length === 0) {
+  if (events?.length === 0) {
     return (
+      <>
       <Typography variant="h4" component="h2" color = 'primary' textAlign='center' gutterBottom>
         No upcoming events
       </Typography>
+      {
+        isEdit &&
+        <Box display="flex" justifyContent="center" mt={2}>
+          <Button variant="outlined" onClick={onAdd}>Add New Event</Button>
+        </Box>
+      }
+      </>
     );
   }
 

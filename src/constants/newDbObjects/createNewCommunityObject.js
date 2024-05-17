@@ -4,7 +4,7 @@ export const createNewCommunity = (community) => {
         city: '',
         state: '',
         country: 'USA',
-        upcomingEvents: [
+        events: [
         ],
         coordinates: { lat: 123.456, long: 789.012 },
         boundingShape: [

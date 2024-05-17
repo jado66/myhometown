@@ -13,6 +13,7 @@ import NextLink from 'next/link';
 import Loading from '@/components/util/Loading';
 import PhotoGallery from '@/components/PhotoGallery';
 import { cityTemplate } from '@/constants/templates/cityTemplate';
+import { CommunityCard } from '@/components/CommunityCard';
 
 
 
@@ -22,14 +23,6 @@ const Page = ({ params }) =>{
     const {city, hasLoaded} = useCity(cityQuery, stateQuery, cityTemplate)
 
     // Call the useCities function with the city parameter to fetch the data 
-    const paragraph1Ref = useRef()
-    const paragraph2Ref = useRef()
-
-    const [paragraph1Text, setParagraph1Text] = useState(faker.lorem.paragraph())
-    const [paragraph2Text, setParagraph2Text] = useState(faker.lorem.paragraph())
-
-    const {events, isLoading, error, deleteEvent, modifyEvent, updateEvent} = useEvents()
-
 
     const [selectedEvent, setSelectedEvent] = useState(null)
 
@@ -39,31 +32,6 @@ const Page = ({ params }) =>{
 
     const onSelectEvent = (event) => {
         setSelectedEvent(event)
-    }
-
-    useEffect(() => {
-        const storedParagraph1 = localStorage.getItem('paragraph1')
-        const storedParagraph2 = localStorage.getItem('paragraph2')
-
-        if(storedParagraph1){
-            setParagraph1Text(storedParagraph1)
-        }
-
-        if(storedParagraph2){
-            setParagraph2Text(storedParagraph2)
-        }
-    }, [])
-
-    const handleParagraphChange = (e, name) => {
-        const { value } = e.target
-
-        if(name === 'paragraph1'){
-            setParagraph1Text(value)
-        }else{
-            setParagraph2Text(value)
-        }
-
-        localStorage.setItem(name, value)
     }
 
     if (!hasLoaded){
@@ -101,33 +69,30 @@ const Page = ({ params }) =>{
                             Description
                         </Typography>
 
-                        <ContentEditable
-                           innerRef={paragraph1Ref}
-                           html={paragraph1Text}
-                           disabled={false}
-                           onChange={(event) => handleParagraphChange(event, 'paragraph1')}
-                           tagName="p"
-                           name="paragraph1"
-                        />
+                        <MultiLineTypography text={city.content.paragraph1Text} /> 
+                       
                         <Divider/>
-                        <ContentEditable
-                            innerRef={paragraph2Ref}
-                            html={paragraph2Text}
-                            disabled={false}
-                            onChange={(event) => handleParagraphChange(event, 'paragraph2')}
-                            tagName="p"
-                            name="paragraph2"
-                        />
+                        
+                        <MultiLineTypography text={city.content.paragraph2Text} />
+
                     </Grid>
                     <Grid item xs={12} sm = {6}>
-                        <Card sx = {{height:"300px", alignContent:"center", justifyContent:"center"}}>
-                            <Typography 
-                                variant="h4" 
-                                component="h2" 
-                                align="center"
-                            >
-                                City map
-                            </Typography>
+                        <Card sx = {{height:"569px", alignContent:"center", justifyContent:"center"}}>
+                            {
+                                city.content?.mapUrl ?
+                                <img 
+                                    src={city.content?.mapUrl} 
+                                    style={{width:'100%', height:'auto', objectFit:'cover'}}
+                                />
+                                :
+                                <Typography 
+                                    variant="h4" 
+                                    component="h2" 
+                                    align="center"
+                                >
+                                    Community map
+                                </Typography> 
+                            }
                         </Card>
 
                     </Grid>
@@ -164,11 +129,11 @@ const Page = ({ params }) =>{
 
                 <Divider sx = {{my:5}}/>
 
-                <UpcomingEvents events={events} maxEvents = {5} isLoading = {isLoading}/>
+                <UpcomingEvents events={city.events} maxEvents = {5} />
 
                 <Divider sx = {{my:5}}/>
 
-                <EventsCalendar events={events} onSelectEvent={onSelectEvent} isLoading = {isLoading}/>
+                <EventsCalendar events={city.events} onSelectEvent={onSelectEvent} />
                
               
             </Container>
@@ -179,68 +144,30 @@ const Page = ({ params }) =>{
 
 export default Page;
 
-const CommunityCard = ({city, community, gridProps, index}) => {
-    // community has id, name, and href for picture
-    // TODO add hover
+const MultiLineTypography = ({text}) => {
+    
+    const paragraphs = text.split('\n')
+    
+    return (
+        <div
+            style={{padding: '10px 16px'}}
+        >
+        {paragraphs.map((text, index) => (
+            <Typography 
+                key={index} 
+                variant="body1" 
+                paragraph
+                sx={{
+                    width: 'fit-content',
+                    
+                    fontSize: 16,
+                    lineHeight: '24px',
+                }}
 
-    const url = `/images/community-${index}.jfif`
-
-    const {name, _id, pictureHref} = community
-
-    const href = `${city}/${name.toLowerCase().replace(' ','-')}`
-
-    return(
-        <Grid 
-            item
-            sm = {gridProps.sm}
-            xs = {gridProps.xs}
-        >    
-            <Link
-                component={NextLink}
-                href = {href}
-                to = {href}
-                // todo there's a better way to do this
-                sx = {{textDecoration:'none'}}
             >
-                <Card
-                    sx = {{
-                        minHeight:'400px',
-                        display:'flex',
-                        flexDirection:'column',
-                        '&:hover':{
-                            backgroundColor : '#f8f8f8' //TODO make this a theme pallete color
-                        }
-                    }}
-                >
-                    <CardHeader 
-                        title={
-                        <Typography
-                            variant="h5"
-                            align="center"
-                        >
-                            {name}
-                        </Typography>
-                        } 
-                    />
-                    <CardContent
-                        sx = {{flexGrow:1, display: 'flex', flexDirection:'column', justifyContent:'center'}}
-                    >
-                        <img src = {url} style = {{borderRadius:'1em', height:'300px'}}/>
-                    </CardContent>
-                    <CardActions>
-                        <Button
-                            sx = {{mx:'auto',mb:2}}
-                            variant='outlined'
-                            color='primary'
-                            size='large'
-
-                        >
-                            Enter Community Page
-                        </Button>
-                    </CardActions>
-                </Card>
-            </Link>
-        </Grid>
+            {   text}
+            </Typography>
+        ))}
+        </div>
     )
-
 }
