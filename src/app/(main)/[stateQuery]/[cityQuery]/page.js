@@ -131,10 +131,16 @@ const Page = ({ params }) =>{
 
                 <UpcomingEvents events={city.events} maxEvents = {5} />
 
-                <Divider sx = {{my:5}}/>
+                {
+                    city.events?.length &&
+                    <>
+                    
+                    <Divider sx = {{my:5}}/>
 
-                <EventsCalendar events={city.events} onSelectEvent={onSelectEvent} />
-               
+                    <EventsCalendar events={city.events} onSelectEvent={onSelectEvent} />
+
+                    </>
+                }
               
             </Container>
         </>
