@@ -31,17 +31,17 @@ const UpcomingEvents = ({ events, isLoading, maxEvents, onSelect, isEdit, onAdd 
 
   if (events?.length === 0) {
     return (
-      <>
-      <Typography variant="h4" component="h2" color = 'primary' textAlign='center' gutterBottom>
-        No upcoming events
-      </Typography>
-      {
-        isEdit &&
-        <Box display="flex" justifyContent="center" mt={2}>
-          <Button variant="outlined" onClick={onAdd}>Add New Event</Button>
-        </Box>
-      }
-      </>
+      <Grid sx = {{mb:5}}>
+        <Typography variant="h4" component="h2" color = 'primary' textAlign='center' gutterBottom>
+          No upcoming events
+        </Typography>
+        {
+          isEdit &&
+          <Box display="flex" justifyContent="center" mt={2}>
+            <Button variant="outlined" onClick={onAdd}>Add New Event</Button>
+          </Box>
+        }
+      </Grid>
     );
   }
 

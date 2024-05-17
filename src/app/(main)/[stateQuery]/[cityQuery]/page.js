@@ -50,6 +50,8 @@ const Page = ({ params }) =>{
         )
     }
 
+    const cityName = cityQuery.replaceAll('-',' ')
+
     const communityCardSize = city?.communities?.length ? 
         12 / city.communities.length : 12
 
@@ -59,7 +61,7 @@ const Page = ({ params }) =>{
 
             <Container  sx = {{paddingTop:3, marginBottom:2}}>
                 <Typography variant="h2" align="center" sx = {{textTransform:"capitalize"}}>
-                    MyHometown {cityQuery.replaceAll('-',' ')} - {stateQuery.replaceAll('-',' ')}
+                    MyHometown {cityName} - {stateQuery.replaceAll('-',' ')}
                 </Typography>
                 <PhotoGallery photos={city.content.galleryPhotos} />
 
@@ -106,8 +108,9 @@ const Page = ({ params }) =>{
                     textAlign="center"
                     color = 'primary'
                     gutterBottom
+                    sx = {{textTransform:'capitalize'}}
                 >
-                    Communities
+                    {cityName}&apos;s Communities
                 </Typography>
 
 
@@ -132,12 +135,12 @@ const Page = ({ params }) =>{
                 <UpcomingEvents events={city.events} maxEvents = {5} />
 
                 {
-                    city.events?.length &&
+                    city.events?.length !== 0 &&
                     <>
                     
-                    <Divider sx = {{my:5}}/>
+                        <Divider sx = {{my:5}}/>
 
-                    <EventsCalendar events={city.events} onSelectEvent={onSelectEvent} />
+                        <EventsCalendar events={city.events} onSelectEvent={onSelectEvent} />
 
                     </>
                 }
