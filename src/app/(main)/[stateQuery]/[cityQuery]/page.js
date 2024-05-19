@@ -123,7 +123,7 @@ const Page = ({ params }) =>{
                             community={community}
                             city = {cityQuery}
                             gridProps = {{xs: 12, sm:communityCardSize}}
-
+                    
                             index = {index}
                         />
                     )

@@ -14,6 +14,9 @@ function UploadImage({ setUrl }) {
 
     // Handle file upload
     const handleFileUpload = async (event) => {
+        event.stopPropagation();
+
+
         if(event.target.files.length > 0){
             const file = event.target.files[0];
             const result = await uploadToS3(file);
@@ -30,7 +33,11 @@ function UploadImage({ setUrl }) {
         }
     };
 
-    const handleClick = () => {
+    const handleClick = (event) => {
+        event.nativeEvent.stopImmediatePropagation();
+        event.stopPropagation();
+    
+
         fileInput.current.click();
     }
 

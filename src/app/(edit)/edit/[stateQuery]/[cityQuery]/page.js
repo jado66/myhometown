@@ -156,6 +156,18 @@ const Page = ({ params }) =>{
             )
     }
 
+    const setCommunityPhotoUrl = (communityId, url) => {
+        setCityData((prevState) => {
+            const newCommunities = [...prevState.communities];
+            const index = newCommunities.findIndex((community) => community._id === communityId);
+            newCommunities[index].photoUrl = url;
+            return {
+                ...prevState,
+                communities: newCommunities,
+            };
+        });
+    };
+
     const communityCardSize = city?.communities?.length ? 
     12 / city.communities.length : 12
 
@@ -309,6 +321,7 @@ const Page = ({ params }) =>{
                             city = {cityQuery}
                             gridProps = {{xs: 12, sm:communityCardSize}}
                             index = {index}
+                            setPhotoUrl={setCommunityPhotoUrl}
                             isEdit
                         />
                     )

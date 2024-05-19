@@ -24,7 +24,8 @@ const PhotoGallery = ({isEdit, photos, changePhoto}) => {
   }
 
 
-  const openImageDialog = image => () => {
+  const openImageDialog = (image) => {
+    if (isEdit) return;
     setSelectedImage(image);
   };
 
@@ -51,13 +52,12 @@ const PhotoGallery = ({isEdit, photos, changePhoto}) => {
           {photoOrder.map((key) => {
             let item = photos[key];
             return (
-               <ImageListItem
+              <ImageListItem
                 key={key}
                 cols={item?.cols}
                 rows={item?.rows}
                 sx = {{position: 'relative'}}
-                onClick={openImageDialog(item?.src)}
-
+                onClick={()=>openImageDialog(item?.src)}
               >
 
                 {isEdit && (

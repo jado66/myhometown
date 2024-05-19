@@ -3,16 +3,17 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import Link from '@mui/material/Link';
 import { useTheme } from '@mui/material/styles';
-import { MenuItem, TextField, Typography, colors } from '@mui/material';
+import { MenuItem, TextField, Typography, Button } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import Divider from '@mui/material/Divider';
 import MyHometownLogo from '@/assets/svg/logos/MyHometown';
 import useManageCities from '@/hooks/use-manage-cities';
+import LanguageIcon from '@mui/icons-material/Language';
+import { Translate } from '@mui/icons-material';
 
 const Topbar = ({onSidebarOpen}) => {
 
@@ -81,6 +82,7 @@ const Topbar = ({onSidebarOpen}) => {
 
       <Box display="flex" alignItems={'center'}>
         <Box sx={{ display: { xs: 'none', md: 'flex' } }} alignItems={'center'}>
+          <LanguageDropdown />  
           <Box>
             <Link underline="none" component="a" href="/" color="textPrimary">
               Home
@@ -187,3 +189,73 @@ Topbar.propTypes = {
 };
 
 export default Topbar;
+
+
+const LanguageDropdown = () => {
+  const theme = useTheme();
+  const { i18n } = useTranslation();
+
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+  }
+
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleShowDropdown = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleLanguageClick = (language) => {
+    // Do something
+    changeLanguage(language);
+
+    handleLanguageClose();
+  };
+
+  const handleLanguageClose = () => {
+    setAnchorEl(null);
+  }
+
+  return (
+    <Box>
+      
+      <IconButton
+        sx = {{
+          color: theme.palette.text.primary,
+          fontSize: '1.25rem',
+          marginRight: 2,
+        }}
+        onClick={handleShowDropdown}
+      >
+        <Translate fontSize='inherit'/>
+        {/* <LanguageIcon /> */}
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleLanguageClose}
+
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+
+        sx={{marginTop: 1}}
+
+      >
+        <MenuItem onClick={() => handleLanguageClick('en')}>
+          English
+        </MenuItem>
+        <MenuItem onClick={() => handleLanguageClick('es')}>Spanish</MenuItem>
+      </Menu>
+    </Box>
+  );
+};
+
+
