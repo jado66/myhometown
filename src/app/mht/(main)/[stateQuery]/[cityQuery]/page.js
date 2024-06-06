@@ -55,6 +55,12 @@ const Page = ({ params }) =>{
     const communityCardSize = city?.communities?.length ? 
         12 / city.communities.length : 12
 
+    console.log(city)
+
+
+
+    
+
     return (
         <>
             <EventDialog open={selectedEvent} onClose={closeEventDialog} event={selectedEvent} />
@@ -63,6 +69,9 @@ const Page = ({ params }) =>{
                 <Typography variant="h2" align="center" sx = {{textTransform:"capitalize"}}>
                     MyHometown {cityName} - {stateQuery.replaceAll('-',' ')}
                 </Typography>
+
+                <pre>{JSON.stringify(city, null, 4)}  </pre>
+
                 <PhotoGallery photos={city.content.galleryPhotos} />
 
                 <Grid container spacing={2} paddingY = {3}>

@@ -10,12 +10,13 @@ export const metadata = {
   title: "My Hometown",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ToastContainer />
-        {children}
+          <ToastContainer />
+          {children}
       </body>
     </html>
   );

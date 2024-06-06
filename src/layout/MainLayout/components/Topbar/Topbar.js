@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useCallback, useState, useTransition } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Menu from '@mui/material/Menu';
@@ -14,6 +14,9 @@ import MyHometownLogo from '@/assets/svg/logos/MyHometown';
 import useManageCities from '@/hooks/use-manage-cities';
 import LanguageIcon from '@mui/icons-material/Language';
 import { Translate } from '@mui/icons-material';
+import {useTranslations} from 'next-intl';
+import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 
 const Topbar = ({onSidebarOpen}) => {
 
@@ -193,12 +196,19 @@ export default Topbar;
 
 const LanguageDropdown = () => {
   const theme = useTheme();
-  const { i18n } = useTranslation();
+  const router = useRouter();
 
 
-  const changeLanguage = (lng) => {
-    i18n.changeLanguage(lng);
-  }
+
+
+  const changeLanguage = useCallback(async (language) => {
+    
+    // Set the locale cookie
+    Cookies.set('locale', language);
+
+    // Reload the page to enable the next/intl server module to detect new locale
+    router.refresh();
+  }, [router]);
 
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -250,9 +260,11 @@ const LanguageDropdown = () => {
 
       >
         <MenuItem onClick={() => handleLanguageClick('en')}>
-          English
+          languages.english
         </MenuItem>
-        <MenuItem onClick={() => handleLanguageClick('es')}>Spanish</MenuItem>
+        <MenuItem onClick={() => handleLanguageClick('es')}>
+          languages.spanish
+        </MenuItem>
       </Menu>
     </Box>
   );
