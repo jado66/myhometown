@@ -8,6 +8,7 @@ import MyHometownLogo from '@/assets/svg/logos/MyHometown';
 import CitiesStrongLogo from '@/assets/svg/logos/CitiesStrong';
 
 const Footer = () => (
+  
   <Grid container spacing={2}>
     <Grid item xs={12}>
       <Box
@@ -41,7 +42,7 @@ const Footer = () => (
             <Button
               variant="outlined"
               component="a"
-              href="/admin-dashboard"
+              // href="/admin-dashboard"
               
             >
               Admin Login

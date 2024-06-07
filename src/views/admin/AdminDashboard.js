@@ -22,7 +22,7 @@ const AdminDashboardPages = () => {
 
   const { user, isLoading } = useUser();
 
- 
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'? '/mht':''
 
   return (
     <Box>
@@ -84,7 +84,7 @@ const AdminDashboardPages = () => {
                   subtitle:
                     'Add, remove, or edit users and their roles to manage who can access your city or community.',
                   media: '/users.png',
-                  href:'/admin-dashboard/users',
+                  href:rootUrl+'/admin-dashboard/users',
                   requiredRole: 'admin'
                 },
                 {
@@ -92,7 +92,7 @@ const AdminDashboardPages = () => {
                   subtitle:
                     'Manage your cities. Add, remove, or edit city information.',
                   media: '/cities.png',
-                  href: '/admin-dashboard/cities',
+                  href: rootUrl+'/admin-dashboard/cities',
                   requiredRole: 'city-owner'
                 },
                 {
@@ -100,7 +100,7 @@ const AdminDashboardPages = () => {
                   subtitle:
                     'Manage your communities. Add, remove, or edit community information.',
                   media: '/community.png',
-                  href: '/admin-dashboard/communities',
+                  href: rootUrl+'/admin-dashboard/communities',
                   requiredRole: 'community-owner'
                 },
                 {
@@ -108,14 +108,14 @@ const AdminDashboardPages = () => {
                   subtitle:
                     'Send emails to your city or community members. ',
                   media: '/message.png',
-                  href: '/maintenance'
+                  href: rootUrl+'/maintenance'
                 },
                 {
                   title: 'Text (SMS) Communications',
                   subtitle:
                     'Send text notifications to your city or community members. ',
                   media: '/text.png',
-                  href: '/maintenance'
+                  href: rootUrl+'/maintenance'
                 },
                 // {
                 //   title: 'Give Butter Campaigns',

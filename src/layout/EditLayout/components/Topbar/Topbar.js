@@ -10,6 +10,7 @@ import { useEdit } from '@/hooks/use-edit';
 const Topbar = () => {
 
   const { saveData, isDirty } = useEdit();
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'? '/mht':''
 
   return (
     <Box
@@ -40,8 +41,7 @@ const Topbar = () => {
             <Button
               variant="outlined"
               component="a"
-              href="/admin-dashboard"
-              
+              href={rootUrl+"/admin-dashboard"}
             >
               Admin Dashboard
             </Button>

@@ -25,6 +25,8 @@ const Topbar = ({onSidebarOpen}) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [search, setSearch] = useState("");
 
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'? '/mht':''
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -67,7 +69,7 @@ const Topbar = ({onSidebarOpen}) => {
           alignItems="baseline"
           component="a"
           underline="none"
-          href="/"
+          href={rootUrl+"/"}
           title="myhometown"
           height={{ xs: 28, md: 32 }}
           width={45}
@@ -87,7 +89,7 @@ const Topbar = ({onSidebarOpen}) => {
         <Box sx={{ display: { xs: 'none', md: 'flex' } }} alignItems={'center'}>
           <LanguageDropdown />  
           <Box>
-            <Link underline="none" component="a" href="/" color="textPrimary">
+            <Link underline="none" component="a" href={rootUrl+"/"} color="textPrimary">
               Home
             </Link>
           </Box>
@@ -145,7 +147,7 @@ const Topbar = ({onSidebarOpen}) => {
                             key={city} 
                             onClick={handleClose}
                             component="a"
-                            href={`/${state.toLowerCase()}/${city.toLowerCase().replaceAll(' ', '-')}`}
+                            href={rootUrl+`/${state.toLowerCase()}/${city.toLowerCase().replaceAll(' ', '-')}`}
                           >
                             {city}
                           </MenuItem>
@@ -160,7 +162,7 @@ const Topbar = ({onSidebarOpen}) => {
             <Link
               underline="none"
               component="a"
-              href="/about-us"
+              href={rootUrl+"/about-us"}
               color="textPrimary"
             >
               About Us
@@ -170,7 +172,7 @@ const Topbar = ({onSidebarOpen}) => {
             <Link
               underline="none"
               component="a"
-              href="/donate"
+              href={rootUrl+"/donate"}
               color="textPrimary"
             >
               Donate

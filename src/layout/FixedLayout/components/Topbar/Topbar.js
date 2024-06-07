@@ -16,6 +16,8 @@ const Topbar = ({
   onSidebarOpen,
   paletteType,
 }) => {
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'? '/mht':''
+
   const theme = useTheme();
   return (
     <Box
@@ -45,7 +47,7 @@ const Topbar = ({
       </Box>
       <Box display="flex" alignItems={'center'} justifyContent='end'>
         <Box marginRight={2}>
-          <Link underline="none" component="a" href="/admin-dashboard" color="textPrimary">
+          <Link underline="none" component="a" href={rootUrl+"/admin-dashboard"} color="textPrimary">
             Admin Dashboard
           </Link>
         </Box>

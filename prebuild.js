@@ -2,6 +2,9 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, './.env.local') });
 
+
+
+
 const deleteFolderRecursive = function(directoryPath) {
     if (fs.existsSync(directoryPath)) {
         fs.readdirSync(directoryPath).forEach((file, index) => {
@@ -44,9 +47,11 @@ const moveContentsRecursive = function(sourceDirectoryPath, destinationDirectory
     }
 };
 
-function handleError(error) {
-    console.error('Error occurred:', error);
+if (process.env.NEXT_PUBLIC_ENVIRONMENT !== 'production'){
+    console.log("Skipping prebuild -- not on production environment")
+    return
 }
+
 
 const siteKeyword = process.env.SITE_KEYWORD;
 

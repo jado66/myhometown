@@ -4,8 +4,9 @@ import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import CitiesStrongLogo from '@/assets/svg/logos/CitiesStrong';
-
 const Topbar = () => {
+
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'? '/cs':''
 
   return (
     <Box
@@ -15,7 +16,7 @@ const Topbar = () => {
       width={'100%'}
     >
       <Box display={'flex'} alignItems={'center'}>
-        
+
         <Box
           display={'flex'}
           alignItems="baseline"
@@ -30,7 +31,7 @@ const Topbar = () => {
       
         <Box sx={{ display: { xs: 'none', md: 'flex' } }} alignItems={'center'}>
           <Box>
-            <Link underline="none" component="a" href="/" color="textPrimary">
+            <Link underline="none" component="a" href={rootUrl+"/"} color="textPrimary">
               Home
             </Link>
           </Box>
@@ -39,7 +40,7 @@ const Topbar = () => {
             <Link
               underline="none"
               component="a"
-              href="/about"
+              href={rootUrl+"/about"}
               color="textPrimary"
             >
               About
@@ -49,7 +50,7 @@ const Topbar = () => {
             <Link
               underline="none"
               component="a"
-              href="/donate"
+              href={rootUrl+"/donate"}
               color="textPrimary"
             >
               Donate
