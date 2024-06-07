@@ -2,9 +2,6 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, './.env.local') });
 
-
-
-
 const deleteFolderRecursive = function(directoryPath) {
     if (fs.existsSync(directoryPath)) {
         fs.readdirSync(directoryPath).forEach((file, index) => {
@@ -47,11 +44,23 @@ const moveContentsRecursive = function(sourceDirectoryPath, destinationDirectory
     }
 };
 
+const removeFile = function(filePath) {
+    if (fs.existsSync(filePath)) {
+        try {
+            fs.unlinkSync(filePath);
+            console.log(`File removed: ${filePath}`);
+        } catch (error) {
+            console.error(`Error removing the file: ${filePath}`, error);
+        }
+    }
+};
+
 if (process.env.NEXT_PUBLIC_ENVIRONMENT !== 'production'){
     console.log("Skipping prebuild -- not on production environment")
     return
 }
 
+removeFile(path.join(__dirname, 'src', 'app', 'page.js'));
 
 const siteKeyword = process.env.SITE_KEYWORD;
 
@@ -61,5 +70,4 @@ if (siteKeyword === 'mht') {
   } else if (siteKeyword === 'cs') {
     deleteFolderRecursive('./src/app/mht');
     moveContentsRecursive('./src/app/c', './src/app');
-
 }
