@@ -69,5 +69,5 @@ if (siteKeyword === 'mht') {
     moveContentsRecursive('./src/app/mht', './src/app');
   } else if (siteKeyword === 'cs') {
     deleteFolderRecursive('./src/app/mht');
-    moveContentsRecursive('./src/app/c', './src/app');
+    moveContentsRecursive('./src/app/cs', './src/app');
 }
