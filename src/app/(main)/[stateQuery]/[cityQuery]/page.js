@@ -70,8 +70,6 @@ const Page = ({ params }) =>{
                     MyHometown {cityName} - {stateQuery.replaceAll('-',' ')}
                 </Typography>
 
-                <pre>{JSON.stringify(city, null, 4)}  </pre>
-
                 <PhotoGallery photos={city.content.galleryPhotos} />
 
                 <Grid container spacing={2} paddingY = {3}>

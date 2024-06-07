@@ -1,3 +1,4 @@
+import { mergeObjectTemplate } from '@/util/mergeObjectTemplate';
 import { useState, useEffect } from 'react';
 
 export default function useCommunity(communityQuery, cityQuery, stateQuery, template = {}) {

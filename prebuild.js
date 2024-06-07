@@ -17,12 +17,44 @@ const deleteFolderRecursive = function(directoryPath) {
     }
 };
 
-const siteKeyword = process.env.SITE_KEYWORD;
+const moveContentsRecursive = function(sourceDirectoryPath, destinationDirectoryPath) {
+    if (fs.existsSync(sourceDirectoryPath)) {
+        // Ensure the destination directory exists
+        fs.mkdirSync(destinationDirectoryPath, { recursive: true });
 
-console.log(process.env);
+        fs.readdirSync(sourceDirectoryPath).forEach((file) => {
+            const currentPath = path.join(sourceDirectoryPath, file);
+            const newPath = path.join(destinationDirectoryPath, file);
+            
+            if (fs.lstatSync(currentPath).isDirectory()) { // recurse
+                moveContentsRecursive(currentPath, newPath);
+                // remove the now-empty source directory
+                fs.rmdirSync(currentPath, { recursive: true });
+            } else { // move file
+                // Ensure the parent directory of the new path exists
+                fs.mkdirSync(path.dirname(newPath), { recursive: true });
+
+                try {
+                    fs.renameSync(currentPath, newPath); // move file
+                } catch (error) { 
+                   console.error("Error renaming "+currentPath+' to '+newPath)
+                }
+            }
+        });
+    }
+};
+
+function handleError(error) {
+    console.error('Error occurred:', error);
+}
+
+const siteKeyword = process.env.SITE_KEYWORD;
 
 if (siteKeyword === 'mht') {
     deleteFolderRecursive('./src/app/cs');
+    moveContentsRecursive('./src/app/mht', './src/app');
   } else if (siteKeyword === 'cs') {
     deleteFolderRecursive('./src/app/mht');
-  }
+    moveContentsRecursive('./src/app/c', './src/app');
+
+}

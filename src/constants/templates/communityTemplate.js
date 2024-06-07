@@ -1,33 +1,37 @@
 export const communityTemplate = {
     content: {
-        paragraph1Text: faker.lorem.paragraph(),
-        paragraph2Text: faker.lorem.paragraph(),
+        paragraph1Text: 'Pellentesque tempus lacus in metus volutpat egestas. Quisque laoreet accumsan lorem eget sagittis. Sed eget egestas elit.',
+        paragraph2Text: 'Praesent feugiat orci elementum sapien auctor, vel vestibulum est congue. Duis interdum sapien lectus, tincidunt lobortis magna dapibus at. Mauris ultricies nisl sit amet dapibus ultrices.',
         galleryPhotos: {
-            '1':{
+            1:{
                 src: '',
                 rows: 2,
                 cols: 1,
             },
-            '2':{
+            2:{
                 src: '',
                 rows: 1,
                 cols: 2,
             },
-            '3':{
+            3:{
                 src: '',
                 rows: 1,
                 cols: 1,
             },
-            '4':{
+            4:{
                 src: '',
                 rows: 1,
                 cols: 1,
             },
-            '5':{
+            5:{
                 src: '',
                 rows: 1,
                 cols: 2,
             }
-        }
+        },
+        mapUrl: '',
+    },
+    events: [],
+    classes: {
     }
 }

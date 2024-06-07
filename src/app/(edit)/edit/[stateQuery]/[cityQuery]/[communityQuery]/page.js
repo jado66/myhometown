@@ -14,6 +14,7 @@ import useCommunity from '@/hooks/use-community';
 import Loading from '@/components/util/Loading';
 import { useEdit } from '@/hooks/use-edit';
 import { useHandleEvents } from '@/hooks/use-handle-events';
+import { communityTemplate } from '@/constants/templates/communityTemplate';
 
 const communityDataContentTemplate = {
     paragraph1Text: faker.lorem.paragraph(),
@@ -24,7 +25,7 @@ const Page = ({ params }) =>{
 
     const { stateQuery, communityQuery } = params
 
-    const {community, hasLoaded} = useCommunity(communityQuery, stateQuery)
+    const {community, hasLoaded} = useCommunity(communityQuery, stateQuery, communityTemplate)
 
     const {data: communityData, setData: setCommunityData, setEntityType} = useEdit()
 
