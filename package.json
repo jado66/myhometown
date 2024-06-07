@@ -21,6 +21,7 @@
     "@mui/material": "^5.15.12",
     "@mui/x-data-grid": "^6.19.6",
     "@mui/x-date-pickers": "^7.2.0",
+    "@mui/x-tree-view": "^7.6.2",
     "aos": "^2.3.4",
     "cookie": "^0.6.0",
     "dotenv": "^16.4.5",

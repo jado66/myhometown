@@ -1,6 +1,5 @@
 'use client'
 import { Card, CardActions, CardContent, CardHeader, Container, Divider, Grid, Typography, Button, Link } from '@mui/material';
-import GallerySLC from '@/views/supportingPages/About/components/GallerySLC/Gallery';
 import ContentEditable from 'react-contenteditable'
 import { useEffect, useState, useRef } from 'react';
 import UpcomingEvents from '@/components/events/UpcomingEvents';
@@ -11,13 +10,18 @@ import useEvents from '@/hooks/use-events';
 import Loading from '@/components/util/Loading';
 import useCommunity from '@/hooks/use-community';
 import BackButton from '@/components/BackButton';
+import { communityTemplate } from '@/constants/templates/communityTemplate';
+import PhotoGallery from '@/components/PhotoGallery';
+import BrushIcon from '@mui/icons-material/Brush'; // Example icon - make sure to import actual icons you want to use
+import TranslateIcon from '@mui/icons-material/Translate';
+import { ClassesTreeView } from '@/components/events/ClassesTreeView';
 
 const Page = ({ params }) =>{
     const { stateQuery, cityQuery, communityQuery } = params; //TODO change me to stateQuery... VsCode hates renaming folders
 
 
 
-    const {community, hasLoaded} = useCommunity(communityQuery, cityQuery, stateQuery, )
+    const {community, hasLoaded} = useCommunity(communityQuery, cityQuery, stateQuery, communityTemplate)
 
 
 
@@ -80,31 +84,14 @@ const Page = ({ params }) =>{
                 <Typography variant="h2" align="center" sx = {{textTransform:"capitalize"}}>
                     {communityQuery.replaceAll('-',' ')} Community
                 </Typography>
-                <GallerySLC />
+                
+                <PhotoGallery photos={community.content.galleryPhotos} />
                 
                 <Grid container spacing={2} paddingY = {3}>
                     <Grid item xs={6}>
                         <Typography variant="h4"  align="center">
                             Description
                         </Typography>
-
-                        {/* <ContentEditable
-                           innerRef={paragraph1Ref}
-                           html={}
-                           disabled={false}
-                           onChange={(event) => handleParagraphChange(event, 'paragraph1')}
-                           tagName="p"
-                           name="paragraph1"
-                        />
-                        <Divider/>
-                        <ContentEditable
-                            innerRef={paragraph2Ref}
-                            html={paragraph2Text}
-                            disabled={false}
-                            onChange={(event) => handleParagraphChange(event, 'paragraph2')}
-                            tagName="p"
-                            name="paragraph2"
-                        /> */}
                     </Grid>
                     <Grid item xs={6}>
                         <Card sx = {{height:"300px", alignContent:"center", justifyContent:"center"}}>
@@ -128,7 +115,10 @@ const Page = ({ params }) =>{
 
                 <EventsCalendar events={events} onSelectEvent={onSelectEvent} isLoading = {isLoading}/>
                
-              
+                <Divider sx = {{my:5}}/>
+
+                <ClassesTreeView  classes = {mockClassesData}/>
+
             </Container>
         </>
         
@@ -136,3 +126,44 @@ const Page = ({ params }) =>{
 };
 
 export default Page;
+
+const mockClassesData = [
+    {
+      icon: <BrushIcon />,
+      title: "Art Classes",
+      id: 1,
+      subClasses: [
+        {
+          icon: <BrushIcon />,
+          id: 2,
+          title: "Watercolor Painting",
+          googleFormID: "1SkvcoXcd8VbeKUg8gPGGgOMYjdYGZ-BA7jWEfAq4Lkc",
+        },
+        {
+          icon: <BrushIcon />,
+          id: 3,
+          title: "Oil Painting",
+          googleFormID: "1SkvcoXcd8VbeKUg8gPGGgOMYjdYGZ-BA7jWEfAq4Lkc",
+        },
+      ],
+    },
+    {
+      icon: <TranslateIcon />,
+      title: "Language Classes",
+      id: 4,
+      subClasses: [
+        {
+          icon: <TranslateIcon />,
+          title: "English for Beginners",
+          id: 5,
+          googleFormID: "1SkvcoXcd8VbeKUg8gPGGgOMYjdYGZ-BA7jWEfAq4Lkc",
+        },
+        {
+          icon: <TranslateIcon />,
+          id: 6,
+          title: "Advanced Spanish",
+          googleFormID: "1SkvcoXcd8VbeKUg8gPGGgOMYjdYGZ-BA7jWEfAq4Lkc",
+        },
+      ],
+    },
+  ];
