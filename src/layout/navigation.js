@@ -26,11 +26,11 @@ export const pages = [
       pages: [
         {
           title: 'Email Communications',
-          href: '/maintenance',
+          href: '/tools/email',
         },
         {
           title: 'SMS Communications',
-          href: '/maintenance',
+          href: '/tools/sms',
         },
         // {
         //   title: 'Give Butter Campaigns',
