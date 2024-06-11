@@ -1,31 +1,22 @@
 'use client'
 import React from 'react';
-import { useTheme, List, ListItem, Typography, Container, Button, Grid, Box, Card, CardContent, Divider } from '@mui/material';
+import { 
+  useTheme,
+  Accordion, 
+  AccordionSummary, 
+  AccordionDetails, 
+  Typography, 
+  Button,
+  Grid, 
+  Divider
+} from '@mui/material';
+
+import Fade from '@mui/material/Fade';
 
 import { styled } from '@mui/system';
-import { Circle } from '@mui/icons-material';
+import { Circle, ExpandLess } from '@mui/icons-material';
 import ProviderWrapper from '@/contexts/ProviderWrapper';
 import { CitiesStrongLayout } from '@/layout';
-
-const ContainerStyled = styled(Grid)({
-    flexGrow: 1,
-    padding: "2em",
-    backgroundColor: "#fafafa", 
-    height: "100%",
-    margin:'auto',
-    minHeight: "100vh",
-    boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
-    paddingLeft:'0px !important',
-    paddingRight:'0px !important',
-    paddingTop:0,
-    alignContent:'baseline'
-
-});
-
-const CardStyled = styled(Card)({
-    boxShadow: "0px 5px 15px rgba(0,0,0,0.1)",
-    borderRadius: "10px"
-});
 
 const Page = () => {
 
@@ -39,7 +30,9 @@ const Page = () => {
             <Grid container 
               sx ={{
                 backgroundColor: "#fafafa", 
-                mx:'auto'
+                mx:'auto',
+                boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
+
               }}
               maxWidth='md'
             >
@@ -50,7 +43,7 @@ const Page = () => {
               </Grid>
 
               <Grid item xs={12} sx = {{pX:0}}>
-                <Divider sx = {{borderWidth:3, mx:3, borderColor:'black', mt:5}}/>
+                <Divider sx = {{borderWidth:3, mx:4, borderColor:'black', mt:5}}/>
               
               </Grid>
 
@@ -58,9 +51,9 @@ const Page = () => {
                 <Typography variant = 'h4' sx = {{flexGrow:1}}>
                   Our Name is our mission. We build strong cities through a culture of love and service.
                 </Typography>
-                <Button variant='outlined'  sx = {{mr:'auto'}}>
+                <ButtonStyled variant='outlined'  sx = {{mr:'auto'}}>
                   Learn More
-                </Button>
+                </ButtonStyled>
                 <Divider sx = {{borderWidth:3,  borderColor:'black', mt:4}}/>
               </Grid>
 
@@ -74,18 +67,18 @@ const Page = () => {
                 <Typography variant = 'h5' sx = {{flexGrow:1}}>
                   We do it by supporting commuinty programs that revitalize neighborhoods, inspire education &amp; lift lives.
                 </Typography>
-                <Button variant='outlined'  sx = {{mr:'auto'}}>
+                <ButtonStyled variant='outlined'  sx = {{mr:'auto'}}>
                   Learn More
-                </Button>
+                </ButtonStyled>
               </Grid>
 
               <Grid item xs = {6} sx = {{padding:4, pt:0, display:'flex', flexDirection:'column', height:'220px'}}>
                 <Typography variant = 'h5' sx = {{flexGrow:1}}>
                   Our vision is beautiful, thriving communities full of happiness, peace, and personal growth.
                 </Typography>
-                <Button variant='outlined'  sx = {{mr:'auto'}}>
+                <ButtonStyled variant='outlined'  sx = {{mr:'auto'}}>
                   Learn More
-                </Button>
+                </ButtonStyled>
               </Grid>
 
               {/* <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
@@ -96,36 +89,37 @@ const Page = () => {
               </Grid> */}
               <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
                 <Grid item xs={12} sx={{backgroundColor:'grey', height:'300px'}}/>
-
-                <Grid item xs={12} sx={{position:'absolute', bottom:0, left:0, width:'50%', backgroundColor:'#F1B42D', p:1}}>
-                  <Typography variant = 'h6' textAlign='center' >
-                    Neighborhood Revitalization
-                  </Typography>
-                </Grid>
+                <ImageAccordion
+                  title = 'Neighborhood Revitalization'
+                  content = 'Description or content about Neighborhood Revitalization goes here.'
+                />
               </Grid>
               <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
                 <Grid item xs={12} sx={{backgroundColor:'grey', height:'300px'}}/>
-                <Grid item xs={12} sx={{position:'absolute', bottom:0, right:0, width:'50%', backgroundColor:'#188D4E', p:1}}>
-                  <Typography variant = 'h6' textAlign='center' >
-                    Enhancing Public Eduacation
-                  </Typography>
-                </Grid>
+                <ImageAccordion
+                  title = 'Enhancing Public Eduacation'
+                  content = 'Description or content about Neighborhood Revitalization goes here.'
+                  bgColor = '#188D4E'
+                  right
+                />
               </Grid>
               <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
                 <Grid item xs={12} sx={{backgroundColor:'grey', height:'300px'}}/>
-                <Grid item xs={12} sx={{position:'absolute', bottom:0, left:0, width:'50%', backgroundColor:'#DC5331', p:1}}>
-                  <Typography variant = 'h6' textAlign='center' >
-                    Legal Immigration Assistance
-                  </Typography>
-                </Grid>
+                <ImageAccordion
+                  title = 'Legal Immigration Assistance'
+                  content = 'Description or content about Neighborhood Revitalization goes here.'
+                  bgColor = '#DC5331'
+                />
               </Grid>
               <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
                 <Grid item xs={12} sx={{backgroundColor:'grey', height:'300px'}}/>
-                <Grid item xs={12} sx={{position:'absolute', bottom:0, right:0, width:'50%', backgroundColor:theme.palette.primary.main, p:1}}>
-                  <Typography variant = 'h6' textAlign='center' >
-                    Mental Health Assistance
-                  </Typography>
-                </Grid>
+                
+                <ImageAccordion
+                  title = 'Mental Health Assistance'
+                  content = 'Description or content about Neighborhood Revitalization goes here.'
+                  bgColor = '#286AA4'
+                  right
+                />
               </Grid>
 
             </Grid>
@@ -139,3 +133,63 @@ const Page = () => {
     }
 
 export default Page;
+
+
+const AccordionStyled = styled(Accordion)({
+  position: 'absolute',
+  bottom: 0,
+  width: '50%',
+  maxHeight: '300px', // Max height for the expanded accordion
+  boxShadow: 'none', // Optional: remove shadow if needed
+  '&.Mui-expanded': {
+    minHeight: '300px',
+  },
+  '&:not(.Mui-expanded)': {
+    '& .MuiAccordionDetails-root': {
+      display: 'none',
+    },
+  },
+  '&::before': {
+    display: 'none', // Hide the default MUI accordion expansion line
+  },
+});
+
+const AccordionTitle = styled(Typography)({
+  textTransform:'capitalize',
+  color:'black',
+  fontWeight:'bold',
+  width:'100%'
+});
+
+const ButtonStyled = styled(Button)({
+  borderRadius: "0px",
+  textTransform:'capitalize',
+  borderColor:'black',
+  borderWidth:'2px',
+  color:'black',
+  fontWeight:'bold'
+});
+
+
+const ImageAccordion = ({title, content, bgColor, right}) => {
+  return(
+    <AccordionStyled 
+      square elevation={0} sx={{backgroundColor: bgColor ||'#F1B42D', right: right? 0:""}}
+      slotProps={{ transition: { timeout: 400 } }}
+      slots={{ transition: Fade}}
+    >
+      <AccordionSummary aria-controls="panel1a-content" id="panel1a-header"
+        expandIcon={<ExpandLess />}
+      >
+        <AccordionTitle variant='h6' textAlign='center' >
+          {title}
+        </AccordionTitle>
+      </AccordionSummary>
+      <AccordionDetails>
+        <Typography>
+          {content}
+        </Typography>
+      </AccordionDetails>
+  </AccordionStyled>
+  )
+}
