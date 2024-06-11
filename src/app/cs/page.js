@@ -47,36 +47,37 @@ const Page = () => {
               
               </Grid>
 
-              <Grid item xs = {6} sx = {{padding:4, display:'flex', flexDirection:'column'}}>
+              <Grid item xs = {12} md = {6} sx = {{padding:4, display:'flex', flexDirection:'column'}}>
                 <Typography variant = 'h4' sx = {{flexGrow:1}}>
                   Our Name is our mission. We build strong cities through a culture of love and service.
                 </Typography>
-                <ButtonStyled variant='outlined'  sx = {{mr:'auto'}}>
+                <ButtonStyled variant='outlined'  sx = {{mr:'auto', mt:3}}>
                   Learn More
                 </ButtonStyled>
                 <Divider sx = {{borderWidth:3,  borderColor:'black', mt:4}}/>
               </Grid>
 
-              <Grid item xs = {6} sx = {{padding:4}}>
+              <Grid item xs = {12} md = {6}  sx = {{padding:4, pt:{xs:0,md:4}}}>
                 <Grid item xs={12} style={{backgroundColor:'grey', height:'250px'}}>
                 </Grid>
                 <Divider sx = {{borderWidth:3,  borderColor:'black', mt:4}}/>
               </Grid>
 
-              <Grid item xs = {6} sx = {{padding:4, pt:0, display:'flex', flexDirection:'column', height:'220px'}}>
+              <Grid item xs = {12} md = {6}  sx = {{padding:4, pt:0, display:'flex', flexDirection:'column', height:{md:'220px'}}}>
                 <Typography variant = 'h5' sx = {{flexGrow:1}}>
                   We do it by supporting commuinty programs that revitalize neighborhoods, inspire education &amp; lift lives.
                 </Typography>
-                <ButtonStyled variant='outlined'  sx = {{mr:'auto'}}>
+                <ButtonStyled variant='outlined'  sx = {{mr:'auto', mt:3}}>
                   Learn More
                 </ButtonStyled>
+                <Divider sx = {{borderWidth:3,  borderColor:'black', mt:4, display:{xs:'block',md:'none'}}}/>
               </Grid>
 
-              <Grid item xs = {6} sx = {{padding:4, pt:0, display:'flex', flexDirection:'column', height:'220px'}}>
+              <Grid item xs = {12} md = {6}  sx = {{padding:4, pt:0, display:'flex', flexDirection:'column', height:{md:'220px'}}}>
                 <Typography variant = 'h5' sx = {{flexGrow:1}}>
                   Our vision is beautiful, thriving communities full of happiness, peace, and personal growth.
                 </Typography>
-                <ButtonStyled variant='outlined'  sx = {{mr:'auto'}}>
+                <ButtonStyled variant='outlined'  sx = {{mr:'auto', mt:3}}>
                   Learn More
                 </ButtonStyled>
               </Grid>
@@ -135,12 +136,16 @@ const Page = () => {
 export default Page;
 
 
-const AccordionStyled = styled(Accordion)({
+const AccordionStyled = styled(Accordion)(({ theme }) => ({
   position: 'absolute',
   bottom: 0,
-  width: '50%',
+  width: '75%',
   maxHeight: '300px', // Max height for the expanded accordion
   boxShadow: 'none', // Optional: remove shadow if needed
+  [theme.breakpoints.up('md')]: {
+    maxWidth: '50%', // Max width for md breakpoint and up
+  },
+
   '&.Mui-expanded': {
     minHeight: '300px',
   },
@@ -152,7 +157,7 @@ const AccordionStyled = styled(Accordion)({
   '&::before': {
     display: 'none', // Hide the default MUI accordion expansion line
   },
-});
+}));
 
 const AccordionTitle = styled(Typography)({
   textTransform:'capitalize',
@@ -179,7 +184,7 @@ const ImageAccordion = ({title, content, bgColor, right}) => {
       slots={{ transition: Fade}}
     >
       <AccordionSummary aria-controls="panel1a-content" id="panel1a-header"
-        expandIcon={<ExpandLess />}
+        expandIcon={<ExpandLess style = {{fontWeight:'bold'}}/>}
       >
         <AccordionTitle variant='h6' textAlign='center' >
           {title}
