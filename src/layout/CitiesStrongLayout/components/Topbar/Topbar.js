@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import CitiesStrongLogo from '@/assets/svg/logos/CitiesStrong';
-const Topbar = () => {
+const Topbar = ({theme}) => {
 
   const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'? '/cs':''
 
@@ -14,6 +14,7 @@ const Topbar = () => {
       justifyContent={'space-between'}
       alignItems={'center'}
       width={'100%'}
+      
     >
       <Box display={'flex'} alignItems={'center'}>
 
@@ -31,7 +32,7 @@ const Topbar = () => {
       
         <Box sx={{ display: { xs: 'none', md: 'flex' } }} alignItems={'center'}>
           <Box>
-            <Link underline="none" component="a" href={rootUrl+"/"} color="textPrimary">
+            <Link underline="none" component="a" href={rootUrl+"/"} color = {theme.palette.primary.contrastText}>
               Home
             </Link>
           </Box>
@@ -41,7 +42,7 @@ const Topbar = () => {
               underline="none"
               component="a"
               href={rootUrl+"/about"}
-              color="textPrimary"
+              color = {theme.palette.primary.contrastText}
             >
               About
             </Link>
@@ -51,7 +52,7 @@ const Topbar = () => {
               underline="none"
               component="a"
               href={rootUrl+"/donate"}
-              color="textPrimary"
+              color = {theme.palette.primary.contrastText}
             >
               Donate
             </Link>

@@ -3,7 +3,7 @@ import React from 'react';
 
 const CitiesStrongLogo = () => {
     return (
-        <Typography variant="h6" sx={{ fontFamily: 'Arial', fontSize: '24px', fontWeight: 'bold', color: '#000', textDecoration: 'none', whiteSpace: 'nowrap', }}>
+        <Typography variant="h6" sx={{ fontFamily: 'Arial', fontSize: '24px', fontWeight: 'bold', color: '#fff', textDecoration: 'none', whiteSpace: 'nowrap', }}>
             Cities Strong
         </Typography>
     );

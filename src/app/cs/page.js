@@ -7,12 +7,19 @@ import { Circle } from '@mui/icons-material';
 import ProviderWrapper from '@/contexts/ProviderWrapper';
 import { CitiesStrongLayout } from '@/layout';
 
-const ContainerStyled = styled(Container)({
+const ContainerStyled = styled(Grid)({
     flexGrow: 1,
     padding: "2em",
     backgroundColor: "#fafafa", 
     height: "100%",
+    margin:'auto',
     minHeight: "100vh",
+    boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
+    paddingLeft:'0px !important',
+    paddingRight:'0px !important',
+    paddingTop:0,
+    alignContent:'baseline'
+
 });
 
 const CardStyled = styled(Card)({
@@ -27,122 +34,105 @@ const Page = () => {
     return (
       <ProviderWrapper theme = 'alt'>
         <CitiesStrongLayout>
-          <ContainerStyled >
-            <Typography variant="h3" sx = {{my:3}} align='center'>
-              Welcome to Cities Strong
-            </Typography>
-            
+          {/* <ContainerStyled maxWidth = "md" id = 'main-container' > */}
 
+            <Grid container 
+              sx ={{
+                backgroundColor: "#fafafa", 
+                mx:'auto'
+              }}
+              maxWidth='md'
+            >
 
-              <Divider sx = {{my:3}} />
-              <Typography variant="h6" sx = {{my:3}} align='center'>
-              Our 4 Pillars
-            </Typography>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <CardStyled>
-                  <CardContent>
-                    <Typography variant="h5" gutterBottom  align='center'>
-                      Support for MyHometown Community Resource Centers and Days of Service
-                    </Typography>
-                    <Typography variant="body1">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero.
-                    </Typography>
-                  </CardContent>
-                </CardStyled>
+              <Grid item xs={12} style={{backgroundColor:'grey', height:'250px'}}>
+                
+              
               </Grid>
-              <Grid item xs={12} md={6}>
-                <CardStyled>
-                  <CardContent>
-                    <Typography variant="h5" gutterBottom align='center'>
-                      Support proactive mental health programs for youth and adults
-                    </Typography>
-                    <Typography variant="body1">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero.
-                    </Typography>
-                  </CardContent>
-                </CardStyled>
+
+              <Grid item xs={12} sx = {{pX:0}}>
+                <Divider sx = {{borderWidth:3, mx:3, borderColor:'black', mt:5}}/>
+              
               </Grid>
-              {/* Repeat the above pattern for the remaining two pillars */}
-              <Grid item xs={12} md={6}>
-                <CardStyled>
-                  <CardContent>
-                    <Typography variant="h5" gutterBottom align='center'>
-                      Support legal immigration assistance
-                    </Typography>
-                    <Typography variant="body1">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero.
-                    </Typography>
-                  </CardContent>
-                </CardStyled>
+
+              <Grid item xs = {6} sx = {{padding:4, display:'flex', flexDirection:'column'}}>
+                <Typography variant = 'h4' sx = {{flexGrow:1}}>
+                  Our Name is our mission. We build strong cities through a culture of love and service.
+                </Typography>
+                <Button variant='outlined'  sx = {{mr:'auto'}}>
+                  Learn More
+                </Button>
+                <Divider sx = {{borderWidth:3,  borderColor:'black', mt:4}}/>
               </Grid>
-              <Grid item xs={12} md={6}>
-                <CardStyled>
-                  <CardContent>
-                    <Typography variant="h5" gutterBottom align='center'>
-                      Support Public Education
-                    </Typography>
-                    <Typography variant="body1">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero.
-                    </Typography>
-                  </CardContent>
-                </CardStyled>
+
+              <Grid item xs = {6} sx = {{padding:4}}>
+                <Grid item xs={12} style={{backgroundColor:'grey', height:'250px'}}>
+                </Grid>
+                <Divider sx = {{borderWidth:3,  borderColor:'black', mt:4}}/>
               </Grid>
+
+              <Grid item xs = {6} sx = {{padding:4, pt:0, display:'flex', flexDirection:'column', height:'220px'}}>
+                <Typography variant = 'h5' sx = {{flexGrow:1}}>
+                  We do it by supporting commuinty programs that revitalize neighborhoods, inspire education &amp; lift lives.
+                </Typography>
+                <Button variant='outlined'  sx = {{mr:'auto'}}>
+                  Learn More
+                </Button>
+              </Grid>
+
+              <Grid item xs = {6} sx = {{padding:4, pt:0, display:'flex', flexDirection:'column', height:'220px'}}>
+                <Typography variant = 'h5' sx = {{flexGrow:1}}>
+                  Our vision is beautiful, thriving communities full of happiness, peace, and personal growth.
+                </Typography>
+                <Button variant='outlined'  sx = {{mr:'auto'}}>
+                  Learn More
+                </Button>
+              </Grid>
+
+              {/* <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
+                <pre>
+                Palette: {JSON.stringify(theme.palette, null, 4)}
+
+                </pre>
+              </Grid> */}
+              <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
+                <Grid item xs={12} sx={{backgroundColor:'grey', height:'300px'}}/>
+
+                <Grid item xs={12} sx={{position:'absolute', bottom:0, left:0, width:'50%', backgroundColor:'#F1B42D', p:1}}>
+                  <Typography variant = 'h6' textAlign='center' >
+                    Neighborhood Revitalization
+                  </Typography>
+                </Grid>
+              </Grid>
+              <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
+                <Grid item xs={12} sx={{backgroundColor:'grey', height:'300px'}}/>
+                <Grid item xs={12} sx={{position:'absolute', bottom:0, right:0, width:'50%', backgroundColor:'#188D4E', p:1}}>
+                  <Typography variant = 'h6' textAlign='center' >
+                    Enhancing Public Eduacation
+                  </Typography>
+                </Grid>
+              </Grid>
+              <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
+                <Grid item xs={12} sx={{backgroundColor:'grey', height:'300px'}}/>
+                <Grid item xs={12} sx={{position:'absolute', bottom:0, left:0, width:'50%', backgroundColor:'#DC5331', p:1}}>
+                  <Typography variant = 'h6' textAlign='center' >
+                    Legal Immigration Assistance
+                  </Typography>
+                </Grid>
+              </Grid>
+              <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
+                <Grid item xs={12} sx={{backgroundColor:'grey', height:'300px'}}/>
+                <Grid item xs={12} sx={{position:'absolute', bottom:0, right:0, width:'50%', backgroundColor:theme.palette.primary.main, p:1}}>
+                  <Typography variant = 'h6' textAlign='center' >
+                    Mental Health Assistance
+                  </Typography>
+                </Grid>
+              </Grid>
+
             </Grid>
 
-            <Divider sx = {{my:3}} />
-
-            <Typography variant="body1" paragraph>
-              Why donate to CitiesStrong?
-            </Typography>
-            <Typography variant="h4" gutterBottom>
-              About Us
-            </Typography>
-            <Typography variant="body1" paragraph>
-              Our Hometown Communities Foundation is directed by a dedicated group of business, church and education leaders who are passionate about making Utah a special place to live and raise a family for all residents.
-            </Typography>
-            <Typography variant="h5" gutterBottom>
-              Our Values:
-            </Typography>
             
-              {/* Complete Transparency 
-              Dollars multiplied by thousands of volunteer hours  
-              Real results you can see and feel  
-              Many kinds of projects to fund  
-              Long term sustainability  
-              Able to build strong community relationships  
-              Easy to involve your organization’s staff in community projects  
-              Visibility in the community */}
-              <List>
-                  <ListItem>
-                      <Typography variant="body1" gutterBottom>Complete Transparency</Typography>
-                  </ListItem>
-                  <ListItem>
-                      <Typography variant="body1" gutterBottom>Dollars multiplied by thousands of volunteer hours</Typography>
-                  </ListItem>
-                  <ListItem>
-                      <Typography variant="body1" gutterBottom>Real results you can see and feel</Typography>
-                  </ListItem>
-                  <ListItem>
-                      <Typography variant="body1" gutterBottom>Many kinds of projects to fund</Typography>
-                  </ListItem>
-                  <ListItem>
-                      <Typography variant="body1" gutterBottom>Long term sustainability</Typography>
-                  </ListItem>
-                  <ListItem>
-                      <Typography variant="body1" gutterBottom>Able to build strong community relationships</Typography>
-                  </ListItem>
-                  <ListItem>
-                      <Typography variant="body1" gutterBottom>Easy to involve your organization's staff in community projects</Typography>
-                  </ListItem>
-                  <ListItem>
-                      <Typography variant="body1" gutterBottom>Visibility in the community</Typography>
-                  </ListItem>
-              </List>
 
-
-            {/* More values here */}
-          </ContainerStyled>
+          {/* </ContainerStyled> */}
         </CitiesStrongLayout>
       </ProviderWrapper>
       );

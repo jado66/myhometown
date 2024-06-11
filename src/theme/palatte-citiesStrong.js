@@ -1,4 +1,10 @@
 export const citiesStrongLight = {
+    // #E3E3E4 background
+    // #ffffff forground
+    // #188D4E GREEN    
+    // #F1B42D Yellow
+    // #DC5331 orange
+    // #286AA4 blue
     alternate: {
       main: '#f7f9fc',
       dark: '#edf1f7',
@@ -8,8 +14,10 @@ export const citiesStrongLight = {
     primary: {
       // #B0413E
       // main: '#ff4d06',
-      main: '#314CB6',
-
+      main: '#188D4E',
+      yellow: '#F1B42D',
+      orange: '#DC5331',
+      blue: '#286AA4',
       light: '#2196f3',
       dark: '#0d47a1',
       contrastText: '#fff',

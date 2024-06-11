@@ -45,12 +45,12 @@ const CitiesStrongLayout = ({
         <AppBar
           position={'fixed'}
           sx={{
-            backgroundColor: theme.palette.background.paper,
+            backgroundColor: theme.palette.primary.main,
           }}
           elevation={1}
         >
           <Container paddingY={{ xs: 1 / 2, sm: 1 }}>
-            <Topbar/>
+            <Topbar theme = {theme}/>
           </Container>
         </AppBar>
       </HideOnScroll>
