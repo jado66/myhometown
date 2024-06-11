@@ -6,9 +6,6 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata = {
-  title: "My Hometown",
-};
 
 export default async function RootLayout({ children }) {
 

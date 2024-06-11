@@ -25,6 +25,11 @@ HideOnScroll.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
+export const metadata = {
+  title: "Cities Strong",
+  description: "Description of Cities Strong.", //#TODO
+};
+
 const CitiesStrongLayout = ({
   children,
 }) => {

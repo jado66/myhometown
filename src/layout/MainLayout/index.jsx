@@ -25,6 +25,12 @@ HideOnScroll.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
+export const metadata = {
+  title: "My Hometown",
+  description: "Description of MyHometown.", //#TODO
+};
+
+
 const MainLayout = ({
   children,
   themeToggler,
