@@ -10,6 +10,7 @@ import Slide from '@mui/material/Slide';
 import { Topbar, Sidebar, Footer } from './components';
 import { pages } from '../navigation';
 import Container from '@/components/util/Container';
+import Head from 'next/head';
 
 const HideOnScroll = ({ children }) => {
   const trigger = useScrollTrigger();
@@ -45,35 +46,43 @@ const CitiesStrongLayout = ({
   };
 
   return (
-    <div style={{minHeight:"100vh", display:"flex", flexDirection:"column", backgroundColor:theme.palette.background.paper }}>
-      <HideOnScroll>
-        <AppBar
-          position={'fixed'}
-          sx={{
-            backgroundColor: theme.palette.primary.main,
-          }}
-          elevation={1}
-        >
-          <Container paddingY={{ xs: 1 / 2, sm: 1 }}>
-            <Topbar theme = {theme}/>
-          </Container>
-        </AppBar>
-      </HideOnScroll>
-      <Sidebar
-        onClose={handleSidebarClose}
-        open={openSidebar}
-        variant="temporary"
-        pages={pages}
-      />
-      <main>
-        <Box height={{ xs: 56, sm: 48 }} />
-        {children}
-        <Divider />
-      </main>
-      <Container paddingY={4}>
-        <Footer />
-      </Container>
-    </div>
+    <>
+      <Head>
+        {/* Change metadata dynamically */}
+        <title>{metadata.title}</title>
+        <meta name="description" content={metadata.description} />
+      </Head>
+      
+      <div style={{minHeight:"100vh", display:"flex", flexDirection:"column", backgroundColor:theme.palette.background.paper }}>
+        <HideOnScroll>
+          <AppBar
+            position={'fixed'}
+            sx={{
+              backgroundColor: theme.palette.primary.main,
+            }}
+            elevation={1}
+          >
+            <Container paddingY={{ xs: 1 / 2, sm: 1 }}>
+              <Topbar theme = {theme}/>
+            </Container>
+          </AppBar>
+        </HideOnScroll>
+        <Sidebar
+          onClose={handleSidebarClose}
+          open={openSidebar}
+          variant="temporary"
+          pages={pages}
+        />
+        <main>
+          <Box height={{ xs: 56, sm: 48 }} />
+          {children}
+          <Divider />
+        </main>
+        <Container paddingY={4}>
+          <Footer />
+        </Container>
+      </div>
+    </>
   );
 };
 

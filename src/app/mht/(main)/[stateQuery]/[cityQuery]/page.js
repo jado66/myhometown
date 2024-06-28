@@ -14,7 +14,8 @@ import Loading from '@/components/util/Loading';
 import PhotoGallery from '@/components/PhotoGallery';
 import { cityTemplate } from '@/constants/templates/cityTemplate';
 import { CommunityCard } from '@/components/CommunityCard';
-
+import CountUp from 'react-countup';
+import VisibilitySensor from 'react-visibility-sensor';
 
 
 const Page = ({ params }) =>{
@@ -33,6 +34,16 @@ const Page = ({ params }) =>{
     const onSelectEvent = (event) => {
         setSelectedEvent(event)
     }
+
+      
+    const [viewPortEntered, setViewPortEntered] = useState(false);
+    const setViewPortVisibility = (isVisible) => {
+        if (viewPortEntered) {
+        return;
+        }
+
+        setViewPortEntered(isVisible);
+    };
 
     if (!hasLoaded){
         return (<>
@@ -139,6 +150,95 @@ const Page = ({ params }) =>{
 
                 <Divider sx = {{my:5}}/>
 
+                {
+                    city.stats &&
+                    <Grid container spacing={2} paddingY = {3} >
+                        <Grid item md={4}>
+                            <Typography
+                                variant="h3"
+                                align={'center'}
+                                gutterBottom
+                                sx={{
+                                    fontWeight: 'medium',
+                                }}
+                            >
+                                <VisibilitySensor
+                                    onChange={(isVisible) => setViewPortVisibility(isVisible)}
+                                    delayedCall
+                                    >
+                                    <CountUp
+                                        redraw={false}
+                                        end={viewPortEntered ? city.stats.volunteerHours : 0}
+                                        start={0}
+                                    />
+                                </VisibilitySensor>
+                            </Typography>
+                        
+                            <Typography color="text.secondary" align={'center'} component="p">
+                                Volunteer Hours
+                            </Typography>
+                        </Grid>
+                        <Grid item md={4}>
+                            <Typography
+                                variant="h3"
+                                align={'center'}
+                                gutterBottom
+                                sx={{
+                                    fontWeight: 'medium',
+                                }}
+                            >
+                                <VisibilitySensor
+                                    onChange={(isVisible) => setViewPortVisibility(isVisible)}
+                                    delayedCall
+                                    >
+                                    <CountUp
+                                        redraw={false}
+                                        end={viewPortEntered ? city.stats.numTeachersVolunteers : 0}
+                                        start={0}
+                                       
+                                    />
+                                </VisibilitySensor>
+                            </Typography>
+                        
+                            <Typography color="text.secondary" align={'center'} component="p">
+                                Volunteers
+                            </Typography>
+                        </Grid>
+                        <Grid item md={4}>
+                            <Typography
+                                variant="h3"
+                                align={'center'}
+                                gutterBottom
+                                sx={{
+                                    fontWeight: 'medium',
+                                }}
+                            >
+                                <VisibilitySensor
+                                    onChange={(isVisible) => setViewPortVisibility(isVisible)}
+                                    delayedCall
+                                    >
+                                    <CountUp
+                                        redraw={false}
+                                        end={viewPortEntered ? city.stats.serviceProjects : 0}
+                                        start={0}
+                                    />
+                                </VisibilitySensor>
+                            </Typography>
+                        
+                            <Typography color="text.secondary" align={'center'} component="p">
+                                Projects Completed
+                            </Typography>
+                        </Grid>
+
+                        <Grid item md={12}>
+
+                        <Divider sx = {{my:5}}/>
+                        </Grid>
+
+                    </Grid>
+                }
+
+                
                 <UpcomingEvents events={city.events} maxEvents = {5} />
 
                 {

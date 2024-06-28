@@ -10,6 +10,7 @@ import Slide from '@mui/material/Slide';
 import { Topbar, Sidebar, Footer } from './components';
 import { pages } from '../navigation';
 import Container from '@/components/util/Container';
+import Head from 'next/head';
 
 const HideOnScroll = ({ children }) => {
   const trigger = useScrollTrigger();
@@ -50,37 +51,52 @@ const MainLayout = ({
   };
 
   return (
-    <div style={{backgroundColor:'#fff'}}>
-      <HideOnScroll>
-        <AppBar
-          position={'fixed'}
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-          }}
-          elevation={1}
-        >
-          <Container paddingY={{ xs: 1 / 2, sm: 1 }}>
-            <Topbar
-              onSidebarOpen = {handleSidebarOpen}
-            />
-          </Container>
-        </AppBar>
-      </HideOnScroll>
-      <Sidebar
-        onClose={handleSidebarClose}
-        open={openSidebar}
-        variant="temporary"
-        pages={pages}
-      />
-      <main>
-        <Box height={{ xs: 56, sm: 48 }} />
-        {children}
-        <Divider />
-      </main>
-      <Container paddingY={4}>
-        <Footer />
-      </Container>
-    </div>
+    <>
+      <Head>
+          {/* Change metadata dynamically */}
+          <title>{metadata.title}</title>
+          <meta name="description" content={metadata.description} />
+          <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+          <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"/>
+          <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"/>
+          <link rel="manifest" href="/site.webmanifest"/>
+          <meta name="msapplication-TileColor" content="#f3fbfb"/>
+          <meta name="theme-color" content="#ffffff"/>
+        </Head>
+
+
+      <div style={{backgroundColor:'#fff'}}>
+        <HideOnScroll>
+          <AppBar
+            position={'fixed'}
+            sx={{
+              backgroundColor: theme.palette.background.paper,
+            }}
+            elevation={1}
+          >
+            <Container paddingY={{ xs: 1 / 2, sm: 1 }}>
+              <Topbar
+                onSidebarOpen = {handleSidebarOpen}
+              />
+            </Container>
+          </AppBar>
+        </HideOnScroll>
+        <Sidebar
+          onClose={handleSidebarClose}
+          open={openSidebar}
+          variant="temporary"
+          pages={pages}
+        />
+        <main>
+          <Box height={{ xs: 56, sm: 48 }} />
+          {children}
+          <Divider />
+        </main>
+        <Container paddingY={4}>
+          <Footer />
+        </Container>
+      </div>
+    </>
   );
 };
 

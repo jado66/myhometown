@@ -15,6 +15,11 @@ const Home = () => {
             <Box marginTop={2}>
               <Highlights />
             </Box>
+            <Box marginTop={4}>
+              <Box>
+                Become a myHometown Community
+              </Box>
+            </Box>
           </Box>
         </Container>
       </Box>
@@ -25,3 +30,5 @@ const Home = () => {
 };
 
 export default Home;
+
+

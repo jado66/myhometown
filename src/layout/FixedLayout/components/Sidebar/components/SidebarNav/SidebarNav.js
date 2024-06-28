@@ -37,7 +37,7 @@ const SidebarNav = ({ pages, onClose }) => {
       </Box>
       
       <Box>
-        {pages.map((item, i) => (
+        {pages().map((item, i) => (
           <Box key={i} marginBottom={3}>
             <Typography
               variant="caption"

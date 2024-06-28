@@ -13,29 +13,39 @@ import Divider from '@mui/material/Divider';
 import MyHometownLogo from '@/assets/svg/logos/MyHometown';
 import useManageCities from '@/hooks/use-manage-cities';
 import LanguageIcon from '@mui/icons-material/Language';
-import { Translate } from '@mui/icons-material';
+import { ExpandLess, Translate } from '@mui/icons-material';
 import {useTranslations} from 'next-intl';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 
 const Topbar = ({onSidebarOpen}) => {
 
   const { groupedCityStrings } = useManageCities(null, true);
 
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [citiesAnchorEl, setCitiesAnchorEl] = useState(null);
+  const [resourcesAnchorEl, setResourcesAnchorEl] = useState(null);
+
   const [search, setSearch] = useState("");
 
   const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'? '/mht':''
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
+  const handleCitiesClick = (event) => {
+    setCitiesAnchorEl(event.currentTarget);
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handleResourcesClick = (event) => {
+    setResourcesAnchorEl(event.currentTarget);
   };
 
-   
+  const handleCitiesClose = () => {
+    setCitiesAnchorEl(null);
+  };
+
+  const handleResourcesClose = () => {
+    setResourcesAnchorEl(null);
+  };
+
   const handleSearch = (event) => {
     setSearch(event.target.value);
     event.stopPropagation();
@@ -88,26 +98,31 @@ const Topbar = ({onSidebarOpen}) => {
       <Box display="flex" alignItems={'center'}>
         <Box sx={{ display: { xs: 'none', md: 'flex' } }} alignItems={'center'}>
           <LanguageDropdown />  
-          <Box>
-            <Link underline="none" component="a" href={rootUrl+"/"} color="textPrimary">
-              Home
-            </Link>
-          </Box>
+          
           <Box marginX={2}>
             <Link
               underline="none"
               component="a"
               href="#"
-              onClick={handleClick}
+              onClick={handleCitiesClick}
               color="textPrimary"
+              display = 'flex'
+              alignContent = 'center'
             >
               Cities
+              {/* {
+                !citiesAnchorEl ?
+                <ExpandMore/>
+                :
+                <ExpandLess/>
+              } */}
+              
             </Link>
             <Menu
               id="cities-menu"
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
+              anchorEl={citiesAnchorEl}
+              open={Boolean(citiesAnchorEl)}
+              onClose={handleCitiesClose}
               keepMounted
               sx = {{maxHeight:500, mt:2}}
             >
@@ -145,7 +160,7 @@ const Topbar = ({onSidebarOpen}) => {
                         {cities.map(city => (
                           <MenuItem 
                             key={city} 
-                            onClick={handleClose}
+                            onClick={handleCitiesClose}
                             component="a"
                             href={rootUrl+`/${state.toLowerCase()}/${city.toLowerCase().replaceAll(' ', '-')}`}
                           >
@@ -158,6 +173,55 @@ const Topbar = ({onSidebarOpen}) => {
               }
             </Menu>
           </Box>
+          
+          <Box marginX={2}>
+            <Link
+              underline="none"
+              component="a"
+              href="#"
+              onClick={handleResourcesClick}
+              color="textPrimary"
+              display = 'flex'
+              alignContent = 'center'
+            >
+              Resources
+              {/* {
+                !resourcesAnchorEl ?
+                <ExpandMore/>
+                :
+                <ExpandLess/>
+              } */}
+            </Link>
+            <Menu
+              id="resources-menu"
+              anchorEl={resourcesAnchorEl}
+              open={Boolean(resourcesAnchorEl)}
+              onClose={handleResourcesClose}
+              keepMounted
+              sx = {{maxHeight:500, mt:2}}
+            >
+              <MenuItem component = 'a' >
+                Community Resource Centers
+              </MenuItem>
+              <MenuItem component = 'a' >
+                Days of Services
+              </MenuItem>
+              <MenuItem component = 'a' >
+                Immigration
+              </MenuItem>
+              <MenuItem component = 'a' >              
+                Mental Health 
+              </MenuItem>
+              <MenuItem component = 'a' >
+                Education
+              </MenuItem>
+              
+                    
+             
+            </Menu>
+          </Box>
+          
+          
           <Box marginX={2}>
             <Link
               underline="none"

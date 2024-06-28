@@ -93,7 +93,7 @@ const AdminDashboardPages = () => {
                     'Manage your cities. Add, remove, or edit city information.',
                   media: '/cities.png',
                   href: rootUrl+'/admin-dashboard/cities',
-                  requiredRole: 'city-owner'
+                  requiredRole: 'city-admin'
                 },
                 {
                   title: 'Community Management',
@@ -101,7 +101,7 @@ const AdminDashboardPages = () => {
                     'Manage your communities. Add, remove, or edit community information.',
                   media: '/community.png',
                   href: rootUrl+'/admin-dashboard/communities',
-                  requiredRole: 'community-owner'
+                  requiredRole: 'community-admin'
                 },
                 {
                   title: 'Email Communications',

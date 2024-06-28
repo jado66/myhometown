@@ -1,22 +1,26 @@
-export const pages = [
+export const pages = () => {
+  
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'? '/mht':''
+
+  return [
     {
       title: 'Management',
       id: 'landing-pages',
       pages: [
         {
           title: 'User Management',
-          href: '/admin-dashboard/users',
+          href:  rootUrl+'/admin-dashboard/users',
           requiredRole: 'admin'
         },
         {
           title: 'City Management',
-          href: '/admin-dashboard/cities',
-          requiredRole: 'city-owner'
+          href:  rootUrl+'/admin-dashboard/cities',
+          requiredRole: 'city-admin'
         },
         {
           title: 'Community Management',
-          href: '/admin-dashboard/communities',
-          requiredRole: 'community-owner'
+          href: rootUrl+'/admin-dashboard/communities',
+          requiredRole: 'community-admin'
         },
       ]
     },
@@ -26,11 +30,11 @@ export const pages = [
       pages: [
         {
           title: 'Email Communications',
-          href: '/tools/email',
+          href:  rootUrl+'/tools/email',
         },
         {
           title: 'SMS Communications',
-          href: '/tools/sms',
+          href:  rootUrl+'/tools/sms',
         },
         // {
         //   title: 'Give Butter Campaigns',
@@ -44,11 +48,11 @@ export const pages = [
       pages: [
         {
           title: 'Manage Profile',
-          href: '/maintenance',
+          href:  rootUrl+'/maintenance',
         },
         {
           title: 'Settings',
-          href: '/maintenance',
+          href:  rootUrl+'/maintenance',
         },
       ],
     },
@@ -66,5 +70,6 @@ export const pages = [
         }
       ],
     },
-  ];
+  ]
+}
   

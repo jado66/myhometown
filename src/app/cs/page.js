@@ -34,7 +34,7 @@ const Page = () => {
                 boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
 
               }}
-              maxWidth='md'
+              maxWidth='lg'
             >
 
               <Grid item xs={12} style={{backgroundColor:'grey', height:'250px'}}>

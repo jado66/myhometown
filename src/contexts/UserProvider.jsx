@@ -24,6 +24,13 @@ export const UserProvider = ({ children }) => {
             body: JSON.stringify({ sub, email })
         });
         const data = await response.json();
+        // }
+        // catch {
+        //     console.error("could not fetch user")
+        //     return 
+        // }
+
+        
     
         // Set the user data
         setUser(data);

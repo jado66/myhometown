@@ -7,19 +7,19 @@ export default function useManageCities(userfilter, forDropDownCityMenu = false)
     const [hasLoaded, setHasLoaded] = useState(false);
   
     useEffect(() => {
-      if (cities) {
-          const grpCityStrs = cities.reduce((acc, currentCity) => {
-              const { state, name, visibility } = currentCity;
-                
-              // Only process and add city if visibility is true
-              if (visibility) {
-                  if (!acc[state]) acc[state] = []; // Initialize if this state does not exist yet
-                  acc[state].push(name);
-              }
-                
-              return acc;
-          }, {});
-          setGroupedCityStrings(grpCityStrs);
+      if (cities && cities.length > 0) {
+        const grpCityStrs = cities.reduce((acc, currentCity) => {
+            const { state, name, visibility } = currentCity;
+              
+            // Only process and add city if visibility is true
+            if (visibility) {
+                if (!acc[state]) acc[state] = []; // Initialize if this state does not exist yet
+                acc[state].push(name);
+            }
+              
+            return acc;
+        }, {});
+        setGroupedCityStrings(grpCityStrs);
       }
   }, [cities]);
 

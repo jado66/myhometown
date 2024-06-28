@@ -53,6 +53,11 @@ const Page = ({ params }) =>{
 
         localStorage.setItem(name, value)
     }
+    useEffect(()=>{
+        if (community && hasLoaded){
+            localStorage.setItem('lastCommunity', JSON.stringify(community))
+        }
+    },[community, hasLoaded])
 
     if (!hasLoaded){
         return (<>
@@ -69,6 +74,8 @@ const Page = ({ params }) =>{
             </div>
         )
     }
+
+   
 
     return (
         <>
@@ -132,7 +139,7 @@ const mockClassesData = [
       icon: <BrushIcon />,
       title: "Art Classes",
       id: 1,
-      subClasses: [
+      classes: [
         {
           icon: <BrushIcon />,
           id: 2,
@@ -151,7 +158,7 @@ const mockClassesData = [
       icon: <TranslateIcon />,
       title: "Language Classes",
       id: 4,
-      subClasses: [
+      classes: [
         {
           icon: <TranslateIcon />,
           title: "English for Beginners",

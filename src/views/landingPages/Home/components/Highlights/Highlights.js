@@ -9,73 +9,25 @@ const Highlights = () => {
   const theme = useTheme();
   return (
     <Box>
-      <Grid container spacing={2}>
+      <Grid container spacing={8}>
         {[
           {
             title: 'Community Leadership',
             subtitle:
               'MyHometown initiative helps build community leadership and resilience.',
-            icon: (
-              <svg
-                height={24}
-                width={24}
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"
-                />
-              </svg>
-            ),
+            color: 'orange'
           },
           {
             title: 'Revitalizing Neighborhoods',
             subtitle:
-              'Brings new life and energy to city neighborhoods by improving housing, offering opportunities for families.',
-            icon: (
-              <svg
-                height={24}
-                width={24}
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-                />
-              </svg>
-            ),
+              'We bring new life and energy to city neighborhoods by improving housing, offering opportunities for families.',
+            color: 'red'
           },
           {
             title: 'Camaraderie & Friendship',
             subtitle:
               'The MyHometown Initiative builds camaraderie and strengthens friendships within a city’s neighborhoods.',
-            icon: (
-              <svg
-                height={24}
-                width={24}
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-                />
-              </svg>
-            ),
+            color: 'blue'
           },
         ].map((item, i) => (
           <Grid item xs={12} md={4} key={i}>
@@ -84,26 +36,28 @@ const Highlights = () => {
                 display={'flex'}
                 flexDirection={'column'}
                 alignItems={'center'}
+                sx = {{
+                  border:`2px solid ${item.color}`,
+                  color: 'white',
+                  minHeight:'180px'
+                }}
               >
-                <Box
-                  component={Avatar}
-                  width={60}
-                  height={60}
-                  marginBottom={2}
-                  bgcolor={alpha(theme.palette.primary.main, 0.1)}
-                  color={theme.palette.primary.main}
-                >
-                  {item.icon}
-                </Box>
+                
                 <Typography
                   variant={'h6'}
                   gutterBottom
-                  sx={{ fontWeight: 500 }}
+                  sx={{ 
+                    fontWeight: 500,
+                    backgroundColor: item.color
+                  }}
                   align={'center'}
+                  width='100%'
                 >
                   {item.title}
                 </Typography>
-                <Typography align={'center'} color="textSecondary">
+                <Typography align={'center'} color="textSecondary"
+                  sx = {{p:2}}
+                >
                   {item.subtitle}
                 </Typography>
               </Box>
