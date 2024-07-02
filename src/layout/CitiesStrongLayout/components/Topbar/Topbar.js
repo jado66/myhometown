@@ -4,6 +4,8 @@ import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import CitiesStrongLogo from '@/assets/svg/logos/CitiesStrong';
+import CitiesStrongShield from '@/assets/svg/logos/CititesStrongShield';
+import CitiesStrongShieldIcon from '@/assets/svg/logos/CitiesStrongShieldIcon';
 const Topbar = ({theme}) => {
 
   const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'? '/cs':''
@@ -25,17 +27,22 @@ const Topbar = ({theme}) => {
           height={{ xs: 28, md: 32 }}
           width={45}
         >
-          <CitiesStrongLogo height='100%' width='100%' />
+          {/* <CitiesStrongLogo height='100%' width='100%' /> */}
+          <CitiesStrongShield shieldColor='#000000' fontColor='#ffffff'/>
         </Box>
+      </Box>
+
+      <Box display={'flex'} alignItems={'center'}>
+
+        <Link underline="none" sx={{textTransform:'uppercase', fontWeight:'bold'}} component="a" href={rootUrl+"/"} color = {theme.palette.primary.contrastText}>
+          Cities Strong
+        </Link>
+        
       </Box>
       <Box display="flex" alignItems={'center'}>
       
         <Box sx={{ display: { xs: 'none', md: 'flex' } }} alignItems={'center'}>
-          <Box>
-            <Link underline="none" component="a" href={rootUrl+"/"} color = {theme.palette.primary.contrastText}>
-              Home
-            </Link>
-          </Box>
+         
         
           <Box marginX={2}>
             <Link

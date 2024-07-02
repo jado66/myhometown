@@ -13,6 +13,7 @@ const MaintenanceMode = () => {
       height={'100%'}
       display={'flex'}
       alignItems={'center'}
+      width={'100%'}
     >
       <Container>
         <Grid container spacing={4}>
@@ -36,10 +37,10 @@ const MaintenanceMode = () => {
                 gutterBottom
                 sx={{ fontWeight: 700 }}
               >
-                This page is in maintenance mode
+                This page is in under development
               </Typography>
-              <Typography component="p" color="textSecondary" align={'center'}>
-                We are working hard to deliver great new features.
+              <Typography component="p"  align={'center'}>
+                Check back soon
               </Typography>
              
             </Box>

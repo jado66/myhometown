@@ -1,10 +1,11 @@
 import React from 'react';
 import Grid from '@mui/material/Grid';
-import { Divider, Typography } from '@mui/material';
+import { Box, Divider, Typography } from '@mui/material';
 import Link from 'next/link';
 import { Instagram, LinkedIn, YouTube } from '@mui/icons-material';
 import Twitter from '@mui/icons-material/Twitter';
 import { styled } from '@mui/system';
+import CitiesStrongShieldIcon from '@/assets/svg/logos/CitiesStrongShieldIcon';
 
 const Footer = () => (
   <Grid xs={12}>
@@ -64,8 +65,12 @@ const Footer = () => (
       </Grid>
     </Grid>
     <Grid container spacing={2} mt={.5} mb={5} px={4}>
-      <Typography variant='h3' sx={{ textTransform: 'uppercase', width: '100%' }} textAlign='center'>
-        Cities Strong Foundation
+      <Typography variant='h3' sx={{ textTransform: 'uppercase', width: '100%', fontWeight:'bold' }} textAlign='center'>
+        <Box component="span" sx={{ color: '#2D903C', mr:2 }}>
+          Cities Strong
+        </Box>  
+        Foundation
+        <CitiesStrongShieldIcon sx = {{ml:1}}/>
       </Typography>
     </Grid>
     <Checkerboard />
