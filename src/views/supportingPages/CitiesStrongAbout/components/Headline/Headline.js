@@ -41,11 +41,11 @@ const Headline = () => {
         </Box>
         <Box marginBottom={4}>
           <Typography variant="h6" align={'center'} >
-          Cities Strong Foundation is directed by a dedicated group of business, church and education leaders who are passionate about making Utah a special place to live and raise a family for all residents.
+          Cities Strong Foundation is directed by a dedicated group of business, church and education leaders who are passionate about making our communities special places to live and raise a family for all residents.
 
           </Typography>
         </Box>
-        <Box display="flex" justifyContent={'center'}>
+        {/* <Box display="flex" justifyContent={'center'}>
           <Box
             component={Button}
             variant="contained"
@@ -54,7 +54,7 @@ const Headline = () => {
           >
             Learn more
           </Box>
-        </Box>
+        </Box> */}
       </Box>
     </Box>
   );

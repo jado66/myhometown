@@ -10,9 +10,9 @@ export const executiveCommittee = [
         avatar: '/images/board/ScottSorensen.jpg'
     },
     {
-        name: 'Ken Bowman',
+        name: 'Kent Bowman',
         position: 'Vice President',
-        avatar: '/images/board/KenBowman.jpg'
+        avatar: '/images/board/Kent Bowman.jpeg'
     },
     {
         name: 'Mark Durham',
@@ -48,25 +48,21 @@ export const boardOfDirectors = [
         avatar: '/images/board/Nicole Cottle.jpg',
     },
     {
-        name: 'Shaleane Gee',
-        avatar: '/images/board/Shaleane Gee.jpg',
-    },
-    {
         name: 'David Johnson',
         avatar: '/images/board/David Johnson.jpg',
     },
-    {
-        name: 'Bruce Jardine',
-        avatar: '/images/board/Bruce Jardine.jpg',
-    },
+    // {
+    //     name: 'Bruce Jardine',
+    //     avatar: '/images/board/Bruce Jardine.jpg',
+    // },
     {
         name: 'Rev. Bruce Kolasch',
         avatar: '/images/board/Bruce Kolasch.jpg',
     },
-    {
-        name: 'Eli Madrigal',
-        avatar: '/images/board/Eli Madrigal.jpg',
-    },
+    // {
+    //     name: 'Eli Madrigal',
+    //     avatar: '/images/board/Eli Madrigal.jpg',
+    // },
     {
         name: 'Dr. Ann Millner',
         avatar: '/images/board/Dr. Ann Milner.jpg',
@@ -77,7 +73,7 @@ export const boardOfDirectors = [
     },
     {
         name: 'Kimberly Teitter',
-        avatar: '/images/board/Kimberly Teitter.jpg',
+        avatar: '/images/board/KimberlyTeitter.jpg',
     },
     {
         name: 'Jared Theurer',

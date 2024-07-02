@@ -30,37 +30,17 @@ const Footer = () => (
         <FooterLink href="/pressroom"><Typography sx={{ textTransform: 'uppercase', textDecoration:'none' }}>Pressroom</Typography></FooterLink>
         <FooterLink href="/newsletter" ><Typography sx={{ textTransform: 'uppercase' }}>Newsletter</Typography></FooterLink>
         <FooterLink href="/contact" ><Typography sx={{ textTransform: 'uppercase' }}>Contact</Typography></FooterLink>
-        <FooterLink href="/careers" ><Typography sx={{ textTransform: 'uppercase' }}>Careers</Typography></FooterLink>
+        {/* <FooterLink href="/careers" ><Typography sx={{ textTransform: 'uppercase' }}>Careers</Typography></FooterLink> */}
+      
+        <Divider sx={{ borderWidth: 3, borderColor: 'black', my: 2 }} />
+      </Grid>
+      <Grid item xs={4} sx={{ pX: 0 }} display='flex' flexDirection='column'>
+        <Divider sx={{ borderWidth: 3, borderColor: 'black', mb: 2 }} />
+       
+        {/* <FooterLink href="/careers" ><Typography sx={{ textTransform: 'uppercase' }}>Careers</Typography></FooterLink> */}
         <FooterLink href="/donate" ><Typography sx={{ textTransform: 'uppercase' }}>Donate</Typography></FooterLink>
         <FooterLink href="/terms-of-use" ><Typography sx={{ textTransform: 'uppercase' }}>Terms Of Use</Typography></FooterLink>
         <FooterLink href="/privacy-policy" ><Typography sx={{ textTransform: 'uppercase' }}>Privacy Policy</Typography></FooterLink>
-        <Divider sx={{ borderWidth: 3, borderColor: 'black', my: 2 }} />
-      </Grid>
-      <Grid
-        item
-        xs={4}
-        sx={{
-          pX: 0,
-          display: 'flex',
-          flexDirection: 'column'
-        }}
-      >
-        <Divider sx={{ borderWidth: 3, borderColor: 'black', mb: 2 }} />
-        <Grid display='flex' flexDirection='row'>
-          <FooterLink href="https://www.linkedin.com/" >
-            <Typography sx={{ textTransform: 'uppercase', mr: 1 }}><LinkedIn /></Typography>
-          </FooterLink>
-          <FooterLink href="https://www.instagram.com/" >
-            <Typography sx={{ textTransform: 'uppercase', mx: 1 }}><Instagram /></Typography>
-          </FooterLink>
-          <FooterLink href="https://www.twitter.com/" >
-            <Typography sx={{ textTransform: 'uppercase', mx: 1 }}><Twitter /></Typography>
-          </FooterLink>
-          <FooterLink href="https://www.youtube.com/" >
-            <Typography sx={{ textTransform: 'uppercase', ml: 1 }}><YouTube /></Typography>
-          </FooterLink>
-        </Grid>
-        <Grid sx={{ flex: 1 }} />
         <Divider sx={{ borderWidth: 3, borderColor: 'black', my: 2 }} />
       </Grid>
     </Grid>
