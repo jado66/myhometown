@@ -16,7 +16,7 @@ const Headline = () => {
             fontWeight: 'medium',
           }}
           gutterBottom
-          color={'textSecondary'}
+          // color={'textSecondary'}
           align={'center'}
         >
           About us

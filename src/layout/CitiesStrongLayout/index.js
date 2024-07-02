@@ -11,6 +11,7 @@ import { Topbar, Sidebar, Footer } from './components';
 import { pages } from '../navigation';
 import Container from '@/components/util/Container';
 import Head from 'next/head';
+import { Grid } from '@mui/material';
 
 const HideOnScroll = ({ children }) => {
   const trigger = useScrollTrigger();
@@ -75,12 +76,21 @@ const CitiesStrongLayout = ({
         />
         <main>
           <Box height={{ xs: 56, sm: 48 }} />
-          {children}
-          <Divider />
+            <Grid container 
+              sx ={{
+                backgroundColor: "#fafafa", 
+                mx:'auto',
+                boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
+
+              }}
+              maxWidth='md'
+            >
+            {children}
+            <Divider />
+            <Footer/>
+          </Grid>
+
         </main>
-        <Container paddingY={4}>
-          <Footer />
-        </Container>
       </div>
     </>
   );

@@ -1,57 +1,86 @@
-export const boardOfDirectors = [
-    {
-        name: 'Scott Sorensen',
-        position: 'Chairman',
-        avatar: 'images/profile.png',
-    },
+export const executiveCommittee = [
     {
         name: 'Dan England',
-        position: 'Vice Chairman',
-        avatar: 'images/profile.png',
+        position: 'Chairman',
+        avatar: '/images/board/Dan England.jpg',
     },
     {
-        name: 'Steve Peterson',
-        position: 'Secretary',
-        avatar: 'images/profile.png',
+        name: 'Scott Sorensen',
+        position: 'President / CEO',
+        avatar: '/images/board/ScottSorensen.jpg'
+    },
+    {
+        name: 'Ken Bowman',
+        position: 'Vice President',
+        avatar: '/images/board/KenBowman.jpg'
+    },
+    {
+        name: 'Mark Durham',
+        position: 'Vice President',
+        avatar: '/images/board/Mark Durham.jpg'
+    },
+    {
+        name: 'Steve Petersen',
+        position: 'Vice President',
+        avatar: '/images/board/Steve Petersen.jpg',
     },
     {
         name: 'Ted Hill',
         position: 'Treasurer',
-        avatar: 'images/profile.png',
+        avatar: '/images/board/Ted Hill.jpg',
     },
     {
         name: 'Paul Werner',
-        position: 'Director',
-        avatar: 'images/profile.png',
-    },
+        position: 'Secretary',
+        avatar: '/images/board/Paul Werner.jpg',
+    }
+
+]
+
+export const boardOfDirectors = [
+   
     {
-        name: 'Mark Durham',
-        position: 'Director',
-        avatar: 'images/profile.png',
-    },
-    {
-        name: 'Rev. Bruce Kolash',
-        position: 'Director',
-        avatar: 'images/profile.png',
+        name: 'Craig Burton',
+        avatar: '/images/board/Craig Burton.jpg'
     },
     {
         name: 'Nicole Cottle',
-        position: 'Director',
-        avatar: 'images/profile.png',
+        avatar: '/images/board/Nicole Cottle.jpg',
     },
     {
-        name: 'Mark Morris',
-        position: 'Director',
-        avatar: 'images/profile.png',
+        name: 'Shaleane Gee',
+        avatar: '/images/board/Shaleane Gee.jpg',
+    },
+    {
+        name: 'David Johnson',
+        avatar: '/images/board/David Johnson.jpg',
+    },
+    {
+        name: 'Bruce Jardine',
+        avatar: '/images/board/Bruce Jardine.jpg',
+    },
+    {
+        name: 'Rev. Bruce Kolasch',
+        avatar: '/images/board/Bruce Kolasch.jpg',
+    },
+    {
+        name: 'Eli Madrigal',
+        avatar: '/images/board/Eli Madrigal.jpg',
     },
     {
         name: 'Dr. Ann Millner',
-        position: 'Director',
-        avatar: 'images/profile.png',
+        avatar: '/images/board/Dr. Ann Milner.jpg',
     },
     {
-        name: 'Marlin Jensen',
-        position: 'Director',
-        avatar: 'images/profile.png',
-    }
+        name: 'Mark Morris',
+        avatar: '/images/board/Mark Morris.jpg',
+    },
+    {
+        name: 'Kimberly Teitter',
+        avatar: '/images/board/Kimberly Teitter.jpg',
+    },
+    {
+        name: 'Jared Theurer',
+        avatar: '/images/board/Jared Theurer.jpg'
+    },
 ]

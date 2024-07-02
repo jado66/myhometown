@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
 import useScrollTrigger from '@mui/material/useScrollTrigger';
@@ -27,7 +27,7 @@ HideOnScroll.propTypes = {
 };
 
 export const metadata = {
-  title: "My Hometown",
+  title: "MyHometown",
   description: "Description of MyHometown.", //#TODO
 };
 
@@ -41,6 +41,10 @@ const MainLayout = ({
 }) => {
   const theme = useTheme();
   const [openSidebar, setOpenSidebar] = useState(false);
+
+  useEffect(() => {
+    document.title = metadata.title;
+  }, []);
 
   const handleSidebarOpen = () => {
     setOpenSidebar(true);

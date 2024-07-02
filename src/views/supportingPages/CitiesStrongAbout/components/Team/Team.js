@@ -11,7 +11,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Avatar from '@mui/material/Avatar';
 
 
-import { boardOfDirectors } from '@/constants/boardOfDirectors';
+import { boardOfDirectors, executiveCommittee } from '@/constants/boardOfDirectors';
 import { Divider } from '@mui/material';
 
 
@@ -19,16 +19,10 @@ import { Divider } from '@mui/material';
 const Team = () => {
   const theme = useTheme();
 
-  const [teamData, setTeamData] = useState([]);
-
-  useEffect(() => {
-    setTeamData(boardOfDirectors);
-  }
-  , []);
-
   return (
     <Box>
-            <Divider sx = {{width:"100%", mb:4}} my = {3} />
+      {/* <Divider sx = {{width:"100%", mb:4}} /> */}
+      <Divider sx = {{width:"100%",borderWidth:3, mb:4, borderColor:'black'}}/>
 
       <Box marginBottom={4}>
         <Typography
@@ -47,19 +41,20 @@ const Team = () => {
           variant={'h3'}
           align={'center'}
         >
-          Board Of Directors
+          Executive Committee
         </Box>
       </Box>
 
     
-      <Grid container spacing={2} justifyContent='space-around'>
-        {teamData.map((item, i) => (
-          <Grid item xs={12} sm={6} md={2} key={i}>
+      <Grid container spacing={2} justifyContent='center'>
+        {executiveCommittee.map((item, i) => (
+          <Grid item xs={12} sm={6} md={3} key={i}>
             <Box
               component={Card}
               borderRadius={3}
               boxShadow={2}
               sx={{
+                border:'1px solid lightgrey',
                 backgroundColor: theme.palette.background.level2,
                 textDecoration: 'none',
                 transition: 'all .2s ease-in-out',
@@ -68,12 +63,12 @@ const Team = () => {
                 },
               }}
             >
-              <CardContent>
+              <CardContent sx = {{display:'flex', flexDirection:'column', p:1}}>
                 <Box
-                  component={Avatar}
+                  component="img"
                   src={item.avatar}
-                  height={220}
-                  width={150}
+                  height={160}
+                  width={160}
                   variant="square"
                   sx = {{mx:'auto', borderRadius:1.5}}
                 />
@@ -83,6 +78,58 @@ const Team = () => {
                     secondaryTypographyProps={{ color:"black", textAlign:'center'}}
                     primary={item.name}
                     secondary={item.position}
+                  />
+                </Box>
+              </CardContent>
+            </Box>
+          </Grid>
+        ))}
+      </Grid>
+
+      <Box marginBottom={4}>
+        <Box
+          component={Typography}
+          fontWeight={700}
+          sx = {{mt:8}}
+          variant={'h3'}
+          align={'center'}
+        >
+          Board of Directors
+        </Box>
+      </Box>
+
+    
+      <Grid container spacing={2} justifyContent='center'>
+        {boardOfDirectors.map((item, i) => (
+          <Grid item xs={12} sm={6} md={3} key={i}>
+            <Box
+              component={Card}
+              borderRadius={3}
+              boxShadow={2}
+              sx={{
+                border:'1px solid lightgrey',
+                backgroundColor: theme.palette.background.level2,
+                textDecoration: 'none',
+                transition: 'all .2s ease-in-out',
+                '&:hover': {
+                  transform: `translateY(-${theme.spacing(1 / 2)})`,
+                },
+              }}
+            >
+              <CardContent sx = {{display:'flex', flexDirection:'column', p:1}}>
+                <Box
+                  component="img"
+                  src={item.avatar}
+                  height={160}
+                  width={160}
+                  variant="square"
+                  sx = {{mx:'auto', borderRadius:1.5}}
+                />
+                <Box marginTop={4}>
+                  <ListItemText
+                    primaryTypographyProps={{ textAlign:'center' }}
+                    secondaryTypographyProps={{ color:"black", textAlign:'center'}}
+                    primary={item.name}
                   />
                 </Box>
               </CardContent>

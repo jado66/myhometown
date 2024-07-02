@@ -18,6 +18,7 @@ const Footer = () => {
           alignItems={'center'}
           width={'100%'}
           flexDirection={{ xs: 'column', sm: 'row' }}
+          sx = {{flex:1}}
         >
           <Box
             display={'flex'}
@@ -26,9 +27,10 @@ const Footer = () => {
             href="/"
             title="myhometown"
             height={24}
-            width={35}
+            sx = {{flex:1}}
+            id = 'logo-box'
           >
-            <MyHometownLogo height={'100%'} width={'100%'} />
+            {/* <MyHometownLogo height={'100%'} width={'100%'} /> */}
           </Box>
           <Box display="flex" flexWrap={'wrap'} alignItems={'center'}>
             <Box marginTop={1} marginRight={2}>

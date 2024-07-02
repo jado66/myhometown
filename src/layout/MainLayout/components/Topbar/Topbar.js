@@ -82,10 +82,23 @@ const Topbar = ({onSidebarOpen}) => {
           href={rootUrl+"/"}
           title="myhometown"
           height={{ xs: 28, md: 32 }}
-          width={45}
+          width={10}
           sx = {{position:'relative'}}
         >
-          <MyHometownLogo height='100%' width='100%' />
+          <MyHometownLogo height='100%' width='100%' type = 'h' />
+        </Box>
+        <Box
+          display={'flex'}
+          alignItems="baseline"
+          component="a"
+          underline="none"
+          href={rootUrl+"/"}
+          title="myhometown"
+          height={{ xs: 28, md: 32 }}
+          width={250}
+          sx = {{position:'relative'}}
+        >
+          <MyHometownLogo height='100%' width='100%' type = 'wordmark' />
         </Box>
         <Box marginRight={{ xs: 1, sm: 2 }} sx = {{display: { xs: 'flex', md: 'none' }}}>
           <IconButton aria-label="Menu" onClick = {onSidebarOpen}>

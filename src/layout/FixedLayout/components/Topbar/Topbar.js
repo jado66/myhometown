@@ -42,7 +42,7 @@ const Topbar = ({
           height={{ xs: 28, md: 32 }}
           width={45}
         >
-          <MyHometownLogo height={'100%'} width={'100%'} />
+          {/* <MyHometownLogo height={'100%'} width={'100%'} /> */}
         </Box>
       </Box>
       <Box display="flex" alignItems={'center'} justifyContent='end'>
