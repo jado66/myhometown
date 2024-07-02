@@ -4,6 +4,7 @@ import Container from '@/components/util/Container';
 import { Headline, Team } from './components';
 import { useTheme } from '@mui/material';
 import Stats from './components/Stats';
+import Values from './components/Values';
 
 const CitiesStrongAbout = () => {
 
@@ -27,6 +28,10 @@ const CitiesStrongAbout = () => {
     <Box >
       <Container>
         <Headline />
+      </Container>
+
+      <Container paddingTop={'0 !important'} >
+        <Values />
       </Container>
            
       <Container paddingTop={'0 !important'}  >

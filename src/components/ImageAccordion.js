@@ -10,7 +10,7 @@ import {
 
 import { styled } from '@mui/system';
 
-export const ImageAccordion = ({ title, content, bgColor, right, cornerIcon }) => {
+export const ImageAccordion = ({ title, content, bgColor, contentColor = 'black', right, cornerIcon }) => {
     return (
         <AccordionStyled 
             square elevation={0} 
@@ -35,7 +35,7 @@ export const ImageAccordion = ({ title, content, bgColor, right, cornerIcon }) =
                 }}
             >
                 <DividerStyled />
-                <Typography color='black'>
+                <Typography color={contentColor} variant = 'h6'>
                     {content}
                 </Typography>
                 {
@@ -59,7 +59,7 @@ const SvgIconWrapper = styled('div')(({ right }) => ({
 }));
 
 const DividerStyled = styled(Divider)({
-    backgroundColor: 'white',
+    backgroundColor: 'black',
     width: '100%',
     marginTop: 0,
     borderWidth: '3px !important',

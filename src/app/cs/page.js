@@ -99,7 +99,7 @@ const Page = () => {
                   }}/>
                 <ImageAccordion
                   title = 'Neighborhood Revitalization'
-                  content = 'Description or content about Neighborhood Revitalization goes here.'
+                  content = {`We support My Hometown's neighbor helping neighbor programs including Days of Service and Community Resource Centers.`}
                 />
               </Grid>
               <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
@@ -129,8 +129,10 @@ const Page = () => {
                   
                 <ImageAccordion
                   title = 'Enhancing Public Education'
-                  content = 'Description or content about Neighborhood Revitalization goes here.'
+                  content = 'We partner with schools to enhance literacy, leadership and academic achievement that will help students succeed in life.'
                   bgColor = '#188D4E'
+                  contentColor = '#ffffff'
+
                   right
                 />
               </Grid>
@@ -160,8 +162,10 @@ const Page = () => {
                 </Grid>
                 <ImageAccordion
                   title = 'Legal Immigration Assistance'
-                  content = 'Description or content about Neighborhood Revitalization goes here.'
+                  content = 'We help provide legal immigration assistance with relevant information and resources that will empower candidates to achieve their goals.'
                   bgColor = '#DC5331'
+                  contentColor = '#ffffff'
+
                 />
               </Grid>
               <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
@@ -190,8 +194,9 @@ const Page = () => {
                 </Grid>
                 <ImageAccordion
                   title = 'Mental Health Assistance'
-                  content = 'Description or content about Neighborhood Revitalization goes here.'
+                  content = 'We help provide mental health programs, including a hotline and training for parents so they can talk with their pre-teen and teenage children.'
                   bgColor = '#286AA4'
+                  contentColor = '#ffffff'
                   right
                 />
               </Grid>

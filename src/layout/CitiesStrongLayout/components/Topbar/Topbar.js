@@ -58,6 +58,26 @@ const Topbar = ({theme}) => {
             <Link
               underline="none"
               component="a"
+              href={rootUrl+"/media"}
+              color = {theme.palette.primary.contrastText}
+            >
+              Media
+            </Link>
+          </Box>
+          <Box marginX={2}>
+            <Link
+              underline="none"
+              component="a"
+              href={rootUrl+"/contact"}
+              color = {theme.palette.primary.contrastText}
+            >
+              Contact
+            </Link>
+          </Box>
+          <Box marginX={2}>
+            <Link
+              underline="none"
+              component="a"
               href={rootUrl+"/donate"}
               color = {theme.palette.primary.contrastText}
             >

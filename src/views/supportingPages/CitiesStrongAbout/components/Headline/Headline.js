@@ -8,7 +8,7 @@ const Headline = () => {
   const theme = useTheme();
 
   return (
-    <Box>
+    <Box paddingBottom={0}>
       <Box position="relative" zIndex={2}>
         <Typography
           sx={{
