@@ -26,7 +26,7 @@ export default function HomePage() {
                 <Card sx = {{minHeight:'400px', border:'1px solid #ff4d06'}} display = 'flex' >
                     <CardActionArea onClick={() => handleCardClick('/mht')} sx = {{minHeight:'400px'}} >
                         <Typography variant="h3" component="div" textAlign='center' color = '#ff4d06'>
-                            MyHometown
+                            myHometown
                         </Typography>
                     </CardActionArea>
                 </Card>

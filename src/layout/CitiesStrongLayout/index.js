@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
 import useScrollTrigger from '@mui/material/useScrollTrigger';
@@ -37,6 +37,10 @@ const CitiesStrongLayout = ({
 }) => {
   const theme = useTheme();
   const [openSidebar, setOpenSidebar] = useState(false);
+
+  useEffect(() => {
+    document.title = metadata.title;
+  }, []);
 
   const handleSidebarOpen = () => {
     setOpenSidebar(true);
