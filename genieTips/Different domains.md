@@ -28,7 +28,7 @@ pages/
   - mht/
     - index.js
     - about.js
-  - cs/
+  - cities-strong/
     - index.js
     - contact.js
   - index.js

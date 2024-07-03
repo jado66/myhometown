@@ -67,7 +67,14 @@ const siteKeyword = process.env.SITE_KEYWORD;
 if (siteKeyword === 'mht') {
     deleteFolderRecursive('./src/app/cs');
     moveContentsRecursive('./src/app/mht', './src/app');
+
+    deleteFolderRecursive('./public/cs');
+    moveContentsRecursive('./public/mht', './public');
+
   } else if (siteKeyword === 'cs') {
     deleteFolderRecursive('./src/app/mht');
     moveContentsRecursive('./src/app/cs', './src/app');
+
+    deleteFolderRecursive('./public/mht');
+    moveContentsRecursive('./public/cs', './public');
 }

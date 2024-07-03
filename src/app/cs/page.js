@@ -36,7 +36,7 @@ const Page = () => {
                   }}
                 >
                   <img
-                    src="/cs/homepage/service.webp"
+                    src="/cities-strong/homepage/service.webp"
                     alt="Mental Health"
                     loading="lazy" // Lazy load the image
                     style={{
@@ -78,7 +78,7 @@ const Page = () => {
                   }}
                 >
                   <img
-                    src="/cs/homepage/mother-daughter.webp"
+                    src="/cities-strong/homepage/mother-daughter.webp"
                     alt="Mental Health"
                     loading="lazy" // Lazy load the image
                     style={{
@@ -131,7 +131,7 @@ const Page = () => {
                   }}
                 >
                   <img
-                    src="/cs/homepage/neighborhood-revitalization.webp"
+                    src="/cities-strong/homepage/neighborhood-revitalization.webp"
                     alt="Mental Health"
                     loading="lazy" // Lazy load the image
                     style={{
@@ -160,7 +160,7 @@ const Page = () => {
                   }}
                 >
                   <img
-                    src="/cs/homepage/kids-learning.webp"
+                    src="/cities-strong/homepage/kids-learning.webp"
                     alt="Mental Health"
                     loading="lazy" // Lazy load the image
                     style={{
@@ -194,7 +194,7 @@ const Page = () => {
                   }}
                 >
                   <img
-                    src="/cs/homepage/Family-Seated-on-Bench.webp"
+                    src="/cities-strong/homepage/Family-Seated-on-Bench.webp"
                     alt="Legal Immigration Assistance"
                     loading="lazy" // Lazy load the image
                     style={{
@@ -226,7 +226,7 @@ const Page = () => {
                   }}
                 >
                   <img
-                    src="/cs/homepage/college-kids-seated.webp"
+                    src="/cities-strong/homepage/college-kids-seated.webp"
                     alt="Mental Health"
                     loading="lazy" // Lazy load the image
                     style={{
