@@ -40,7 +40,7 @@ const Values = () => {
 
         <Box position="relative" zIndex={2}>
            
-            <Box marginBottom={2}>
+          <Box marginBottom={2}>
             <Typography
                 variant="h2"
                 align={'center'}
@@ -48,31 +48,35 @@ const Values = () => {
                 fontWeight: 700,
                 }}
             >
-                Values
+              Values
                
             </Typography>
-            </Box>
-            <Box display="flex" flexWrap="wrap" justifyContent="center">
-          {ourValues.map((value, index) => (
-            <Box 
-              key={index} 
-              display="flex" 
-              flexDirection="column" 
-              alignItems="center" 
-              m={2} 
-              p={2} 
-              bgcolor="background.paper" 
-              boxShadow={3} 
-              maxWidth={300}
-            >
-              <value.icon color="primary" style={{ fontSize: 50 }} />
-              <Typography variant="h5" align="center" gutterBottom>
-                {value.title}
-              </Typography>
-              <Typography align="center">{value.content}</Typography>
-            </Box>
-          ))}
-        </Box>
+          </Box>
+          <Box display="flex" flexWrap="wrap" justifyContent="center">
+            {ourValues.map((value, index) => (
+              <Box 
+                key={index} 
+                display="flex" 
+                flexDirection="column" 
+                alignItems="center" 
+                m={2} 
+                p={2} 
+                bgcolor="background.paper" 
+                boxShadow={3} 
+                maxWidth={300}
+              >
+                <Box display="flex" alignItems="center" width="100%" sx = {{position:'relative'}}>
+                  <value.icon color="primary" style={{ fontSize: 30, marginLeft:'.5em', top:'2.5px', position:'absolute' }} />
+                  <Typography variant="h5" align="center" gutterBottom sx={{ flexGrow: 1, mb:2 }}>
+                    {value.title}
+                  </Typography>
+                </Box>
+                <Typography align="center">{value.content}</Typography>
+              </Box>
+            ))}
+          </Box>
+
+
             {/* <Box display="flex" justifyContent={'center'}>
             <Box
                 component={Button}
