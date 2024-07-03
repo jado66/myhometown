@@ -25,18 +25,29 @@ const Page = () => {
           {/* <ContainerStyled maxWidth = "md" id = 'main-container' > */}
 
             <>
-              <Grid 
-                item 
-                xs={12}
-                style={{
-                  backgroundColor: 'grey',
-                  height: '250px',
-                  backgroundImage: 'url(/images/cs/hero1.jpg)', // Assuming conversion to .png
-                  backgroundSize: 'cover', // Ensures the image covers the whole area
-                  backgroundPosition: 'center top', // Centers horizontally and aligns the top vertically
-                  backgroundRepeat: 'no-repeat' // Prevents the image from repeating
-                }}
-              />
+            <Grid 
+                  item 
+                  xs={12}
+                  sx={{
+                    backgroundColor: 'grey',
+                    height: '375px',
+                    overflow: 'hidden',
+                    position: 'relative'
+                  }}
+                >
+                  <img
+                    src="/cs/homepage/service.webp"
+                    alt="Mental Health"
+                    loading="lazy" // Lazy load the image
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      position: 'absolute',
+                      top: '-140px', // Adjust this value to move the image down
+                      left: '0'
+                    }}
+                  />
+                </Grid>
 
               <Grid item xs={12} sx = {{pX:0}}>
                 <Divider sx = {{borderWidth:3, mx:4, borderColor:'black', mt:5}}/>
@@ -47,32 +58,51 @@ const Page = () => {
                 <Typography variant = 'h4' sx = {{flexGrow:1}}>
                   Our Name is our mission. We build strong cities through a culture of love and service.
                 </Typography>
-                <ButtonStyled variant='outlined'  sx = {{mr:'auto', mt:3}}>
+                <ButtonStyled variant='outlined'  sx = {{mr:'auto', mt:3}}
+                  href = '/about'
+                >
                   Learn More
                 </ButtonStyled>
                 <Divider sx = {{borderWidth:3,  borderColor:'black', mt:4}}/>
               </Grid>
 
-              <Grid item xs = {12} md = {6}  sx = {{padding:4, pt:{xs:0,md:4}}}>
+              <Grid item xs={12} md={6} sx={{ padding: 4, pt: { xs: 0, md: 4 } }}>
                 <Grid 
-                  item xs={12} 
-                  style={{
+                  item 
+                  xs={12}
+                  sx={{
+                    backgroundColor: 'grey',
                     height: '350px',
-                    backgroundImage: 'url(/images/cs/service.jpg)',
-                    backgroundSize: 'cover', 
-                    backgroundPosition: 'center top',
-                    backgroundRepeat: 'no-repeat'
+                    overflow: 'hidden',
+                    position: 'relative'
                   }}
-                />
+                >
+                  <img
+                    src="/cs/homepage/mother-daughter.webp"
+                    alt="Mental Health"
+                    loading="lazy" // Lazy load the image
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover', // Ensures the image covers the entire area
+                      position: 'absolute',
+                      objectPosition: 'right', // Shifts the image to the left
+                      top: '0',
+                      left: '0px'
+                    }}
+                  />
+                </Grid>
                 
-                <Divider sx = {{borderWidth:3,  borderColor:'black', mt:4}}/>
+                <Divider sx={{ borderWidth: 3, borderColor: 'black', mt: 4 }} />
               </Grid>
 
               <Grid item xs = {12} md = {6}  sx = {{padding:4, pt:0, display:'flex', flexDirection:'column', height:{md:'220px'}}}>
                 <Typography variant = 'h5' sx = {{flexGrow:1}}>
                   We do it by supporting community programs that revitalize neighborhoods, inspire education &amp; lift lives.
                 </Typography>
-                <ButtonStyled variant='outlined'  sx = {{mr:'auto', mt:3}}>
+                <ButtonStyled variant='outlined'  sx = {{mr:'auto', mt:3}}
+                  href = '/about'
+                >
                   Learn More
                 </ButtonStyled>
                 <Divider sx = {{borderWidth:3,  borderColor:'black', mt:4, display:{xs:'block',md:'none'}}}/>
@@ -82,21 +112,37 @@ const Page = () => {
                 <Typography variant = 'h5' sx = {{flexGrow:1}}>
                   Our vision is beautiful, thriving communities full of happiness, peace, and personal growth.
                 </Typography>
-                <ButtonStyled variant='outlined'  sx = {{mr:'auto', mt:3}}>
+                <ButtonStyled variant='outlined'  sx = {{mr:'auto', mt:3}}
+                  href = '/about'
+                >
                   Learn More
                 </ButtonStyled>
               </Grid>
 
               <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
-                <Grid item xs={12} 
+                <Grid 
+                  item 
+                  xs={12}
                   sx={{
-                    backgroundColor:'grey', 
-                    height:'375px',
-                    backgroundImage: 'url(/images/cs/revitalization.webp)',
-                    backgroundSize: 'cover', 
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat'
-                  }}/>
+                    backgroundColor: 'grey',
+                    height: '375px',
+                    overflow: 'hidden',
+                    position: 'relative'
+                  }}
+                >
+                  <img
+                    src="/cs/homepage/neighborhood-revitalization.webp"
+                    alt="Mental Health"
+                    loading="lazy" // Lazy load the image
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      position: 'absolute',
+                      top: '-240px', // Adjust this value to move the image down
+                      left: '0'
+                    }}
+                  />
+                </Grid>
                 <ImageAccordion
                   title = 'Neighborhood Revitalization'
                   content = {`We support My Hometown's neighbor helping neighbor programs including Days of Service and Community Resource Centers.`}
@@ -114,14 +160,14 @@ const Page = () => {
                   }}
                 >
                   <img
-                    src="/images/cs/education.jpg"
+                    src="/cs/homepage/kids-learning.webp"
                     alt="Mental Health"
                     loading="lazy" // Lazy load the image
                     style={{
                       width: '100%',
                       height: 'auto',
                       position: 'absolute',
-                      top: '-100px', // Adjust this value to move the image down
+                      top: '0px', // Adjust this value to move the image down
                       left: '0'
                     }}
                   />
@@ -148,14 +194,14 @@ const Page = () => {
                   }}
                 >
                   <img
-                    src="/images/cs/immigration.jpg"
-                    alt="Mental Health"
+                    src="/cs/homepage/Family-Seated-on-Bench.webp"
+                    alt="Legal Immigration Assistance"
                     loading="lazy" // Lazy load the image
                     style={{
                       width: '100%',
                       height: 'auto',
                       position: 'absolute',
-                      top: '-100px', // Adjust this value to move the image down
+                      top: '-60px', // Adjust this value to move the image down
                       left: '0'
                     }}
                   />
@@ -180,14 +226,14 @@ const Page = () => {
                   }}
                 >
                   <img
-                    src="/images/cs/mental-health.jpg"
+                    src="/cs/homepage/college-kids-seated.webp"
                     alt="Mental Health"
                     loading="lazy" // Lazy load the image
                     style={{
                       width: '100%',
                       height: 'auto',
                       position: 'absolute',
-                      top: '-100px', // Adjust this value to move the image down
+                      top: '-520px', // Adjust this value to move the image down
                       left: '0'
                     }}
                   />
