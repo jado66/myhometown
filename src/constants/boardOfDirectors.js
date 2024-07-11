@@ -79,4 +79,8 @@ export const boardOfDirectors = [
         name: 'Jared Theurer',
         avatar: '/images/board/Jared Theurer.jpg'
     },
+    {
+        name: 'Shaleane Gee',
+        avatar: '/images/profile.png'
+    }
 ]

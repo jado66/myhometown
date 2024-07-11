@@ -23,7 +23,7 @@ const Donate = () => {
                 Your donations help us continue to deliver quality services and products. Every little bit helps. Thank you.
             </Typography>
 
-            <Grid container sx = {{minHeight:"500px", mt:3}}>
+            <Grid container sx = {{minHeight:"500px", mt:3, mx:'auto', justifyContent:'center'}}>
                 <WebsiteTestDonateForm/>
             </Grid>
 

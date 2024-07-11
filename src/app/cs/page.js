@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { 
   useTheme,
   Accordion, 
+  Alert,
   Typography, 
   Button,
   Grid, 
@@ -19,6 +20,8 @@ import { ImageAccordion } from '@/components/ImageAccordion';
 import { default as VisibilitySensor } from 'react-visibility-sensor';
 
 const Page = () => {
+
+  const [showInfoAlert, setShowInfoAlert] = useState(true)
 
     const [isVisible, setIsVisible] = useState({
       0: false,
@@ -40,9 +43,14 @@ const Page = () => {
       <ProviderWrapper theme = 'alt'>
         <CitiesStrongLayout>
           {/* <ContainerStyled maxWidth = "md" id = 'main-container' > */}
-
+          <Grid item xs={12} sx = {{display:(showInfoAlert?{xs:'block', lg: 'none' }:'none')}} >
+            <Alert variant="filled" severity="info" sx = {{rounded:0}} onClose={() => setShowInfoAlert(false)} >
+              This page has not been optimized for mobile devices. Please check back soon.
+            </Alert>
+          </Grid>
+          
             <>
-            <Grid 
+              <Grid 
                   item 
                   xs={12}
                   sx={{
@@ -292,6 +300,205 @@ const Page = () => {
                 </Grid>
               </Fade >
 
+              <Grid marginBottom={4} px = {5} xs = {12}>
+                <Divider sx = {{borderWidth:3,  borderColor:'black', mt:4}}/>
+              </Grid>
+
+              <Grid marginBottom={4} px = {5}>
+                <Typography
+                   fontWeight={700}
+                   sx = {{mt:4}}
+                   variant={'h3'}
+                   align={'center'}
+                >
+                  Cities Served
+                </Typography>
+                <Grid
+                  xs = {8}
+                  sx = {{mx:'auto'}}
+                  component={Typography}
+                  variant={'h6'}
+                  align={'center'}
+
+                >
+                  Cities Strong has made a difference for fourteen neighborhoods in communities across the Wasatch Front
+                </Grid>
+
+              
+                  
+                
+
+                
+            </Grid>  
+            <Grid item xs = {12} md = {6} sx = {{padding:4, paddingRight:2, display:'flex', flexDirection:'column', pb: 2}}>
+              
+              <Grid
+                sx = {{mx:'auto'}}
+                component={Typography}
+                variant={'h5'}
+                fontWeight={700}
+                gutterBottom
+                align={'center'}
+
+              >
+                Ogden
+              </Grid>
+
+              <Grid 
+                  item 
+                  xs={12}
+                  sx={{
+                    backgroundColor: 'grey',
+                    height: '350px',
+                    overflow: 'hidden',
+                    position: 'relative', 
+                    boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'
+                  }}
+                >
+                  <img
+                    src="/images/profile.png"
+                    alt="Mental Health"
+                     // Lazy load the image
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover', // Ensures the image covers the entire area
+                      position: 'absolute',
+                      objectPosition: 'right', // Shifts the image to the left
+                      top: '0',
+                      left: '0px'
+                    }}
+                  />
+              </Grid>
+            </Grid>
+
+            <Grid item xs={12} md={6} sx={{ padding: 4, paddingLeft:2, pt: { xs: 0, md: 4 }, pb: 2 }}>
+              
+              <Grid
+                sx = {{mx:'auto'}}
+                component={Typography}
+                variant={'h5'}
+                fontWeight={700}
+                gutterBottom
+                align={'center'}
+
+              >
+                Provo
+              </Grid>
+
+
+              <Grid 
+                item 
+                xs={12}
+                sx={{
+                  backgroundColor: 'grey',
+                  height: '350px',
+                  overflow: 'hidden',
+                  position: 'relative', 
+                  boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'
+                }}
+              >
+                <img
+                  src="/images/profile.png"
+                  alt="Mental Health"
+                    // Lazy load the image
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover', // Ensures the image covers the entire area
+                    position: 'absolute',
+                    objectPosition: 'right', // Shifts the image to the left
+                    top: '0',
+                    left: '0px'
+                  }}
+                />
+              </Grid>
+            </Grid>
+
+            <Grid item xs = {12} md = {6} sx = {{padding:4, paddingRight:2, display:'flex', flexDirection:'column', pt: 2}}>
+              
+              <Grid
+                sx = {{mx:'auto'}}
+                component={Typography}
+                variant={'h5'}
+                fontWeight={700}
+                gutterBottom
+                align={'center'}
+
+              >
+                Orem
+              </Grid>
+
+              <Grid 
+                  item 
+                  xs={12}
+                  sx={{
+                    backgroundColor: 'grey',
+                    height: '350px',
+                    overflow: 'hidden',
+                    position: 'relative', 
+                    boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'
+                  }}
+                >
+                  <img
+                    src="/images/profile.png"
+                    alt="Mental Health"
+                     // Lazy load the image
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover', // Ensures the image covers the entire area
+                      position: 'absolute',
+                      objectPosition: 'right', // Shifts the image to the left
+                      top: '0',
+                      left: '0px'
+                    }}
+                  />
+              </Grid>
+            </Grid>
+
+            <Grid item xs={12} md={6} sx={{ padding: 4, paddingLeft:2, pt: 2 }}>
+              
+              <Grid
+                sx = {{mx:'auto'}}
+                component={Typography}
+                variant={'h5'}
+                fontWeight={700}
+                gutterBottom
+                align={'center'}
+
+              >
+                Salt Lake City
+              </Grid>
+
+              <Grid 
+                item 
+                xs={12}
+                sx={{
+                  backgroundColor: 'grey',
+                  height: '350px',
+                  overflow: 'hidden',
+                  position: 'relative', 
+                  boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'
+                }}
+              >
+                <img
+                  src="/images/profile.png"
+                  alt="Mental Health"
+                    // Lazy load the image
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover', // Ensures the image covers the entire area
+                    position: 'absolute',
+                    objectPosition: 'right', // Shifts the image to the left
+                    top: '0',
+                    left: '0px'
+                  }}
+                />
+              </Grid>
+            </Grid>
+              
 
             
             </>

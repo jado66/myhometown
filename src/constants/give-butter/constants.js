@@ -4,9 +4,9 @@ const UnrestrictedDonateButton = () => <givebutter-widget id="gOq9mj"></givebutt
 const UnrestrictedDonateForm = () => <givebutter-widget id="p7dQZj"></givebutter-widget>
 
 // Website Test
-const websiteTestUrl = 'https://givebutter.com/J7H3kC'
+const websiteTestUrl = 'https://givebutter.com/SAByNl'
 const WebsiteTestDonateButton = () => <givebutter-widget id="pnlw3L"></givebutter-widget>
-const WebsiteTestDonateForm = () => <givebutter-widget id="j2doQg"></givebutter-widget>
+const WebsiteTestDonateForm = () => <givebutter-widget id="p7dQZj"></givebutter-widget>
 const WebsiteTestDonateGoalBar = () => <givebutter-widget id="j11GOj"></givebutter-widget>
 
 export {
