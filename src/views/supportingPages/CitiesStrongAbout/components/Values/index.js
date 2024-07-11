@@ -62,7 +62,7 @@ const Values = () => {
                 m={2} 
                 p={2} 
                 bgcolor="background.paper" 
-                boxShadow={3} 
+                sx = {{boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'}}
                 maxWidth={300}
               >
                 <Box display="flex" alignItems="center" width="100%" sx = {{position:'relative'}}>

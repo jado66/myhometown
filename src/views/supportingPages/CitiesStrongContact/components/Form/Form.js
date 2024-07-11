@@ -19,20 +19,43 @@ const Form = () => {
 
   return (
     <Box>
+      <Box>
+        <Typography
+          sx={{
+            textTransform: 'uppercase',
+            fontWeight: 'medium',
+          }}
+          gutterBottom
+         
+        >
+          
+        </Typography>
+        <Box marginBottom={2}>
+          <Typography
+            variant="h2"
+            sx={{
+              fontWeight: 700,
+            }}
+          >
+            Send us a message
+          </Typography>
+        </Box>
+        <Box>
+          <Typography variant="h6" >
+          We'll get back to you in 1-2 business days.
+          </Typography>
+        </Box>
+      </Box>
       <Box
-        padding={{ xs: 3, sm: 6 }}
+        padding={0}
         width={'100%'}
-        component={Card}
-        borderRadius={2}
-        boxShadow={4}
-        marginBottom={4}
-        sx = {{backgroundColor:'white'}}
+        my={4}
       >
         <form noValidate autoComplete="off">
           <Grid container spacing={isMd ? 4 : 2}>
             <Grid item xs={12} sm={6}>
               <StyledTextField
-                sx={{ height: 54 }}
+                sx={{ height: 54, backgroundColor: 'white' }}
                 label="First name"
                 variant="outlined"
                 color="primary"
@@ -42,7 +65,7 @@ const Form = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <StyledTextField
-                sx={{ height: 54 }}
+                sx={{ height: 54, backgroundColor: 'white' }}
                 label="Last name"
                 variant="outlined"
                 color="primary"
@@ -53,7 +76,9 @@ const Form = () => {
             <Grid item xs={12}>
               <StyledTextField
                  sx={{
+                  
                   height: 54,
+                  backgroundColor: 'white',
                   '& .MuiOutlinedInput-input::placeholder': {
                     color: 'black !important',
                   },
@@ -73,6 +98,7 @@ const Form = () => {
               <StyledTextField
                 label="Message"
                 multiline
+                sx = {{backgroundColor: 'white'}}
                 rows={6}
                 variant="outlined"
                 color="primary"
@@ -82,18 +108,20 @@ const Form = () => {
             </Grid>
             <Grid item xs={12}>
               <Button
-                sx={{ height: 54 }}
+                sx={{ height: 54,
+                  textTransform:'uppercase',
+                  fontSize:'large',
+                  fontWeight:'bold'
+                 }}
                 variant="contained"
                 color="primary"
-                size="medium"
+                size="large"
                 fullWidth
               >
-                Submit
+                Send Message
               </Button>
             </Grid>
-            <Grid item xs={12}>
-              <Divider />
-            </Grid>
+            
             <Grid item xs={12}>
               <Box>
                 <Typography component="p" variant="body2" align="left">
@@ -131,11 +159,6 @@ const Form = () => {
           </Grid>
         </form>
       </Box>
-      <Box>
-        <Typography align={'center'}>
-          We'll get back to you in 1-2 business days.
-        </Typography>
-      </Box>
     </Box>
   );
 };
@@ -143,21 +166,36 @@ const Form = () => {
 export default Form;
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiInputBase-root': {
+    borderRadius: "0px",
+    borderWidth: '2px',
+    borderColor:'black',
+    fontWeight: 'bold',
+    textTransform: 'capitalize',
+    color: 'black',
+  },
   '& .MuiInputLabel-root': {
     color: 'grey',
   },
   '& .MuiOutlinedInput-root': {
     '& fieldset': {
-      borderColor: 'grey',
+      borderColor: 'black',
+      borderWidth: '2px', // Set your desired border width here
+
     },
     '&:hover fieldset': {
-      borderColor: 'grey',
+      borderColor: 'black',
+      borderWidth: '2px', // Set your desired border width here
+
     },
     '&.Mui-focused fieldset': {
-      borderColor: 'grey',
+      borderColor: 'black',
+      borderWidth: '2px', // Set your desired border width here
+
     },
   },
   '& .MuiOutlinedInput-input': {
-    color: 'grey',
+    color: 'black',
   },
 }));
+

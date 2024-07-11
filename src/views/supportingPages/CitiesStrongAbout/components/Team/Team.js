@@ -86,11 +86,13 @@ const Team = () => {
         ))}
       </Grid>
 
+      <Divider sx = {{width:"60%",borderWidth:2, mt:5, mb:0, mx:'auto', borderColor:'black'}}/>
+
       <Box marginBottom={4}>
         <Box
           component={Typography}
           fontWeight={700}
-          sx = {{mt:8}}
+          sx = {{mt:4}}
           variant={'h3'}
           align={'center'}
         >
