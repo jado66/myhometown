@@ -38,7 +38,7 @@ const CitiesStrongAbout = () => {
         <Team />
       </Container>
       
-      <Container paddingTop={'0 !important'}  >
+      <Container paddingTop={'0 !important'} paddingBottom ={'0 !important'}  >
         <Stats 
           viewPortEntered={viewPortEntered}
           setViewPortVisibility = {setViewPortVisibility}

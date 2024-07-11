@@ -13,13 +13,17 @@ const CitiesStrongMediaPage = () => {
           display={'flex'}
           justifyContent={'center'}
           alignItems={'center'}
+
+          
         >
           <Box height={'100%'} width={'100%'} mx = "auto" maxHeight={600}>
             <Typography
-              variant='h3'
-
+              variant="h2"
+              sx={{
+                fontWeight: 700,
+              }}
+              
               textAlign='center'
-              mb = {3}
             >
                 Who is Cities Strong?
             </Typography>
@@ -36,10 +40,7 @@ const CitiesStrongMediaPage = () => {
         </Box>
       </Grid>
         
-        {/* Videos */}
-        <Typography variant="h4" component="h2" gutterBottom sx={{ marginTop: 4 }}>
-          Videos
-        </Typography>
+        
         <Grid container spacing={4}>
           <Grid item xs={12} >
             <Card >
@@ -56,7 +57,7 @@ const CitiesStrongMediaPage = () => {
         </Grid>
 
         {/* Images */}
-        <Typography variant="h4" component="h2" gutterBottom sx={{ marginTop: 4 }}>
+        {/* <Typography variant="h4" component="h2" gutterBottom sx={{ marginTop: 4 }}>
           Images
         </Typography>
         <Grid container spacing={4}>
@@ -90,7 +91,7 @@ const CitiesStrongMediaPage = () => {
               />
             </Card>
           </Grid>
-        </Grid>
+        </Grid> */}
       </Container>
   );
 };

@@ -11,14 +11,12 @@ const Stats = ({viewPortEntered, setViewPortVisibility, stats}) => {
     
             <Box marginBottom={4}>
                 <Typography
-                    sx={{
-                    textTransform: 'uppercase',
-                    fontWeight: 'medium',
-                    }}
-                    gutterBottom
-                    align={'center'}
+                   fontWeight={700}
+                   sx = {{mt:4}}
+                   variant={'h3'}
+                   align={'center'}
                 >
-                    Our accomplishments
+                    Our Accomplishments
                 </Typography>
                 {/* <Box
                     component={Typography}
@@ -30,7 +28,7 @@ const Stats = ({viewPortEntered, setViewPortVisibility, stats}) => {
                 </Box> */}
             </Box>  
 
-            <Grid container spacing={2} paddingY = {3} >
+            <Grid container spacing={2} padding = {3} >
                 <Grid item md={4}>
                     <Typography
                         variant="h3"
