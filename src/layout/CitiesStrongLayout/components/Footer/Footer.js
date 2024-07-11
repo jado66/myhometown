@@ -6,6 +6,7 @@ import { Instagram, LinkedIn, YouTube } from '@mui/icons-material';
 import Twitter from '@mui/icons-material/Twitter';
 import { styled } from '@mui/system';
 import CitiesStrongShieldIcon from '@/assets/svg/logos/CitiesStrongShieldIcon';
+import CitiesStrongHorizontalLogo from '@/assets/svg/logos/CitiesStrongHorizontalLogo';
 
 const Footer = () => (
   <Grid xs={12}>
@@ -45,13 +46,7 @@ const Footer = () => (
       </Grid>
     </Grid>
     <Grid container spacing={2} mt={.5} mb={5} px={4}>
-      <Typography variant='h3' sx={{ textTransform: 'uppercase', width: '100%', fontWeight:'bold' }} textAlign='center'>
-        <Box component="span" sx={{ color: '#2D903C', mr:2 }}>
-          Cities Strong
-        </Box>  
-        Foundation
-        <CitiesStrongShieldIcon sx = {{ml:1}}/>
-      </Typography>
+      <CitiesStrongHorizontalLogo/>
     </Grid>
     <Checkerboard />
   </Grid>

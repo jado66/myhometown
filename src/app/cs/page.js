@@ -1,21 +1,38 @@
 'use client'
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   useTheme,
   Accordion, 
   Typography, 
   Button,
   Grid, 
-  Divider
+  Divider,
+  Fade 
 } from '@mui/material';
+import Image from 'next/image';
 
 
 import { styled } from '@mui/system';
 import ProviderWrapper from '@/contexts/ProviderWrapper';
 import { CitiesStrongLayout } from '@/layout';
 import { ImageAccordion } from '@/components/ImageAccordion';
+import { default as VisibilitySensor } from 'react-visibility-sensor';
 
 const Page = () => {
+
+    const [isVisible, setIsVisible] = useState({
+      0: false,
+      1: false,
+      2: false,
+      3: false
+    })
+
+    const setViewPortVisibility = (index, visibility) =>{
+
+      if (!visibility) return
+
+      setIsVisible(p => ({ ...p, [index]: visibility }));
+    }
 
     const theme = useTheme()
 
@@ -35,17 +52,12 @@ const Page = () => {
                     position: 'relative'
                   }}
                 >
-                  <img
+                  <Image
                     src="/cities-strong/homepage/service.webp"
-                    alt="Mental Health"
-                    loading="lazy" // Lazy load the image
-                    style={{
-                      width: '100%',
-                      height: 'auto',
-                      position: 'absolute',
-                      top: '-140px', // Adjust this value to move the image down
-                      left: '0'
-                    }}
+                    alt="Service"
+                    layout="fill" // Ensure the image fills the container
+                    objectFit="cover" // Make sure the image covers the area without stretching
+                    priority // This ensures the image gets loaded first
                   />
                 </Grid>
 
@@ -74,13 +86,14 @@ const Page = () => {
                     backgroundColor: 'grey',
                     height: '350px',
                     overflow: 'hidden',
-                    position: 'relative'
+                    position: 'relative', 
+                    boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'
                   }}
                 >
                   <img
                     src="/cities-strong/homepage/mother-daughter.webp"
                     alt="Mental Health"
-                    loading="lazy" // Lazy load the image
+                     // Lazy load the image
                     style={{
                       width: '100%',
                       height: '100%',
@@ -108,6 +121,10 @@ const Page = () => {
                 <Divider sx = {{borderWidth:3,  borderColor:'black', mt:4, display:{xs:'block',md:'none'}}}/>
               </Grid>
 
+              <VisibilitySensor
+                onChange={(isVisible) => setViewPortVisibility(0, isVisible)}
+                delayedCall
+                >
               <Grid item xs = {12} md = {6}  sx = {{padding:4, pt:0, display:'flex', flexDirection:'column', height:{md:'220px'}}}>
                 <Typography variant = 'h5' sx = {{flexGrow:1}}>
                   Our vision is beautiful, thriving communities full of happiness, peace, and personal growth.
@@ -118,134 +135,162 @@ const Page = () => {
                   Learn More
                 </ButtonStyled>
               </Grid>
+              </VisibilitySensor>
 
-              <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
-                <Grid 
-                  item 
-                  xs={12}
-                  sx={{
-                    backgroundColor: 'grey',
-                    height: '375px',
-                    overflow: 'hidden',
-                    position: 'relative'
-                  }}
-                >
-                  <img
-                    src="/cities-strong/homepage/neighborhood-revitalization.webp"
-                    alt="Mental Health"
-                    loading="lazy" // Lazy load the image
-                    style={{
-                      width: '100%',
-                      height: 'auto',
-                      position: 'absolute',
-                      top: '-240px', // Adjust this value to move the image down
-                      left: '0'
-                    }}
-                  />
-                </Grid>
-                <ImageAccordion
-                  title = 'Neighborhood Revitalization'
-                  content = {`We support My Hometown's neighbor helping neighbor programs including Days of Service and Community Resource Centers.`}
-                />
-              </Grid>
-              <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
-                <Grid 
-                  item 
-                  xs={12}
-                  sx={{
-                    backgroundColor: 'grey',
-                    height: '375px',
-                    overflow: 'hidden',
-                    position: 'relative'
-                  }}
-                >
-                  <img
-                    src="/cities-strong/homepage/kids-learning.webp"
-                    alt="Mental Health"
-                    loading="lazy" // Lazy load the image
-                    style={{
-                      width: '100%',
-                      height: 'auto',
-                      position: 'absolute',
-                      top: '0px', // Adjust this value to move the image down
-                      left: '0'
-                    }}
-                  />
-                </Grid>
-                  
-                <ImageAccordion
-                  title = 'Enhancing Public Education'
-                  content = 'We partner with schools to enhance literacy, leadership and academic achievement that will help students succeed in life.'
-                  bgColor = '#188D4E'
-                  contentColor = '#ffffff'
 
-                  right
-                />
-              </Grid>
-              <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
-                <Grid 
-                  item 
-                  xs={12}
-                  sx={{
-                    backgroundColor: 'grey',
-                    height: '375px',
-                    overflow: 'hidden',
-                    position: 'relative'
-                  }}
+              <VisibilitySensor
+                onChange={(isVisible) => setViewPortVisibility(1, isVisible)}
+                delayedCall
                 >
-                  <img
-                    src="/cities-strong/homepage/Family-Seated-on-Bench.webp"
-                    alt="Legal Immigration Assistance"
-                    loading="lazy" // Lazy load the image
-                    style={{
-                      width: '100%',
-                      height: 'auto',
-                      position: 'absolute',
-                      top: '-60px', // Adjust this value to move the image down
-                      left: '0'
-                    }}
-                  />
-                </Grid>
-                <ImageAccordion
-                  title = 'Legal Immigration Assistance'
-                  content = 'We help provide legal immigration assistance with relevant information and resources that will empower candidates to achieve their goals.'
-                  bgColor = '#DC5331'
-                  contentColor = '#ffffff'
+                <Fade timeout = {500} in={isVisible[0]}>
+                  <Grid item xs={12} sx={{ m:4, mt:0, position:'relative', boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'}}>
+                    <Grid 
+                      item 
+                      xs={12}
+                      sx={{
+                        backgroundColor: 'grey',
+                        height: '375px',
+                        overflow: 'hidden',
+                        position: 'relative'
+                      }}
+                    >
+                      <img
+                        src="/cities-strong/homepage/neighborhood-revitalization.webp"
+                        alt="Mental Health"
+                        // Lazy load the image
+                        style={{
+                          width: '100%',
+                          height: 'auto',
+                          position: 'absolute',
+                          top: '-240px', // Adjust this value to move the image down
+                          left: '0'
+                        }}
+                      />
+                    </Grid>
+                    <ImageAccordion
+                      title = 'Neighborhood Revitalization'
+                      content = {`We support My Hometown's neighbor helping neighbor programs including Days of Service and Community Resource Centers.`}
+                    />
+                  </Grid>
+                </Fade >
+              </VisibilitySensor>
+             
+              <VisibilitySensor
+                onChange={(isVisible) => setViewPortVisibility(2, isVisible)}
+                delayedCall
+                >
+                <Fade timeout = {500} in={isVisible[1]}>
+                  <Grid item xs={12} sx={{ m:4, mt:0, position:'relative', boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'}}>
+                    <Grid 
+                      item 
+                      xs={12}
+                      sx={{
+                        backgroundColor: 'grey',
+                        height: '375px',
+                        overflow: 'hidden',
+                        position: 'relative'
+                      }}
+                    >
+                      <img
+                        src="/cities-strong/homepage/kids-learning.webp"
+                        alt="Mental Health"
+                        // Lazy load the image
+                        style={{
+                          width: '100%',
+                          height: 'auto',
+                          position: 'absolute',
+                          top: '0px', // Adjust this value to move the image down
+                          left: '0'
+                        }}
+                      />
+                    </Grid>
+                      
+                    <ImageAccordion
+                      title = 'Enhancing Public Education'
+                      content = 'We partner with schools to enhance literacy, leadership and academic achievement that will help students succeed in life.'
+                      bgColor = '#188D4E'
+                      contentColor = '#ffffff'
 
-                />
-              </Grid>
-              <Grid item xs={12} sx={{ m:4, mt:0, position:'relative'}}>
-                <Grid 
-                  item 
-                  xs={12}
-                  sx={{
-                    backgroundColor: 'grey',
-                    height: '375px',
-                    overflow: 'hidden',
-                    position: 'relative'
-                  }}
+                      right
+                    />
+                  </Grid>
+                </Fade >
+              </VisibilitySensor>
+              
+              <VisibilitySensor
+                onChange={(isVisible) => setViewPortVisibility(3, isVisible)}
+                delayedCall
                 >
-                  <img
-                    src="/cities-strong/homepage/college-kids-seated.webp"
-                    alt="Mental Health"
-                    loading="lazy" // Lazy load the image
-                    style={{
-                      width: '100%',
-                      height: 'auto',
-                      position: 'absolute',
-                      top: '-520px', // Adjust this value to move the image down
-                      left: '0'
+                <Fade timeout = {500} in={isVisible[2]}>
+                  <Grid item xs={12} sx={{ m:4, mt:0, position:'relative', boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'}}>
+                    <Grid 
+                      item 
+                      xs={12}
+                      sx={{
+                        backgroundColor: 'grey',
+                        height: '375px',
+                        overflow: 'hidden',
+                        position: 'relative'
+                      }}
+                    >
+                      <img
+                        src="/cities-strong/homepage/Family-Seated-on-Bench.webp"
+                        alt="Legal Immigration Assistance"
+                        // Lazy load the image
+                        style={{
+                          width: '100%',
+                          height: 'auto',
+                          position: 'absolute',
+                          top: '-60px', // Adjust this value to move the image down
+                          left: '0'
+                        }}
+                      />
+                    </Grid>
+                    <ImageAccordion
+                      title = 'Legal Immigration Assistance'
+                      content = 'We help provide legal immigration assistance with relevant information and resources that will empower candidates to achieve their goals.'
+                      bgColor = '#DC5331'
+                      contentColor = '#ffffff'
+
+                    />
+                  </Grid>
+                </Fade >
+              </VisibilitySensor>
+
+              <Fade timeout = {500} in={isVisible[3]}>
+                <Grid item xs={12} sx={{ m:4, mt:0, position:'relative', boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'}}>
+                  <Grid 
+                    item 
+                    xs={12}
+                    sx={{
+                      backgroundColor: 'grey',
+                      height: '375px',
+                      overflow: 'hidden',
+                      position: 'relative'
                     }}
+                  >
+                    <img
+                      src="/cities-strong/homepage/college-kids-seated.webp"
+                      alt="Mental Health"
+                      // Lazy load the image
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        position: 'absolute',
+                        top: '-520px', // Adjust this value to move the image down
+                        left: '0'
+                      }}
+                    />
+                  </Grid>
+                  <ImageAccordion
+                    title = 'Mental Health Assistance'
+                    content = 'We help provide mental health programs, including a hotline and training for parents so they can talk with their pre-teen and teenage children.'
+                    bgColor = '#286AA4'
+                    contentColor = '#ffffff'
+                    right
                   />
                 </Grid>
-                <ImageAccordion
-                  title = 'Mental Health Assistance'
-                  content = 'We help provide mental health programs, including a hotline and training for parents so they can talk with their pre-teen and teenage children.'
-                  bgColor = '#286AA4'
-                  contentColor = '#ffffff'
-                  right
-                />
-              </Grid>
+              </Fade >
 
 
             

@@ -3,13 +3,10 @@ import { AppBar, Toolbar, Typography, Container, Grid, Card, CardContent, CardMe
 
 const CitiesStrongMediaPage = () => {
   return (
-    <div>
-      {/* Header */}
-      {/*  */}
 
-      <Container maxWidth="lg" sx={{ marginTop: 4 }}>
+      <Container maxWidth="xl" sx={{ marginTop: 4, mx: 'auto' }}>
         {/* Featured Stories */}
-        <Grid item xs={12}>
+        <Grid item xs={12} display = 'flex' justifyContent = 'center'>
         <Box
           height={'100%'}
           width={'100%'}
@@ -17,7 +14,7 @@ const CitiesStrongMediaPage = () => {
           justifyContent={'center'}
           alignItems={'center'}
         >
-          <Box height={'100%'} width={'60%'} maxHeight={600}>
+          <Box height={'100%'} width={'100%'} mx = "auto" maxHeight={600}>
             <Typography
               variant='h3'
 
@@ -94,7 +91,6 @@ const CitiesStrongMediaPage = () => {
           </Grid>
         </Grid>
       </Container>
-    </div>
   );
 };
 
