@@ -43,7 +43,7 @@ const Page = () => {
     return (
       <ProviderWrapper theme = 'alt'>
         <CitiesStrongLayout>
-          {/* <ContainerStyled maxWidth = "md" id = 'main-container' > */}
+          {/* <ContainerStyled maxWidth = "sm" id = 'main-container' > */}
           <Grid item xs={12} sx = {{display:(showInfoAlert?{xs:'block', lg: 'none' }:'none')}} >
             <Alert variant="filled" severity="info" sx = {{rounded:0}} onClose={() => setShowInfoAlert(false)} >
               This page has not been optimized for mobile devices. Please check back soon.
@@ -56,7 +56,7 @@ const Page = () => {
                   xs={12}
                   sx={{
                     backgroundColor: 'grey',
-                    height: {md: '375px', xs: '250px'},
+                    height: {sm: '375px', xs: '300px'},
                     overflow: 'hidden',
                     position: 'relative'
                   }}
@@ -75,7 +75,7 @@ const Page = () => {
               
               </Grid>
 
-              <Grid item xs = {12} md = {6} sx = {{padding:4, display:'flex', flexDirection:'column'}}>
+              <Grid item xs = {12} sm = {6} sx = {{padding:4, display:'flex', flexDirection:'column'}}>
                 <Typography variant = 'h4' sx = {{flexGrow:1}}>
                   Our Name is our mission. We build strong cities through a culture of love and service.
                 </Typography>
@@ -87,7 +87,7 @@ const Page = () => {
                 <Divider sx = {{borderWidth:3,  borderColor:'black', mt:4}}/>
               </Grid>
 
-              <Grid item xs={12} md={6} sx={{ padding: 4, pt: { xs: 0, md: 4 } }}>
+              <Grid item xs={12} sm={6} sx={{ padding: 4, pt: { xs: 0, sm: 4 } }}>
                 <Grid 
                   item 
                   xs={12}
@@ -118,7 +118,7 @@ const Page = () => {
                 <Divider sx={{ borderWidth: 3, borderColor: 'black', mt: 4 }} />
               </Grid>
 
-              <Grid item xs = {12} md = {6}  sx = {{padding:4, pt:0, display:'flex', flexDirection:'column', height:{md:'220px'}}}>
+              <Grid item xs = {12} sm = {6}  sx = {{padding:4, pt:0, display:'flex', flexDirection:'column', height:{sm:'220px'}}}>
                 <Typography variant = 'h5' sx = {{flexGrow:1}}>
                   We do it by supporting community programs that revitalize neighborhoods, inspire education &amp; lift lives.
                 </Typography>
@@ -127,14 +127,14 @@ const Page = () => {
                 >
                   Learn More
                 </ButtonStyled>
-                <Divider sx = {{borderWidth:3,  borderColor:'black', mt:4, display:{xs:'block',md:'none'}}}/>
+                <Divider sx = {{borderWidth:3,  borderColor:'black', mt:4, display:{xs:'block',sm:'none'}}}/>
               </Grid>
 
               <VisibilitySensor
                 onChange={(isVisible) => setViewPortVisibility(0, isVisible)}
                 delayedCall
                 >
-              <Grid item xs = {12} md = {6}  sx = {{padding:4, pt:0, display:'flex', flexDirection:'column', height:{md:'220px'}}}>
+              <Grid item xs = {12} sm = {6}  sx = {{padding:4, pt:0, display:'flex', flexDirection:'column', height:{sm:'220px'}}}>
                 <Typography variant = 'h5' sx = {{flexGrow:1}}>
                   Our vision is beautiful, thriving communities full of happiness, peace, and personal growth.
                 </Typography>
@@ -158,7 +158,7 @@ const Page = () => {
                       xs={12}
                       sx={{
                         backgroundColor: 'grey',
-                        height: {md: '375px', xs: '250px'},
+                        height: {sm: '375px', xs: '300px'},
                         overflow: 'hidden',
                         position: 'relative'
                       }}
@@ -168,11 +168,14 @@ const Page = () => {
                         src="/cities-strong/homepage/neighborhood-revitalization.webp"
                         alt="Mental Health"
                         sx={{
-                          width: { md: '100%', xs: 'auto' },
-                          height: { xs: '120%', md: 'auto' },
+                          width: { sm: '100%', xs: 'auto' },                        
+                          minWidth: '100%',
+                          height: 'auto' ,
                           position: 'absolute',
-                          top: { md: '-240px', xs: '-50px' }, // Adjust this value to move the image down
-                          left: '0'
+                          bottom: '-20%',
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                       
                         }}
                       />
                     </Grid>
@@ -195,7 +198,7 @@ const Page = () => {
                       xs={12}
                       sx={{
                         backgroundColor: 'grey',
-                        height: {md: '375px', xs: '250px'},
+                        height: {sm: '375px', xs: '300px'},
                         overflow: 'hidden',
                         position: 'relative'
                       }}
@@ -205,10 +208,11 @@ const Page = () => {
                         src="/cities-strong/homepage/kids-learning.webp"
                         alt="Mental Health"
                         sx={{
-                          width: { md: '100%', xs: 'auto' },
-                          height: { xs: '100%', md: 'auto' },
-                          position: 'absolute',
-                          left: '0'
+                          width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        position: 'absolute',
+                        bottom: '0%',
                         }}
                       />
                      
@@ -219,7 +223,6 @@ const Page = () => {
                       content = 'We partner with schools to enhance literacy, leadership and academic achievement that will help students succeed in life.'
                       bgColor = '#188D4E'
                       contentColor = '#ffffff'
-
                       right
                     />
                   </Grid>
@@ -237,7 +240,7 @@ const Page = () => {
                       xs={12}
                       sx={{
                         backgroundColor: 'grey',
-                        height: {md: '375px', xs: '250px'},
+                        height: {sm: '375px', xs: '300px'},
                         overflow: 'hidden',
                         position: 'relative'
                       }}
@@ -247,10 +250,11 @@ const Page = () => {
                         src="/cities-strong/homepage/Family-Seated-on-Bench.webp"
                         alt="Mental Health"
                         sx={{
-                          width: { md: '100%', xs: 'auto' },
-                          height: { xs: '100%', md: 'auto' },
+                          minWidth: '100%',
+                          height: 'auto' ,
                           position: 'absolute',
-                          left: { xs: '-8%', md: 'auto' },
+                          left: '50%',
+                          transform: 'translateX(-50%)',
                         }}
                       />
                       
@@ -273,7 +277,7 @@ const Page = () => {
                     xs={12}
                     sx={{
                       backgroundColor: 'grey',
-                      height: {md: '375px', xs: '250px'},
+                      height: { sm: '375px', xs: '300px' },
                       overflow: 'hidden',
                       position: 'relative'
                     }}
@@ -283,15 +287,15 @@ const Page = () => {
                       src="/cities-strong/homepage/college-kids-seated.webp"
                       alt="Mental Health"
                       sx={{
-                        width: { md: '100%', xs: 'auto' },
-                        height: { xs: '180%', md: 'auto' },
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
                         position: 'absolute',
-                        top: {xs: '-150px', md: '-520px'},
-                        
+                        bottom: '0%',
                       }}
                     />
-                   
                   </Grid>
+
                   <ImageAccordion
                     title = 'Mental Health Assistance'
                     content = 'We help provide mental health programs, including a hotline and training for parents so they can talk with their pre-teen and teenage children.'
@@ -317,7 +321,7 @@ const Page = () => {
                 </Typography>
                 <Grid
                   xs = {12}
-                  md = {8}
+                  sm = {8}
                   sx = {{mx:'auto'}}
                   component={Typography}
                   variant={'h6'}
@@ -333,7 +337,7 @@ const Page = () => {
 
                 
             </Grid>  
-            <Grid item xs = {12} md = {6} sx = {{padding:4, paddingRight:{xs: 4, md: 2},  pb: 2}}>
+            <Grid item xs = {12} sm = {6} sx = {{padding:4, paddingRight:{xs: 4, sm: 2},  pb: 2}}>
               
               <Grid
                 sx = {{mx:'auto'}}
@@ -375,7 +379,7 @@ const Page = () => {
               </Grid>
             </Grid>
 
-            <Grid item xs={12} md={6} sx={{ padding: 4, paddingLeft:{xs: 4, md: 2}, pt: { xs: 0, md: 4 }, pb: 2 }}>
+            <Grid item xs={12} sm={6} sx={{ padding: 4, paddingLeft:{xs: 4, sm: 2}, pt: { xs: 0, sm: 4 }, pb: 2 }}>
               
               <Grid
                 sx = {{mx:'auto'}}
@@ -418,7 +422,7 @@ const Page = () => {
               </Grid>
             </Grid>
 
-            <Grid item xs = {12} md = {6} sx = {{padding:4, paddingRight:{xs: 4, md: 2},  pt: 2}}>
+            <Grid item xs = {12} sm = {6} sx = {{padding:4, paddingRight:{xs: 4, sm: 2},  pt: 2}}>
               
               <Grid
                 sx = {{mx:'auto'}}
@@ -460,7 +464,7 @@ const Page = () => {
               </Grid>
             </Grid>
 
-            <Grid item xs={12} md={6} sx={{ padding: 4, paddingLeft:{xs: 4, md: 2}, pt: 2 }}>
+            <Grid item xs={12} sm={6} sx={{ padding: 4, paddingLeft:{xs: 4, sm: 2}, pt: 2 }}>
               
               <Grid
                 sx = {{mx:'auto'}}

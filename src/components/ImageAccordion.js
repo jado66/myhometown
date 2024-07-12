@@ -5,12 +5,15 @@ import {
     AccordionDetails, 
     Typography,
     Divider,
-    Fade, 
+    Fade,
+    useTheme, 
   } from '@mui/material';
 
 import { styled } from '@mui/system';
 
 export const ImageAccordion = ({ title, content, bgColor, contentColor = 'black', right, cornerIcon }) => {
+    const theme = useTheme();
+
     return (
         <AccordionStyled 
             square elevation={0} 
@@ -24,9 +27,18 @@ export const ImageAccordion = ({ title, content, bgColor, contentColor = 'black'
             <AccordionSummary aria-controls="panel1a-content" id="panel1a-header"
                 expandIcon={<ExpandLess style={{ fontWeight: 'bold' }} />}
             >
-                <AccordionTitle variant='h6' textAlign='center' sx={{ color: 'white' }}>
+                <AccordionTitle 
+                    variant='h6' 
+                    textAlign='center' 
+                    sx={{
+                        color: 'white',
+                        
+                        fontSize: {xs:'1rem', md:'auto'}, // Adjust the font size as needed
+                    
+                    }}
+                    >
                     {title}
-                </AccordionTitle>
+                    </AccordionTitle>
             </AccordionSummary>
             <AccordionDetails 
                 sx={{ px: 3, pt: 0 }}
@@ -71,7 +83,10 @@ const AccordionStyled = styled(Accordion)(({ theme }) => ({
     display:'flex',
     flexDirection:'column',
     bottom: 0,
-    width: '75%',
+    width: '100%',
+    [theme.breakpoints.up('sm')]: {
+        width: '75%',
+    },
     maxHeight: '375px',
     boxShadow: 'none',
     [theme.breakpoints.up('md')]: {
@@ -79,7 +94,10 @@ const AccordionStyled = styled(Accordion)(({ theme }) => ({
     },
   
     '&.Mui-expanded': {
-        minHeight: '375px',
+        height: '300px',
+        [theme.breakpoints.up('sm')]: {
+            height: '375px',
+        },
     },
     '&:not(.Mui-expanded)': {
         '& .MuiAccordionDetails-root': {
