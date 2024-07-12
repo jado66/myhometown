@@ -85,7 +85,7 @@ const CitiesStrongLayout = ({
           pages={pages}
         />
         <main>
-          <Box height={{ xs: 56, sm: 48 }} />
+          <Box height={{ xs: 56, xs: 36, }} />
             <Grid container 
               sx ={{
                 backgroundColor: "#fafafa", 

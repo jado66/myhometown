@@ -8,7 +8,8 @@ import {
   Button,
   Grid, 
   Divider,
-  Fade 
+  Fade, 
+  Box
 } from '@mui/material';
 import Image from 'next/image';
 
@@ -55,7 +56,7 @@ const Page = () => {
                   xs={12}
                   sx={{
                     backgroundColor: 'grey',
-                    height: '375px',
+                    height: {md: '375px', xs: '250px'},
                     overflow: 'hidden',
                     position: 'relative'
                   }}
@@ -157,20 +158,20 @@ const Page = () => {
                       xs={12}
                       sx={{
                         backgroundColor: 'grey',
-                        height: '375px',
+                        height: {md: '375px', xs: '250px'},
                         overflow: 'hidden',
                         position: 'relative'
                       }}
                     >
-                      <img
+                      <Box
+                        component="img"
                         src="/cities-strong/homepage/neighborhood-revitalization.webp"
                         alt="Mental Health"
-                        // Lazy load the image
-                        style={{
-                          width: '100%',
-                          height: 'auto',
+                        sx={{
+                          width: { md: '100%', xs: 'auto' },
+                          height: { xs: '120%', md: 'auto' },
                           position: 'absolute',
-                          top: '-240px', // Adjust this value to move the image down
+                          top: { md: '-240px', xs: '-50px' }, // Adjust this value to move the image down
                           left: '0'
                         }}
                       />
@@ -194,23 +195,23 @@ const Page = () => {
                       xs={12}
                       sx={{
                         backgroundColor: 'grey',
-                        height: '375px',
+                        height: {md: '375px', xs: '250px'},
                         overflow: 'hidden',
                         position: 'relative'
                       }}
                     >
-                      <img
+                      <Box
+                        component="img"
                         src="/cities-strong/homepage/kids-learning.webp"
                         alt="Mental Health"
-                        // Lazy load the image
-                        style={{
-                          width: '100%',
-                          height: 'auto',
+                        sx={{
+                          width: { md: '100%', xs: 'auto' },
+                          height: { xs: '100%', md: 'auto' },
                           position: 'absolute',
-                          top: '0px', // Adjust this value to move the image down
                           left: '0'
                         }}
                       />
+                     
                     </Grid>
                       
                     <ImageAccordion
@@ -236,23 +237,23 @@ const Page = () => {
                       xs={12}
                       sx={{
                         backgroundColor: 'grey',
-                        height: '375px',
+                        height: {md: '375px', xs: '250px'},
                         overflow: 'hidden',
                         position: 'relative'
                       }}
                     >
-                      <img
+                      <Box
+                        component="img"
                         src="/cities-strong/homepage/Family-Seated-on-Bench.webp"
-                        alt="Legal Immigration Assistance"
-                        // Lazy load the image
-                        style={{
-                          width: '100%',
-                          height: 'auto',
+                        alt="Mental Health"
+                        sx={{
+                          width: { md: '100%', xs: 'auto' },
+                          height: { xs: '100%', md: 'auto' },
                           position: 'absolute',
-                          top: '-60px', // Adjust this value to move the image down
-                          left: '0'
+                          left: { xs: '-8%', md: 'auto' },
                         }}
                       />
+                      
                     </Grid>
                     <ImageAccordion
                       title = 'Legal Immigration Assistance'
@@ -272,23 +273,24 @@ const Page = () => {
                     xs={12}
                     sx={{
                       backgroundColor: 'grey',
-                      height: '375px',
+                      height: {md: '375px', xs: '250px'},
                       overflow: 'hidden',
                       position: 'relative'
                     }}
                   >
-                    <img
+                    <Box
+                      component="img"
                       src="/cities-strong/homepage/college-kids-seated.webp"
                       alt="Mental Health"
-                      // Lazy load the image
-                      style={{
-                        width: '100%',
-                        height: 'auto',
+                      sx={{
+                        width: { md: '100%', xs: 'auto' },
+                        height: { xs: '180%', md: 'auto' },
                         position: 'absolute',
-                        top: '-520px', // Adjust this value to move the image down
-                        left: '0'
+                        top: {xs: '-150px', md: '-520px'},
+                        
                       }}
                     />
+                   
                   </Grid>
                   <ImageAccordion
                     title = 'Mental Health Assistance'
@@ -314,7 +316,8 @@ const Page = () => {
                   Cities Served
                 </Typography>
                 <Grid
-                  xs = {8}
+                  xs = {12}
+                  md = {8}
                   sx = {{mx:'auto'}}
                   component={Typography}
                   variant={'h6'}
@@ -330,7 +333,7 @@ const Page = () => {
 
                 
             </Grid>  
-            <Grid item xs = {12} md = {6} sx = {{padding:4, paddingRight:2, display:'flex', flexDirection:'column', pb: 2}}>
+            <Grid item xs = {12} md = {6} sx = {{padding:4, paddingRight:{xs: 4, md: 2},  pb: 2}}>
               
               <Grid
                 sx = {{mx:'auto'}}
@@ -372,7 +375,7 @@ const Page = () => {
               </Grid>
             </Grid>
 
-            <Grid item xs={12} md={6} sx={{ padding: 4, paddingLeft:2, pt: { xs: 0, md: 4 }, pb: 2 }}>
+            <Grid item xs={12} md={6} sx={{ padding: 4, paddingLeft:{xs: 4, md: 2}, pt: { xs: 0, md: 4 }, pb: 2 }}>
               
               <Grid
                 sx = {{mx:'auto'}}
@@ -415,7 +418,7 @@ const Page = () => {
               </Grid>
             </Grid>
 
-            <Grid item xs = {12} md = {6} sx = {{padding:4, paddingRight:2, display:'flex', flexDirection:'column', pt: 2}}>
+            <Grid item xs = {12} md = {6} sx = {{padding:4, paddingRight:{xs: 4, md: 2},  pt: 2}}>
               
               <Grid
                 sx = {{mx:'auto'}}
@@ -457,7 +460,7 @@ const Page = () => {
               </Grid>
             </Grid>
 
-            <Grid item xs={12} md={6} sx={{ padding: 4, paddingLeft:2, pt: 2 }}>
+            <Grid item xs={12} md={6} sx={{ padding: 4, paddingLeft:{xs: 4, md: 2}, pt: 2 }}>
               
               <Grid
                 sx = {{mx:'auto'}}
