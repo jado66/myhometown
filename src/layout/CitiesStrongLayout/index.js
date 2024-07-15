@@ -8,7 +8,6 @@ import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Slide from '@mui/material/Slide';
 import { Topbar, Sidebar, Footer } from './components';
-import { pages } from '../navigation';
 import Container from '@/components/util/Container';
 import Head from 'next/head';
 import { Grid } from '@mui/material';
@@ -74,7 +73,7 @@ const CitiesStrongLayout = ({
             elevation={1}
           >
             <Container paddingY={{ xs: 1 / 2, sm: 1 }}>
-              <Topbar theme = {theme}/>
+              <Topbar theme = {theme} onSidebarOpen = {handleSidebarOpen}/>
             </Container>
           </AppBar>
         </HideOnScroll>
@@ -82,10 +81,9 @@ const CitiesStrongLayout = ({
           onClose={handleSidebarClose}
           open={openSidebar}
           variant="temporary"
-          pages={pages}
         />
         <main>
-          <Box height={{ xs: 56, xs: 36, }} />
+          <Box height={{ xs: 56, xs: 36, }} sx = {{mx:'auto'}} />
             <Grid container 
               sx ={{
                 backgroundColor: "#fafafa", 

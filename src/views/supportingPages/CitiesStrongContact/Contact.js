@@ -16,7 +16,7 @@ const Contact = ({ themeMode = 'light' }) => {
 
   return (
     <Box>
-      <Container px = {5}>
+      <Container px = {{md:5,xs:0}}>
         <Grid container spacing={isMd ? 8 : 4}>
           <Grid item xs={12}>
             <Map themeMode={themeMode} />

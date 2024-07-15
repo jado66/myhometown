@@ -8,7 +8,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const Faq = () => {
   return (
-    <Box>
+    <Box sx = {{mx:3}}>
       <Box marginBottom={4}>
         <Box
           component={Typography}
@@ -52,12 +52,33 @@ const Faq = () => {
               '&::before': {
                 display: 'none',
               },
+              backgroundColor: 'white',
+              borderRadius: '0 !important', // Force border-radius to 0
+              border: '2px solid black',
+              '& .MuiAccordion-rounded:first-of-type': {
+                borderTopLeftRadius: 0,
+                borderTopRightRadius: 0,
+              },
+              '& .MuiAccordion-rounded:last-of-type': {
+                borderBottomLeftRadius: 0,
+                borderBottomRightRadius: 0,
+              },
             }}
           >
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
               aria-controls="panel1a-content"
               id={`panel1a-header--${i}`}
+              sx={{
+                borderRadius: 0,
+                '&.MuiAccordionSummary-root': {
+                  backgroundColor: 'white',
+                  borderRadius: 0,
+                },
+                '&::before': {
+                  display: 'none',
+                },
+              }}
             >
               <Typography fontWeight={600}>{item.title}</Typography>
             </AccordionSummary>

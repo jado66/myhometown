@@ -1,15 +1,21 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Link from '@mui/material/Link';
+import NextLink from 'next/link';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import { ExpandLess } from '@mui/icons-material';
+import useManageCities from '@/hooks/use-manage-cities';
 
-const SidebarNav = ({ pages, onClose }) => {
+const SidebarNav = ({  onClose }) => {
+
   const theme = useTheme();
   const [activeLink, setActiveLink] = useState('');
   useEffect(() => {
@@ -17,68 +23,99 @@ const SidebarNav = ({ pages, onClose }) => {
   }, []);
 
   return (
-    <Box>
+    <Box sx ={{position:'relative', textAlign:'center'}}>
       <Box
         display={'flex'}
         justifyContent={'flex-end'}
         onClick={() => onClose()}
       >
-        <IconButton>
+        <IconButton sx = {{color:'white', position:'absolute'}}>
           <CloseIcon fontSize="small" />
         </IconButton>
       </Box>
       <Box paddingX={2} paddingBottom={2}>
         <Box>
-          {pages.map((item, i) => (
-            <Box key={i} marginBottom={4}>
+          <Box marginBottom={4}>
+            <NextLink href = "/"  style = {{textDecoration:'none', color: '#686868'}}>
               <Typography
-                variant="caption"
+                variant="h4"
                 sx={{
                   fontWeight: 700,
-                  textTransform: 'uppercase',
                   marginBottom: 1,
                   display: 'block',
+                  textDecoration:'none',
+                  color:'white',
+                  textTransform:'uppercase',
+                  pt:'2px'
                 }}
               >
-                {item.title}
+                Cities Strong
               </Typography>
-              <Grid container spacing={1}>
-                {item.pages.map((p, i) => (
-                  <Grid item xs={6} key={i}>
-                    <Link
-                      variant="body2"
-                      component={'a'}
-                      href={p.href}
-                      color={activeLink === p.href ? 'primary' : 'textPrimary'}
-                      underline={'none'}
-                      sx={{
-                        fontWeight: activeLink === p.href ? 600 : 400,
-                        '&:hover': {
-                          textDecoration: 'none',
-                          color: theme.palette.primary.dark,
-                        },
-                      }}
-                      onClick={() => onClose()}
-                    >
-                      {p.title}
-                    </Link>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-          ))}
+            </NextLink>
+          </Box> 
+          <Box marginBottom={4}>
+            <NextLink href = "/about"  style = {{textDecoration:'none', color: '#686868'}}>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  marginBottom: 1,
+                  display: 'block',
+                  textDecoration:'none',
+                  color:'white'
+                }}
+              >
+                About
+              </Typography>
+            </NextLink>
+          </Box>
+          <Box marginBottom={4}>
+            <NextLink href = "/media"  style = {{textDecoration:'none', color: '#686868'}}>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  marginBottom: 1,
+                  display: 'block',
+                  textDecoration:'none',
+                  color:'white'
+                }}
+              >
+                Media
+              </Typography>
+            </NextLink>
+          </Box>
+          <Box marginBottom={4}>
+            <NextLink href = "/contact" style = {{textDecoration:'none', color: '#686868'}}>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  marginBottom: 1,
+                  display: 'block',
+                  color:'white'
+                }}
+              >
+                Contact
+              </Typography>
+            </NextLink>
+          </Box>
+          <Box marginBottom={4}>
+            <NextLink href = "/donate" style = {{textDecoration:'none', color: '#686868'}}>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  marginBottom: 1,
+                  display: 'block',
+                  color:'white'
+                }}
+              >
+                Donate
+              </Typography>
+            </NextLink>
+          </Box>
         </Box>
-        <Box>
-          <Button
-            variant="outlined"
-            fullWidth
-            component="a"
-            href="/docs-introduction"
-          >
-            Documentation
-          </Button>
-        </Box>
-        
       </Box>
     </Box>
   );

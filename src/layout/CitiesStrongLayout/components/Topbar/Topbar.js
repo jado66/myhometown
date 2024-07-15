@@ -6,7 +6,11 @@ import Link from '@mui/material/Link';
 import CitiesStrongLogo from '@/assets/svg/logos/CitiesStrong';
 import CitiesStrongShield from '@/assets/svg/logos/CititesStrongShield';
 import CitiesStrongShieldIcon from '@/assets/svg/logos/CitiesStrongShieldIcon';
-const Topbar = ({theme}) => {
+import { IconButton, Typography } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+
+
+const Topbar = ({onSidebarOpen, theme}) => {
 
   const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'? '/cs':''
 
@@ -16,29 +20,43 @@ const Topbar = ({theme}) => {
       justifyContent={'space-between'}
       alignItems={'center'}
       width={'100%'}
-      
+      position='relative'
     >
-      <Box display={'flex'} alignItems={'center'}>
-
+      <Box display={'flex'} alignItems={'center'} sx = {{flexGrow:1, justifyContent:'space-between'}}>
+        <Box
+            display={'flex'}
+            alignItems="baseline"
+            title="myhometown"
+            height={{ xs: 28, md: 32 }}
+            width={45}
+        >
+          <CitiesStrongShield shieldColor='#000000' fontColor='#ffffff'/>
+        </Box>
         <Box
           display={'flex'}
           alignItems="baseline"
+          underline="none"
+          href={rootUrl+"/"}
           title="myhometown"
-          height={{ xs: 28, md: 32 }}
-          width={45}
+          sx = {{position:'absolute', width:"100%", textAlign:'center'}}
         >
-          {/* <CitiesStrongLogo height='100%' width='100%' /> */}
-          <CitiesStrongShield shieldColor='#000000' fontColor='#ffffff'/>
+          <Link    
+            underline="none"
+            component="a"
+            href={rootUrl+"/about"}
+            color = {theme.palette.primary.contrastText}
+            width = "100%"
+          >
+            <Typography variant = 'h4' sx = {{textTransform:'uppercase', fontWeight:'bold'}}>Cities Strong</Typography>
+          </Link>
+        </Box>
+        <Box marginRight={{ xs: 1, sm: 2 }} sx = {{display: { xs: 'flex', md: 'none' }}}>
+          <IconButton aria-label="Menu" onClick = {onSidebarOpen} sx = {{color:'white'}}>
+            <MenuIcon />
+          </IconButton>
         </Box>
       </Box>
-
-      <Box display={'flex'} alignItems={'center'}>
-
-        <Link underline="none" sx={{textTransform:'uppercase', fontWeight:'bold'}} component="a" href={rootUrl+"/"} color = {theme.palette.primary.contrastText}>
-          Cities Strong
-        </Link>
-        
-      </Box>
+      
       <Box display="flex" alignItems={'center'}>
       
         <Box sx={{ display: { xs: 'none', md: 'flex' } }} alignItems={'center'}>

@@ -33,7 +33,7 @@ const Footer = () => (
         <FooterLink href="/contact" ><Typography sx={{ textTransform: 'uppercase' }}>Contact</Typography></FooterLink>
         {/* <FooterLink href="/careers" ><Typography sx={{ textTransform: 'uppercase' }}>Careers</Typography></FooterLink> */}
       
-        <Divider sx={{ borderWidth: 3, borderColor: 'black', my: 2 }} />
+        <Divider sx={{ borderWidth: 3, borderColor: 'black', my: 2, mt:'auto' }} />
       </Grid>
       <Grid item xs={4} sx={{ pX: 0 }} display='flex' flexDirection='column'>
         <Divider sx={{ borderWidth: 3, borderColor: 'black', mb: 2 }} />
@@ -42,7 +42,7 @@ const Footer = () => (
         <FooterLink href="/donate" ><Typography sx={{ textTransform: 'uppercase' }}>Donate</Typography></FooterLink>
         <FooterLink href="/terms-of-use" ><Typography sx={{ textTransform: 'uppercase' }}>Terms Of Use</Typography></FooterLink>
         <FooterLink href="/privacy-policy" ><Typography sx={{ textTransform: 'uppercase' }}>Privacy Policy</Typography></FooterLink>
-        <Divider sx={{ borderWidth: 3, borderColor: 'black', my: 2 }} />
+        <Divider sx={{ borderWidth: 3, borderColor: 'black', my: 2, mt:'auto' }} />
       </Grid>
     </Grid>
     <Grid container spacing={2} mt={.5} mb={5} px={4}>
