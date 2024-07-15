@@ -67,10 +67,7 @@ const Page = () => {
               />
             </Grid>
 
-            <Grid item xs={12} sx = {{pX:0}}>
-              <Divider sx = {{borderWidth:3, mx:4, borderColor:'black', mt:5}}/>
             
-            </Grid>
 
             <Grid item xs = {12} sm = {6} sx = {{padding:4, display:'flex', flexDirection:'column'}}>
               <Typography variant = 'h4' sx = {{flexGrow:1}}>
@@ -112,19 +109,19 @@ const Page = () => {
                 />
               </Grid>
               
-              <Divider sx={{ borderWidth: 3, borderColor: 'black', mt: 4 }} />
+              <Divider sx={{ display:{xs:'none', md:'block'}, borderWidth: 3, borderColor: 'black', mt: 4 }} />
             </Grid>
 
             <Grid item xs = {12} sm = {6}  sx = {{padding:4, pt:0, display:'flex', flexDirection:'column', height:{sm:'220px'}}}>
               <Typography variant = 'h5' sx = {{flexGrow:1}}>
-                We do it by supporting community programs that revitalize neighborhoods, inspire education &amp; lift lives.
+                We do it by supporting community programs that revitalize neighborhoods, inspire education, and lift lives.
               </Typography>
-              <ButtonStyled variant='outlined'  sx = {{mr:'auto', mt:3}}
+              {/* <ButtonStyled variant='outlined'  sx = {{mr:'auto', mt:3}}
                 href = '/about'
               >
                 Learn More
-              </ButtonStyled>
-              <Divider sx = {{borderWidth:3,  borderColor:'black', mt:4, display:{xs:'block',sm:'none'}}}/>
+              </ButtonStyled> */}
+              <Divider sx = {{borderWidth:1.5, mx: 2,  borderColor:'black', mt:4, display:{xs:'block',sm:'none'}}}/>
             </Grid>
 
             <VisibilitySensor
@@ -133,13 +130,13 @@ const Page = () => {
               >
             <Grid item xs = {12} sm = {6}  sx = {{padding:4, pt:0, display:'flex', flexDirection:'column', height:{sm:'220px'}}}>
               <Typography variant = 'h5' sx = {{flexGrow:1}}>
-                Our vision is beautiful, thriving communities full of happiness, peace, and personal growth.
+                Our vision is to see beautiful, thriving communities full of happiness, peace, and personal growth.
               </Typography>
-              <ButtonStyled variant='outlined'  sx = {{mr:'auto', mt:3}}
+              {/* <ButtonStyled variant='outlined'  sx = {{mr:'auto', mt:3}}
                 href = '/about'
               >
                 Learn More
-              </ButtonStyled>
+              </ButtonStyled> */}
             </Grid>
             </VisibilitySensor>
 
@@ -325,7 +322,7 @@ const Page = () => {
                 align={'center'}
 
               >
-                Cities Strong has made a difference for fourteen neighborhoods in communities across the Wasatch Front
+                Cities Strong has made a difference for fourteen communities in cities across the Wasatch Front
               </Grid>
 
             
@@ -339,7 +336,7 @@ const Page = () => {
             <Grid
               sx = {{mx:'auto'}}
               component={Typography}
-              variant={'h5'}
+              variant={'h4'}
               fontWeight={700}
               gutterBottom
               align={'center'}
@@ -381,7 +378,7 @@ const Page = () => {
             <Grid
               sx = {{mx:'auto'}}
               component={Typography}
-              variant={'h5'}
+              variant={'h4'}
               fontWeight={700}
               gutterBottom
               align={'center'}
@@ -419,12 +416,12 @@ const Page = () => {
             </Grid>
           </Grid>
 
-          <Grid item xs = {12} md = {6} sx = {{padding:4, paddingRight:{xs: 4, sm: 2},  pt: 2}}>
+          <Grid item xs = {12} md = {3} sx = {{padding:4, paddingRight:{xs: 4, sm: 2},  pt: 2}}>
             
             <Grid
               sx = {{mx:'auto'}}
               component={Typography}
-              variant={'h5'}
+              variant={'h4'}
               fontWeight={700}
               gutterBottom
               align={'center'}
@@ -466,7 +463,7 @@ const Page = () => {
             <Grid
               sx = {{mx:'auto'}}
               component={Typography}
-              variant={'h5'}
+              variant={'h4'}
               fontWeight={700}
               gutterBottom
               align={'center'}

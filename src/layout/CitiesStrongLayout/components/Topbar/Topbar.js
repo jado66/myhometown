@@ -6,13 +6,14 @@ import Link from '@mui/material/Link';
 import CitiesStrongLogo from '@/assets/svg/logos/CitiesStrong';
 import CitiesStrongShield from '@/assets/svg/logos/CititesStrongShield';
 import CitiesStrongShieldIcon from '@/assets/svg/logos/CitiesStrongShieldIcon';
-import { IconButton, Typography } from '@mui/material';
+import { IconButton, Typography, useMediaQuery } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 
 
 const Topbar = ({onSidebarOpen, theme}) => {
 
   const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'? '/cs':''
+  const isMediumUp = useMediaQuery(theme.breakpoints.up('md'));
 
   return (
     <Box
@@ -27,10 +28,10 @@ const Topbar = ({onSidebarOpen, theme}) => {
             display={'flex'}
             alignItems="baseline"
             title="myhometown"
-            height={{ xs: 28, md: 32 }}
+            height={{ xs: 32, md: 46 }}
             width={45}
         >
-          <CitiesStrongShield shieldColor='#000000' fontColor='#ffffff'/>
+          <CitiesStrongShield shieldColor='#000000' fontColor='#ffffff' width = {55} height = {55}/>
         </Box>
         <Box
           display={'flex'}
@@ -43,11 +44,16 @@ const Topbar = ({onSidebarOpen, theme}) => {
           <Link    
             underline="none"
             component="a"
-            href={rootUrl+"/about"}
+            href={rootUrl+"/"}
             color = {theme.palette.primary.contrastText}
             width = "100%"
           >
-            <Typography variant = 'h4' sx = {{textTransform:'uppercase', fontWeight:'bold'}}>Cities Strong</Typography>
+            <Typography 
+              variant={isMediumUp ? 'h4' : 'h6'} 
+              sx = {{textTransform:'uppercase', fontWeight:'bold'}}
+              >
+              Cities Strong Foundation
+            </Typography>
           </Link>
         </Box>
         <Box marginRight={{ xs: 1, sm: 2 }} sx = {{display: { xs: 'flex', md: 'none' }}}>

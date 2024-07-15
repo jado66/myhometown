@@ -1,4 +1,13 @@
-const CitiesStrongShield = ({ fillColor = '#2D903C' }) => (
+import { SvgIcon } from "@mui/material";
+
+const CitiesStrongShield = ({ fillColor = '#2D903C', width, height }) => (
+  <SvgIcon
+    sx = {{
+      width: {sm:'75px', xs:'50px'},
+       height: {sm:'75px', xs:'50px'},
+       mt:{xs:1, md:.5}
+    }}
+  >
     <svg
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"
@@ -33,6 +42,7 @@ const CitiesStrongShield = ({ fillColor = '#2D903C' }) => (
 <path class="st00-2" d="M337.09,715.88c38.24,8.96,89.77,37.53,163.34,41.35v-44.82c-109.45-12.78-163.34-65.42-163.34-65.42V715.88z"
 	/>
     </svg>
+  </SvgIcon>
   );
   
   export default CitiesStrongShield;

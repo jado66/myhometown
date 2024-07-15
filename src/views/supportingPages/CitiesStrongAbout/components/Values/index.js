@@ -20,7 +20,7 @@ const ourValues = [
     },
     {
         title: 'Excellence',
-        content: 'Provide and outstanding experience to all we work with',
+        content: 'Provide an outstanding experience to all we work with',
         icon: WorkspacePremium
     },
     {

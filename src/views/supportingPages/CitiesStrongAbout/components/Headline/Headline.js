@@ -40,8 +40,8 @@ const Headline = () => {
           </Typography>
         </Box>
         <Box marginBottom={4}>
-          <Typography variant="h6" align={'center'} >
-          Cities Strong Foundation is directed by a dedicated group of business, church and education leaders who are passionate about making our communities special places to live and raise a family for all residents.
+          <Typography variant="h6" align={'center'} sx = {{maxWidth:'700px', mx:'auto'}} >
+          Cities Strong Foundation is directed by a dedicated group of business, church and education leaders. Cities Strong Foundation is passionate about making our communities special places to live.
 
           </Typography>
         </Box>

@@ -48,14 +48,15 @@ const Team = () => {
     
       <Grid container spacing={2} justifyContent='center'>
         {executiveCommittee.map((item, i) => (
-          <Grid item xs={12} sm={6} md={3} key={i}>
+          <Grid item  sm={6} md={3} key={i}>
             <Box
               component={Card}
               borderRadius={3}
               boxShadow={2}
               sx={{
-                border:'1px solid lightgrey',
-                backgroundColor: theme.palette.background.level2,
+                // border:'1px solid lightgrey',
+                backgroundColor: '#fafafa', //theme.palette.background.level2,
+                boxShadow:'none',
                 textDecoration: 'none',
                 transition: 'all .2s ease-in-out',
                 '&:hover': {
@@ -103,14 +104,15 @@ const Team = () => {
     
       <Grid container spacing={2} justifyContent='center'>
         {boardOfDirectors.map((item, i) => (
-          <Grid item xs={12} sm={6} md={3} key={i}>
+          <Grid item sm={6} md={3} key={i}>
             <Box
               component={Card}
               borderRadius={3}
               boxShadow={2}
               sx={{
-                border:'1px solid lightgrey',
-                backgroundColor: theme.palette.background.level2,
+                // border:'1px solid lightgrey',
+                backgroundColor: '#fafafa', //theme.palette.background.level2,
+                boxShadow:'none',
                 textDecoration: 'none',
                 transition: 'all .2s ease-in-out',
                 '&:hover': {

@@ -31,7 +31,7 @@ export const ImageAccordion = ({ title, content, bgColor, contentColor = 'black'
                     variant='h6' 
                     textAlign='center' 
                     sx={{
-                        color: 'white',
+                        color: contentColor,
                         
                         fontSize: {xs:'1rem', md:'auto'}, // Adjust the font size as needed
                     
@@ -46,7 +46,7 @@ export const ImageAccordion = ({ title, content, bgColor, contentColor = 'black'
                     sx: { flex:1, position: 'relative'}
                 }}
             >
-                <DividerStyled />
+                {/* <DividerStyled /> */}
                 <Typography color={contentColor} variant = 'h6'>
                     {content}
                 </Typography>

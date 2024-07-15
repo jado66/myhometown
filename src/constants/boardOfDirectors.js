@@ -51,18 +51,18 @@ export const boardOfDirectors = [
         name: 'David Johnson',
         avatar: '/images/board/David Johnson.jpg',
     },
-    {
-        name: 'Bruce Jardine',
-        avatar: '/images/profile.png',
-    },
+    // {
+    //     name: 'Bruce Jardine',
+    //     avatar: '/images/profile.png',
+    // },
     {
         name: 'Rev. Bruce Kolasch',
         avatar: '/images/board/Bruce Kolasch.jpg',
     },
-    {
-        name: 'Eli Madrigal',
-        avatar: '/images/profile.png',
-    },
+    // {
+    //     name: 'Eli Madrigal',
+    //     avatar: '/images/profile.png',
+    // },
     {
         name: 'Dr. Ann Millner',
         avatar: '/images/board/Dr. Ann Milner.jpg',
@@ -79,8 +79,8 @@ export const boardOfDirectors = [
         name: 'Jared Theurer',
         avatar: '/images/board/Jared Theurer.jpg'
     },
-    {
-        name: 'Shaleane Gee',
-        avatar: '/images/profile.png'
-    }
+    // {
+    //     name: 'Shaleane Gee',
+    //     avatar: '/images/profile.png'
+    // }
 ]
