@@ -10,16 +10,23 @@ const Donate = () => {
     const {isLoaded} = useGiveButterScripts();
     
     return (
-        <Container>
-            <Typography 
-                variant="h2" 
-                component="h1"
-                sx = {{paddingTop:3, marginBottom:2}}
-                gutterBottom
+        <Container >
+            <Typography
+                variant="h2"
+                sx={{
+                    fontWeight: 700,
+                    mt:{xs:3, md:5},
+                    textAlign:'center'
+                }}
             >
-                Donate Page
+                Donate
             </Typography>
-            <Typography variant="body1">
+            <Typography 
+                variant="body1"
+                sx={{
+                    textAlign:'center'
+                }}
+            >
                 Your donations help us continue to deliver quality services. Every little bit helps. Thank you.
             </Typography>
 
