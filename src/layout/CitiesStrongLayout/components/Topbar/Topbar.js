@@ -13,6 +13,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 const Topbar = ({onSidebarOpen, theme}) => {
   const isMediumUp = useMediaQuery(theme.breakpoints.up('md'));
 
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev' ? '/cs':''
+
   return (
     <Box
       display={'flex'}
@@ -44,7 +46,7 @@ const Topbar = ({onSidebarOpen, theme}) => {
           <Link    
             underline="none"
             component="a"
-            href={"/"}
+            href={rootUrl+"/"}
             color={theme.palette.primary.contrastText}
             sx={{ pointerEvents: 'auto' }} // Re-enable pointer events for the link itself
           >
@@ -71,7 +73,7 @@ const Topbar = ({onSidebarOpen, theme}) => {
             <Link
               underline="none"
               component="a"
-              href={"/about"}
+              href={rootUrl+"/about"}
               color={theme.palette.primary.contrastText}
             >
               About
@@ -81,7 +83,7 @@ const Topbar = ({onSidebarOpen, theme}) => {
             <Link
               underline="none"
               component="a"
-              href={"/media"}
+              href={rootUrl+"/media"}
               color={theme.palette.primary.contrastText}
             >
               Media
@@ -91,7 +93,7 @@ const Topbar = ({onSidebarOpen, theme}) => {
             <Link
               underline="none"
               component="a"
-              href={"/contact"}
+              href={rootUrl+"/contact"}
               color={theme.palette.primary.contrastText}
             >
               Contact
@@ -101,7 +103,7 @@ const Topbar = ({onSidebarOpen, theme}) => {
             <Link
               underline="none"
               component="a"
-              href={"/donate"}
+              href={rootUrl+"/donate"}
               color={theme.palette.primary.contrastText}
             >
               Donate

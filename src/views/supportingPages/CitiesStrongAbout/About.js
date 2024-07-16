@@ -17,9 +17,9 @@ const CitiesStrongAbout = () => {
   };
 
   const stats = {
-    volunteerHours: 1500,
-    numTeachersVolunteers: 75,
-    serviceProjects: 20,
+    volunteerHours: 1837,
+    numTeachersVolunteers: 92,
+    serviceProjects: 27,
   };
 
   const theme = useTheme()

@@ -18,7 +18,7 @@ const Form = () => {
   });
 
   return (
-    <Box>
+    <Box sx = {{px:{xs:4, md:0}}}>
       <Box>
         <Typography
           sx={{

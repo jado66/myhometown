@@ -18,9 +18,12 @@ const SidebarNav = ({  onClose }) => {
 
   const theme = useTheme();
   const [activeLink, setActiveLink] = useState('');
+  
   useEffect(() => {
     setActiveLink(window && window.location ? window.location.pathname : '');
   }, []);
+
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev' ? '/cs':''
 
   return (
     <Box sx ={{position:'relative', textAlign:'center'}}>
@@ -36,7 +39,7 @@ const SidebarNav = ({  onClose }) => {
       <Box paddingX={2} paddingBottom={2}>
         <Box>
           <Box marginBottom={4}>
-            <NextLink href = "/"  style = {{textDecoration:'none', color: '#686868'}}>
+            <NextLink href = {rootUrl+"/"}  style = {{textDecoration:'none', color: '#686868'}}>
               <Typography
                 variant="h4"
                 sx={{
@@ -54,7 +57,7 @@ const SidebarNav = ({  onClose }) => {
             </NextLink>
           </Box> 
           <Box marginBottom={4}>
-            <NextLink href = "/about"  style = {{textDecoration:'none', color: '#686868'}}>
+            <NextLink href = {rootUrl+"/about"}  style = {{textDecoration:'none', color: '#686868'}}>
               <Typography
                 variant="h5"
                 sx={{
@@ -70,7 +73,7 @@ const SidebarNav = ({  onClose }) => {
             </NextLink>
           </Box>
           <Box marginBottom={4}>
-            <NextLink href = "/media"  style = {{textDecoration:'none', color: '#686868'}}>
+            <NextLink href = {rootUrl+"/media"}  style = {{textDecoration:'none', color: '#686868'}}>
               <Typography
                 variant="h5"
                 sx={{
@@ -86,7 +89,7 @@ const SidebarNav = ({  onClose }) => {
             </NextLink>
           </Box>
           <Box marginBottom={4}>
-            <NextLink href = "/contact" style = {{textDecoration:'none', color: '#686868'}}>
+            <NextLink href = {rootUrl+"/contact"} style = {{textDecoration:'none', color: '#686868'}}>
               <Typography
                 variant="h5"
                 sx={{
@@ -101,7 +104,7 @@ const SidebarNav = ({  onClose }) => {
             </NextLink>
           </Box>
           <Box marginBottom={4}>
-            <NextLink href = "/donate" style = {{textDecoration:'none', color: '#686868'}}>
+            <NextLink href = {rootUrl+"/donate"} style = {{textDecoration:'none', color: '#686868'}}>
               <Typography
                 variant="h5"
                 sx={{

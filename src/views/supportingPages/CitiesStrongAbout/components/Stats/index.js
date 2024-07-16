@@ -28,8 +28,8 @@ const Stats = ({viewPortEntered, setViewPortVisibility, stats}) => {
                 </Box> */}
             </Box>  
 
-            <Grid container spacing={2} padding = {3} >
-                <Grid item md={4}>
+            <Grid container spacing={2} padding = {3} display = 'flex' justifyContent='center'>
+                <Grid item md={4} xs = {6}>
                     <Typography
                         variant="h3"
                         align={'center'}
@@ -54,7 +54,7 @@ const Stats = ({viewPortEntered, setViewPortVisibility, stats}) => {
                         Volunteer Hours
                     </Typography>
                 </Grid>
-                <Grid item md={4}>
+                <Grid item md={4} xs = {6} sx = {{mx:'auto'}}>
                     <Typography
                         variant="h3"
                         align={'center'}
@@ -80,7 +80,7 @@ const Stats = ({viewPortEntered, setViewPortVisibility, stats}) => {
                         Volunteers
                     </Typography>
                 </Grid>
-                <Grid item md={4}>
+                <Grid item md={4} xs = {6} sx = {{mt:{xs:3, md:0}}}>
                     <Typography
                         variant="h3"
                         align={'center'}
