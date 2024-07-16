@@ -46,8 +46,11 @@ const CitiesStrongMediaPage = () => {
             <Card >
               <CardMedia
                 component="iframe"
-                sx = {{boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'}}
-                height="485"
+                sx = {{
+                  boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)',
+                  height:{md:"485px", xs:'230px'}
+                }}
+                
                 src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Donor+Final+100624.mp4"
                 title="Video 1"
               />
