@@ -376,7 +376,7 @@ const Page = () => {
           <Grid item xs={12} md={6} sx={{ padding: 4, paddingLeft:{xs: 4, md: 2}, pt:4, pb: 2 }}>
             
             <Grid
-              sx = {{mx:'auto'}}
+             
               component={Typography}
               variant={'h4'}
               fontWeight={700}
@@ -392,24 +392,23 @@ const Page = () => {
               item 
               xs={12}
               sx={{
-                backgroundColor: 'grey',
                 height: '350px',
                 overflow: 'hidden',
                 position: 'relative', 
                 boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'
+
               }}
             >
-              <img
-                src="/cities-strong/cities/provo.jpeg"
+              <Box
+                component="img"
+                src="/cities-strong/cities/provo.webp"
                 alt="Mental Health"
-                  // Lazy load the image
-                style={{
-                  width: '100%',
+                loading="lazy"
+                sx={{
                   height: '100%',
                   objectFit: 'cover', // Ensures the image covers the entire area
                   position: 'absolute',
                   objectPosition: 'right', // Shifts the image to the left
-                  top: '0',
                   left: '0px'
                 }}
               />
