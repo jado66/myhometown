@@ -50,7 +50,7 @@ const Topbar = ({onSidebarOpen, theme}) => {
           >
             <Typography 
               variant={isMediumUp ? 'h4' : 'h6'} 
-              sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}
+              sx={{ textTransform: 'uppercase', fontWeight: 'bold', whiteSpace:'nowrap' }}
             >
               Cities Strong Foundation
             </Typography>

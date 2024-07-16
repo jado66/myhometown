@@ -331,7 +331,7 @@ const Page = () => {
 
               
           </Grid>  
-          <Grid item xs = {12} md = {6} sx = {{padding:4, paddingRight:{xs: 4, sm: 2},  pb: 2}}>
+          <Grid item xs = {12} md = {6} sx = {{padding:4, paddingRight:{xs: 4, md: 2},  pb: 2}}>
             
             <Grid
               sx = {{mx:'auto'}}
@@ -346,34 +346,34 @@ const Page = () => {
             </Grid>
 
             <Grid 
-                item 
-                xs={12}
-                sx={{
-                  backgroundColor: 'grey',
-                  height: '350px',
-                  overflow: 'hidden',
-                  position: 'relative', 
-                  boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'
+              item 
+              xs={12}
+              sx={{
+                backgroundColor: 'grey',
+                height: '350px',
+                overflow: 'hidden',
+                position: 'relative', 
+                boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'
+              }}
+            >
+              <img
+              src="/cities-strong/cities/ogden.jpeg"
+              alt="Mental Health"
+                  // Lazy load the image
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover', // Ensures the image covers the entire area
+                  position: 'absolute',
+                  objectPosition: 'right', // Shifts the image to the left
+                  top: '0',
+                  left: '0px'
                 }}
-              >
-                <img
-                src="/cities-strong/cities/ogden.jpeg"
-                alt="Mental Health"
-                    // Lazy load the image
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover', // Ensures the image covers the entire area
-                    position: 'absolute',
-                    objectPosition: 'right', // Shifts the image to the left
-                    top: '0',
-                    left: '0px'
-                  }}
-                />
+              />
             </Grid>
           </Grid>
 
-          <Grid item xs={12} md={6} sx={{ padding: 4, paddingLeft:{xs: 4, sm: 2}, pt: { xs: 0, sm: 4 }, pb: 2 }}>
+          <Grid item xs={12} md={6} sx={{ padding: 4, paddingLeft:{xs: 4, md: 2}, pt:4, pb: 2 }}>
             
             <Grid
               sx = {{mx:'auto'}}
@@ -416,7 +416,7 @@ const Page = () => {
             </Grid>
           </Grid>
 
-          <Grid item xs = {12} md = {3} sx = {{padding:4, paddingRight:{xs: 4, sm: 2},  pt: 2}}>
+          <Grid item xs={12} md={6} sx={{ padding: 4, paddingRight:{xs: 4, md: 2}, pt: 4, pb: 2 }}>
             
             <Grid
               sx = {{mx:'auto'}}
@@ -427,38 +427,38 @@ const Page = () => {
               align={'center'}
 
             >
-              Orem
+              West Valley City
             </Grid>
 
             <Grid 
-                item 
-                xs={12}
-                sx={{
-                  backgroundColor: 'grey',
-                  height: '350px',
-                  overflow: 'hidden',
-                  position: 'relative', 
-                  boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'
+              item 
+              xs={12}
+              sx={{
+                backgroundColor: 'grey',
+                height: '350px',
+                overflow: 'hidden',
+                position: 'relative', 
+                boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'
+              }}
+            >
+              <img
+              src="/cities-strong/cities/orem.jpeg"
+              alt="Mental Health"
+                  // Lazy load the image
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover', // Ensures the image covers the entire area
+                  position: 'absolute',
+                  objectPosition: 'right', // Shifts the image to the left
+                  top: '0',
+                  left: '0px'
                 }}
-              >
-                <img
-                src="/cities-strong/cities/orem.jpeg"
-                alt="Mental Health"
-                    // Lazy load the image
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover', // Ensures the image covers the entire area
-                    position: 'absolute',
-                    objectPosition: 'right', // Shifts the image to the left
-                    top: '0',
-                    left: '0px'
-                  }}
-                />
+              />
             </Grid>
           </Grid>
 
-          <Grid item xs={12} md={6} sx={{ padding: 4, paddingLeft:{xs: 4, sm: 2}, pt: 2 }}>
+          <Grid item xs={12} md={6} sx={{ padding: 4, paddingLeft:{xs: 4, md: 2}, pt: 4, pb: 2 }}>
             
             <Grid
               sx = {{mx:'auto'}}
