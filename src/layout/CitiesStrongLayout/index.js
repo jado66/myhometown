@@ -12,8 +12,8 @@ import Container from '@/components/util/Container';
 import Head from 'next/head';
 import { Grid } from '@mui/material';
 
-import { Roboto } from '@next/font/google';
-import '../../styles/cities-strong.css'; // Ensure you have a global stylesheet for custom styles
+// import { Roboto } from '@next/font/google';
+// import '../../styles/cities-strong.css'; // Ensure you have a global stylesheet for custom styles
 
 const HideOnScroll = ({ children }) => {
   const trigger = useScrollTrigger();
@@ -34,10 +34,10 @@ export const metadata = {
   description: "Description of Cities Strong.", //#TODO
 };
 
-const roboto = Roboto({
-  subsets: ['latin'], // Define the subsets you need
-  weight: ['100', '300', '400', '500', '700', '900'], // Specify the weights you need
-});
+// const roboto = Roboto({
+//   subsets: ['latin'], // Define the subsets you need
+//   weight: ['100', '300', '400', '500', '700', '900'], // Specify the weights you need
+// });
 
 
 const CitiesStrongLayout = ({
@@ -72,7 +72,7 @@ const CitiesStrongLayout = ({
         <meta name="theme-color" content="#ffffff"/>s
       </Head>
       
-      <div className={roboto.className} style={{minHeight:"100vh", display:"flex", flexDirection:"column", backgroundColor:theme.palette.background.paper }}>
+      <div  style={{minHeight:"100vh", display:"flex", flexDirection:"column", backgroundColor:theme.palette.background.paper }}>
         <HideOnScroll>
           <AppBar
             position={'fixed'}
