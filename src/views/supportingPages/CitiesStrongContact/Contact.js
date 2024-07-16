@@ -18,12 +18,7 @@ const Contact = ({ themeMode = 'light' }) => {
     <Box>
       <Container px = {{md:5,xs:0}}>
         <Grid container spacing={isMd ? 8 : 4}>
-          <Grid item xs={12}>
-            <Map themeMode={themeMode} />
-          </Grid>
-          <Grid item xs={12}>
-            <Divider sx = {{borderWidth:3, borderColor:'black'}}/>
-          </Grid>
+          
           <Grid item container xs={12}  alignItems={'center'}>
             <Form />
           </Grid>
