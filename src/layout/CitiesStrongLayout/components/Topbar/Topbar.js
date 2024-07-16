@@ -11,8 +11,6 @@ import MenuIcon from '@mui/icons-material/Menu';
 
 
 const Topbar = ({onSidebarOpen, theme}) => {
-
-  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'? '/cs':''
   const isMediumUp = useMediaQuery(theme.breakpoints.up('md'));
 
   return (
@@ -23,57 +21,58 @@ const Topbar = ({onSidebarOpen, theme}) => {
       width={'100%'}
       position='relative'
     >
-      <Box display={'flex'} alignItems={'center'} sx = {{flexGrow:1, justifyContent:'space-between'}}>
-        <Box
-            display={'flex'}
-            alignItems="baseline"
-            title="myhometown"
-            height={{ xs: 32, md: 46 }}
-            width={45}
-        >
-          <CitiesStrongShield shieldColor='#000000' fontColor='#ffffff' width = {55} height = {55}/>
-        </Box>
+      <Box display={'flex'} alignItems={'center'} sx={{ flexGrow: 1, justifyContent: 'space-between' }}>
         <Box
           display={'flex'}
           alignItems="baseline"
-          underline="none"
-          href={rootUrl+"/"}
           title="myhometown"
-          sx = {{position:'absolute', width:"100%", textAlign:'center'}}
+          height={{ xs: 32, md: 46 }}
+          width={45}
+        >
+          <CitiesStrongShield shieldColor='#000000' fontColor='#ffffff' width={55} height={55}/>
+        </Box>
+        
+        {/* Move the title to a separate Box */}
+        <Box
+          sx={{
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            pointerEvents: 'none', // This allows clicks to pass through
+          }}
         >
           <Link    
             underline="none"
             component="a"
-            href={rootUrl+"/"}
-            color = {theme.palette.primary.contrastText}
-            width = "100%"
+            href={"/"}
+            color={theme.palette.primary.contrastText}
+            sx={{ pointerEvents: 'auto' }} // Re-enable pointer events for the link itself
           >
             <Typography 
               variant={isMediumUp ? 'h4' : 'h6'} 
-              sx = {{textTransform:'uppercase', fontWeight:'bold'}}
-              >
+              sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}
+            >
               Cities Strong Foundation
             </Typography>
           </Link>
         </Box>
-        <Box marginRight={{ xs: 1, sm: 2 }} sx = {{display: { xs: 'flex', md: 'none' }}}>
-          <IconButton aria-label="Menu" onClick = {onSidebarOpen} sx = {{color:'white'}}>
+
+        <Box marginRight={{ xs: 1, sm: 2 }} sx={{ display: { xs: 'flex', md: 'none' } }}>
+          <IconButton aria-label="Menu" onClick={onSidebarOpen} sx={{ color: 'white' }}>
             <MenuIcon />
           </IconButton>
         </Box>
       </Box>
       
       <Box display="flex" alignItems={'center'}>
-      
         <Box sx={{ display: { xs: 'none', md: 'flex' } }} alignItems={'center'}>
-         
-        
+          {/* Links remain unchanged */}
           <Box marginX={2}>
             <Link
               underline="none"
               component="a"
-              href={rootUrl+"/about"}
-              color = {theme.palette.primary.contrastText}
+              href={"/about"}
+              color={theme.palette.primary.contrastText}
             >
               About
             </Link>
@@ -82,8 +81,8 @@ const Topbar = ({onSidebarOpen, theme}) => {
             <Link
               underline="none"
               component="a"
-              href={rootUrl+"/media"}
-              color = {theme.palette.primary.contrastText}
+              href={"/media"}
+              color={theme.palette.primary.contrastText}
             >
               Media
             </Link>
@@ -92,8 +91,8 @@ const Topbar = ({onSidebarOpen, theme}) => {
             <Link
               underline="none"
               component="a"
-              href={rootUrl+"/contact"}
-              color = {theme.palette.primary.contrastText}
+              href={"/contact"}
+              color={theme.palette.primary.contrastText}
             >
               Contact
             </Link>
@@ -102,13 +101,12 @@ const Topbar = ({onSidebarOpen, theme}) => {
             <Link
               underline="none"
               component="a"
-              href={rootUrl+"/donate"}
-              color = {theme.palette.primary.contrastText}
+              href={"/donate"}
+              color={theme.palette.primary.contrastText}
             >
               Donate
             </Link>
           </Box>
-          
         </Box>
       </Box>
     </Box>
