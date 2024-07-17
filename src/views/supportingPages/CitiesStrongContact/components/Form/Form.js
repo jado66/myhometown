@@ -20,16 +20,6 @@ const Form = () => {
   return (
     <Box sx = {{px:{xs:4, md:0}}}>
       <Box>
-        <Typography
-          sx={{
-            textTransform: 'uppercase',
-            fontWeight: 'medium',
-          }}
-          gutterBottom
-         
-        >
-          
-        </Typography>
         <Box marginBottom={2}>
           <Typography
             variant="h2"
@@ -42,7 +32,7 @@ const Form = () => {
         </Box>
         <Box>
           <Typography variant="h6" >
-          We'll get back to you in 1-2 business days.
+            We'll get back to you in 1-2 business days.
           </Typography>
         </Box>
       </Box>

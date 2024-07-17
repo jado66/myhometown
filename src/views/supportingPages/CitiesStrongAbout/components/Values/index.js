@@ -66,7 +66,7 @@ const Values = () => {
                 maxWidth={300}
               >
                 <Box display="flex" alignItems="center" width="100%" sx = {{position:'relative'}}>
-                  <value.icon color="primary" style={{ fontSize: 30, marginLeft:'.5em', top:'2.5px', position:'absolute' }} />
+                  <value.icon color="primary" style={{ fontSize: 45, marginLeft:'.5em', top:'2.5px', position:'absolute' }} />
                   <Typography variant="h5" align="center" gutterBottom sx={{ flexGrow: 1, mb:2 }}>
                     {value.title}
                   </Typography>

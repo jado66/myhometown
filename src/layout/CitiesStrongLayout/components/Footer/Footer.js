@@ -28,8 +28,8 @@ const Footer = () => (
       </Grid>
       <Grid item xs={4} sx={{ pX: 0 }} display='flex' flexDirection='column'>
         <Divider sx={{ borderWidth: 3, borderColor: 'black', mb: 2 }} />
-        <FooterLink href="/pressroom"><Typography sx={{ textTransform: 'uppercase', textDecoration:'none' }}>Pressroom</Typography></FooterLink>
-        <FooterLink href="/newsletter" ><Typography sx={{ textTransform: 'uppercase' }}>Newsletter</Typography></FooterLink>
+        <FooterLink href="/about"><Typography sx={{ textTransform: 'uppercase', textDecoration:'none' }}>About</Typography></FooterLink>
+        <FooterLink href="/media" ><Typography sx={{ textTransform: 'uppercase' }}>Media</Typography></FooterLink>
         <FooterLink href="/contact" ><Typography sx={{ textTransform: 'uppercase' }}>Contact</Typography></FooterLink>
         {/* <FooterLink href="/careers" ><Typography sx={{ textTransform: 'uppercase' }}>Careers</Typography></FooterLink> */}
       

@@ -13,11 +13,22 @@ import Avatar from '@mui/material/Avatar';
 
 import { boardOfDirectors, executiveCommittee } from '@/constants/boardOfDirectors';
 import { Divider } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 
 
 const Team = () => {
   const theme = useTheme();
+  const router = useRouter()
+
+  const goToBios = (name) => {
+
+    const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'?'/cs':''
+    
+    const url = `${rootUrl}/bios#bio-${name.replace(/\s+/g, '-').toLowerCase()}`;
+    router.push(url);
+
+  }
 
   return (
     <Box>
@@ -53,6 +64,8 @@ const Team = () => {
               component={Card}
               borderRadius={3}
               boxShadow={2}
+              onClick = {()=>goToBios(item.name)} 
+
               sx={{
                 // border:'1px solid lightgrey',
                 backgroundColor: '#fafafa', //theme.palette.background.level2,
@@ -109,6 +122,7 @@ const Team = () => {
               component={Card}
               borderRadius={3}
               boxShadow={2}
+              onClick = {()=>goToBios(item.name)} 
               sx={{
                 // border:'1px solid lightgrey',
                 backgroundColor: '#fafafa', //theme.palette.background.level2,
@@ -125,6 +139,7 @@ const Team = () => {
                   component="img"
                   src={item.avatar}
                   height={160}
+                  
                   width={160}
                   variant="square"
                   sx = {{mx:'auto', borderRadius:1.5}}

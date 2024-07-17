@@ -12,6 +12,7 @@ import {
   Box
 } from '@mui/material';
 import Image from 'next/image';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 
 import { styled } from '@mui/system';
@@ -322,183 +323,38 @@ const Page = () => {
                 align={'center'}
 
               >
-                Cities Strong has made a difference for fourteen communities in cities across the Wasatch Front
+                Cities Strong has made a difference for fourteen communities in cities across the Wasatch Front.
               </Grid>
-
-            
-                
-              
-
-              
           </Grid>  
-          <Grid item xs = {12} md = {6} sx = {{padding:4, paddingRight:{xs: 4, md: 2},  pb: 2}}>
-            
-            <Grid
-              sx = {{mx:'auto'}}
-              component={Typography}
-              variant={'h4'}
-              fontWeight={700}
-              gutterBottom
-              align={'center'}
 
-            >
-              Ogden
-            </Grid>
+          <Grid container px = {2} display = "flex" justifyContent='center'>
+            <CityImage
+              title = "Ogden"
+              src = "/cities-strong/cities/ogden.jpeg"
+            />
 
-            <Grid 
-              item 
-              xs={12}
-              sx={{
-                backgroundColor: 'grey',
-                height: '350px',
-                overflow: 'hidden',
-                position: 'relative', 
-                boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'
-              }}
-            >
-              <img
-              src="/cities-strong/cities/ogden.jpeg"
-              alt="Mental Health"
-                  // Lazy load the image
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover', // Ensures the image covers the entire area
-                  position: 'absolute',
-                  objectPosition: 'right', // Shifts the image to the left
-                  top: '0',
-                  left: '0px'
-                }}
-              />
-            </Grid>
+            <CityImage
+              title = "Provo"
+              src = "/cities-strong/cities/provo.webp"
+            />
+
+            <CityImage
+              title = "Orem"
+              src = "/cities-strong/cities/orem.webp"
+            />
+
+            <CityImage
+              title = "Salt Lake City"
+              src = "/cities-strong/cities/salt-lake.jpeg"
+            />
+
+            <CityImage
+              title = "West Valley City"
+              src = "/cities-strong/cities/orem.jpeg"
+            />
           </Grid>
-
-          <Grid item xs={12} md={6} sx={{ padding: 4, paddingLeft:{xs: 4, md: 2}, pt:4, pb: 2 }}>
-            
-            <Grid
-             
-              component={Typography}
-              variant={'h4'}
-              fontWeight={700}
-              gutterBottom
-              align={'center'}
-
-            >
-              Provo
-            </Grid>
-
-
-            <Grid 
-              item 
-              xs={12}
-              sx={{
-                height: '350px',
-                overflow: 'hidden',
-                position: 'relative', 
-                boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'
-
-              }}
-            >
-              <Box
-                component="img"
-                src="/cities-strong/cities/provo.webp"
-                alt="Mental Health"
-                loading="lazy"
-                sx={{
-                  height: '100%',
-                  objectFit: 'cover', // Ensures the image covers the entire area
-                  position: 'absolute',
-                  objectPosition: 'right', // Shifts the image to the left
-                  left: '0px'
-                }}
-              />
-            </Grid>
-          </Grid>
-
-          <Grid item xs={12} md={6} sx={{ padding: 4, paddingRight:{xs: 4, md: 2}, pt: 4, pb: 2 }}>
-            
-            <Grid
-              sx = {{mx:'auto'}}
-              component={Typography}
-              variant={'h4'}
-              fontWeight={700}
-              gutterBottom
-              align={'center'}
-
-            >
-              West Valley City
-            </Grid>
-
-            <Grid 
-              item 
-              xs={12}
-              sx={{
-                backgroundColor: 'grey',
-                height: '350px',
-                overflow: 'hidden',
-                position: 'relative', 
-                boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'
-              }}
-            >
-              <img
-              src="/cities-strong/cities/orem.jpeg"
-              alt="Mental Health"
-                  // Lazy load the image
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover', // Ensures the image covers the entire area
-                  position: 'absolute',
-                  objectPosition: 'right', // Shifts the image to the left
-                  top: '0',
-                  left: '0px'
-                }}
-              />
-            </Grid>
-          </Grid>
-
-          <Grid item xs={12} md={6} sx={{ padding: 4, paddingLeft:{xs: 4, md: 2}, pt: 4, pb: 2 }}>
-            
-            <Grid
-              sx = {{mx:'auto'}}
-              component={Typography}
-              variant={'h4'}
-              fontWeight={700}
-              gutterBottom
-              align={'center'}
-
-            >
-              Salt Lake City
-            </Grid>
-
-            <Grid 
-              item 
-              xs={12}
-              sx={{
-                backgroundColor: 'grey',
-                height: '350px',
-                overflow: 'hidden',
-                position: 'relative', 
-                boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'
-              }}
-            >
-              <img
-                src="/cities-strong/cities/salt-lake.jpeg"
-                alt="Mental Health"
-                  // Lazy load the image
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover', // Ensures the image covers the entire area
-                  position: 'absolute',
-                  objectPosition: 'right', // Shifts the image to the left
-                  top: '0',
-                  left: '0px'
-                }}
-              />
-            </Grid>
-          </Grid>
-  
+          
+         
           </>
           {/* </ContainerStyled> */}
         </CitiesStrongLayout>
@@ -518,3 +374,52 @@ const ButtonStyled = styled(Button)({
 });
 
 
+const CityImage = ({src, title, sx}) => {
+  const theme = useTheme()
+  const isMd = useMediaQuery(theme.breakpoints.up('md'))
+
+  return(
+    <Grid item xs={6} md={4} sx={{ padding: 4, px:{xs: 1, md: 2}, pt: {xs: 2, md: 4}, pb: 2 }}>
+            
+      <Grid
+        sx = {{mx:'auto'}}
+        component={Typography}
+        variant={isMd ? 'h5' : 'h6'}
+        fontWeight={700}
+        gutterBottom
+        align={'center'}
+
+      >
+        {title}
+      </Grid>
+
+      <Grid 
+        item 
+        xs={12}
+        sx={{
+          backgroundColor: 'grey',
+          height: {md:'225px', xs: '150px'},
+          overflow: 'hidden',
+          position: 'relative', 
+          boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.5)'
+        }}
+      >
+        <Box
+          component="img"
+          src={src}
+          alt={title}
+          loading="lazy"
+          sx={{
+            height: '100%',
+            objectFit: 'cover', // Ensures the image covers the entire area
+            position: 'absolute',
+            objectPosition: 'right', // Shifts the image to the left
+            left: '0px',
+            ...sx
+          }}
+        />
+      </Grid>
+    </Grid>
+
+  )
+}
