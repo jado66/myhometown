@@ -60,6 +60,15 @@ const Form = () => {
       <Box>
         <Box marginBottom={2}>
           <Typography
+            sx={{
+              textTransform: "uppercase",
+              fontWeight: "medium",
+            }}
+            gutterBottom
+          >
+            Contact us
+          </Typography>
+          <Typography
             variant="h2"
             sx={{
               fontWeight: 700,
@@ -172,7 +181,7 @@ const Form = () => {
             <Grid item xs={12}>
               <Box>
                 <Typography component="p" variant="body2" align="left">
-                  By clicking on "submit" you agree to our{" "}
+                  By clicking on "Send Message" you agree to our{" "}
                   <Box
                     component="a"
                     href=""

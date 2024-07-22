@@ -42,7 +42,7 @@ export const executiveCommittee = [
     name: "Kent Bowman",
     position: "Vice President",
     avatar: "/images/board/Kent Bowman.jpeg",
-    bio: `Former Managing Partner and Audit and Transactional Advisory Partner at Arthur Andersen LLP and Tanner LLC, and former Audit and Business Advisory Partner at KPMG LLP (retired). Graduated from University of Utah with a Master of Accountancy and Minor in Middle Eastern Studies (speaks Farsi (Persian)). Board member at US Friends of AMAR International Charitable Foundation and Advisory Committee member at Gabb Wireless and Durham Brands. Former President and Board Member of the University of Utah’s School of Accounting. Former Chairman of the Board of Directors of the Loveland Living Planet Aquarium. Former Chairman of the Board of Directors and President of Guadalupe Schools. Former Board Member of the Utah Technology Council, Utah Parent Center, and Salt Lake Chapter of the Institute of Management Accountants. Enjoys teaching ESL to Farsi-speaking refugees for My Home Town.`,
+    bio: `Former Managing Partner and Audit and Transactional Advisory Partner at Arthur Andersen LLP and Tanner LLC, and former Audit and Business Advisory Partner at KPMG LLP (retired). Graduated from University of Utah with a Master of Accountancy and Minor in Middle Eastern Studies (speaks Farsi (Persian)). Board member at US Friends of AMAR International Charitable Foundation and Advisory Committee member at Gabb Wireless and Durham Brands. Former President and Board Member of the University of Utah's School of Accounting. Former Chairman of the Board of Directors of the Loveland Living Planet Aquarium. Former Chairman of the Board of Directors and President of Guadalupe Schools. Former Board Member of the Utah Technology Council, Utah Parent Center, and Salt Lake Chapter of the Institute of Management Accountants. Enjoys teaching ESL to Farsi-speaking refugees for My Home Town.`,
   },
   {
     name: "Mark Durham",
@@ -51,8 +51,8 @@ export const executiveCommittee = [
     bio: `Chairman & Founder of Durham Brands, A consumer products
             company serving major retailers.
             Utah Director of the My Hometown initiative.
-            Previously served as Brigham Young University’s
-            Marriott School of Management’s Global Supply Chain
+            Previously served as Brigham Young University's
+            Marriott School of Management's Global Supply Chain
             Department Advisory Board Chairman  
              
             "I love seeing our cities transformed as local
@@ -120,10 +120,10 @@ export const boardOfDirectors = [
     name: "David Johnson",
     avatar: "/images/board/David Johnson.jpg",
   },
-  // {
-  //     name: 'Bruce Jardine',
-  //     avatar: '/images/profile.png',
-  // },
+  {
+    name: "Bruce Jardine",
+    avatar: "/images/board/Bruce Jardine.jpg",
+  },
   {
     name: "Rev. Bruce Kolasch",
     avatar: "/images/board/Bruce Kolasch.jpg",
@@ -178,7 +178,7 @@ export const boardOfDirectors = [
   {
     name: "Kimberly Teitter",
     avatar: "/images/board/KimberlyTeitter.jpg",
-    bio: `Kimberly Applewhite, PsyD, is a licensed clinical psychologist, published author, adjunct professor, and entrepreneur in the Salt Lake City area. She received a BA in Psychology from New York University (New York, NY), and a MS in School Psychology and Doctorate of Psychology in School-Clinical Child Psychology from the Ferkauf Graduate School of Psychology of Yeshiva University (Bronx, NY). Kimberly received the Leadership and Education in Adolescent Health psychology postdoctoral fellowship at Boston Children’s Hospital Division of Adolescent Medicine (Boston, MA), and was a fellow at Harvard Medical School before moving to Utah. She is currently the Program Director of the Dialectical Behavior Therapy program at Utah Center for Evidence Based Treatment, a comprehensive outpatient program for those with chronic suicidality and emotion regulation concerns. She is an adjunct instructor at the University of Utah Health Huntsman Mental Health Institute (Salt Lake City, UT). She is also a proud wife and mother of two daughters.`,
+    bio: `Kimberly Applewhite, PsyD, is a licensed clinical psychologist, published author, adjunct professor, and entrepreneur in the Salt Lake City area. She received a BA in Psychology from New York University (New York, NY), and a MS in School Psychology and Doctorate of Psychology in School-Clinical Child Psychology from the Ferkauf Graduate School of Psychology of Yeshiva University (Bronx, NY). Kimberly received the Leadership and Education in Adolescent Health psychology postdoctoral fellowship at Boston Children's Hospital Division of Adolescent Medicine (Boston, MA), and was a fellow at Harvard Medical School before moving to Utah. She is currently the Program Director of the Dialectical Behavior Therapy program at Utah Center for Evidence Based Treatment, a comprehensive outpatient program for those with chronic suicidality and emotion regulation concerns. She is an adjunct instructor at the University of Utah Health Huntsman Mental Health Institute (Salt Lake City, UT). She is also a proud wife and mother of two daughters.`,
   },
   {
     name: "Jared Theurer",
@@ -202,8 +202,24 @@ export const boardOfDirectors = [
                 grandson.  Married to the love of his life and reason for living, Heather
                 Bernhisel Theurer`,
   },
-  // {
-  //     name: 'Shaleane Gee',
-  //     avatar: '/images/profile.png'
-  // }
+  {
+    name: "Shaleane Gee",
+    avatar: "/images/board/Shaleane Gee.jpg",
+    bio: `Chief Officer, Culture + Community at Zions Bank
+
+Expertise in community development and civic engagement
+Specializes in public-private partnerships, community reinvestment, and public land use 
+Passionate about connections between people and places
+Teacher of students studying urban planning, real estate, architecture, and law
+
+Advisory Board, Red Butte Garden
+Board of Directors, Envision Utah
+
+Advisory Committee, Utah Impact Partnership
+Advisory Committee, Utah Housing Preservation Fund
+Economic Development District Committee, Wasatch Front Regional Council
+
+MA, PhD - The University of Chicago
+BA, MA - The University of Utah`,
+  },
 ];
