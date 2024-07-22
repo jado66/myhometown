@@ -1,8 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import Drawer from '@mui/material/Drawer';
-import Box from '@mui/material/Box';
-import SidebarNav from './SidebarNav';
+import React from "react";
+import PropTypes from "prop-types";
+import Drawer from "@mui/material/Drawer";
+import Box from "@mui/material/Box";
+import SidebarNav from "./SidebarNav/SidebarNav";
 
 const Sidebar = (props) => {
   const { open, variant, onClose, ...rest } = props;
@@ -14,18 +14,18 @@ const Sidebar = (props) => {
       open={open}
       variant={variant}
       sx={{
-        '& .MuiPaper-root': {
-          width: '100%',
-          maxWidth: '100%',
-          backgroundColor:'#188D4E',
-          color:'white'
+        "& .MuiPaper-root": {
+          width: "100%",
+          maxWidth: "100%",
+          backgroundColor: "#188D4E",
+          color: "white",
         },
       }}
     >
       <Box
         {...rest}
         sx={{
-          height: '100%',
+          height: "100%",
           padding: 1,
         }}
       >

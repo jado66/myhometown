@@ -1,9 +1,5 @@
-'use client'
-
-import { NotFound } from '@/views/supportingPages';
+"use client";
 
 export default function HomePage() {
-  return (
-    <h1>404 Not Found</h1>
-  );
+  return <h1>404 Not Found</h1>;
 }
