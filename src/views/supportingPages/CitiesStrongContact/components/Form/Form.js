@@ -148,6 +148,9 @@ const Form = () => {
                   textTransform: "uppercase",
                   fontSize: "large",
                   fontWeight: "bold",
+                  "&:hover": {
+                    backgroundColor: "#33b56f",
+                  },
                 }}
                 variant="contained"
                 color="primary"
@@ -155,7 +158,13 @@ const Form = () => {
                 fullWidth
                 type="submit"
                 loading={loading}
-                disabled={loading}
+                disabled={
+                  loading ||
+                  !formData.firstName ||
+                  !formData.lastName ||
+                  !formData.email ||
+                  !formData.message
+                }
               >
                 Send Message
               </Button>
