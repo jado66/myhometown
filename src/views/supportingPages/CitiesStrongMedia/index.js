@@ -1,5 +1,6 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, Container, Grid, Card, CardContent, CardMedia, Box } from '@mui/material';
+import { AppBar, Toolbar, Typography, Container, Grid, Card, CardContent, CardMedia, Box, Divider } from '@mui/material';
+import MyHometownLogo from '@/assets/svg/logos/MyHometown';
 
 const CitiesStrongMediaPage = () => {
   return (
@@ -58,43 +59,33 @@ const CitiesStrongMediaPage = () => {
           </Grid>
         
         </Grid>
+ 
+        <Divider sx = {{borderWidth:3,  borderColor:'black', mt:4}}/>
 
-        {/* Images */}
-        {/* <Typography variant="h4" component="h2" gutterBottom sx={{ marginTop: 4 }}>
-          Images
+        <Typography variant="h4" component="h5" gutterBottom sx={{ marginTop: 4, mb:3, textAlign:'center' }}>
+          What city leaders are saying about <br/> <MyHometownLogo type = 'full'/>
         </Typography>
         <Grid container spacing={4}>
-          <Grid item xs={12} sm={6} md={4}>
-            <Card>
-              <CardMedia
-                component="img"
-                height="200"
-                image="https://via.placeholder.com/300x200?text=Image+1"
-                title="Image 1"
-              />
-            </Card>
+          
+          <Grid item xs={12} display = 'flex' justifyContent = 'center' flexDirection='column'>
+            <Typography variant= 'h5' textAlign='center'>
+            Salt Lake City
+            </Typography>
+            <iframe src="https://drive.google.com/file/d/1mVhOwAvNOtJlmCAimxGkeJE6FBh6k5JN/preview" width="100%" height="480" allow="autoplay"></iframe>
           </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <Card>
-              <CardMedia
-                component="img"
-                height="200"
-                image="https://via.placeholder.com/300x200?text=Image+2"
-                title="Image 2"
-              />
-            </Card>
+          <Grid item xs={12} display = 'flex' justifyContent = 'center' flexDirection='column'>
+            <Typography variant= 'h5' textAlign='center'>
+              Provo
+            </Typography>
+            <iframe src="https://drive.google.com/file/d/18rjyp7DkBpJuuDPCxPZ5Iljphy8YBuBW/preview" width="100%" height="480" allow="autoplay"></iframe>
           </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <Card>
-              <CardMedia
-                component="img"
-                height="200"
-                image="https://via.placeholder.com/300x200?text=Image+3"
-                title="Image 3"
-              />
-            </Card>
+          <Grid item xs={12} display = 'flex' justifyContent = 'center' flexDirection='column'>
+            <Typography variant= 'h5' textAlign='center'>
+              West Valley City
+            </Typography>
+            <iframe src="https://drive.google.com/file/d/1UIjnSOzEqF-tBVrvIFYH6StHoSSEWS7H/preview" width="100%" height="480" allow="autoplay"></iframe>
           </Grid>
-        </Grid> */}
+        </Grid>
       </Container>
   );
 };

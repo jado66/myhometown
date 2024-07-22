@@ -1,51 +1,49 @@
-import React, { useState } from 'react';
-import Box from '@mui/material/Box';
-import Container from '@/components/util/Container';
-import { Headline, Team } from './components';
-import { useTheme } from '@mui/material';
-import Stats from './components/Stats';
-import Values from './components/Values';
+import React, { useState } from "react";
+import Box from "@mui/material/Box";
+import Container from "@/components/util/Container";
+import { Headline, Team } from "./components";
+import { useTheme } from "@mui/material";
+import Stats from "./components/Stats";
+import Values from "./components/Values";
 
 const CitiesStrongAbout = () => {
-
   const [viewPortEntered, setViewPortEntered] = useState(false);
   const setViewPortVisibility = (isVisible) => {
-      if (viewPortEntered) {
+    if (viewPortEntered) {
       return;
-      }
-      setViewPortEntered(isVisible);
+    }
+    setViewPortEntered(isVisible);
   };
 
   const stats = {
-    volunteerHours: 1837,
-    numTeachersVolunteers: 92,
-    serviceProjects: 27,
+    volunteerHours: 33843 + 65458,
+    numTeachersVolunteers: 1125 + 608 + 12400,
+    serviceProjects: 1302,
   };
 
-  const theme = useTheme()
+  const theme = useTheme();
 
   return (
-    <Box sx = {{mx:'auto'}}>
+    <Box sx={{ mx: "auto" }}>
       <Container>
         <Headline />
       </Container>
 
-      <Container paddingTop={'0 !important'} >
+      <Container paddingTop={"0 !important"}>
         <Values />
       </Container>
-           
-      <Container paddingTop={'0 !important'}  >
+
+      <Container paddingTop={"0 !important"}>
         <Team />
       </Container>
-      
-      <Container paddingTop={'0 !important'} paddingBottom ={'0 !important'}  >
-        <Stats 
+
+      <Container paddingTop={"0 !important"} paddingBottom={"0 !important"}>
+        <Stats
           viewPortEntered={viewPortEntered}
-          setViewPortVisibility = {setViewPortVisibility}
-          stats = {stats}
+          setViewPortVisibility={setViewPortVisibility}
+          stats={stats}
         />
       </Container>
-      
     </Box>
   );
 };

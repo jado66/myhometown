@@ -1,14 +1,8 @@
 // pages/bios.js
 
 import * as React from 'react';
-import { Container, Grid, Box, Typography } from '@mui/material';
+import { Container, Grid, Box, Typography, Divider } from '@mui/material';
 import { boardOfDirectors, executiveCommittee } from '@/constants/boardOfDirectors';
-
-const bios = [
-  { name: 'Jane Doe', bio: 'Lorem ipsum dolor sit amet...', image: '/images/jane.jpg' },
-  { name: 'John Smith', bio: 'Consectetur adipiscing elit...', image: '/images/john.jpg' },
-  // Add more bios as needed
-];
 
 export default function CitiesStrongBiosPage() {
 
@@ -41,34 +35,39 @@ export default function CitiesStrongBiosPage() {
         </Box>
     
         {[...executiveCommittee,...boardOfDirectors].map((person, index) => (
+          <>
             <Grid
-                container
-                spacing={2}
-                alignItems="center"
-                sx={{ mb: 4 }}
-                key={index}
-                id={`bio-${person.name.replace(/\s+/g, '-').toLowerCase()}`} // Adding the id here
-                direction={index % 2 === 0 ? 'row' : 'row-reverse'}
-                >
-                <Grid item xs={12} md={4}>
-                    <Box
-                        component="img"
-                        src={person.avatar}
-                        alt={`Picture of ${person.name}`}
-                        sx={{
-                            width: '100%',
-                            height: 'auto',
-                            borderRadius: '8px',
-                        }}
-                    />
-                </Grid>
-                <Grid item xs={12} md={8}>
-                    <Typography variant="h5" gutterBottom>
-                        {person.name}
-                    </Typography>
-                    <Typography variant="body1">{person.bio}</Typography>
-                </Grid>
+              container
+              spacing={2}
+              alignItems="start"
+              key={index}
+              id={`bio-${person.name.replace(/\s+/g, '-').toLowerCase()}`} // Adding the id here
+              direction={index % 2 === 0 ? 'row' : 'row-reverse'}
+            >
+              <Grid item xs={12} md={4}>
+                  <Box
+                      component="img"
+                      src={person.avatar}
+                      alt={`Picture of ${person.name}`}
+                      sx={{
+                          width: '100%',
+                          height: 'auto',
+                          borderRadius: '8px',
+                      }}
+                  />
+              </Grid>
+              <Grid item xs={12} md={8}>
+                  <Typography variant="h5" gutterBottom>
+                      {person.name}
+                  </Typography>
+                  <Typography variant="body1">{person.bio}</Typography>
+              </Grid>
             </Grid>
+            <Grid item xs = {12}>
+            <Divider sx = {{my:3}}/>
+
+            </Grid>
+          </>
         ))}
         </Grid>
     </Container>
