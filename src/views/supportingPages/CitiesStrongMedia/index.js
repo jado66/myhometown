@@ -56,6 +56,7 @@ const CitiesStrongMediaPage = () => {
         </Box>
       </Grid>
       {/* MHT Dashboard\public\ */}
+
       <Grid container>
         <Grid item xs={12}>
           <Card>
@@ -72,7 +73,10 @@ const CitiesStrongMediaPage = () => {
         </Grid>
       </Grid>
 
-      <Grid container sx={{ mt: 3 }}>
+      <Grid container sx={{ mt: 3, justifyContent: "center" }}>
+        <Typography variant="h5">
+          A word from Cities Strong Foundation CEO
+        </Typography>
         <Grid item xs={12}>
           <Card>
             <CardMedia
@@ -107,7 +111,7 @@ const CitiesStrongMediaPage = () => {
           flexDirection="column"
         >
           <Typography variant="h5" textAlign="center">
-            Salt Lake City
+            Salt Lake City - Mayor
           </Typography>
           <CardMedia
             component="iframe"
@@ -126,7 +130,7 @@ const CitiesStrongMediaPage = () => {
           flexDirection="column"
         >
           <Typography variant="h5" textAlign="center">
-            Provo
+            Provo - Mayor
           </Typography>
           <CardMedia
             component="iframe"
@@ -145,7 +149,7 @@ const CitiesStrongMediaPage = () => {
           flexDirection="column"
         >
           <Typography variant="h5" textAlign="center">
-            West Valley City
+            West Valley City - City Manager
           </Typography>
           <CardMedia
             component="iframe"

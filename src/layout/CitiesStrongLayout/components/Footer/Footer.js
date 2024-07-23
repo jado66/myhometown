@@ -21,13 +21,12 @@ const Footer = () => (
         }}
       >
         <Divider sx={{ borderWidth: 3, borderColor: "black", mb: 2 }} />
-        <Typography
-          variant="h6"
-          sx={{ textTransform: "uppercase" }}
-          textAlign="center"
-        >
-          Strength through service
-        </Typography>
+        <FooterLink href="/contact">
+          <Typography sx={{ textTransform: "uppercase" }}>Contact</Typography>
+        </FooterLink>
+        <FooterLink href="/donate">
+          <Typography sx={{ textTransform: "uppercase" }}>Donate</Typography>
+        </FooterLink>
         <Grid sx={{ flex: 1 }} />
         <Divider sx={{ borderWidth: 3, borderColor: "black", my: 2 }} />
       </Grid>
@@ -43,9 +42,7 @@ const Footer = () => (
         <FooterLink href="/media">
           <Typography sx={{ textTransform: "uppercase" }}>Media</Typography>
         </FooterLink>
-        <FooterLink href="/contact">
-          <Typography sx={{ textTransform: "uppercase" }}>Contact</Typography>
-        </FooterLink>
+
         {/* <FooterLink href="/careers" ><Typography sx={{ textTransform: 'uppercase' }}>Careers</Typography></FooterLink> */}
 
         <Divider
@@ -56,9 +53,7 @@ const Footer = () => (
         <Divider sx={{ borderWidth: 3, borderColor: "black", mb: 2 }} />
 
         {/* <FooterLink href="/careers" ><Typography sx={{ textTransform: 'uppercase' }}>Careers</Typography></FooterLink> */}
-        <FooterLink href="/donate">
-          <Typography sx={{ textTransform: "uppercase" }}>Donate</Typography>
-        </FooterLink>
+
         <FooterLink href="/terms-of-use">
           <Typography sx={{ textTransform: "uppercase" }}>
             Terms Of Use

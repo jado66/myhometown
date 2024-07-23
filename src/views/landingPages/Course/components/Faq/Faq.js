@@ -23,6 +23,35 @@ const Faq = () => {
       </Box>
       <Box>
         {[
+          // {
+          //   title: "Is my donation tax deductible?",
+          //   subtitle:
+          //     "Donations are tax deductible.  Cities Strong Foundation is a 501(c)(3) Public Charity.",
+          // },
+          // {
+          //   title:
+          //     "Can I select a specific organization or community to support?",
+          //   subtitle: `Yes.  We can earmark donations to a specific organization or community.  Some of the organization we support are:
+          //     - myHometown (neighborhood revitalization)
+          //     - Leader in Me (elementary school support)
+          //     - Everyday Strong (mental health support)
+          //   `,
+          // },
+          // {
+          //   title: "How much goes to administrative costs?",
+          //   subtitle:
+          //     "Cities Strong Foundation is administered and staffed by volunteers.  We do all we can to reduce or eliminate overhead costs.",
+          // },
+          // {
+          //   title: "Can we set up a monthly amount to donate?",
+          //   subtitle:
+          //     "Yes.  When you go to our donation page you can select an amount to donate monthly.",
+          // },
+          // {
+          //   title: "Can our company be recognized for donating?",
+          //   subtite:
+          //     "Contact us if you would like to be an official sponsor.  We are happy to recognize our supporters.",
+          // },
           {
             title: "How do Days of Service work?",
             subtitle:

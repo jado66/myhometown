@@ -14,6 +14,7 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 import { ExpandLess } from "@mui/icons-material";
 import useManageCities from "@/hooks/use-manage-cities";
 import { usePathname } from "next/navigation";
+import { Divider } from "@mui/material";
 
 const SidebarNav = ({ onClose }) => {
   const theme = useTheme();
@@ -50,7 +51,7 @@ const SidebarNav = ({ onClose }) => {
           <CloseIcon fontSize="small" />
         </IconButton>
       </Box>
-      <Box paddingX={2} paddingBottom={2}>
+      <Box paddingX={2} paddingBottom={1}>
         <Box>
           <Box marginBottom={2}>
             <NextLink
@@ -73,6 +74,7 @@ const SidebarNav = ({ onClose }) => {
               </Typography>
             </NextLink>
           </Box>
+          <Divider sx={{ backgroundColor: "white", borderWidth: "3px" }} />
           <Box marginBottom={2}>
             <NextLink
               href={rootUrl + "/about"}
@@ -82,7 +84,7 @@ const SidebarNav = ({ onClose }) => {
                 variant="h5"
                 sx={{
                   fontWeight: 700,
-                  marginTop: 4,
+                  marginTop: 3,
                   display: "block",
                   textDecoration: "none",
                   color: "white",

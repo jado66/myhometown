@@ -27,7 +27,7 @@ const Donate = () => {
   const { isLoaded } = useGiveButterScripts();
 
   return (
-    <Container sx={{ px: { md: 0, xs: 3 } }}>
+    <Container sx={{ px: { md: 5, xs: 3 } }}>
       <Typography
         sx={{
           textTransform: "uppercase",

@@ -79,7 +79,8 @@ const Form = () => {
         </Box>
         <Box>
           <Typography variant="h6">
-            We'll get back to you in 1-2 business days.
+            We'll get back to you in 1 - STRENGTH THROUGH SERVICE2 business
+            days.
           </Typography>
         </Box>
       </Box>
