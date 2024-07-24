@@ -1,35 +1,35 @@
 /* eslint-disable react/no-unescaped-entities */
-import React from 'react';
-import { useFormik } from 'formik';
-import * as yup from 'yup';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import Link from '@mui/material/Link';
+import React from "react";
+import { useFormik } from "formik";
+import * as yup from "yup";
+import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import Link from "@mui/material/Link";
 
 const validationSchema = yup.object({
   email: yup
-    .string('Enter your email')
+    .string("Enter your email")
     .trim()
-    .email('Please enter a valid email address')
-    .required('Email is required.'),
+    .email("Please enter a valid email address")
+    .required("Email is required."),
   password: yup
     .string()
-    .required('Please specify your password')
-    .min(8, 'The password should have at minimum length of 8'),
+    .required("Please specify your password")
+    .min(8, "The password should have at minimum length of 8"),
 });
 
 const Form = () => {
   const initialValues = {
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   };
 
   const onSubmit = (values) => {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/admin-dashboard';
+    if (typeof window !== "undefined") {
+      window.location.href = "/admin-dashboard";
     }
   };
 
@@ -44,11 +44,11 @@ const Form = () => {
       <Box marginBottom={4}>
         <Typography
           sx={{
-            textTransform: 'uppercase',
-            fontWeight: 'medium',
+            textTransform: "uppercase",
+            fontWeight: "medium",
           }}
           gutterBottom
-          color={'textSecondary'}
+          color={"textSecondary"}
         >
           Admin Login
         </Typography>
@@ -67,13 +67,13 @@ const Form = () => {
       <form onSubmit={formik.handleSubmit}>
         <Grid container spacing={4}>
           <Grid item xs={12}>
-            <Typography variant={'subtitle2'} sx={{ marginBottom: 2 }}>
+            <Typography variant={"subtitle2"} sx={{ marginBottom: 2 }}>
               Enter your email
             </Typography>
             <TextField
               label="Email *"
               variant="outlined"
-              name={'email'}
+              name={"email"}
               fullWidth
               value={formik.values.email}
               onChange={formik.handleChange}
@@ -84,22 +84,22 @@ const Form = () => {
           <Grid item xs={12}>
             <Box
               display="flex"
-              flexDirection={{ xs: 'column', sm: 'row' }}
-              alignItems={{ xs: 'stretched', sm: 'center' }}
-              justifyContent={'space-between'}
-              width={'100%'}
+              flexDirection={{ xs: "column", sm: "row" }}
+              alignItems={{ xs: "stretched", sm: "center" }}
+              justifyContent={"space-between"}
+              width={"100%"}
               marginBottom={2}
             >
               <Box marginBottom={{ xs: 1, sm: 0 }}>
-                <Typography variant={'subtitle2'}>
+                <Typography variant={"subtitle2"}>
                   Enter your password
                 </Typography>
               </Box>
-              <Typography variant={'subtitle2'}>
+              <Typography variant={"subtitle2"}>
                 <a
-                  color={'primary'}
-                  href={'/page-forgot-password-simple'}
-                  underline={'none'}
+                  color={"primary"}
+                  href={"/page-forgot-password-simple"}
+                  underline={"none"}
                 >
                   Forgot your password?
                 </a>
@@ -108,8 +108,8 @@ const Form = () => {
             <TextField
               label="Password *"
               variant="outlined"
-              name={'password'}
-              type={'password'}
+              name={"password"}
+              type={"password"}
               fullWidth
               value={formik.values.password}
               onChange={formik.handleChange}
@@ -120,29 +120,29 @@ const Form = () => {
           <Grid item container xs={12}>
             <Box
               display="flex"
-              flexDirection={{ xs: 'column', sm: 'row' }}
-              alignItems={{ xs: 'stretched', sm: 'center' }}
-              justifyContent={'space-between'}
-              width={'100%'}
+              flexDirection={{ xs: "column", sm: "row" }}
+              alignItems={{ xs: "stretched", sm: "center" }}
+              justifyContent={"space-between"}
+              width={"100%"}
               maxWidth={600}
-              margin={'0 auto'}
+              margin={"0 auto"}
             >
               <Box marginBottom={{ xs: 1, sm: 0 }}>
-                <Typography variant={'subtitle2'}>
-                  Need an Admin Account?{' '}
+                <Typography variant={"subtitle2"}>
+                  Need an Admin Account?{" "}
                   <a
-                    color={'primary'}
+                    color={"primary"}
                     href={"mailto:admin-representative@myhometown.org"}
-                    underline={'none'}
+                    underline={"none"}
                   >
-                    Contact a MyHometown Representative.
+                    Contact a myHometown Representative.
                   </a>
                 </Typography>
               </Box>
               {/* <Button size={'large'} variant={'contained'} type={'submit'}>
                 Login
               </Button> */}
-              <Button size={'large'} variant={'contained'} type='submit'>
+              <Button size={"large"} variant={"contained"} type="submit">
                 Login
               </Button>
             </Box>

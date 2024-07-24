@@ -1,16 +1,32 @@
 export const useHandleEvents = (setEvents) => {
-    
-    const deleteEvent = (eventId) => {
-        setEvents(previousEvents => previousEvents.filter(event => event.id !== eventId));
-    };
+  const deleteEvent = (eventId) => {
+    setEvents((previousEvents) =>
+      previousEvents.filter((event) => event.id !== eventId)
+    );
+  };
 
-    const modifyEvent = (eventId, modifiedEvent) => {
-        setEvents(previousEvents => previousEvents.map(event => event.id === eventId ? { ...event, ...modifiedEvent } : event));
-    };
+  const modifyEvent = (modifiedEvent) => {
+    const id = { modifiedEvent };
 
-    const addEvent = (newEvent) => {
-        setEvents(previousEvents => [...previousEvents, newEvent]);
+    if (!id) {
+      alert("no ID!!!!");
+      return;
     }
 
-    return { deleteEvent, modifyEvent, addEvent };
+    alert(JSON.stringify(id));
+
+    setEvents((previousEvents) =>
+      previousEvents.map((event) =>
+        event.id === eventId ? { ...event, ...modifiedEvent } : [event]
+      )
+    );
+  };
+
+  const addEvent = (newEvent) => {
+    alert(JSON.stringify(newEvent));
+
+    setEvents((previousEvents) => [...previousEvents, newEvent]);
+  };
+
+  return { deleteEvent, modifyEvent, addEvent };
 };

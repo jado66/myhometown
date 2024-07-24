@@ -70,7 +70,7 @@ const SidebarNav = ({ onClose }) => {
                   pt: "2px",
                 }}
               >
-                Cities Strong
+                Cities Strong Foundation
               </Typography>
             </NextLink>
           </Box>

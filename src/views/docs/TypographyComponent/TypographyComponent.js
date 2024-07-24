@@ -1,21 +1,21 @@
 /* eslint-disable react/no-unescaped-entities */
-import React from 'react';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import { useTheme } from '@mui/material/styles';
-import { colors } from '@mui/material';
-import Link from '@mui/material/Link';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Container from '@/components/util/Container';
+import React from "react";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { vs2015 } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { useTheme } from "@mui/material/styles";
+import { colors } from "@mui/material";
+import Link from "@mui/material/Link";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Container from "@/components/util/Container";
 
 const TypographyComponent = () => {
   const theme = useTheme();
 
-  const renderCodeBlock = (code = '', language = 'jsx') => {
+  const renderCodeBlock = (code = "", language = "jsx") => {
     return (
       <Box
         component={SyntaxHighlighter}
@@ -48,7 +48,7 @@ const TypographyComponent = () => {
         <Box>
           <Typography
             sx={{
-              '& code': {
+              "& code": {
                 background: colors.yellow[400],
                 color: theme.palette.common.black,
               },
@@ -66,35 +66,35 @@ const TypographyComponent = () => {
     <link rel="preconnect" href="https://fonts.gstatic.com" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <title>
-      MyHometown | UI Kit by Maccarian Agency.
+      myHometown | UI Kit by Maccarian Agency.
     </title>
   </head>
   <body>
 
   </body>
 </html>`,
-              'html',
+              "html"
             )}
           </Box>
           <Typography
             sx={{
-              '& code': {
+              "& code": {
                 background: colors.yellow[400],
                 color: theme.palette.common.black,
               },
             }}
           >
-            For more information, please visit{' '}
+            For more information, please visit{" "}
             <Link
-              href={'https://material-ui.com/api/typography/'}
-              target={'_blank'}
+              href={"https://material-ui.com/api/typography/"}
+              target={"_blank"}
             >
               Material-UI typography API.
             </Link>
           </Typography>
         </Box>
       </Container>
-      <Container paddingTop={'0 !important'}>
+      <Container paddingTop={"0 !important"}>
         <Box>
           <Typography
             variant="h4"
@@ -107,20 +107,20 @@ const TypographyComponent = () => {
           </Typography>
           <Grid container spacing={4}>
             {[
-              'body1',
-              'body2',
-              'subtitle1',
-              'subtitle2',
-              'caption',
-              'button',
-              'overline',
-              'srOnly',
-              'h6',
-              'h5',
-              'h4',
-              'h3',
-              'h2',
-              'h1',
+              "body1",
+              "body2",
+              "subtitle1",
+              "subtitle2",
+              "caption",
+              "button",
+              "overline",
+              "srOnly",
+              "h6",
+              "h5",
+              "h4",
+              "h3",
+              "h2",
+              "h1",
             ].map((item) => (
               <Grid item xs={12} key={item}>
                 <Box component={Card} boxShadow={4} borderRadius={4}>
@@ -135,7 +135,7 @@ const TypographyComponent = () => {
                       `<Typography variant="${item}">
   Loipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur
 </Typography>`,
-                      'jsx',
+                      "jsx"
                     )}
                   </CardContent>
                 </Box>

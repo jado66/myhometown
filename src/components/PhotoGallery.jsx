@@ -1,28 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import Box from '@mui/material/Box';
-import ImageList from '@mui/material/ImageList';
-import ImageListItem from '@mui/material/ImageListItem';
-import Button from '@mui/material/Button';
-import UploadImage from '@/components/util/UploadImage';
-import { Image as ImageIcon } from '@mui/icons-material';
-import { Dialog } from '@mui/material';
+import React, { useState } from "react";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import Box from "@mui/material/Box";
+import ImageList from "@mui/material/ImageList";
+import ImageListItem from "@mui/material/ImageListItem";
+import UploadImage from "@/components/util/UploadImage";
+import { Image as ImageIcon } from "@mui/icons-material";
+import { LightBox } from "./LightBox";
 
-
-const PhotoGallery = ({isEdit, photos, changePhoto}) => {
-
+const PhotoGallery = ({ isEdit, photos, changePhoto, variant = "default" }) => {
   const theme = useTheme();
   const [selectedImage, setSelectedImage] = useState();
 
-  const isMd = useMediaQuery(theme.breakpoints.up('md'), {
+  const isMd = useMediaQuery(theme.breakpoints.up("md"), {
     defaultMatches: true,
   });
 
   if (!photos) {
     return null;
   }
-
 
   const openImageDialog = (image) => {
     if (isEdit) return;
@@ -33,137 +29,110 @@ const PhotoGallery = ({isEdit, photos, changePhoto}) => {
     setSelectedImage(null);
   };
 
-
   const handlePhotoChange = (url, key) => {
     changePhoto(url, key);
-  }
+  };
 
-  const photoOrder = isMd ? [1, 2, 3, 4, 5] : [2, 1, 3, 4, 5];
+  // Define different photo layouts based on the variant
+  const getPhotoLayout = () => {
+    switch (variant) {
+      case "variant1":
+        return isMd
+          ? [
+              { key: 1, cols: 2, rows: 2 },
+              { key: 2, cols: 2, rows: 1 },
+              { key: 3, cols: 2, rows: 1 },
+              { key: 4, cols: 1, rows: 1 },
+              { key: 5, cols: 1, rows: 1 },
+            ]
+          : [
+              { key: 1, cols: 2, rows: 2 },
+              { key: 2, cols: 2, rows: 1 },
+              { key: 3, cols: 1, rows: 1 },
+              { key: 4, cols: 1, rows: 1 },
+            ];
+      case "variant2":
+        return [{ key: 1, cols: 12, rows: 2 }];
+      default:
+        return isMd
+          ? [
+              { key: 1, cols: 3, rows: 3 },
+              { key: 2, cols: 6, rows: 1.5 },
+              { key: 3, cols: 3, rows: 1.5 },
+              { key: 4, cols: 3, rows: 1.5 },
+              { key: 5, cols: 6, rows: 1.5 },
+            ]
+          : [
+              { key: 2, cols: 12, rows: 2 },
+              { key: 1, cols: 6, rows: 4 },
+              { key: 3, cols: 6, rows: 2 },
+              { key: 4, cols: 6, rows: 2 },
+
+              { key: 5, cols: 12, rows: 2 },
+            ];
+    }
+  };
+
+  const photoLayout = getPhotoLayout();
 
   return (
     <Box>
       <Box>
         <ImageList
           variant="quilted"
-          cols={isMd ? 4 : 2}
-          rowHeight={isMd ? 300 : 220}
+          cols={12}
+          rowHeight={isMd ? 150 : 110}
           gap={isMd ? 16 : 8}
         >
-          {photoOrder.map((key) => {
+          {photoLayout.map(({ key, cols, rows }) => {
             let item = photos[key];
             return (
               <ImageListItem
                 key={key}
-                cols={item?.cols}
-                rows={item?.rows}
-                sx = {{position: 'relative'}}
-                onClick={()=>openImageDialog(item?.src)}
+                cols={cols}
+                rows={rows}
+                sx={{ position: "relative" }}
+                onClick={() => openImageDialog(item?.src)}
               >
-
                 {isEdit && (
-                  <UploadImage setUrl={(url)=>handlePhotoChange(url, key)}/>
+                  <UploadImage setUrl={(url) => handlePhotoChange(url, key)} />
                 )}
-                {
-                  item?.src !== "" ?
-                 
+                {item?.src ? (
                   <img
-                    height={'100%'}
-                    width={'100%'}
+                    height="100%"
+                    width="100%"
                     src={item.src}
                     alt="..."
                     loading="lazy"
                     style={{
-                      objectFit: 'cover',
-                      cursor: 'pointer',
+                      objectFit: "cover",
+                      cursor: "pointer",
                       borderRadius: 4,
                     }}
                   />
-                  :
-                  // TODO: Add a placeholder image
-                  <div style={{ height: '100%', width: '100%', display:'flex', justifyContent:'center', alignItems:'center', backgroundColor: 'lightgrey', fontSize: '48px' }}>
-                    <ImageIcon fontSize='inherit' />
+                ) : (
+                  <div
+                    style={{
+                      height: "100%",
+                      width: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: "lightgrey",
+                      fontSize: "48px",
+                    }}
+                  >
+                    <ImageIcon fontSize="inherit" />
                   </div>
-                }
+                )}
               </ImageListItem>
             );
           })}
         </ImageList>
         <LightBox closeImageDialog={closeImageDialog} image={selectedImage} />
-
-
       </Box>
     </Box>
   );
 };
 
 export default PhotoGallery;
-
-const LightBox = ({closeImageDialog, image}) => {
-  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
-  const [hasCalculated, setHasCalculated] = useState(false);
-
-  const getImageDimensions = (src) => {
-    return new Promise((resolve) => {
-      let img = new Image();
-      img.onload = () => resolve({ width: img.width, height: img.height });
-      img.src = src;
-    });
-  };
-
-  useEffect(() => {
-    if (image) {
-      setHasCalculated(false);
-      getImageDimensions(image).then((dims) => {
-        setImageSize(dims);
-        setHasCalculated(true);
-      });
-    }
-  }, [image]);
-
-  const isPortrait = imageSize.height > imageSize.width;
-
-  return (
-    <Dialog
-      open={!!image}
-      onClose={closeImageDialog}
-      fullScreen
-      sx = {{
-        display:'flex',
-        justifyContent:'center',
-        alignItems:'center',
-      }}
-      PaperProps={{
-        style: {
-          backgroundColor: 'transparent',
-          boxShadow: 'none',
-        },
-      }}
-      onClick={closeImageDialog}
-    >
-      <div 
-        style={{
-          backgroundColor: 'transparent',
-          margin: 'auto',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: isPortrait?'90vh':"auto", 
-          width: isPortrait?'auto':"90vw",
-        }}
-      >
-
-        {hasCalculated &&
-          <img 
-            src={image} 
-            alt="dialog" 
-            style={{
-              maxHeight: isPortrait ? '100%' : '90vh',
-              maxWidth: isPortrait ? 'auto' : '100%',
-              objectFit: 'contain'
-            }}
-          />
-        }
-      </div>
-    </Dialog>
-  );
-};

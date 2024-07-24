@@ -1,23 +1,23 @@
 /* eslint-disable react/no-unescaped-entities */
-import React from 'react';
-import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
-import RocketIllustration from '@/assets/svg/illustrations/Rocket';
+import React from "react";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import RocketIllustration from "@/assets/svg/illustrations/Rocket";
 
 const Hero = () => {
   const theme = useTheme();
-  const isMd = useMediaQuery(theme.breakpoints.up('md'), {
+  const isMd = useMediaQuery(theme.breakpoints.up("md"), {
     defaultMatches: true,
   });
 
   return (
     <Grid container spacing={4}>
-      <Grid item container alignItems={'center'} xs={12} md={6}>
-        <Box data-aos={isMd ? 'fade-right' : 'fade-up'}>
+      <Grid item container alignItems={"center"} xs={12} md={6}>
+        <Box data-aos={isMd ? "fade-right" : "fade-up"}>
           <Box marginBottom={2}>
             <Typography
               variant="h2"
@@ -28,11 +28,11 @@ const Hero = () => {
             >
               Turn your ideas
               <br />
-              into a{' '}
+              into a{" "}
               <Typography
-                color={'primary'}
-                component={'span'}
-                variant={'inherit'}
+                color={"primary"}
+                component={"span"}
+                variant={"inherit"}
               >
                 success.
               </Typography>
@@ -45,23 +45,22 @@ const Hero = () => {
               color="textSecondary"
               sx={{ fontWeight: 400 }}
             >
-              MyHometown will make your product look modern and professional while
-              saving you precious time.
+              myHometown will make your product look modern and professional
+              while saving you precious time.
             </Typography>
           </Box>
-          
         </Box>
       </Grid>
       <Grid item xs={12} md={6}>
         <Box
-          height={'100%'}
-          width={'100%'}
-          display={'flex'}
-          justifyContent={'center'}
-          alignItems={'center'}
+          height={"100%"}
+          width={"100%"}
+          display={"flex"}
+          justifyContent={"center"}
+          alignItems={"center"}
         >
-          <Box height={'100%'} width={'100%'} maxHeight={600}>
-            <RocketIllustration width={'100%'} height={'100%'} />
+          <Box height={"100%"} width={"100%"} maxHeight={600}>
+            <RocketIllustration width={"100%"} height={"100%"} />
           </Box>
         </Box>
       </Grid>

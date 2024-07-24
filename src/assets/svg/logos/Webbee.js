@@ -1,8 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { useTheme } from '@mui/material/styles';
+import React from "react";
+import PropTypes from "prop-types";
+import { useTheme } from "@mui/material/styles";
 
-const MyHometown = ({ width = 45, height = 70 }) => {
+const myHometown = ({ width = 45, height = 70 }) => {
   const theme = useTheme();
   const colorPrimaryMain = theme.palette.primary.main;
   const colorPrimaryDark = theme.palette.primary.main;

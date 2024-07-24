@@ -1,8 +1,8 @@
-import React from 'react';
-import { useTheme } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
+import React from "react";
+import { useTheme } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
 
 const Headline = () => {
   const theme = useTheme();
@@ -10,16 +10,16 @@ const Headline = () => {
   return (
     <Box
       sx={{
-        position: 'relative',
-        '&::after': {
-          position: 'absolute',
+        position: "relative",
+        "&::after": {
+          position: "absolute",
           content: '""',
-          width: '30%',
+          width: "30%",
           zIndex: 1,
           top: 0,
           left: 0,
-          height: '100%',
-          backgroundSize: '18px 18px',
+          height: "100%",
+          backgroundSize: "18px 18px",
           backgroundImage: `radial-gradient(${theme.palette.primary.dark} 20%, transparent 20%)`,
           opacity: 0.2,
         },
@@ -28,40 +28,41 @@ const Headline = () => {
       <Box position="relative" zIndex={2}>
         <Typography
           sx={{
-            textTransform: 'uppercase',
-            fontWeight: 'medium',
+            textTransform: "uppercase",
+            fontWeight: "medium",
           }}
           gutterBottom
-          color={'textSecondary'}
-          align={'center'}
+          color={"textSecondary"}
+          align={"center"}
         >
           About us
         </Typography>
         <Box marginBottom={2}>
           <Typography
             variant="h2"
-            align={'center'}
+            align={"center"}
             sx={{
               fontWeight: 700,
             }}
           >
-            Building communities{' '}
+            Building communities{" "}
             <Typography
-              color={'primary'}
-              component={'span'}
-              variant={'inherit'}
+              color={"primary"}
+              component={"span"}
+              variant={"inherit"}
             >
               together.
-              </Typography>
+            </Typography>
           </Typography>
         </Box>
         <Box marginBottom={4}>
-          <Typography variant="h6" align={'center'} color={'textSecondary'}>
-            The MyHometown Initiative is a partnership between a city&apos;s government, its residents,
-local churches, non-profit organizations, and corporations.
+          <Typography variant="h6" align={"center"} color={"textSecondary"}>
+            The myHometown Initiative is a partnership between a city&apos;s
+            government, its residents, local churches, non-profit organizations,
+            and corporations.
           </Typography>
         </Box>
-        <Box display="flex" justifyContent={'center'}>
+        <Box display="flex" justifyContent={"center"}>
           <Box
             component={Button}
             variant="contained"

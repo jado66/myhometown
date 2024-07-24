@@ -1,9 +1,9 @@
-import React from 'react';
-import { alpha, useTheme } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Avatar from '@mui/material/Avatar';
-import Grid from '@mui/material/Grid';
+import React from "react";
+import { alpha, useTheme } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Avatar from "@mui/material/Avatar";
+import Grid from "@mui/material/Grid";
 
 const Highlights = () => {
   const theme = useTheme();
@@ -12,9 +12,9 @@ const Highlights = () => {
       <Grid container spacing={2}>
         {[
           {
-            title: 'Built for developers',
+            title: "Built for developers",
             subtitle:
-              'MyHometown is built to make your life easier. Variables, build tooling, documentation, and reusable components.',
+              "myHometown is built to make your life easier. Variables, build tooling, documentation, and reusable components.",
             icon: (
               <svg
                 height={24}
@@ -34,9 +34,9 @@ const Highlights = () => {
             ),
           },
           {
-            title: 'Designed to be modern',
+            title: "Designed to be modern",
             subtitle:
-              'Designed with the latest design trends in mind. MyHometown feels modern, minimal, and beautiful.',
+              "Designed with the latest design trends in mind. myHometown feels modern, minimal, and beautiful.",
             icon: (
               <svg
                 height={24}
@@ -56,9 +56,9 @@ const Highlights = () => {
             ),
           },
           {
-            title: 'Documentation for everything',
+            title: "Documentation for everything",
             subtitle:
-              'We\'ve written extensive documentation for components and tools, so you never have to reverse engineer anything.',
+              "We've written extensive documentation for components and tools, so you never have to reverse engineer anything.",
             icon: (
               <svg
                 height={24}
@@ -79,11 +79,11 @@ const Highlights = () => {
           },
         ].map((item, i) => (
           <Grid item xs={12} md={4} key={i}>
-            <Box width={1} height={'100%'} data-aos={'fade-up'}>
+            <Box width={1} height={"100%"} data-aos={"fade-up"}>
               <Box
-                display={'flex'}
-                flexDirection={'column'}
-                alignItems={'center'}
+                display={"flex"}
+                flexDirection={"column"}
+                alignItems={"center"}
               >
                 <Box
                   component={Avatar}
@@ -96,14 +96,14 @@ const Highlights = () => {
                   {item.icon}
                 </Box>
                 <Typography
-                  variant={'h6'}
+                  variant={"h6"}
                   gutterBottom
                   sx={{ fontWeight: 500 }}
-                  align={'center'}
+                  align={"center"}
                 >
                   {item.title}
                 </Typography>
-                <Typography align={'center'} color="textSecondary">
+                <Typography align={"center"} color="textSecondary">
                   {item.subtitle}
                 </Typography>
               </Box>

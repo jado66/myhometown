@@ -100,7 +100,8 @@ const CitiesStrongMediaPage = () => {
         gutterBottom
         sx={{ marginTop: 4, mb: 3, textAlign: "center" }}
       >
-        What city leaders are saying about <br /> <MyHometownLogo type="full" />
+        What city leaders are saying about <br />{" "}
+        <MyHometownLogo type="full" height={36} />
       </Typography>
       <Grid container spacing={4}>
         <Grid

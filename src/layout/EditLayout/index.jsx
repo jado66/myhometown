@@ -1,15 +1,16 @@
 "use client";
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { useTheme } from '@mui/material/styles';
-import useScrollTrigger from '@mui/material/useScrollTrigger';
-import Divider from '@mui/material/Divider';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Slide from '@mui/material/Slide';
-import { Topbar, Sidebar, Footer } from './components';
-import { pages } from '../navigation';
-import Container from '@/components/util/Container';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { useTheme } from "@mui/material/styles";
+import useScrollTrigger from "@mui/material/useScrollTrigger";
+import Divider from "@mui/material/Divider";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Slide from "@mui/material/Slide";
+import { Topbar, Sidebar, Footer } from "./components";
+import { pages } from "../navigation";
+import Container from "@/components/util/Container";
+import { Grid } from "@mui/material";
 
 const HideOnScroll = ({ children }) => {
   const trigger = useScrollTrigger();
@@ -44,17 +45,17 @@ const EditLayout = ({
   };
 
   return (
-    <div style={{backgroundColor:'#fff'}}>
+    <div style={{ backgroundColor: "#fff" }}>
       <HideOnScroll>
         <AppBar
-          position={'fixed'}
+          position={"fixed"}
           sx={{
             backgroundColor: theme.palette.background.paper,
           }}
           elevation={1}
         >
           <Container paddingY={{ xs: 1 / 2, sm: 1 }}>
-            <Topbar/>
+            <Topbar />
           </Container>
         </AppBar>
       </HideOnScroll>
@@ -66,12 +67,21 @@ const EditLayout = ({
       />
       <main>
         <Box height={{ xs: 56, sm: 48 }} />
-        {children}
-        <Divider />
+        <Grid
+          container
+          sx={{
+            mx: "auto",
+            boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
+            justifyContent: "center",
+          }}
+          maxWidth="md"
+        >
+          {children}
+          <Divider />
+          <Footer />
+          <Container paddingY={4}></Container>
+        </Grid>
       </main>
-      <Container paddingY={4}>
-        <Footer />
-      </Container>
     </div>
   );
 };

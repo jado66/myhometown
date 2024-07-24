@@ -286,7 +286,7 @@ const Page = () => {
 
                 <ImageAccordion
                   title="Enhancing Public Education"
-                  content="We partner with schools to enhance literacy, leadership and academic achievement that will help students succeed in life."
+                  content="We partner with schools to enhance literacy, leadership, and academic achievement that will help students succeed in life."
                   bgColor="#188D4E"
                   contentColor="#ffffff"
                   right
@@ -380,7 +380,7 @@ const Page = () => {
 
               <ImageAccordion
                 title="Mental Health Assistance"
-                content="We help provide mental health programs, including a hotline and training for parents so they can talk with their pre-teen and teenage children."
+                content="We provide mental health programs that empower parents to help their pre-teen and teenage children grow, thrive, and excel."
                 bgColor="#286AA4"
                 contentColor="#ffffff"
                 right

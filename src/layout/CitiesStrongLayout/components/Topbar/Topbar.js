@@ -85,7 +85,10 @@ const Topbar = ({ onSidebarOpen, theme }) => {
       </Box>
 
       <Box display="flex" alignItems={"center"}>
-        <Box sx={{ display: { md: "none", lg: "flex" } }} alignItems={"center"}>
+        <Box
+          sx={{ display: { xs: "none", md: "none", lg: "flex" } }}
+          alignItems={"center"}
+        >
           {/* Links remain unchanged */}
           <Box marginX={2}>
             <Link

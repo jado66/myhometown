@@ -1,163 +1,461 @@
-import { 
-    Dialog, 
-    DialogTitle, 
-    DialogContent, 
-    DialogActions, 
-    IconButton,
-    Button, 
-    Divider, 
-    TextField, 
-    Checkbox,
-    FormControlLabel,
-    Grid
-  } from "@mui/material";
-
-  import { Delete } from "@mui/icons-material";
-
-  import { useEffect, useState } from "react";
-  import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-  import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
+import React, { useEffect, useState, useCallback } from "react";
+import moment from "moment";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Button,
+  Divider,
+  TextField,
+  Checkbox,
+  FormControlLabel,
+  Grid,
+  Typography,
+  Card,
+} from "@mui/material";
+import { Delete } from "@mui/icons-material";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { DatePicker, DateTimePicker, TimePicker } from "@mui/x-date-pickers";
 
-export const EventDialog_NewEdit = ({ onClose, show, event = {}, onSave, isEdit, onDelete }) => {
-    const [currentEvent, setCurrentEvent] = useState(event);
-    const [isMultiDay, setIsMultiDay] = useState(false);
+export const EventDialog_NewEdit = ({
+  onClose,
+  show,
+  event = {},
+  onSave,
+  isEdit,
+  onDelete,
+}) => {
+  const [currentEvent, setCurrentEvent] = useState(event);
+  const [errors, setErrors] = useState({});
 
-    useEffect(() => {
-        setCurrentEvent(event);
-    }, [event]);
+  const validateEvent = useCallback(() => {
+    const newErrors = {};
 
-    const handleChange = (field) => (e) => {
-        setCurrentEvent({
-            ...currentEvent,
-            [field]: e.target.value,
-        });
-    };
-
-    const handleToggle = (field) => (e) => {
-        setCurrentEvent({
-            ...currentEvent,
-            [field]: e.target.checked,
-        });
-    };
-
-    const handleDateChange = (field) => (date) => {
-        setCurrentEvent({
-            ...currentEvent,
-            [field]: date,
-        });
-    };
-
-    const handleSave = () => {
-        onSave(currentEvent);
-    };
-
-    const handleDelete = () => {
-        onDelete(currentEvent.id);
+    if (!currentEvent?.start) {
+      newErrors.start = "Start date is required";
     }
 
-    return (
-        <LocalizationProvider dateAdapter={AdapterMoment}>
-            <Dialog open={show} onClose={onClose} scroll={'paper'} maxWidth = 'md' fullWidth>
-                <DialogTitle justifyContent='space-between' sx = {{width:'100%'}} display = 'flex'>
-                    {isEdit ? 'Edit Event' : 'Create New Event'}
-                    {isEdit && (
-                        <IconButton onClick={handleDelete}>
-                            <Delete />
-                        </IconButton>
-                    )}
-                </DialogTitle>
-                <Divider />
+    if (!currentEvent?.end) {
+      newErrors.end = "End date is required";
+    }
 
-                <DialogContent>
-                    <Grid container direction="column" spacing={2}>
-                        <Grid item>
-                            <TextField label="Title" value={currentEvent?.title || ''} onChange={handleChange('title')} fullWidth />
-                        </Grid>
-                        <Grid item>
-                            <TextField label="Location" value={currentEvent?.location || ''} onChange={handleChange('location')} fullWidth />
-                        </Grid>
-                        <Grid item>
-                            <TextField 
-                                label="Description" 
-                                value={currentEvent?.description || ''} 
-                                onChange={handleChange('description')} 
-                                fullWidth 
-                                multiline
-                                rows={4}
-                            />
-                        </Grid>
+    if (currentEvent?.isMultiDay && currentEvent?.start && currentEvent?.end) {
+      if (currentEvent.start.isSame(currentEvent.end, "day")) {
+        newErrors.dateOrder = "Multi-day events must span multiple days";
+      }
+    } else if (
+      !currentEvent?.isMultiDay &&
+      currentEvent?.start &&
+      currentEvent?.end
+    ) {
+      if (!currentEvent?.start?.isSame(currentEvent.end, "day")) {
+        newErrors.dateOrder =
+          "Single-day events must start and end on the same day";
+      }
+    }
+    if (!currentEvent?.title?.trim()) {
+      newErrors.title = "Title is required";
+    }
 
-                        <Grid container item direction="row" >
-                            <FormControlLabel
-                                control={
-                                    <Checkbox checked={currentEvent?.allDay || false} onChange={handleToggle('allDay')} />
-                                }
-                                label="All Day"
-                            />
+    if (!currentEvent?.description?.trim()) {
+      newErrors.description = "Description is required";
+    }
 
-                            <FormControlLabel
-                                control={<Checkbox checked={isMultiDay} onChange={()=>setIsMultiDay(p=>!p)} />}
-                                label="Is Multi-Day Event"
-                            />
-                        </Grid>
+    const now = moment();
+    if (currentEvent?.start && currentEvent?.start.isBefore(now, "day")) {
+      newErrors.start = "Event can't be created in the past";
+    }
 
-                        {/* Need a Start and End Regardless */}
+    if (
+      currentEvent?.start &&
+      currentEvent?.end &&
+      currentEvent?.end.isBefore(currentEvent.start)
+    ) {
+      newErrors.dateOrder = "End date/time can't be before start date/time";
+    }
 
-                        <Grid container item direction="row" spacing={2}>
-                            {
-                                isMultiDay ?
-                                    <>
-                                        <Grid item>
-                                            {
-                                                currentEvent?.allDay ?
-                                                    <DatePicker label="Start Date" onChange={handleDateChange('start')} />
-                                                    :
-                                                    <DateTimePicker label="Start Date & Time" onChange={handleDateChange('start')} />
-                                            }
-                                        </Grid>
-                                        <Grid item>
-                                            {
-                                                currentEvent?.allDay ?
-                                                    <DatePicker label="End Date" onChange={handleDateChange('end')} />
-                                                    :
-                                                    <DateTimePicker label="End Date & Time" onChange={handleDateChange('end')} />
-                                            }
-                                        </Grid>
-                                    </>
-                                    :
-                                    <>
-                                        <Grid item>
-                                            <DatePicker label="Event Date" onChange={handleDateChange('start')} />
-                                        </Grid>
-                                        {
-                                            !currentEvent?.allDay &&
-                                                <>
-                                                    <Grid item>
-                                                        <TimePicker label="Start Time" onChange={handleDateChange('start')} />
-                                                    </Grid>
-                                                    <Grid item>
-                                                        <TimePicker label="End Time" onChange={handleDateChange('end')} />
-                                                    </Grid>
-                                                </>
-                                        }
-                                        
-                                    </>
-                            }
-                        </Grid>
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, [currentEvent]);
 
-                        <Grid item>
-                            <TextField label="Resource" value={currentEvent?.resource || ''} onChange={handleChange('resource')} fullWidth />
-                        </Grid>
+  useEffect(() => {
+    setCurrentEvent({
+      ...event,
+      start: event?.start ? moment(event.start) : null,
+      end: event?.end ? moment(event.end) : null,
+    });
+  }, [event]);
+
+  useEffect(() => {
+    validateEvent();
+  }, [currentEvent, validateEvent]);
+
+  const toggleIsMultiDay = () => {
+    setCurrentEvent((prev) => {
+      const newEvent = { ...prev, isMultiDay: !prev.isMultiDay };
+      if (newEvent.isMultiDay) {
+        // Set end to one day after start
+        newEvent.end = moment(newEvent.start).add(1, "day");
+      } else {
+        // Set end to one hour after start (ending at midnight)
+        newEvent.end = moment(newEvent.start).endOf("day");
+      }
+      return newEvent;
+    });
+  };
+
+  const toggleAllDay = () => {
+    setCurrentEvent((prev) => {
+      const newEvent = { ...prev, isAllDay: !prev.isAllDay };
+      if (newEvent.isAllDay) {
+        // Start at beginning of day, end at end of day
+        newEvent.start = moment(newEvent.start).startOf("day");
+        newEvent.end = moment(
+          newEvent.isMultiDay ? newEvent.end : newEvent.start
+        ).endOf("day");
+      } else {
+        // Start now, end null
+        newEvent.start = moment();
+        newEvent.end = null;
+      }
+      return newEvent;
+    });
+  };
+
+  const handleChange = (field) => (e) => {
+    setCurrentEvent({
+      ...currentEvent,
+      [field]: e.target.value,
+    });
+  };
+
+  const handleDateChange = (field) => (date) => {
+    setCurrentEvent((prev) => {
+      const newEvent = { ...prev, [field]: date };
+
+      if (!prev?.isAllDay) {
+        return newEvent;
+      }
+
+      if (field === "start" && !prev.isMultiDay) {
+        // Adjust end date for single-day events
+        newEvent.start = moment(date).startOf("day");
+        newEvent.end = moment(date).endOf("day");
+      } else if (field === "start" && prev.isMultiDay) {
+        newEvent.start = moment(date).startOf("day");
+      } else if (field === "end" && prev.isMultiDay) {
+        newEvent.start = moment(date).endOf("day");
+      }
+      return newEvent;
+    });
+  };
+
+  const handleSave = () => {
+    if (validateEvent()) {
+      const savedEvent = {
+        ...currentEvent,
+        start: currentEvent.start ? currentEvent.start.toISOString() : null,
+        end: currentEvent.end ? currentEvent.end.toISOString() : null,
+      };
+      onSave(savedEvent);
+    }
+  };
+
+  const handleDelete = () => {
+    onDelete(currentEvent.id);
+    onClose();
+  };
+
+  const selectType = (type) => {
+    setCurrentEvent({
+      ...currentEvent,
+      eventType: type,
+    });
+  };
+
+  const isFormValid = Object.keys(errors).length === 0;
+
+  return (
+    <LocalizationProvider dateAdapter={AdapterMoment}>
+      <Dialog
+        open={show}
+        onClose={onClose}
+        scroll={"paper"}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle
+          justifyContent="space-between"
+          sx={{ width: "100%" }}
+          display="flex"
+        >
+          <div style={{ display: "flex", alignItems: "center" }}>
+            {isEdit ? "Edit Event" : "Create New Event"}
+            {currentEvent?.eventType && (
+              <>
+                {" - "}
+                <Button
+                  onClick={() => selectType(null)}
+                  variant="text"
+                  sx={{
+                    textTransform: "capitalize",
+                    p: 0,
+                    minWidth: "0px",
+                    ml: 0.5,
+                    color: "#686868",
+                    fontSize: "20px",
+                  }}
+                >
+                  {currentEvent.eventType}
+                </Button>
+              </>
+            )}
+          </div>
+          {isEdit && (
+            <IconButton onClick={handleDelete}>
+              <Delete />
+            </IconButton>
+          )}
+        </DialogTitle>
+        <Divider />
+
+        <DialogContent>
+          {!currentEvent?.eventType ? (
+            <Grid container direction="row" spacing={2} display="flex">
+              <Grid item xs={4}>
+                <Card
+                  onClick={() => selectType("Days of Service")}
+                  sx={{
+                    minHeight: "200px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    "&:hover": {
+                      backgroundColor: "#f0f0f0",
+                      transform: "scale(1.05)",
+                      cursor: "pointer",
+                    },
+                  }}
+                >
+                  Days of Service
+                </Card>
+              </Grid>
+
+              <Grid item xs={4}>
+                <Card
+                  onClick={() => selectType("Community Resource Center")}
+                  sx={{
+                    minHeight: "200px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    "&:hover": {
+                      backgroundColor: "#f0f0f0",
+                      transform: "scale(1.05)",
+                      cursor: "pointer",
+                    },
+                  }}
+                >
+                  Community Resource Center
+                </Card>
+              </Grid>
+              <Grid item xs={4}>
+                <Card
+                  onClick={() => selectType("type3")}
+                  sx={{
+                    minHeight: "200px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    "&:hover": {
+                      backgroundColor: "#f0f0f0",
+                      transform: "scale(1.05)",
+                      cursor: "pointer",
+                    },
+                  }}
+                >
+                  Type 3
+                </Card>
+              </Grid>
+            </Grid>
+          ) : (
+            <Grid container direction="column" spacing={2}>
+              <Grid item>
+                <TextField
+                  label="Title"
+                  value={currentEvent?.title || ""}
+                  onChange={handleChange("title")}
+                  fullWidth
+                  error={!!errors.title}
+                  helperText={errors.title}
+                />
+              </Grid>
+              <Grid item>
+                <TextField
+                  label="Location"
+                  value={currentEvent?.location || ""}
+                  onChange={handleChange("location")}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item>
+                <TextField
+                  label="Description"
+                  value={currentEvent?.description || ""}
+                  onChange={handleChange("description")}
+                  fullWidth
+                  multiline
+                  rows={4}
+                  error={!!errors.description}
+                  helperText={errors.description}
+                />
+              </Grid>
+
+              <Grid container item direction="row">
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={currentEvent?.isAllDay || false}
+                      onChange={toggleAllDay}
+                    />
+                  }
+                  label="All Day"
+                />
+
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={currentEvent?.isMultiDay}
+                      onChange={toggleIsMultiDay}
+                    />
+                  }
+                  label="Is Multi-Day Event"
+                />
+              </Grid>
+
+              <Grid container item direction="row" spacing={2}>
+                {currentEvent?.isMultiDay ? (
+                  <>
+                    <Grid item>
+                      {currentEvent?.isAllDay ? (
+                        <DatePicker
+                          label="Start Date"
+                          value={currentEvent?.start || null}
+                          onChange={handleDateChange("start")}
+                          slotProps={{
+                            textField: {
+                              error: !!errors.start,
+                              helperText: errors.start,
+                            },
+                          }}
+                        />
+                      ) : (
+                        <DateTimePicker
+                          label="Start Date & Time"
+                          value={currentEvent?.start || null}
+                          onChange={handleDateChange("start")}
+                          slotProps={{
+                            textField: {
+                              error: !!errors.start,
+                              helperText: errors.start,
+                            },
+                          }}
+                        />
+                      )}
                     </Grid>
-                </DialogContent>
+                    <Grid item>
+                      {currentEvent?.isAllDay ? (
+                        <DatePicker
+                          label="End Date"
+                          value={currentEvent?.end || null}
+                          onChange={handleDateChange("end")}
+                          slotProps={{
+                            textField: {
+                              error: !!errors.start,
+                              helperText: errors.start,
+                            },
+                          }}
+                        />
+                      ) : (
+                        <DateTimePicker
+                          label="End Date & Time"
+                          value={currentEvent?.end || null}
+                          onChange={handleDateChange("end")}
+                          slotProps={{
+                            textField: {
+                              error: !!errors.end,
+                              helperText: errors.end,
+                            },
+                          }}
+                        />
+                      )}
+                    </Grid>
+                  </>
+                ) : (
+                  <>
+                    <Grid item>
+                      <DatePicker
+                        label="Event Date"
+                        value={currentEvent?.start || null}
+                        onChange={handleDateChange("start")}
+                        slotProps={{
+                          textField: {
+                            error: !!errors.start,
+                            helperText: errors.start,
+                          },
+                        }}
+                      />
+                    </Grid>
+                    {!currentEvent?.isAllDay && (
+                      <>
+                        <Grid item>
+                          <TimePicker
+                            label="Start Time"
+                            value={currentEvent?.start || null}
+                            onChange={handleDateChange("start")}
+                          />
+                        </Grid>
+                        <Grid item>
+                          <TimePicker
+                            label="End Time"
+                            value={currentEvent?.end || null}
+                            onChange={handleDateChange("end")}
+                          />
+                        </Grid>
+                      </>
+                    )}
+                  </>
+                )}
+              </Grid>
 
-                <DialogActions>
-                    <Button onClick={handleSave}>Save</Button>
-                    <Button onClick={onClose}>Close</Button>
-                </DialogActions>
-            </Dialog>
-        </LocalizationProvider>
+              {errors.dateOrder && (
+                <Grid item>
+                  <Typography color="error">{errors.dateOrder}</Typography>
+                </Grid>
+              )}
 
-    );
-}
+              <Grid item>
+                <TextField
+                  label="Resource"
+                  value={currentEvent?.resource || ""}
+                  onChange={handleChange("resource")}
+                  fullWidth
+                />
+              </Grid>
+            </Grid>
+          )}
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={handleSave} disabled={!isFormValid}>
+            Save
+          </Button>
+          <Button onClick={onClose}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </LocalizationProvider>
+  );
+};

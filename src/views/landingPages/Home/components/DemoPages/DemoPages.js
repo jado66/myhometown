@@ -1,17 +1,17 @@
 /* eslint-disable react/no-unescaped-entities */
-import React from 'react';
-import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import Link from '@mui/material/Link';
-import { pages } from '@/layout/navigation';
+import React from "react";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import Link from "@mui/material/Link";
+import { pages } from "@/layout/navigation";
 
 const DemoPages = () => {
   const theme = useTheme();
-  const isMd = useMediaQuery(theme.breakpoints.up('md'), {
+  const isMd = useMediaQuery(theme.breakpoints.up("md"), {
     defaultMatches: true,
   });
 
@@ -20,48 +20,47 @@ const DemoPages = () => {
       <Box marginBottom={4}>
         <Typography
           sx={{
-            textTransform: 'uppercase',
-            fontWeight: 'medium',
+            textTransform: "uppercase",
+            fontWeight: "medium",
           }}
           gutterBottom
-          color={'textSecondary'}
-          align={'center'}
+          color={"textSecondary"}
+          align={"center"}
         >
           Demo pages
         </Typography>
         <Box
           component={Typography}
           fontWeight={700}
-          variant={'h3'}
+          variant={"h3"}
           gutterBottom
-          align={'center'}
+          align={"center"}
         >
-          MyHometown in action
+          myHometown in action
         </Box>
         <Typography
-          variant={'h6'}
-          component={'p'}
-          color={'textSecondary'}
-          align={'center'}
+          variant={"h6"}
+          component={"p"}
+          color={"textSecondary"}
+          align={"center"}
         >
           All examples you find below are included in the download package.
         </Typography>
         <Box
           marginTop={3}
           display="flex"
-          flexDirection={{ xs: 'column', sm: 'row' }}
-          alignItems={{ xs: 'stretched', sm: 'flex-start' }}
-          justifyContent={'center'}
+          flexDirection={{ xs: "column", sm: "row" }}
+          alignItems={{ xs: "stretched", sm: "flex-start" }}
+          justifyContent={"center"}
         >
-          
           <Box
             marginTop={{ xs: 2, sm: 0 }}
             marginLeft={{ sm: 2 }}
-            width={{ xs: '100%', md: 'auto' }}
+            width={{ xs: "100%", md: "auto" }}
           >
             <Button
-              component={'a'}
-              href={'/docs-introduction'}
+              component={"a"}
+              href={"/docs-introduction"}
               variant="outlined"
               color="primary"
               size="large"
@@ -79,7 +78,7 @@ const DemoPages = () => {
             marginBottom={i === pages.length - 1 ? 0 : { xs: 4, sm: 6, md: 8 }}
           >
             <Typography
-              variant={'h5'}
+              variant={"h5"}
               sx={{
                 marginBottom: { xs: 2, sm: 3, md: 4 },
                 fontWeight: 700,
@@ -101,19 +100,19 @@ const DemoPages = () => {
                   md={4}
                   key={sp.title}
                   component={Link}
-                  underline={'none'}
-                  color={'unset'}
+                  underline={"none"}
+                  color={"unset"}
                   href={sp.href}
                 >
                   <Box
-                    width={'100%'}
-                    height={'100%'}
+                    width={"100%"}
+                    height={"100%"}
                     borderLeft={`1px solid ${theme.palette.divider}`}
                     borderTop={`1px solid ${theme.palette.divider}`}
                     padding={{ xs: 2, md: 4 }}
                   >
                     <Typography
-                      variant={'subtitle1'}
+                      variant={"subtitle1"}
                       gutterBottom
                       sx={{
                         fontWeight: 700,
@@ -124,8 +123,8 @@ const DemoPages = () => {
                     <Typography color="text.secondary">
                       {sp.title} page
                     </Typography>
-                    <Box marginTop={1} align={'right'}>
-                      <Typography color={'primary'} variant={'subtitle2'}>
+                    <Box marginTop={1} align={"right"}>
+                      <Typography color={"primary"} variant={"subtitle2"}>
                         View demo
                       </Typography>
                     </Box>

@@ -1,63 +1,63 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
-import Typography from '@mui/material/Typography';
-import Container from '@/components/util/Container';
+import React from "react";
+import PropTypes from "prop-types";
+import Box from "@mui/material/Box";
+import Link from "@mui/material/Link";
+import Typography from "@mui/material/Typography";
+import Container from "@/components/util/Container";
 
-const Introduction = ({ themeMode = 'light' }) => {
+const Introduction = ({ themeMode = "light" }) => {
   return (
     <Box>
       <Container>
         <Box>
           <Typography
             sx={{
-              textTransform: 'uppercase',
-              fontWeight: 'medium',
+              textTransform: "uppercase",
+              fontWeight: "medium",
             }}
             gutterBottom
-            align={'center'}
-            color={'textSecondary'}
+            align={"center"}
+            color={"textSecondary"}
           >
             Introduction
           </Typography>
           <Typography
             variant="h4"
-            align={'center'}
+            align={"center"}
             sx={{
               fontWeight: 700,
             }}
           >
-            MyHometown - multipurpose template and UI kit
+            myHometown - multipurpose template and UI kit
           </Typography>
           <Box
-            component={'img'}
-            height={'100%'}
-            width={'100%'}
+            component={"img"}
+            height={"100%"}
+            width={"100%"}
             src={`https://assets.maccarianagency.com/screenshots/screens-masonry${
-              themeMode === 'dark' ? '--dark' : ''
+              themeMode === "dark" ? "--dark" : ""
             }.png`}
             alt="MyHometown"
             effect="blur"
-            maxWidth={'100%'}
+            maxWidth={"100%"}
             marginY={4}
             loading="lazy"
           />
           <Box>
             <Typography gutterBottom>
-              Webbe UI Kit is built with{' '}
+              Webbe UI Kit is built with{" "}
               <Link
-                underline={'hover'}
-                href={'https://mui.com/'}
-                target={'_blank'}
+                underline={"hover"}
+                href={"https://mui.com/"}
+                target={"_blank"}
               >
                 MUI v5
-              </Link>{' '}
-              and{' '}
+              </Link>{" "}
+              and{" "}
               <Link
-                underline={'hover'}
-                href={'https://create-react-app.dev/'}
-                target={'_blank'}
+                underline={"hover"}
+                href={"https://create-react-app.dev/"}
+                target={"_blank"}
               >
                 Create React App
               </Link>
@@ -71,9 +71,9 @@ const Introduction = ({ themeMode = 'light' }) => {
               The theme is ready to change to any style you want.
             </Typography>
             <Typography gutterBottom>
-              MyHometown landing page examples can be used out of the box, but since
-              they’re built on flexible components, you can also create new
-              pages all your own with ease.
+              myHometown landing page examples can be used out of the box, but
+              since they’re built on flexible components, you can also create
+              new pages all your own with ease.
             </Typography>
             <Typography gutterBottom>
               Copy-paste a section here, a component there, switch up a few
@@ -91,11 +91,11 @@ const Introduction = ({ themeMode = 'light' }) => {
               Feedback
             </Typography>
             <Typography gutterBottom>
-              We are always open to your feedback at{' '}
+              We are always open to your feedback at{" "}
               <Link
-                component={'a'}
+                component={"a"}
                 href="mailto:hi@maccarianagency.com"
-                color={'primary'}
+                color={"primary"}
               >
                 hi@maccarianagency.com
               </Link>

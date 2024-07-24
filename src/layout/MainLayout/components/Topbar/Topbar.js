@@ -1,26 +1,26 @@
-'use client'
+"use client";
 
-import React, { useCallback, useState, useTransition } from 'react';
-import PropTypes from 'prop-types';
-import Box from '@mui/material/Box';
-import Menu from '@mui/material/Menu';
-import Link from '@mui/material/Link';
-import { useTheme } from '@mui/material/styles';
-import { MenuItem, TextField, Typography, Button } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
-import Divider from '@mui/material/Divider';
-import MyHometownLogo from '@/assets/svg/logos/MyHometown';
-import useManageCities from '@/hooks/use-manage-cities';
-import LanguageIcon from '@mui/icons-material/Language';
-import { ExpandLess, Translate } from '@mui/icons-material';
-import {useTranslations} from 'next-intl';
-import { useRouter } from 'next/navigation';
-import Cookies from 'js-cookie';
-import ExpandMore from '@mui/icons-material/ExpandMore';
+import React, { useCallback, useState, useTransition } from "react";
+import PropTypes from "prop-types";
+import Box from "@mui/material/Box";
+import Menu from "@mui/material/Menu";
+import Link from "@mui/material/Link";
+import { useTheme } from "@mui/material/styles";
+import { MenuItem, TextField, Typography, Button } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import MenuIcon from "@mui/icons-material/Menu";
+import Divider from "@mui/material/Divider";
+import MyHometownLogo from "@/assets/svg/logos/MyHometown";
+import useManageCities from "@/hooks/use-manage-cities";
+import LanguageIcon from "@mui/icons-material/Language";
+import { ExpandLess, Translate } from "@mui/icons-material";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
+import ExpandMore from "@mui/icons-material/ExpandMore";
+import { cityStrings } from "@/constants/cities";
 
-const Topbar = ({onSidebarOpen}) => {
-
+const Topbar = ({ onSidebarOpen }) => {
   const { groupedCityStrings } = useManageCities(null, true);
 
   const [citiesAnchorEl, setCitiesAnchorEl] = useState(null);
@@ -28,7 +28,7 @@ const Topbar = ({onSidebarOpen}) => {
 
   const [search, setSearch] = useState("");
 
-  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'? '/mht':''
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
 
   const handleCitiesClick = (event) => {
     setCitiesAnchorEl(event.currentTarget);
@@ -52,66 +52,65 @@ const Topbar = ({onSidebarOpen}) => {
   };
 
   let filteredGroupedCityStrings = Object.fromEntries(
-    Object.entries(groupedCityStrings).map(([state, cities]) => {
-      return [
-        state,
-        cities
-          .filter(city => city.toLowerCase().includes(search.toLowerCase()))
-          .sort()  
-      ];
-    }).filter(([state, cities]) => cities.length > 0)
-  );  
+    Object.entries(groupedCityStrings)
+      .map(([state, cities]) => {
+        return [
+          state,
+          cities
+            .filter((city) => city.toLowerCase().includes(search.toLowerCase()))
+            .sort(),
+        ];
+      })
+      .filter(([state, cities]) => cities.length > 0)
+  );
 
   const theme = useTheme();
 
   return (
     <Box
-      display={'flex'}
-      justifyContent={'space-between'}
-      alignItems={'center'}
-      width={'100%'}
-      sx = {{position:'position'}}
+      display={"flex"}
+      justifyContent={"space-between"}
+      alignItems={"center"}
+      width={"100%"}
+      sx={{ position: "position" }}
     >
-      <Box display={'flex'} alignItems={'center'} sx = {{flexGrow:1, justifyContent:'space-between'}}>
-        
+      <Box
+        display={"flex"}
+        alignItems={"center"}
+        sx={{ flexGrow: 1, justifyContent: "space-between" }}
+      >
         <Box
-          display={'flex'}
+          display={"flex"}
           alignItems="baseline"
           component="a"
           underline="none"
-          href={rootUrl+"/"}
+          href={rootUrl + "/"}
           title="myhometown"
           height={{ xs: 28, md: 32 }}
           width={10}
-          sx = {{position:'relative'}}
+          sx={{ position: "relative" }}
         >
-          <MyHometownLogo height='100%' width='100%' type = 'h' />
+          <MyHometownLogo
+            height="100%"
+            sx={{ width: { md: "100%", xs: "50px" } }}
+            type="full"
+          />
         </Box>
+
         <Box
-          display={'flex'}
-          alignItems="baseline"
-          component="a"
-          underline="none"
-          href={rootUrl+"/"}
-          title="myhometown"
-          height={{ xs: 28, md: 32 }}
-          width={250}
-          sx = {{position:'relative'}}
+          marginRight={{ xs: 1, sm: 2 }}
+          sx={{ display: { xs: "flex", md: "none" } }}
         >
-          <MyHometownLogo height='100%' width='100%' type = 'wordmark' />
-        </Box>
-        <Box marginRight={{ xs: 1, sm: 2 }} sx = {{display: { xs: 'flex', md: 'none' }}}>
-          <IconButton aria-label="Menu" onClick = {onSidebarOpen}>
+          <IconButton aria-label="Menu" onClick={onSidebarOpen}>
             <MenuIcon />
           </IconButton>
         </Box>
       </Box>
 
+      <Box display="flex" alignItems={"center"}>
+        <Box sx={{ display: { xs: "none", md: "flex" } }} alignItems={"center"}>
+          <LanguageDropdown />
 
-      <Box display="flex" alignItems={'center'}>
-        <Box sx={{ display: { xs: 'none', md: 'flex' } }} alignItems={'center'}>
-          <LanguageDropdown />  
-          
           <Box marginX={2}>
             <Link
               underline="none"
@@ -119,8 +118,8 @@ const Topbar = ({onSidebarOpen}) => {
               href="#"
               onClick={handleCitiesClick}
               color="textPrimary"
-              display = 'flex'
-              alignContent = 'center'
+              display="flex"
+              alignContent="center"
             >
               Cities
               {/* {
@@ -129,7 +128,6 @@ const Topbar = ({onSidebarOpen}) => {
                 :
                 <ExpandLess/>
               } */}
-              
             </Link>
             <Menu
               id="cities-menu"
@@ -137,56 +135,88 @@ const Topbar = ({onSidebarOpen}) => {
               open={Boolean(citiesAnchorEl)}
               onClose={handleCitiesClose}
               keepMounted
-              sx = {{maxHeight:500, mt:2}}
+              sx={{
+                maxHeight: 500,
+                mt: 1.75,
+                display: "flex",
+                flexDirection: "column",
+              }}
             >
-              <MenuItem>
-                <TextField
-                  id="city-search"
-                  label="Search By City"
-                  variant="standard"
-                  value={search}
-                  onKeyDown={(event) => {
-                    // Prevents MUI Menu default keyboard navigation from conflicting with TextField input.
-                    event.stopPropagation();
-                  }}
-                  onChange={handleSearch}
-                  autoFocus
-                />
+              <MenuItem
+                onClick={handleCitiesClose}
+                component="a"
+                href={rootUrl + `/utah/ogden`}
+              >
+                Ogden
               </MenuItem>
 
-              {
+              <MenuItem
+                onClick={handleCitiesClose}
+                component="a"
+                href={rootUrl + `/utah/orem`}
+              >
+                Orem
+              </MenuItem>
+              <MenuItem
+                onClick={handleCitiesClose}
+                component="a"
+                href={rootUrl + `/utah/provo`}
+              >
+                Provo
+              </MenuItem>
+              <MenuItem
+                onClick={handleCitiesClose}
+                component="a"
+                href={rootUrl + `/utah/salt-lake-city`}
+              >
+                Salt Lake City
+              </MenuItem>
+              <MenuItem
+                onClick={handleCitiesClose}
+                component="a"
+                href={rootUrl + `/utah/west-valley-city`}
+              >
+                West Valley City
+              </MenuItem>
+              {/* {
                 // if filteredGroupedCityStrings is empty, display a message
-                Object.entries(filteredGroupedCityStrings).length === 0 ?
-                  <MenuItem disabled>
-                    Nothing found.
-                  </MenuItem>
-                : 
+                Object.entries(filteredGroupedCityStrings).length === 0 ? (
+                  <MenuItem disabled>Nothing found.</MenuItem>
+                ) : (
                   <>
-                    {Object.entries(filteredGroupedCityStrings).map(([state, cities], index) => (
-                      <React.Fragment key={state}>
-                        {index > 0 && <Divider /> }
-                        <MenuItem disabled >
-                          <Typography variant="h6" color="textSecondary">
-                            {state}
-                          </Typography>
-                        </MenuItem>
-                        {cities.map(city => (
-                          <MenuItem 
-                            key={city} 
-                            onClick={handleCitiesClose}
-                            component="a"
-                            href={rootUrl+`/${state.toLowerCase()}/${city.toLowerCase().replaceAll(' ', '-')}`}
-                          >
-                            {city}
+                    {Object.entries(filteredGroupedCityStrings).map(
+                      ([state, cities], index) => (
+                        <React.Fragment key={state}>
+                          {index > 0 && <Divider />}
+                          <MenuItem disabled>
+                            <Typography variant="h6" color="textSecondary">
+                              {state}
+                            </Typography>
                           </MenuItem>
-                        ))}
-                      </React.Fragment>
-                    ))}
+                          {cities.map((city) => (
+                            <MenuItem
+                              key={city}
+                              onClick={handleCitiesClose}
+                              component="a"
+                              href={
+                                rootUrl +
+                                `/${state.toLowerCase()}/${city
+                                  .toLowerCase()
+                                  .replaceAll(" ", "-")}`
+                              }
+                            >
+                              {city}
+                            </MenuItem>
+                          ))}
+                        </React.Fragment>
+                      )
+                    )}
                   </>
-              }
+                )
+              } */}
             </Menu>
           </Box>
-          
+
           <Box marginX={2}>
             <Link
               underline="none"
@@ -194,8 +224,8 @@ const Topbar = ({onSidebarOpen}) => {
               href="#"
               onClick={handleResourcesClick}
               color="textPrimary"
-              display = 'flex'
-              alignContent = 'center'
+              display="flex"
+              alignContent="center"
             >
               Resources
               {/* {
@@ -211,35 +241,21 @@ const Topbar = ({onSidebarOpen}) => {
               open={Boolean(resourcesAnchorEl)}
               onClose={handleResourcesClose}
               keepMounted
-              sx = {{maxHeight:500, mt:2}}
+              sx={{ maxHeight: 500, mt: 1.75 }}
             >
-              <MenuItem component = 'a' >
-                Community Resource Centers
-              </MenuItem>
-              <MenuItem component = 'a' >
-                Days of Services
-              </MenuItem>
-              <MenuItem component = 'a' >
-                Immigration
-              </MenuItem>
-              <MenuItem component = 'a' >              
-                Mental Health 
-              </MenuItem>
-              <MenuItem component = 'a' >
-                Education
-              </MenuItem>
-              
-                    
-             
+              <MenuItem component="a">Community Resource Centers</MenuItem>
+              <MenuItem component="a">Days of Services</MenuItem>
+              <MenuItem component="a">Immigration</MenuItem>
+              <MenuItem component="a">Mental Health</MenuItem>
+              <MenuItem component="a">Education</MenuItem>
             </Menu>
           </Box>
-          
-          
+
           <Box marginX={2}>
             <Link
               underline="none"
               component="a"
-              href={rootUrl+"/about-us"}
+              href={rootUrl + "/about-us"}
               color="textPrimary"
             >
               About Us
@@ -249,13 +265,12 @@ const Topbar = ({onSidebarOpen}) => {
             <Link
               underline="none"
               component="a"
-              href={rootUrl+"/donate"}
+              href={rootUrl + "/donate"}
               color="textPrimary"
             >
               Donate
             </Link>
           </Box>
-          
         </Box>
       </Box>
     </Box>
@@ -272,22 +287,20 @@ Topbar.propTypes = {
 
 export default Topbar;
 
-
 const LanguageDropdown = () => {
   const theme = useTheme();
   const router = useRouter();
 
+  const changeLanguage = useCallback(
+    async (language) => {
+      // Set the locale cookie
+      Cookies.set("locale", language);
 
-
-
-  const changeLanguage = useCallback(async (language) => {
-    
-    // Set the locale cookie
-    Cookies.set('locale', language);
-
-    // Reload the page to enable the next/intl server module to detect new locale
-    router.refresh();
-  }, [router]);
+      // Reload the page to enable the next/intl server module to detect new locale
+      router.refresh();
+    },
+    [router]
+  );
 
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -304,49 +317,42 @@ const LanguageDropdown = () => {
 
   const handleLanguageClose = () => {
     setAnchorEl(null);
-  }
+  };
 
   return (
     <Box>
-      
       <IconButton
-        sx = {{
+        sx={{
           color: theme.palette.text.primary,
-          fontSize: '1.25rem',
+          fontSize: "1.25rem",
           marginRight: 2,
         }}
         onClick={handleShowDropdown}
       >
-        <Translate fontSize='inherit'/>
+        <Translate fontSize="inherit" />
         {/* <LanguageIcon /> */}
       </IconButton>
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleLanguageClose}
-
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
+          vertical: "bottom",
+          horizontal: "center",
         }}
-
         transformOrigin={{
-          vertical: 'top',
-          horizontal: 'center',
+          vertical: "top",
+          horizontal: "center",
         }}
-
-        sx={{marginTop: 1}}
-
+        sx={{ marginTop: 1 }}
       >
-        <MenuItem onClick={() => handleLanguageClick('en')}>
+        <MenuItem onClick={() => handleLanguageClick("en")}>
           languages.english
         </MenuItem>
-        <MenuItem onClick={() => handleLanguageClick('es')}>
+        <MenuItem onClick={() => handleLanguageClick("es")}>
           languages.spanish
         </MenuItem>
       </Menu>
     </Box>
   );
 };
-
-
