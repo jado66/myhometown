@@ -17,10 +17,10 @@ const Footer = () => {
       alignItems="center"
       sx={{ px: 5 }}
     >
-      <Grid item xs={4}>
+      <Grid item md={4} xs={6} sx={{ order: { md: 1, xs: 1 } }}>
         <MyHometownLogo height={"100%"} width={"100%"} type="full" />
       </Grid>
-      <Grid item xs={4}>
+      <Grid item md={4} xs={12} sx={{ order: { md: 2, xs: 3 } }}>
         <Typography
           align={"center"}
           variant={"subtitle2"}
@@ -29,7 +29,14 @@ const Footer = () => {
           © Copyright myHometown Utah 2024
         </Typography>
       </Grid>
-      <Grid item xs={4} display="flex" justifyContent="flex-end">
+      <Grid
+        item
+        md={4}
+        xs={6}
+        display="flex"
+        justifyContent="flex-end"
+        sx={{ order: { md: 3, xs: 2 } }}
+      >
         <Button
           variant="outlined"
           component="a"

@@ -108,7 +108,7 @@ export const StatsCounter = ({ stats, isEdit = false }) => {
         <Grid item xs={12} display="flex" justifyContent="center">
           <Button
             variant="outlined"
-            href="/admin-dashboard/cities"
+            href="/admin-dashboard/citiesb"
             sx={{ mt: 2 }}
           >
             Update Stats

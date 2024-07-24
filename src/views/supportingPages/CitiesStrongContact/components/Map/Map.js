@@ -21,7 +21,7 @@ const Map = ({ themeMode = "light" }) => {
       </Box>
       <Box marginBottom={2}>
         <Typography variant="h6">
-          We'd love to talk about how we can help you.
+          Let's talk about how we can help you.
         </Typography>
       </Box>
 
@@ -45,9 +45,9 @@ const Map = ({ themeMode = "light" }) => {
             }}
           />
         </Grid> */}
-        <Grid item xs={12}>
+        <Grid item xs={12} md={6}>
           <Grid container spacing={2} display="flex" flexDirection="row">
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <Typography
                 variant={"body1"}
                 gutterBottom
@@ -73,7 +73,7 @@ const Map = ({ themeMode = "light" }) => {
               </Typography>
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid item xs={12} md={6}>
               <Typography
                 variant={"body1"}
                 gutterBottom

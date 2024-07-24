@@ -48,7 +48,7 @@ const UpcomingEvents = ({
     return <Loading />;
   }
 
-  if (events?.length === 0) {
+  if (sortedEvents?.length === 0) {
     return (
       <Grid sx={{ mb: 5 }}>
         <Typography

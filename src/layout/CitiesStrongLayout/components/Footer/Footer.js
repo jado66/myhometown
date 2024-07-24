@@ -1,78 +1,112 @@
 import React from "react";
 import Grid from "@mui/material/Grid";
-import { Box, Divider, Typography } from "@mui/material";
+import { Box, Divider, Typography, useTheme } from "@mui/material";
 import Link from "next/link";
 import { Instagram, LinkedIn, YouTube } from "@mui/icons-material";
 import Twitter from "@mui/icons-material/Twitter";
 import { styled } from "@mui/system";
 import CitiesStrongShieldIcon from "@/assets/svg/logos/CitiesStrongShieldIcon";
 import CitiesStrongHorizontalLogo from "@/assets/svg/logos/CitiesStrongHorizontalLogo";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import dynamic from "next/dynamic";
 
-const Footer = () => (
-  <Grid xs={12}>
+const Footer = () => {
+  const theme = useTheme();
+
+  return (
+    <Grid xs={12}>
+      <DynamicFooterContent />
+      <Grid container spacing={2} mt={0.5} mb={5} px={4}>
+        <CitiesStrongHorizontalLogo />
+      </Grid>
+      <Checkerboard />
+    </Grid>
+  );
+};
+
+const FooterContent = () => {
+  const theme = useTheme();
+  const isMd = useMediaQuery(theme.breakpoints.up("md"));
+
+  return (
     <Grid container spacing={2} mt={3} px={4}>
-      <Grid
-        item
-        xs={4}
-        sx={{
-          pX: 0,
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <Divider sx={{ borderWidth: 3, borderColor: "black", mb: 2 }} />
-        <FooterLink href="/contact">
-          <Typography sx={{ textTransform: "uppercase" }}>Contact</Typography>
-        </FooterLink>
-        <FooterLink href="/donate">
-          <Typography sx={{ textTransform: "uppercase" }}>Donate</Typography>
-        </FooterLink>
-        <Grid sx={{ flex: 1 }} />
-        <Divider sx={{ borderWidth: 3, borderColor: "black", my: 2 }} />
-      </Grid>
-      <Grid item xs={4} sx={{ pX: 0 }} display="flex" flexDirection="column">
-        <Divider sx={{ borderWidth: 3, borderColor: "black", mb: 2 }} />
-        <FooterLink href="/about">
-          <Typography
-            sx={{ textTransform: "uppercase", textDecoration: "none" }}
-          >
-            About
-          </Typography>
-        </FooterLink>
-        <FooterLink href="/media">
-          <Typography sx={{ textTransform: "uppercase" }}>Media</Typography>
-        </FooterLink>
-
-        {/* <FooterLink href="/careers" ><Typography sx={{ textTransform: 'uppercase' }}>Careers</Typography></FooterLink> */}
-
-        <Divider
-          sx={{ borderWidth: 3, borderColor: "black", my: 2, mt: "auto" }}
-        />
-      </Grid>
-      <Grid item xs={4} sx={{ pX: 0 }} display="flex" flexDirection="column">
-        <Divider sx={{ borderWidth: 3, borderColor: "black", mb: 2 }} />
-
-        {/* <FooterLink href="/careers" ><Typography sx={{ textTransform: 'uppercase' }}>Careers</Typography></FooterLink> */}
-
-        <FooterLink href="/terms-of-use">
-          <Typography sx={{ textTransform: "uppercase" }}>
-            Terms Of Use
-          </Typography>
-        </FooterLink>
-        <FooterLink href="/privacy-policy">
-          <Typography sx={{ textTransform: "uppercase" }}>
-            Privacy Policy
-          </Typography>
-        </FooterLink>
-        <Divider
-          sx={{ borderWidth: 3, borderColor: "black", my: 2, mt: "auto" }}
-        />
-      </Grid>
+      {isMd ? (
+        <>
+          <DesktopColumn
+            href1="/contact"
+            text1="Contact"
+            href2="/donate"
+            text2="Donate"
+          />
+          <DesktopColumn
+            href1="/about"
+            text1="About"
+            href2="/testimonials"
+            text2="Testimonials"
+          />
+          <DesktopColumn
+            href1="/terms-of-use"
+            text1="Terms Of Use"
+            href2="/privacy-policy"
+            text2="Privacy Policy"
+          />
+        </>
+      ) : (
+        <>
+          <MobileColumn
+            href1="/contact"
+            text1="Contact"
+            href2="/donate"
+            text2="Donate"
+            href3="/about"
+            text3="About"
+          />
+          <MobileColumn
+            href1="/testimonials"
+            text1="Testimonials"
+            href2="/terms-of-use"
+            text2="Terms Of Use"
+            href3="/privacy-policy"
+            text3="Privacy Policy"
+          />
+        </>
+      )}
     </Grid>
-    <Grid container spacing={2} mt={0.5} mb={5} px={4}>
-      <CitiesStrongHorizontalLogo />
-    </Grid>
-    <Checkerboard />
+  );
+};
+
+const DynamicFooterContent = dynamic(() => Promise.resolve(FooterContent), {
+  ssr: false,
+});
+
+const DesktopColumn = ({ href1, text1, href2, text2 }) => (
+  <Grid item xs={4} sx={{ pX: 0 }} display="flex" flexDirection="column">
+    <Divider sx={{ borderWidth: 3, borderColor: "black", mb: 2 }} />
+    <FooterLink href={href1}>
+      <Typography sx={{ textTransform: "uppercase" }}>{text1}</Typography>
+    </FooterLink>
+    <FooterLink href={href2}>
+      <Typography sx={{ textTransform: "uppercase" }}>{text2}</Typography>
+    </FooterLink>
+    <Grid sx={{ flex: 1 }} />
+    <Divider sx={{ borderWidth: 3, borderColor: "black", my: 2 }} />
+  </Grid>
+);
+
+const MobileColumn = ({ href1, text1, href2, text2, href3, text3 }) => (
+  <Grid item xs={6} sx={{ pX: 0 }} display="flex" flexDirection="column">
+    <Divider sx={{ borderWidth: 3, borderColor: "black", mb: 2 }} />
+    <FooterLink href={href1}>
+      <Typography sx={{ textTransform: "uppercase" }}>{text1}</Typography>
+    </FooterLink>
+    <FooterLink href={href2}>
+      <Typography sx={{ textTransform: "uppercase" }}>{text2}</Typography>
+    </FooterLink>
+    <FooterLink href={href3}>
+      <Typography sx={{ textTransform: "uppercase" }}>{text3}</Typography>
+    </FooterLink>
+    <Grid sx={{ flex: 1 }} />
+    <Divider sx={{ borderWidth: 3, borderColor: "black", my: 2 }} />
   </Grid>
 );
 

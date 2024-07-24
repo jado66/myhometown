@@ -264,7 +264,7 @@ export const EventDialog_NewEdit = ({
               </Grid>
               <Grid item xs={4}>
                 <Card
-                  onClick={() => selectType("type3")}
+                  onClick={() => selectType("Other Events")}
                   sx={{
                     minHeight: "200px",
                     display: "flex",
@@ -277,7 +277,7 @@ export const EventDialog_NewEdit = ({
                     },
                   }}
                 >
-                  Type 3
+                  Other Events
                 </Card>
               </Grid>
             </Grid>

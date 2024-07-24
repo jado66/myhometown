@@ -24,7 +24,7 @@ const CitiesStrongAbout = () => {
   const theme = useTheme();
 
   return (
-    <Box sx={{ mx: "auto" }}>
+    <Box sx={{ mx: "auto", px: 3 }}>
       <Container>
         <Headline />
       </Container>

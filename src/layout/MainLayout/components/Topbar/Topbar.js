@@ -109,7 +109,7 @@ const Topbar = ({ onSidebarOpen }) => {
 
       <Box display="flex" alignItems={"center"}>
         <Box sx={{ display: { xs: "none", md: "flex" } }} alignItems={"center"}>
-          <LanguageDropdown />
+          {/* <LanguageDropdown /> */}
 
           <Box marginX={2}>
             <Link
@@ -245,9 +245,9 @@ const Topbar = ({ onSidebarOpen }) => {
             >
               <MenuItem component="a">Community Resource Centers</MenuItem>
               <MenuItem component="a">Days of Services</MenuItem>
-              <MenuItem component="a">Immigration</MenuItem>
+              {/* <MenuItem component="a">Immigration</MenuItem>
               <MenuItem component="a">Mental Health</MenuItem>
-              <MenuItem component="a">Education</MenuItem>
+              <MenuItem component="a">Education</MenuItem> */}
             </Menu>
           </Box>
 

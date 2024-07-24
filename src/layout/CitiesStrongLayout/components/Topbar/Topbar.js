@@ -104,10 +104,10 @@ const Topbar = ({ onSidebarOpen, theme }) => {
             <Link
               underline="none"
               component="a"
-              href={rootUrl + "/media"}
+              href={rootUrl + "/testimonials"}
               color={theme.palette.primary.contrastText}
             >
-              Media
+              Testimonials
             </Link>
           </Box>
           <Box marginX={2}>

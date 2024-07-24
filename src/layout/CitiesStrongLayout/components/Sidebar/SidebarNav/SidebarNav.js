@@ -42,15 +42,6 @@ const SidebarNav = ({ onClose }) => {
 
   return (
     <Box sx={{ position: "relative", textAlign: "center" }}>
-      <Box
-        display={"flex"}
-        justifyContent={"flex-end"}
-        onClick={() => onClose()}
-      >
-        <IconButton sx={{ color: "white", position: "absolute" }}>
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      </Box>
       <Box paddingX={2} paddingBottom={1}>
         <Box>
           <Box marginBottom={2}>
@@ -96,7 +87,7 @@ const SidebarNav = ({ onClose }) => {
           </Box>
           <Box marginBottom={2}>
             <NextLink
-              href={rootUrl + "/media"}
+              href={rootUrl + "/testimonials"}
               style={{ textDecoration: "none", color: "#686868" }}
             >
               <Typography
@@ -109,7 +100,7 @@ const SidebarNav = ({ onClose }) => {
                   color: "white",
                 }}
               >
-                Media
+                Testimonials
               </Typography>
             </NextLink>
           </Box>

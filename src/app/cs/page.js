@@ -44,41 +44,7 @@ const Page = () => {
         {/* <ContainerStyled maxWidth = "sm" id = 'main-container' > */}
 
         <>
-          <Grid
-            id="box"
-            item
-            xs={12}
-            sx={{
-              backgroundColor: "grey",
-              height: {
-                sm: "280px",
-                xs: "150px",
-                display: "flex",
-                alignItems: "start",
-              },
-              overflow: "hidden",
-              position: "relative",
-            }}
-          >
-            {/* component="iframe"
-              sx={{
-                boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
-                height: { md: "485px", xs: "230px" },
-              }}
-              src="/cities-strong/ScottSorensenInterview.mp4"
-              title="Video 1" */}
-            <Box
-              component="iframe"
-              sx={{
-                boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
-                height: { md: "312px", xs: "230px" },
-                width: "100%",
-              }}
-              src="/cities-strong/BannerCSF.mp4"
-              title="Video 1"
-            />
-          </Grid>
-
+          <ResponsiveVideoBanner src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Banner+CSF+3440X1000+1_music.webm" />
           <Grid
             item
             xs={12}
@@ -498,5 +464,40 @@ const CityImage = ({ src, title, sx }) => {
         />
       </Grid>
     </Grid>
+  );
+};
+
+const ResponsiveVideoBanner = ({ src }) => {
+  // Aspect ratio of 3440:1000 (from the original video dimensions)
+  const aspectRatio = (1000 / 3440) * 100;
+
+  return (
+    <Box
+      sx={{
+        position: "relative",
+        width: "100%",
+        paddingTop: `${aspectRatio}%`, // This creates the aspect ratio
+        overflow: "hidden",
+      }}
+    >
+      <Box
+        component="video"
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+        }}
+        autoPlay
+        muted
+        loop
+        controls
+      >
+        <source src={src} type="video/webm" />
+        Your browser does not support the video tag.
+      </Box>
+    </Box>
   );
 };

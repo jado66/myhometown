@@ -3,6 +3,7 @@ import { useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
+import { Card, CardMedia, Grid } from "@mui/material";
 
 const Headline = () => {
   const theme = useTheme();
@@ -50,6 +51,22 @@ const Headline = () => {
             passionate about making our communities special places to live.
           </Typography>
         </Box>
+        <Grid container>
+          <Grid item xs={12}>
+            <Card>
+              <CardMedia
+                component="video"
+                sx={{
+                  boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+                  height: { md: "463px", xs: "230px" },
+                }}
+                src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Donor%20Final%202%20narr.webm"
+                title="Video 1"
+                controls
+              />
+            </Card>
+          </Grid>
+        </Grid>
         {/* <Box display="flex" justifyContent={'center'}>
           <Box
             component={Button}

@@ -112,14 +112,11 @@ const Home = () => {
             </Grid>
           </Grid>
 
-          <Grid xs={12} display="flex" justifyContent="center">
-            <ButtonStyled
-              variant="outlined"
-              sx={{ textTransform: "uppercase", mx: "auto", mb: 4 }}
-            >
+          {/* <Grid xs={12} display="flex" justifyContent="center">
+            <ButtonStyled variant="outlined">
               Become a myHometown Community
             </ButtonStyled>
-          </Grid>
+          </Grid> */}
         </Box>
       </Box>
     </>
@@ -140,6 +137,15 @@ const ButtonStyled = styled(Button)({
   position: "relative",
   paddingRight: "20px",
   height: "40px",
+  textTransform: "uppercase",
+  mx: "auto",
+  mb: 4,
+  "&:hover": {
+    borderRightWidth: "0px !important",
+    backgroundColor: "white",
+    borderWidth: "2px",
+    color: "#5c5c5c",
+  },
   "&::after": {
     content: '""',
     position: "absolute",

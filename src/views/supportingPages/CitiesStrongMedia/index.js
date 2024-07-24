@@ -17,7 +17,11 @@ const CitiesStrongMediaPage = () => {
   return (
     <Container
       maxWidth="xl"
-      sx={{ mx: "auto", padding: "40px !important", pt: "50px !important" }}
+      sx={{
+        mx: "auto",
+        padding: "40px !important",
+        pt: "50px !important",
+      }}
     >
       {/* Featured Stories */}
       <Grid item xs={12} display="flex" justifyContent="center">
@@ -37,7 +41,7 @@ const CitiesStrongMediaPage = () => {
               }}
               gutterBottom
             >
-              Our Media
+              Testimonials
             </Typography>
             <Typography
               variant="h2"
@@ -57,7 +61,7 @@ const CitiesStrongMediaPage = () => {
       </Grid>
       {/* MHT Dashboard\public\ */}
 
-      <Grid container>
+      {/* <Grid container>
         <Grid item xs={12}>
           <Card>
             <CardMedia
@@ -71,9 +75,9 @@ const CitiesStrongMediaPage = () => {
             />
           </Card>
         </Grid>
-      </Grid>
+      </Grid> */}
 
-      <Grid container sx={{ mt: 3, justifyContent: "center" }}>
+      <Grid container sx={{ justifyContent: "center" }}>
         <Typography variant="h5">
           A word from Cities Strong Foundation CEO
         </Typography>
@@ -85,7 +89,7 @@ const CitiesStrongMediaPage = () => {
                 boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
                 height: { md: "485px", xs: "230px" },
               }}
-              src="/cities-strong/ScottSorensenInterview.mp4"
+              src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/ScottSorensen interview.webm"
               title="Video 1"
             />
           </Card>
