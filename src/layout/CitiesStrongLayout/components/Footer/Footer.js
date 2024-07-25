@@ -27,46 +27,47 @@ const Footer = () => {
 const FooterContent = () => {
   const theme = useTheme();
   const isMd = useMediaQuery(theme.breakpoints.up("md"));
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/cs" : "";
 
   return (
     <Grid container spacing={2} mt={3} px={4}>
       {isMd ? (
         <>
           <DesktopColumn
-            href1="/contact"
+            href1={rootUrl + "/contact"}
             text1="Contact"
-            href2="/donate"
+            href2={rootUrl + "/donate"}
             text2="Donate"
           />
           <DesktopColumn
-            href1="/about"
+            href1={rootUrl + "/about"}
             text1="About"
-            href2="/testimonials"
+            href2={rootUrl + "/testimonials"}
             text2="Testimonials"
           />
           <DesktopColumn
-            href1="/terms-of-use"
+            href1={rootUrl + "/terms-of-use"}
             text1="Terms Of Use"
-            href2="/privacy-policy"
+            href2={rootUrl + "/privacy-policy"}
             text2="Privacy Policy"
           />
         </>
       ) : (
         <>
           <MobileColumn
-            href1="/contact"
+            href1={rootUrl + "/contact"}
             text1="Contact"
-            href2="/donate"
+            href2={rootUrl + "/donate"}
             text2="Donate"
-            href3="/about"
+            href3={rootUrl + "/about"}
             text3="About"
           />
           <MobileColumn
-            href1="/testimonials"
+            href1={rootUrl + "/testimonials"}
             text1="Testimonials"
-            href2="/terms-of-use"
+            href2={rootUrl + "/terms-of-use"}
             text2="Terms Of Use"
-            href3="/privacy-policy"
+            href3={rootUrl + "/privacy-policy"}
             text3="Privacy Policy"
           />
         </>

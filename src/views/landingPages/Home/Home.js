@@ -6,20 +6,14 @@ import { ImageAccordion } from "@/components/ImageAccordion";
 import { Divider, Grid, Typography, Button } from "@mui/material";
 import { styled } from "@mui/system";
 import { MyHometownHouse } from "@/assets/svg/logos/MyHometownHouse";
+import { ResponsiveVideoBanner } from "@/components/util/ResponsiveVideoBanner";
 
 const Home = () => {
   const theme = useTheme();
   return (
     <>
-      <Grid
-        item
-        xs={12}
-        style={{
-          mx: -4,
-          backgroundColor: "grey",
-          height: "250px",
-        }}
-      ></Grid>
+      <ResponsiveVideoBanner src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Banner CSF music 3440X1000 1.webm" />
+
       <Box sx={{ px: 5 }}>
         <Box position={"relative"}>
           <Grid

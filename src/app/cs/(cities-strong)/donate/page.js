@@ -34,7 +34,6 @@ const Donate = () => {
           fontWeight: "medium",
         }}
         gutterBottom
-        align={"center"}
         mt={7}
       >
         Donate
@@ -42,7 +41,6 @@ const Donate = () => {
       <Box marginBottom={2}>
         <Typography
           variant="h2"
-          align={"center"}
           sx={{
             fontWeight: 700,
           }}
@@ -65,7 +63,6 @@ const Donate = () => {
           justifyContent: "center",
           display: "flex",
           flexDirection: "row",
-          alignItems: "center",
         }}
       >
         <Grid item xs={12} md={7}>

@@ -19,7 +19,7 @@ const CitiesStrongMediaPage = () => {
       maxWidth="xl"
       sx={{
         mx: "auto",
-        padding: "40px !important",
+        py: "40px !important",
         pt: "50px !important",
       }}
     >
@@ -78,7 +78,7 @@ const CitiesStrongMediaPage = () => {
       </Grid> */}
 
       <Grid container sx={{ justifyContent: "center" }}>
-        <Typography variant="h5">
+        <Typography variant="h5" gutterBottom>
           A word from Cities Strong Foundation CEO
         </Typography>
         <Grid item xs={12}>
@@ -115,8 +115,8 @@ const CitiesStrongMediaPage = () => {
           justifyContent="center"
           flexDirection="column"
         >
-          <Typography variant="h5" textAlign="center">
-            Salt Lake City - Mayor
+          <Typography variant="h5" textAlign="center" gutterBottom>
+            Salt Lake City Mayor
           </Typography>
           <CardMedia
             component="iframe"
@@ -134,8 +134,8 @@ const CitiesStrongMediaPage = () => {
           justifyContent="center"
           flexDirection="column"
         >
-          <Typography variant="h5" textAlign="center">
-            Provo - Mayor
+          <Typography variant="h5" textAlign="center" gutterBottom>
+            Provo Mayor
           </Typography>
           <CardMedia
             component="iframe"
@@ -153,7 +153,7 @@ const CitiesStrongMediaPage = () => {
           justifyContent="center"
           flexDirection="column"
         >
-          <Typography variant="h5" textAlign="center">
+          <Typography variant="h5" textAlign="center" gutterBottom>
             West Valley City - City Manager
           </Typography>
           <CardMedia

@@ -18,14 +18,12 @@ const Headline = () => {
           }}
           gutterBottom
           // color={'textSecondary'}
-          align={"center"}
         >
           About us
         </Typography>
         <Box marginBottom={2}>
           <Typography
             variant="h2"
-            align={"center"}
             sx={{
               fontWeight: 700,
             }}
@@ -41,11 +39,7 @@ const Headline = () => {
           </Typography>
         </Box>
         <Box marginBottom={4}>
-          <Typography
-            variant="h6"
-            align={"center"}
-            sx={{ maxWidth: "700px", mx: "auto" }}
-          >
+          <Typography variant="h6" sx={{ maxWidth: "700px" }}>
             Cities Strong Foundation is directed by a dedicated group of
             business, church, and education leaders. Cities Strong Foundation is
             passionate about making our communities special places to live.
@@ -53,18 +47,18 @@ const Headline = () => {
         </Box>
         <Grid container>
           <Grid item xs={12}>
-            <Card>
-              <CardMedia
-                component="video"
-                sx={{
-                  boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
-                  height: { md: "463px", xs: "230px" },
-                }}
-                src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Donor%20Final%202%20narr.webm"
-                title="Video 1"
-                controls
-              />
-            </Card>
+            <Box
+              component="video"
+              sx={{
+                // boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+                height: { md: "463px", xs: "220px" },
+                maxWidth: "88vw",
+              }}
+              src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Donor%20Final%202%20narr.webm"
+              title="Video 1"
+              controls
+              playsInline
+            />
           </Grid>
         </Grid>
         {/* <Box display="flex" justifyContent={'center'}>

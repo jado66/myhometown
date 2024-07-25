@@ -11,7 +11,6 @@ import {
   Fade,
   Box,
 } from "@mui/material";
-import Image from "next/image";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
 import { styled } from "@mui/system";
@@ -19,6 +18,7 @@ import ProviderWrapper from "@/contexts/ProviderWrapper";
 import { CitiesStrongLayout } from "@/layout";
 import { ImageAccordion } from "@/components/ImageAccordion";
 import { default as VisibilitySensor } from "react-visibility-sensor";
+import { ResponsiveVideoBanner } from "@/components/util/ResponsiveVideoBanner";
 
 const Page = () => {
   const [showInfoAlert, setShowInfoAlert] = useState(true);
@@ -44,7 +44,7 @@ const Page = () => {
         {/* <ContainerStyled maxWidth = "sm" id = 'main-container' > */}
 
         <>
-          <ResponsiveVideoBanner src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Banner+CSF+3440X1000+1_music.webm" />
+          <ResponsiveVideoBanner src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Banner CSF music 3440X1000 1.webm" />
           <Grid
             item
             xs={12}
@@ -375,8 +375,8 @@ const Page = () => {
               variant={"h6"}
               align={"center"}
             >
-              Cities Strong has made a difference for fourteen communities in
-              cities across the Wasatch Front.
+              Cities Strong Foundation has made a difference for fourteen
+              communities in cities across the Wasatch Front.
             </Grid>
           </Grid>
 
@@ -464,40 +464,5 @@ const CityImage = ({ src, title, sx }) => {
         />
       </Grid>
     </Grid>
-  );
-};
-
-const ResponsiveVideoBanner = ({ src }) => {
-  // Aspect ratio of 3440:1000 (from the original video dimensions)
-  const aspectRatio = (1000 / 3440) * 100;
-
-  return (
-    <Box
-      sx={{
-        position: "relative",
-        width: "100%",
-        paddingTop: `${aspectRatio}%`, // This creates the aspect ratio
-        overflow: "hidden",
-      }}
-    >
-      <Box
-        component="video"
-        sx={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-        }}
-        autoPlay
-        muted
-        loop
-        controls
-      >
-        <source src={src} type="video/webm" />
-        Your browser does not support the video tag.
-      </Box>
-    </Box>
   );
 };
