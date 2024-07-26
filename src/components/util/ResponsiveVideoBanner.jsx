@@ -8,8 +8,9 @@ export const ResponsiveVideoBanner = ({ src }) => {
     <Box
       sx={{
         position: "relative",
+        top: { md: "14px", sm: "8px" },
         width: "100%",
-        paddingTop: `${aspectRatio}%`, // This creates the aspect ratio
+        paddingTop: `calc(${aspectRatio}% + 24px)`, // This creates the aspect ratio
         overflow: "hidden",
       }}
     >
