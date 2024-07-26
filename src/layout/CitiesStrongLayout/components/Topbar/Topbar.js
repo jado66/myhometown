@@ -97,7 +97,7 @@ const Topbar = ({ onSidebarOpen, theme }) => {
               href={rootUrl + "/about"}
               color={theme.palette.primary.contrastText}
             >
-              About
+              About Us
             </Link>
           </Box>
           <Box marginX={2}>

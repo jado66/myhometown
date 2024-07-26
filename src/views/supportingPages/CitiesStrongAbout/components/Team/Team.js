@@ -105,9 +105,9 @@ const Team = () => {
 
       <Divider
         sx={{
-          width: "60%",
+          width: { sm: "60%", xs: "80%" },
           borderWidth: 2,
-          mt: 5,
+          mt: 0,
           mb: 0,
           mx: "auto",
           borderColor: "black",

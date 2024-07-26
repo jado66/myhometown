@@ -59,7 +59,7 @@ const SidebarNav = ({ onClose }) => {
                 cursor: "pointer",
               }}
             >
-              About
+              About Us
             </Typography>
           </Box>
           <Box marginBottom={2}>
