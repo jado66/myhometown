@@ -55,13 +55,7 @@ const Page = () => {
               Our Name is our mission. We build strong cities through a culture
               of love and service.
             </Typography>
-            <ButtonStyled
-              variant="outlined"
-              sx={{ mr: "auto", mt: 3 }}
-              href="/about"
-            >
-              Learn More
-            </ButtonStyled>
+
             <Divider sx={{ borderWidth: 3, borderColor: "black", mt: 4 }} />
           </Grid>
 
