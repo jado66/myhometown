@@ -84,12 +84,15 @@ const CitiesStrongMediaPage = () => {
         <Grid item xs={12}>
           <Card>
             <CardMedia
-              component="iframe"
+              component="video"
+              poster="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Board+DOSf+.webp"
+              controls
+              playsInline
               sx={{
                 boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
                 height: { md: "485px", xs: "230px" },
               }}
-              src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/ScottSorensen interview.webm"
+              src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/scott+interview+.webm"
               title="Video 1"
             />
           </Card>
@@ -119,7 +122,10 @@ const CitiesStrongMediaPage = () => {
             Salt Lake City Mayor
           </Typography>
           <CardMedia
-            component="iframe"
+            component="video"
+            controls
+            playsInline
+            poster="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/slc+mayor+a.webp"
             sx={{
               boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
               height: { md: "485px", xs: "230px" },
@@ -138,7 +144,10 @@ const CitiesStrongMediaPage = () => {
             Provo Mayor
           </Typography>
           <CardMedia
-            component="iframe"
+            component="video"
+            poster="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Mayor+final+ss.webp"
+            controls
+            playsInline
             sx={{
               boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
               height: { md: "485px", xs: "230px" },
@@ -157,7 +166,10 @@ const CitiesStrongMediaPage = () => {
             West Valley City - City Manager
           </Typography>
           <CardMedia
-            component="iframe"
+            component="video"
+            poster="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/WVC+Manager+bb.webp"
+            controls
+            playsInline
             sx={{
               boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
               height: { md: "485px", xs: "230px" },

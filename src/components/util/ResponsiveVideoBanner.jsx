@@ -1,7 +1,10 @@
-import { Box } from "@mui/material";
+import { Box, useMediaQuery } from "@mui/material";
 
 export const ResponsiveVideoBanner = ({ src }) => {
   // Aspect ratio of 3440:1000 (from the original video dimensions)
+
+  const isMd = useMediaQuery((theme) => theme.breakpoints.up("md"));
+
   const aspectRatio = (1000 / 3440) * 100;
 
   return (
@@ -14,25 +17,47 @@ export const ResponsiveVideoBanner = ({ src }) => {
         overflow: "hidden",
       }}
     >
-      <Box
-        component="video"
-        sx={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-        }}
-        autoPlay
-        muted
-        loop
-        // controls
-        playsInline
-      >
-        <source src={src} type="video/webm" />
-        Your browser does not support the video tag.
-      </Box>
+      {isMd ? (
+        <Box
+          component="video"
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+          autoPlay
+          loop
+          muted
+          controls
+          playsInline
+        >
+          <source src={src} type="video/webm" />
+          Your browser does not support the video tag.
+        </Box>
+      ) : (
+        <Box
+          component="video"
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+          autoPlay
+          loop
+          muted
+          // controls
+          playsInline
+        >
+          <source src={src} type="video/webm" />
+          Your browser does not support the video tag.
+        </Box>
+      )}
     </Box>
   );
 };
