@@ -65,6 +65,7 @@ const Team = () => {
               boxShadow={2}
               onClick={() => goToBios(item.name)}
               sx={{
+                cursor: "pointer",
                 // border:'1px solid lightgrey',
                 backgroundColor: "#fafafa", //theme.palette.background.level2,
                 boxShadow: "none",
@@ -135,6 +136,8 @@ const Team = () => {
               boxShadow={2}
               onClick={() => goToBios(item.name)}
               sx={{
+                cursor: "pointer",
+
                 // border:'1px solid lightgrey',
                 backgroundColor: "#fafafa", //theme.palette.background.level2,
                 boxShadow: "none",

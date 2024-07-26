@@ -96,6 +96,9 @@ export default function CitiesStrongBiosPage() {
               <Grid item xs={12} md={8}>
                 <Typography variant="h5" gutterBottom>
                   {person.name}
+                  {person.position
+                    ? ` - ${person.position}`
+                    : ` - Board Member`}
                 </Typography>
                 <Typography variant="body1">{person.bio}</Typography>
               </Grid>
