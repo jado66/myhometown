@@ -56,7 +56,9 @@ const Page = () => {
               of love and service.
             </Typography>
 
-            <Divider sx={{ borderWidth: 3, borderColor: "black", mt: 4 }} />
+            <Divider
+              sx={{ borderWidth: 3, borderColor: "black", mt: 4, mb: 1 }}
+            />
           </Grid>
 
           <Grid item xs={12} sm={6} sx={{ padding: 4, pt: { xs: 0, sm: 4 } }}>
