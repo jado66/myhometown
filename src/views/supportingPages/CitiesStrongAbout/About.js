@@ -28,7 +28,7 @@ const CitiesStrongAbout = () => {
       maxWidth="xl"
       sx={{
         mx: "auto",
-        py: "40px !important",
+        pb: "0 !important",
         pt: "50px !important",
       }}
     >
@@ -42,7 +42,7 @@ const CitiesStrongAbout = () => {
       <Container paddingTop={"0 !important"}>
         <Team />
       </Container>
-      <Container paddingTop={"0 !important"} paddingBottom={"0 !important"}>
+      <Container paddingY={"0 !important"} paddingBottom={"0 !important"}>
         <Stats
           viewPortEntered={viewPortEntered}
           setViewPortVisibility={setViewPortVisibility}

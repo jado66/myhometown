@@ -35,6 +35,7 @@ const Stats = ({ viewPortEntered, setViewPortVisibility, stats }) => {
         padding={3}
         display="flex"
         justifyContent="center"
+        sx={{ pb: "0 !important" }}
       >
         <Grid item md={4} xs={6}>
           <Typography

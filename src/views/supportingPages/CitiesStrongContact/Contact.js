@@ -19,8 +19,8 @@ const Contact = ({ themeMode = "light" }) => {
       maxWidth="xl"
       sx={{
         mx: "auto",
-        py: "40px !important",
         pt: "50px !important",
+        pb: "0 !important",
       }}
     >
       {" "}
@@ -36,7 +36,7 @@ const Contact = ({ themeMode = "light" }) => {
       </Container>
       <Divider sx={{ borderWidth: 3, mx: 5, borderColor: "black" }} />
       <Box bgcolor={theme.palette.alternate.main}>
-        <Container maxWidth={800}>
+        <Container maxWidth={800} pb={"0 !important"}>
           <Faq />
         </Container>
       </Box>

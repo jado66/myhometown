@@ -1,9 +1,8 @@
 import React from "react";
 import { useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import { Card, CardMedia, Grid } from "@mui/material";
+import { Grid } from "@mui/material";
 
 const Headline = () => {
   const theme = useTheme();

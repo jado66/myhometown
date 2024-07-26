@@ -31,7 +31,7 @@ export default function CitiesStrongBiosPage() {
       maxWidth="xl"
       sx={{
         mx: "auto",
-        py: "40px !important",
+        pb: "0 !important",
         pt: "50px !important",
       }}
     >
@@ -100,9 +100,12 @@ export default function CitiesStrongBiosPage() {
                 <Typography variant="body1">{person.bio}</Typography>
               </Grid>
             </Grid>
-            <Grid item xs={12}>
-              <Divider sx={{ my: 3 }} />
-            </Grid>
+            {index <
+              [...executiveCommittee, ...boardOfDirectors].length - 1 && (
+              <Grid item xs={12}>
+                <Divider sx={{ my: 3 }} />
+              </Grid>
+            )}
           </>
         ))}
       </Grid>

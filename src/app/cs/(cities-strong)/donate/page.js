@@ -31,7 +31,7 @@ const Donate = () => {
       maxWidth="xl"
       sx={{
         mx: "auto",
-        py: "40px !important",
+        pb: "0 !important",
         pt: "50px !important",
       }}
     >
