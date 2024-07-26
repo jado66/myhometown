@@ -47,13 +47,14 @@ const Headline = () => {
           </Typography>
         </Box>
         <Grid container>
-          <Grid item xs={12}>
+          <Grid item xs={12} display="flex" justifyContent="center">
             <Box
               component="video"
               sx={{
                 // boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
                 height: { md: "463px", xs: "220px" },
-                maxWidth: "88vw",
+                maxWidth: "84vw",
+                mx: "auto",
               }}
               src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Donor%20Final%202%20narr.webm"
               title="Video 1"
