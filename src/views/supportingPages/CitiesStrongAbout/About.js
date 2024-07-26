@@ -24,19 +24,24 @@ const CitiesStrongAbout = () => {
   const theme = useTheme();
 
   return (
-    <Box sx={{ mx: "auto", px: { md: 3, xs: 1 } }}>
-      <Container>
+    <Container
+      maxWidth="xl"
+      sx={{
+        mx: "auto",
+        py: "40px !important",
+        pt: "50px !important",
+      }}
+    >
+      {" "}
+      <Container paddingTop={"0 !important"}>
         <Headline />
       </Container>
-
       <Container paddingTop={"0 !important"}>
         <Values />
       </Container>
-
       <Container paddingTop={"0 !important"}>
         <Team />
       </Container>
-
       <Container paddingTop={"0 !important"} paddingBottom={"0 !important"}>
         <Stats
           viewPortEntered={viewPortEntered}
@@ -44,7 +49,7 @@ const CitiesStrongAbout = () => {
           stats={stats}
         />
       </Container>
-    </Box>
+    </Container>
   );
 };
 

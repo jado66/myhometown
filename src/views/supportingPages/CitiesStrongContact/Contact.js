@@ -15,8 +15,16 @@ const Contact = ({ themeMode = "light" }) => {
   });
 
   return (
-    <Box>
-      <Container px={{ md: 5, xs: 0 }}>
+    <Container
+      maxWidth="xl"
+      sx={{
+        mx: "auto",
+        py: "40px !important",
+        pt: "50px !important",
+      }}
+    >
+      {" "}
+      <Container px={{ md: 5, xs: 0 }} paddingTop={"0 !important"}>
         <Grid container spacing={isMd ? 8 : 4}>
           <Grid item container xs={12} alignItems={"center"}>
             <Form />
@@ -27,13 +35,12 @@ const Contact = ({ themeMode = "light" }) => {
         </Grid>
       </Container>
       <Divider sx={{ borderWidth: 3, mx: 5, borderColor: "black" }} />
-
       <Box bgcolor={theme.palette.alternate.main}>
         <Container maxWidth={800}>
           <Faq />
         </Container>
       </Box>
-    </Box>
+    </Container>
   );
 };
 

@@ -27,14 +27,22 @@ const Donate = () => {
   const { isLoaded } = useGiveButterScripts();
 
   return (
-    <Container sx={{ px: { md: 5, xs: 3 } }}>
+    <Container
+      maxWidth="xl"
+      sx={{
+        mx: "auto",
+        py: "40px !important",
+        pt: "50px !important",
+      }}
+    >
+      {" "}
       <Typography
         sx={{
           textTransform: "uppercase",
           fontWeight: "medium",
         }}
         gutterBottom
-        mt={7}
+        mt={2}
       >
         Donate
       </Typography>
@@ -54,7 +62,6 @@ const Donate = () => {
           is.
         </Typography>
       </Box>
-
       <Grid
         container
         sx={{
