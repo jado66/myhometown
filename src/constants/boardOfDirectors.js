@@ -81,10 +81,10 @@ field.`,
     avatar: "/images/board/Bruce Kolasch.jpg",
     bio: `Reverend Kolasch serves as Pastor of Congregational Care at Christ United Methodist Church in Salt Lake City. A retired Lutheran pastor, he has dedicated 37 years to ministry in the Evangelical Lutheran Church of America (ELCA) and the Lutheran Church Missouri Synod (LCMS). Reverend Kolasch holds a B.A. in Psychology from Saint Leo University and an M. Div. from Concordia Theological Seminary. He has actively participated in various local and regional church boards, contributing his extensive experience and compassion to his community.`,
   },
-  // {
-  //     name: 'Eli Madrigal',
-  //     avatar: '/images/profile.png',
-  // },
+  {
+    name: "Eli Madrigal",
+    avatar: "/images/profile.png",
+  },
   {
     name: "Dr. Ann Millner",
     avatar: "/images/board/Dr. Ann Milner.jpg",

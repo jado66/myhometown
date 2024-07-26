@@ -243,8 +243,12 @@ const Topbar = ({ onSidebarOpen }) => {
               keepMounted
               sx={{ maxHeight: 500, mt: 1.75 }}
             >
-              <MenuItem component="a">Community Resource Centers</MenuItem>
-              <MenuItem component="a">Days of Services</MenuItem>
+              <MenuItem component="a" href="/community-resource-centers">
+                Community Resource Centers
+              </MenuItem>
+              <MenuItem component="a" href="days-of-service">
+                Days of Services
+              </MenuItem>
               {/* <MenuItem component="a">Immigration</MenuItem>
               <MenuItem component="a">Mental Health</MenuItem>
               <MenuItem component="a">Education</MenuItem> */}

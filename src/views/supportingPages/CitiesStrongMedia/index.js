@@ -124,7 +124,7 @@ const CitiesStrongMediaPage = () => {
               boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
               height: { md: "485px", xs: "230px" },
             }}
-            src="https://drive.google.com/file/d/1mVhOwAvNOtJlmCAimxGkeJE6FBh6k5JN/preview"
+            src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/slc+mayor.webm"
           />
         </Grid>
         <Grid
@@ -143,7 +143,7 @@ const CitiesStrongMediaPage = () => {
               boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
               height: { md: "485px", xs: "230px" },
             }}
-            src="https://drive.google.com/file/d/18rjyp7DkBpJuuDPCxPZ5Iljphy8YBuBW/preview"
+            src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Provo+Mayor+Final.webm"
           />
         </Grid>
         <Grid
@@ -162,7 +162,7 @@ const CitiesStrongMediaPage = () => {
               boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
               height: { md: "485px", xs: "230px" },
             }}
-            src="https://drive.google.com/file/d/1UIjnSOzEqF-tBVrvIFYH6StHoSSEWS7H/preview"
+            src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/WVC+Manager+small(2).webm"
           />
         </Grid>
       </Grid>
