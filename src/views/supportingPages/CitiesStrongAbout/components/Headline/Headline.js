@@ -41,8 +41,8 @@ const Headline = () => {
         <Box marginBottom={4}>
           <Typography variant="h6" sx={{ maxWidth: "700px" }}>
             Cities Strong Foundation is directed by a dedicated group of
-            business, church, and education leaders. Cities Strong Foundation is
-            passionate about making our communities special places to live.
+            business, church, and education leaders who are passionate about
+            making our communities special places to live.
           </Typography>
         </Box>
         <Grid container>
@@ -55,7 +55,7 @@ const Headline = () => {
                 maxWidth: "84vw",
                 mx: "auto",
               }}
-              src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Donor%20Final%202%20narr.webm"
+              src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Donor+Final+3+narr+copy.webm"
               title="Video 1"
               controls
               playsInline

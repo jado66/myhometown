@@ -103,7 +103,7 @@ const MainLayout = ({
           pages={pages}
         />
         <main>
-          <Box height={{ xs: 56, sm: 48 }} />
+          <Box height={{ xs: 56, ms: 48 }} />
           <Grid
             container
             sx={{

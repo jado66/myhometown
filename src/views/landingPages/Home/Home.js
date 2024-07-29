@@ -20,17 +20,22 @@ import { ImageAccordion } from "@/components/ImageAccordion";
 import { default as VisibilitySensor } from "react-visibility-sensor";
 import { ResponsiveVideoBanner } from "@/components/util/ResponsiveVideoBanner";
 import { MyHometownHouse } from "@/assets/svg/logos/MyHometownHouse";
+import { CommunityResourceContent } from "@/app/mht/(main)/community-resource-centers/page";
 
 const Home = () => {
   const theme = useTheme();
 
   return (
     <>
-      <ResponsiveVideoBanner src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Banner 2 MHT 3440X1000.webm" />
+      <ResponsiveVideoBanner
+        src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Banner 2 MHT 3440X1000.webm"
+        noMusic
+        noTop
+      />
 
       <Box sx={{ width: "100%" }}>
         <Typography
-          variant="h2"
+          variant="h3"
           textAlign={"center"}
           color="black"
           sx={{
@@ -82,15 +87,16 @@ const Home = () => {
         sx={{ padding: 4, display: "flex", flexDirection: "column" }}
       >
         <Typography variant="body1" sx={{ flexGrow: 1, color: "black" }}>
-          My Hometown breaths new life into aging and under loved neighborhoods
-          by renewing landscapes, refurbishing homes and buildings, and adding
-          new educational opportunities through Community Resource Centers.
+          At myHometown we breath new life into aging and under loved
+          neighborhoods by renewing landscapes, refurbishing homes and
+          buildings, and provides educational opportunities through neighborhood
+          Community Resource Centers.
         </Typography>
         <Divider />
         <Typography variant="body1" sx={{ flexGrow: 1, color: "black" }}>
-          It lifts the lives of residents and attracts individuals and families
-          who want to move in, stay and contribute to the long-term viability of
-          the community.
+          We lift the lives of residents and attract individuals and families
+          who want to move in, stay, and contribute to the long-term viability
+          of the community.
         </Typography>
       </Grid>
 
@@ -163,20 +169,18 @@ const Home = () => {
             src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/MHT+landing+page+photos/private-foundation-vs-public-charity.webp"
             alt="Mental Health"
             sx={{
-              width: { sm: "100%", xs: "auto" },
-              minWidth: "100%",
               borderRadius: 3,
-              height: "auto",
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
               position: "absolute",
-              bottom: "-20%",
-              left: "50%",
-              transform: "translateX(-50%)",
+              bottom: "0%",
             }}
           />
         </Grid>
         <ImageAccordion
           title="A Cooperative Partnership"
-          content={`My Hometown is a cooperative partnership of faith groups, local governments, non-profit organizations, educational institutions, community-minded businesses, and others.`}
+          content={`We thrive through a cooperative partnership with faith groups, local governments, non-profit organizations, educational institutions, community-minded businesses.`}
           bgColor="#a16faf" //febc18 y - e45620 o - lb 1bc7bc - db 00357d - lp a16faf - lp 592569 - nc efefe7 - cg 63666a
           contentColor="#ffffff"
           cornerIcon={<MyHometownHouse />}
@@ -224,13 +228,16 @@ const Home = () => {
 
         <ImageAccordion
           title="How We Make a Difference"
-          content="We help people come together in a way that results in neighbors helping neighbors.  They quickly discover the benefits of working together and what it means to build a sense of community."
+          content="Leader from myHometown join with residents and volunteers to re-landscape yards and parks, refurbish homes, address code violations, and more. It’s common to complete 10-15 projects in a single day and to repeat these Days of Service monthly throughout the spring and summer."
           bgColor="#318D43"
           contentColor="#ffffff"
+          cornerIcon={<MyHometownHouse />}
           rounded
           right
         />
       </Grid>
+
+      <CommunityResourceContent />
     </>
   );
 };

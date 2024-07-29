@@ -1,6 +1,6 @@
 import { Box, useMediaQuery } from "@mui/material";
 
-export const ResponsiveVideoBanner = ({ src }) => {
+export const ResponsiveVideoBanner = ({ src, noMusic, noTop }) => {
   // Aspect ratio of 3440:1000 (from the original video dimensions)
 
   const isMd = useMediaQuery((theme) => theme.breakpoints.up("md"));
@@ -11,13 +11,13 @@ export const ResponsiveVideoBanner = ({ src }) => {
     <Box
       sx={{
         position: "relative",
-        top: { md: "14px", sm: "8px" },
+        top: noTop ? 0 : { md: "14px", sm: "8px" },
         width: "100%",
         paddingTop: `calc(${aspectRatio}% + 24px)`, // This creates the aspect ratio
         overflow: "hidden",
       }}
     >
-      {isMd ? (
+      {isMd && !noMusic ? (
         <Box
           component="video"
           sx={{

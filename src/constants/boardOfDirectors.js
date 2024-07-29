@@ -21,7 +21,7 @@ export const executiveCommittee = [
     name: "Mark Durham",
     position: "Vice President",
     avatar: "/images/board/Mark Durham.jpg",
-    bio: `Mark is the Chairman and Founder of Durham Brands, a prominent consumer products company serving major retailers. He also serves as the Utah Director of My Hometown. Mark previously chaired the Global Supply Chain Department Advisory Board at Brigham Young University's Marriott School of Management. He is deeply committed to community transformation, saying, "I love seeing our cities transformed as local residents provide leadership to transform living conditions and lives by helping to teach skills in our My Hometown Community Resource Centers.”`,
+    bio: `Mark is the Chairman and Founder of Durham Brands, a prominent consumer products company serving major retailers. He served a five-year term as founding director of myHometown. Mark previously chaired the Global Supply Chain Department Advisory Board at Brigham Young University's Marriott School of Management. He is deeply committed to community transformation, saying, "I love seeing our cities transformed as local residents provide leadership to transform living conditions and lives by helping to teach skills in our My Hometown Community Resource Centers.”`,
   },
   {
     name: "Steve Petersen",
