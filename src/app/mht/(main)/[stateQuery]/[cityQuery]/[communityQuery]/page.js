@@ -130,6 +130,24 @@ const Page = ({ params }) => {
         <PhotoGallery photos={community.content.galleryPhotos} />
 
         <Grid container spacing={2} paddingY={3}>
+          <Grid item xs={12}>
+            <Typography
+              variant="h3"
+              align="center"
+              color="primary"
+              gutterBottom
+            >
+              What Is myHometown
+            </Typography>
+
+            <MultiLineTypography text={community.content.paragraph1Text} />
+
+            <Divider />
+
+            <MultiLineTypography text={community.content.paragraph2Text} />
+          </Grid>
+        </Grid>
+        <Grid container spacing={2} paddingY={3}>
           <Grid item xs={6}>
             <Typography variant="h4" align="center">
               Description

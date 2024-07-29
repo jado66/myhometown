@@ -15,9 +15,10 @@ const Footer = () => {
       spacing={2}
       display="flex"
       alignItems="center"
-      sx={{ px: 5 }}
+      textAlign="center"
+      sx={{ px: { md: 5, sx: 0 } }}
     >
-      <Grid item md={4} xs={6} sx={{ order: { md: 1, xs: 1 } }}>
+      <Grid item md={4} xs={12} sx={{ order: { md: 1, xs: 1 } }}>
         <MyHometownLogo height={"100%"} width={"100%"} type="full" />
       </Grid>
       <Grid item md={4} xs={12} sx={{ order: { md: 2, xs: 3 } }}>
@@ -32,9 +33,9 @@ const Footer = () => {
       <Grid
         item
         md={4}
-        xs={6}
+        xs={12}
         display="flex"
-        justifyContent="flex-end"
+        justifyContent={{ md: "flex-end", xs: "center" }}
         sx={{ order: { md: 3, xs: 2 } }}
       >
         <Button

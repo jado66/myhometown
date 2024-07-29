@@ -14,16 +14,19 @@ import {
 } from "@mui/material";
 import { MyHometownHouse } from "@/assets/svg/logos/MyHometownHouse";
 import { styled } from "@mui/system";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
-const classes = [
+const classes1 = [
   "English as a second language",
   "Computer literacy",
+  "Mental health programs",
   "Children's literacy and life skills development",
-  "Piano, ukelele, and other instrument lessons",
+];
+const classes2 = [
   "Art in various forms",
   "Financial management",
   "Fitness and sport programs",
-  "Mental health programs",
+  "Piano, ukelele, and other instrument lessons",
 ];
 
 const Home = () => {
@@ -32,14 +35,10 @@ const Home = () => {
 
 export default Home;
 
-const SvgIconWrapper = styled("div")(({ right }) => ({
-  position: "absolute",
-  bottom: "16px", // Adjust this value as necessary
-  left: right ? "auto" : "16px", // Condition for left positioning
-  right: right ? "16px" : "auto", // Condition for right positioning
-}));
-
 export const CommunityResourceContent = () => {
+  const theme = useTheme();
+  const isMd = useMediaQuery(theme.breakpoints.up("md"));
+
   return (
     <>
       <Box sx={{ width: "100%" }}>
@@ -49,7 +48,7 @@ export const CommunityResourceContent = () => {
           color="black"
           sx={{
             mt: 3,
-            mb: 0,
+            mb: { md: 0, xs: 3 },
             mx: "auto",
             fontWeight: 700,
           }}
@@ -60,7 +59,12 @@ export const CommunityResourceContent = () => {
       <Grid
         item
         xs={12}
-        sx={{ padding: 4, pb: 0, display: "flex", flexDirection: "column" }}
+        sx={{
+          padding: { md: 4, xs: 3 },
+          pb: 0,
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
         <Box
           component="video"
@@ -73,38 +77,86 @@ export const CommunityResourceContent = () => {
             height: "100%",
             borderRadius: "12px",
           }}
-          src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/CRC+overview+1.webm"
+          src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/CRC+logo.webm"
           title="Video 1"
         />
       </Grid>
       <Grid
         item
         xs={12}
-        sx={{ padding: 4, display: "flex", flexDirection: "column" }}
+        sx={{ padding: 4, pt: 1, display: "flex", flexDirection: "column" }}
       >
         <Typography
           variant="body1"
           sx={{ flexGrow: 1, color: "black", mb: 3, fontSize: "larger" }}
         >
-          Our community resource center program uses church meetinghouses or
+          Our Community Resource Center program uses church meetinghouses or
           other public buildings to provide ongoing educational opportunities—at
           no cost.
         </Typography>
 
-        <Grid item xs={12}>
-          <Typography variant="h3" sx={{ color: "black", fontWeight: "bold" }}>
-            Weekly classes often include:
-          </Typography>
-          <List>
-            {classes.map((item, index) => (
-              <ListItem key={index} sx={{ py: 0 }}>
-                <ListItemIcon sx={{ minWidth: 30 }}>
-                  <MyHometownHouse fill="#318D43" sx={{ height: "15px" }} />
-                </ListItemIcon>
-                <ListItemText primary={item} />
-              </ListItem>
-            ))}
-          </List>
+        <Typography variant="h3" sx={{ color: "black", fontWeight: "bold" }}>
+          Weekly classes often include:
+        </Typography>
+
+        {/* Add a container Grid here */}
+        <Grid container spacing={2}>
+          {isMd ? (
+            <>
+              <Grid item xs={12} sm={6}>
+                <List sx={{ mb: 0 }}>
+                  {classes1.map((item, index) => (
+                    <ListItem
+                      key={index}
+                      sx={{ py: 0, display: "flex", alignItems: "flex-start" }}
+                    >
+                      <ListItemIcon sx={{ minWidth: 30, pt: 1 }}>
+                        <MyHometownHouse
+                          fill="#318D43"
+                          sx={{ height: "15px" }}
+                        />
+                      </ListItemIcon>
+                      <ListItemText primary={item} />
+                    </ListItem>
+                  ))}
+                </List>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <List>
+                  {classes2.map((item, index) => (
+                    <ListItem
+                      key={index}
+                      sx={{ py: 0, display: "flex", alignItems: "flex-start" }}
+                    >
+                      <ListItemIcon sx={{ minWidth: 30, pt: 1 }}>
+                        <MyHometownHouse
+                          fill="#318D43"
+                          sx={{ height: "15px" }}
+                        />
+                      </ListItemIcon>
+                      <ListItemText primary={item} />
+                    </ListItem>
+                  ))}
+                </List>
+              </Grid>
+            </>
+          ) : (
+            <Grid item xs={12} sm={6}>
+              <List sx={{ mb: 0 }}>
+                {[...classes1, ...classes2].map((item, index) => (
+                  <ListItem
+                    key={index}
+                    sx={{ py: 0, display: "flex", alignItems: "flex-start" }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 30, pt: 1 }}>
+                      <MyHometownHouse fill="#318D43" sx={{ height: "15px" }} />
+                    </ListItemIcon>
+                    <ListItemText primary={item} />
+                  </ListItem>
+                ))}
+              </List>
+            </Grid>
+          )}
         </Grid>
       </Grid>
     </>

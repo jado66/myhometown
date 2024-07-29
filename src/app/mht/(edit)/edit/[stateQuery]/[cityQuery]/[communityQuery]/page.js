@@ -145,71 +145,213 @@ const Page = ({ params }) => {
   return (
     <>
       <Container sx={{ paddingTop: 3, marginBottom: 2 }}>
-        <Typography
-          variant="h2"
-          align="center"
-          sx={{ textTransform: "capitalize" }}
-        >
-          myHometown {communityQuery.replaceAll("-", " ")} -{" "}
-          {stateQuery.replaceAll("-", " ")}
+        <Typography variant="h2" align="center" color="primary">
+          myHometown{" "}
+          <span style={{ textTransform: "capitalize" }}>
+            {cityName}
+            {" - Utah"}
+          </span>
         </Typography>
-        <GallerySLC />
+
+        <PhotoGallery
+          photos={city.content.galleryPhotos}
+          changePhoto={handleChangePhoto}
+          isEdit
+        />
 
         <Grid container spacing={2} paddingY={3}>
-          <Grid item xs={6}>
-            <Typography variant="h4" align="center">
-              Description
+          <Grid item xs={12}>
+            <Typography
+              variant="h3"
+              align="center"
+              color="primary"
+              gutterBottom
+            >
+              What Is myHometown{" "}
+              <span style={{ textTransform: "capitalize" }}>{cityName}</span>?
             </Typography>
 
-            <ContentEditable
-              innerRef={paragraph1Ref}
-              html={communityData.content.paragraph1Text}
-              disabled={false}
+            <TextField
+              variant="standard"
+              defaultValue={content?.paragraph1Text}
               onChange={(event) => handleParagraphChange(event, "paragraph1")}
-              tagName="p"
-              name="paragraph1"
+              multiline
+              InputProps={{
+                disableUnderline: true,
+                sx: { fontSize: "1rem" },
+              }}
+              fullWidth
+              sx={{
+                fontFamily: "inherit",
+                fontSize: "1rem",
+                border: "none",
+                margin: 0,
+                padding: "10px 16px",
+                "& .MuiInput-underline:before": {
+                  borderBottom: "none",
+                },
+                "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+                  borderBottom: "none",
+                },
+                "& .MuiInput-underline:after": {
+                  borderBottom: "none",
+                },
+              }}
             />
             <Divider />
-            <ContentEditable
-              innerRef={paragraph2Ref}
-              html={communityData.content.paragraph2Text}
-              disabled={false}
+            <TextField
+              variant="standard"
+              defaultValue={cityData.content?.paragraph2Text}
               onChange={(event) => handleParagraphChange(event, "paragraph2")}
-              tagName="p"
-              name="paragraph2"
+              multiline
+              InputProps={{
+                disableUnderline: true,
+              }}
+              fullWidth
+              sx={{
+                fontFamily: "inherit",
+                fontSize: "1rem",
+                border: "none",
+                margin: 0,
+                padding: "10px 16px",
+                "& .MuiInput-underline:before": {
+                  borderBottom: "none",
+                },
+                "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+                  borderBottom: "none",
+                },
+                "& .MuiInput-underline:after": {
+                  borderBottom: "none",
+                },
+              }}
             />
           </Grid>
-          <Grid item xs={6}>
-            <Card
-              sx={{
-                height: "300px",
-                alignContent: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Typography variant="h4" component="h2" align="center">
-                Community map
-              </Typography>
-            </Card>
+          <Grid item xs={12} display="flex" justifyContent="center">
+            <Grid item xs={10} sm={8} md={6}>
+              <RoleGuard
+                roles={["admin"]}
+                user={user}
+                alternateContent={
+                  <Tooltip
+                    title="Only an Admin can modify this."
+                    placement="top"
+                    arrow
+                  >
+                    <Info
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        right: 0,
+                        margin: "0.5em",
+                      }}
+                    />
+                  </Tooltip>
+                }
+              >
+                <Box
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  position="relative"
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <UploadImage setUrl={handleChangeMap} />
+                  {cityData.content?.mapUrl ? (
+                    <img
+                      src={cityData.content.mapUrl}
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    <Typography variant="h4" component="h2" align="center">
+                      Community map
+                    </Typography>
+                  )}
+                </Box>
+              </RoleGuard>
+            </Grid>
           </Grid>
         </Grid>
 
-        <Divider />
+        <Divider sx={{ my: 5 }} />
+
+        <Typography
+          variant="h4"
+          component="h2"
+          textAlign="center"
+          color="primary"
+          gutterBottom
+          sx={{ textTransform: "capitalize" }}
+        >
+          {cityName}&apos;s Communities
+        </Typography>
+
+        <Grid container spacing={2} paddingY={3}>
+          {city.communities &&
+            city.communities.map((community, index) => (
+              <CommunityCard
+                key={community.name}
+                community={community}
+                city={cityQuery}
+                gridProps={{ xs: 12, sm: communityCardSize }}
+                index={index}
+              />
+            ))}
+        </Grid>
+
+        <Divider sx={{ my: 5 }} />
+
+        <Typography
+          variant="h4"
+          component="h2"
+          textAlign="center"
+          color="primary"
+          gutterBottom
+          sx={{ textTransform: "capitalize" }}
+        >
+          {cityName}&apos;s Community Statistics
+        </Typography>
+
+        <StatsCounter stats={city.stats} isEdit />
 
         <EventDialog_NewEdit
           show={isCreatingNewEvent || selectedEvent !== null}
           onClose={closeEventDialog}
           event={selectedEvent}
           onSave={handleSaveEvent}
+          onDelete={handleDeleteEvent}
           isEdit={!isCreatingNewEvent}
         />
+        <Grid item md={12}>
+          <Divider sx={{ my: 5 }} />
+        </Grid>
 
-        <UpcomingEvents events={events} maxEvents={3} />
+        {/* <pre>{JSON.stringify(cityData.events, null, 4)}</pre> */}
+
+        <UpcomingEvents
+          events={cityData.events}
+          maxEvents={5}
+          isEdit
+          onSelect={onSelectEvent}
+          onAdd={startCreatingNewEvent}
+        />
+
+        <Divider sx={{ my: 5 }} />
+
+        {/* <pre>{JSON.stringify(cityData, null, 4)}</pre> */}
 
         <EventsCalendar
           events={events}
           onSelectEvent={onSelectEvent}
           onSelectSlot={(slot) => setSelectedEvent(slot)}
+          isEdit
         />
       </Container>
     </>

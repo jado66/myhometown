@@ -145,7 +145,7 @@ const Topbar = ({ onSidebarOpen }) => {
               <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
-                href={rootUrl + `/utah/ogden`}
+                href={rootUrl + `/maintenance`}
               >
                 Ogden
               </MenuItem>
@@ -160,21 +160,21 @@ const Topbar = ({ onSidebarOpen }) => {
               <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
-                href={rootUrl + `/utah/provo`}
+                href={rootUrl + `/maintenance`}
               >
                 Provo
               </MenuItem>
               <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
-                href={rootUrl + `/utah/salt-lake-city`}
+                href={rootUrl + `/maintenance`}
               >
                 Salt Lake City
               </MenuItem>
               <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
-                href={rootUrl + `/utah/west-valley-city`}
+                href={rootUrl + `/maintenance`}
               >
                 West Valley City
               </MenuItem>

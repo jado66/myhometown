@@ -20,6 +20,8 @@ const SidebarNav = ({ onClose }) => {
   const toggleExpandCities = () => setExpandCities((p) => !p);
   const { groupedCityStrings } = useManageCities(null, true);
 
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+
   const theme = useTheme();
   const [activeLink, setActiveLink] = useState("");
   useEffect(() => {
@@ -47,9 +49,9 @@ const SidebarNav = ({ onClose }) => {
       </Box>
       <Box paddingX={2} paddingBottom={2}>
         <Box>
-          <Box marginBottom={4}>
+          <Box marginBottom={2}>
             <NextLink
-              href="/"
+              href={rootUrl + "/"}
               style={{ textDecoration: "none", color: "#686868" }}
             >
               <Typography
@@ -65,7 +67,7 @@ const SidebarNav = ({ onClose }) => {
               </Typography>
             </NextLink>
           </Box>
-          <Box marginBottom={4}>
+          <Box marginBottom={2}>
             <Button
               variant="link"
               onClick={toggleExpandCities}
@@ -87,42 +89,91 @@ const SidebarNav = ({ onClose }) => {
             </Button>
             {expandCities && (
               <div style={{ marginLeft: "2em" }}>
-                {Object.entries(filteredGroupedCityStrings).map(
-                  ([state, cities], index) => (
-                    <React.Fragment key={state}>
-                      {index > 0 && <Divider />}
-                      {/* <Typography variant="h6" color="textSecondary">
-                      {state}
-                    </Typography> */}
-                      {cities.map((city) => (
-                        <NextLink
-                          key={city}
-                          href={`/${state.toLowerCase()}/${city
-                            .toLowerCase()
-                            .replaceAll(" ", "-")}`}
-                          style={{ textDecoration: "none", color: "#686868" }}
-                        >
-                          <Typography
-                            variant="h5"
-                            sx={{
-                              fontWeight: 700,
-                              marginBottom: 1,
-                              display: "block",
-                            }}
-                          >
-                            {city}
-                          </Typography>
-                        </NextLink>
-                      ))}
-                    </React.Fragment>
-                  )
-                )}
+                <>
+                  <NextLink
+                    href={rootUrl + `/maintenance`}
+                    style={{ textDecoration: "none", color: "#686868" }}
+                  >
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 700,
+                        marginBottom: 1,
+                        mt: 1,
+                        display: "block",
+                      }}
+                    >
+                      Ogden
+                    </Typography>
+                  </NextLink>
+                  <NextLink
+                    href={rootUrl + `/utah/orem`}
+                    style={{ textDecoration: "none", color: "#686868" }}
+                  >
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 700,
+                        marginBottom: 1,
+                        display: "block",
+                      }}
+                    >
+                      Orem
+                    </Typography>
+                  </NextLink>
+                  <NextLink
+                    href={rootUrl + `/maintenance`}
+                    style={{ textDecoration: "none", color: "#686868" }}
+                  >
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 700,
+                        marginBottom: 1,
+                        display: "block",
+                      }}
+                    >
+                      Provo
+                    </Typography>
+                  </NextLink>
+
+                  <NextLink
+                    href={rootUrl + `/maintenance`}
+                    style={{ textDecoration: "none", color: "#686868" }}
+                  >
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 700,
+                        marginBottom: 1,
+                        display: "block",
+                      }}
+                    >
+                      Salt Lake City
+                    </Typography>
+                  </NextLink>
+                  <NextLink
+                    href={rootUrl + `/maintenance`}
+                    style={{ textDecoration: "none", color: "#686868" }}
+                  >
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 700,
+                        marginBottom: 1,
+                        display: "block",
+                      }}
+                    >
+                      West Valley City
+                    </Typography>
+                  </NextLink>
+                </>
               </div>
             )}
           </Box>
-          <Box marginBottom={4}>
+          <Box marginBottom={2}>
             <NextLink
-              href="/about-us"
+              href={rootUrl + "/community-resource-centers"}
               style={{ textDecoration: "none", color: "#686868" }}
             >
               <Typography
@@ -134,13 +185,13 @@ const SidebarNav = ({ onClose }) => {
                   textDecoration: "none",
                 }}
               >
-                About Us
+                Community Resource Centers
               </Typography>
             </NextLink>
           </Box>
-          <Box marginBottom={4}>
+          <Box marginBottom={2}>
             <NextLink
-              href="/donate"
+              href={rootUrl + "/days-of-service"}
               style={{ textDecoration: "none", color: "#686868" }}
             >
               <Typography
@@ -151,7 +202,7 @@ const SidebarNav = ({ onClose }) => {
                   display: "block",
                 }}
               >
-                Donate
+                Days Of Service
               </Typography>
             </NextLink>
           </Box>

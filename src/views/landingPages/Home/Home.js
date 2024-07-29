@@ -21,9 +21,11 @@ import { default as VisibilitySensor } from "react-visibility-sensor";
 import { ResponsiveVideoBanner } from "@/components/util/ResponsiveVideoBanner";
 import { MyHometownHouse } from "@/assets/svg/logos/MyHometownHouse";
 import { CommunityResourceContent } from "@/app/mht/(main)/community-resource-centers/page";
+import { DaysOfService } from "@/app/mht/(main)/days-of-service/page";
 
 const Home = () => {
   const theme = useTheme();
+  const isMd = useMediaQuery(theme.breakpoints.up("md"));
 
   return (
     <>
@@ -40,12 +42,12 @@ const Home = () => {
           color="black"
           sx={{
             mt: 3,
-            mb: 0,
+            mb: { md: 1, xs: 3 },
             mx: "auto",
             fontWeight: 700,
           }}
         >
-          Feel the Love in
+          Feel the love in
           <Typography color={"primary"} component={"span"} variant={"inherit"}>
             {" "}
             myHometown
@@ -53,7 +55,13 @@ const Home = () => {
         </Typography>
       </Box>
 
-      <Grid item xs={12} display="flex" justifyContent="space-evenly">
+      <Grid
+        item
+        xs={12}
+        display="flex"
+        justifyContent="space-evenly"
+        sx={{ px: { md: 1, xs: 3 } }}
+      >
         <Typography
           sx={{ color: "black", fontWeight: "bold" }}
           textAlign="center"
@@ -80,66 +88,143 @@ const Home = () => {
         </Typography>
       </Grid>
 
-      <Grid
-        item
-        xs={12}
-        sm={6}
-        sx={{ padding: 4, display: "flex", flexDirection: "column" }}
-      >
-        <Typography variant="body1" sx={{ flexGrow: 1, color: "black" }}>
-          At myHometown we breath new life into aging and under loved
-          neighborhoods by renewing landscapes, refurbishing homes and
-          buildings, and provides educational opportunities through neighborhood
-          Community Resource Centers.
-        </Typography>
-        <Divider />
-        <Typography variant="body1" sx={{ flexGrow: 1, color: "black" }}>
-          We lift the lives of residents and attract individuals and families
-          who want to move in, stay, and contribute to the long-term viability
-          of the community.
-        </Typography>
-      </Grid>
+      {isMd ? (
+        <>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            sx={{ padding: 4, display: "flex", flexDirection: "column" }}
+          >
+            <Typography
+              variant="body1"
+              sx={{ color: "black", fontSize: "larger" }}
+            >
+              At myHometown we breath new life into aging and under loved
+              neighborhoods by renewing landscapes, refurbishing homes and
+              buildings, and provides educational opportunities through
+              neighborhood Community Resource Centers.
+            </Typography>
+            <Divider sx={{ my: 3 }} />
+            <Typography
+              variant="body1"
+              sx={{ color: "black", fontSize: "larger" }}
+            >
+              We lift the lives of residents and attract individuals and
+              families who want to move in, stay, and contribute to the
+              long-term viability of the community.
+            </Typography>
+          </Grid>
 
-      <Grid item xs={12} sm={6} sx={{ padding: 4, pt: { xs: 0, sm: 4 } }}>
-        <Grid
-          item
-          xs={12}
-          sx={{
-            backgroundColor: "grey",
-            height: "350px",
-            overflow: "hidden",
-            position: "relative",
-            boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
-            borderRadius: 3,
-          }}
-        >
-          <Box
-            component="img"
-            src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/MHT+landing+page+photos/Photos+1/IMG_0246.jpeg"
-            alt="Mental Health"
-            // Lazy load the image
-            sx={{
-              borderRadius: 3,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover", // Ensures the image covers the entire area
-              position: "absolute",
-              objectPosition: "right", // Shifts the image to the left
-              top: "0",
-              left: "0px",
-            }}
-          />
-        </Grid>
+          <Grid item xs={12} sm={6} sx={{ padding: 4, pt: { xs: 0, sm: 4 } }}>
+            <Grid
+              item
+              xs={12}
+              sx={{
+                backgroundColor: "grey",
+                height: "350px",
+                overflow: "hidden",
+                position: "relative",
+                boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+                borderRadius: 3,
+              }}
+            >
+              <Box
+                component="img"
+                src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/MHT+landing+page+photos/Photos+1/IMG_0246.jpeg"
+                alt="Mental Health"
+                // Lazy load the image
+                sx={{
+                  borderRadius: 3,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover", // Ensures the image covers the entire area
+                  position: "absolute",
+                  objectPosition: "center", // Centers the image horizontally
+                  top: "0",
+                  left: "0px",
+                }}
+              />
+            </Grid>
+          </Grid>
+        </>
+      ) : (
+        <>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            sx={{ padding: 4, display: "flex", flexDirection: "column" }}
+          >
+            <Typography
+              variant="body1"
+              sx={{ color: "black", fontSize: "larger" }}
+            >
+              At myHometown we breath new life into aging and under loved
+              neighborhoods by renewing landscapes, refurbishing homes and
+              buildings, and provides educational opportunities through
+              neighborhood Community Resource Centers.
+            </Typography>
+          </Grid>
 
-        <Divider
-          sx={{
-            display: { xs: "none", md: "block" },
-            borderWidth: 3,
-            borderColor: "black",
-            mt: 4,
-          }}
-        />
-      </Grid>
+          <Grid item xs={12} sm={6} sx={{ padding: 4, py: { xs: 0, sm: 4 } }}>
+            <Grid
+              item
+              xs={12}
+              sx={{
+                backgroundColor: "grey",
+                height: "350px",
+                overflow: "hidden",
+                position: "relative",
+                boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+                borderRadius: 3,
+              }}
+            >
+              <Box
+                component="img"
+                src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/MHT+landing+page+photos/Photos+1/IMG_0246.jpeg"
+                alt="Mental Health"
+                // Lazy load the image
+                sx={{
+                  borderRadius: 3,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover", // Ensures the image covers the entire area
+                  position: "absolute",
+                  objectPosition: "center", // Centers the image horizontally
+                  top: "0",
+                  left: "0px",
+                }}
+              />
+            </Grid>
+
+            <Divider
+              sx={{
+                display: { xs: "none", md: "block" },
+                borderWidth: 3,
+                borderColor: "black",
+                mt: 4,
+              }}
+            />
+          </Grid>
+
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            sx={{ padding: 4, display: "flex", flexDirection: "column" }}
+          >
+            <Typography
+              variant="body1"
+              sx={{ color: "black", fontSize: "larger" }}
+            >
+              We lift the lives of residents and attract individuals and
+              families who want to move in, stay, and contribute to the
+              long-term viability of the community.
+            </Typography>
+          </Grid>
+        </>
+      )}
 
       <Grid
         item
@@ -237,7 +322,14 @@ const Home = () => {
         />
       </Grid>
 
+      <Grid xs={12}>
+        <Divider sx={{ mb: 0, mt: 2 }} />
+      </Grid>
       <CommunityResourceContent />
+      <Grid xs={12}>
+        <Divider sx={{ my: 0 }} />
+      </Grid>
+      <DaysOfService />
     </>
   );
 };
