@@ -75,6 +75,7 @@ field.`,
   {
     name: "Bruce Jardine",
     avatar: "/images/board/Bruce Jardine.jpg",
+    bio: `Bruce is the retired principal owner and CEO of LWE Electric Inc. working throughout much of  the Western United States.  He received his education degree from Weber State University.  Bruce and his wife Diane are currently serving as leaders and executive directors of the My HomeTown Ogden South Council.  He is an active community member and supported many non-profit causes in Northern Utah.  He is a founding member of Rocky Mountain Home Fund and currently serving on the RMHF foundation board.  Bruce is a member of the Weber County School Board of Education and an advocate for family, community and youth programs.`,
   },
   {
     name: "Rev. Bruce Kolasch",
