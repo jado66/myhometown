@@ -25,9 +25,11 @@ import { useTheme } from "@mui/material/styles";
 import { useUser } from "@/hooks/use-user";
 import RoleGuard from "@/guards/role-guard";
 import { NotResponsiveAlert } from "@/util/NotResponsiveAlert";
+import { useRouter } from "next/navigation";
 
 export default function Management() {
   const theme = useTheme();
+  const router = useRouter();
 
   const { user, isLoading } = useUser();
 
@@ -134,6 +136,24 @@ export default function Management() {
     );
   }
 
+  const goToEditCommunity = (community) => {
+    // alert(JSON.stringify(community, null, 4));
+
+    const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+
+    router.push(
+      rootUrl +
+        `/edit/${community.city.state
+          .toLowerCase()
+          .replaceAll(/\s/g, "-")}/${community.city.name
+          .toLowerCase()
+          .replaceAll(/\s/g, "-")}/${community.name
+          .toLowerCase()
+          .replaceAll(/\s/g, "-")}
+        `
+    );
+  };
+
   return (
     <Grid container item sm={12} display="flex" sx={{ position: "relative" }}>
       <BackButton />
@@ -229,6 +249,7 @@ export default function Management() {
                       "&:hover": {
                         transform: `translateY(-${theme.spacing(1 / 2)})`,
                       },
+                      cursor: "pointer",
                     }}
                   >
                     <Box
@@ -237,6 +258,7 @@ export default function Management() {
                       height={"100%"}
                       data-aos={"fade-up"}
                       borderRadius={3}
+                      onClick={() => goToEditCommunity(community)}
                     >
                       <CardMedia
                         image={fakeCommunityImages[i]}
