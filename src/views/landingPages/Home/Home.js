@@ -20,8 +20,8 @@ import { ImageAccordion } from "@/components/ImageAccordion";
 import { default as VisibilitySensor } from "react-visibility-sensor";
 import { ResponsiveVideoBanner } from "@/components/util/ResponsiveVideoBanner";
 import { MyHometownHouse } from "@/assets/svg/logos/MyHometownHouse";
-import { CommunityResourceContent } from "@/app/mht/(main)/community-resource-centers/page";
-import { DaysOfService } from "@/app/mht/(main)/days-of-service/page";
+import CommunityResourceContent from "../MHT/CommunityResourceCenter";
+import DaysOfServiceContent from "../MHT/DaysOfService";
 
 const Home = () => {
   const theme = useTheme();
@@ -329,7 +329,7 @@ const Home = () => {
       <Grid xs={12}>
         <Divider sx={{ my: 0 }} />
       </Grid>
-      <DaysOfService />
+      <DaysOfServiceContent />
     </>
   );
 };

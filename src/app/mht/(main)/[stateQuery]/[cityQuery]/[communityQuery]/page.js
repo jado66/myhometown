@@ -26,6 +26,7 @@ import PhotoGallery from "@/components/PhotoGallery";
 import BrushIcon from "@mui/icons-material/Brush"; // Example icon - make sure to import actual icons you want to use
 import TranslateIcon from "@mui/icons-material/Translate";
 import { ClassesTreeView } from "@/components/events/ClassesTreeView";
+import { MultiLineTypography } from "@/components/MultiLineTypography";
 
 const Page = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params; //TODO change me to stateQuery... VsCode hates renaming folders
@@ -148,12 +149,7 @@ const Page = ({ params }) => {
           </Grid>
         </Grid>
         <Grid container spacing={2} paddingY={3}>
-          <Grid item xs={6}>
-            <Typography variant="h4" align="center">
-              Description
-            </Typography>
-          </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={12}>
             <Card
               sx={{
                 height: "300px",
