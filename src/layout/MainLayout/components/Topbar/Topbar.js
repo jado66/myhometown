@@ -153,7 +153,7 @@ const Topbar = ({ onSidebarOpen }) => {
               <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
-                href={rootUrl + `/utah/orem`}
+                href={rootUrl + `/utah/orem/geneva-heights`}
               >
                 Orem
               </MenuItem>

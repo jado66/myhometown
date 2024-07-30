@@ -38,10 +38,6 @@ const Page = ({ params }) => {
     communityTemplate
   );
 
-  // Call the useCities function with the community parameter to fetch the data
-  const paragraph1Ref = useRef();
-  const paragraph2Ref = useRef();
-
   const { events, isLoading, error, deleteEvent, modifyEvent, updateEvent } =
     useEvents();
 
@@ -115,10 +111,10 @@ const Page = ({ params }) => {
       />
 
       <Container sx={{ paddingTop: 3, marginBottom: 2 }}>
-        <BackButton
+        {/* <BackButton
           text={`Back to ${cityQuery.replaceAll("-", " ")}`}
           href={`../../../${stateQuery}/${cityQuery}`}
-        />
+        /> */}
 
         <Typography
           variant="h2"
@@ -128,7 +124,10 @@ const Page = ({ params }) => {
           {communityQuery.replaceAll("-", " ")} Community
         </Typography>
 
-        <PhotoGallery photos={community.content.galleryPhotos} />
+        <PhotoGallery
+          photos={community.content.galleryPhotos}
+          variant="variant2"
+        />
 
         <Grid container spacing={2} paddingY={3}>
           <Grid item xs={12}>

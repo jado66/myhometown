@@ -1,5 +1,14 @@
 "use client";
-import { Card, Container, Divider, Grid, Typography } from "@mui/material";
+import {
+  Box,
+  Card,
+  Container,
+  Divider,
+  Grid,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { fa, faker } from "@faker-js/faker";
 import GallerySLC from "@/views/supportingPages/About/components/GallerySLC/Gallery";
 import ContentEditable from "react-contenteditable";
@@ -15,6 +24,12 @@ import Loading from "@/components/util/Loading";
 import { useEdit } from "@/hooks/use-edit";
 import { useHandleEvents } from "@/hooks/use-handle-events";
 import { communityTemplate } from "@/constants/templates/communityTemplate";
+import PhotoGallery from "@/components/PhotoGallery";
+import RoleGuard from "@/guards/role-guard";
+import { useUser } from "@/hooks/use-user";
+import { Info } from "@mui/icons-material";
+import UploadImage from "@/components/util/UploadImage";
+import { StatsCounter } from "@/components/StatsCounter";
 
 const communityDataContentTemplate = {
   paragraph1Text: faker.lorem.paragraph(),
@@ -22,10 +37,12 @@ const communityDataContentTemplate = {
 };
 
 const Page = ({ params }) => {
-  const { stateQuery, communityQuery } = params;
+  const { stateQuery, cityQuery, communityQuery } = params;
+  const { user } = useUser();
 
   const { community, hasLoaded } = useCommunity(
     communityQuery,
+    cityQuery,
     stateQuery,
     communityTemplate
   );
@@ -36,7 +53,11 @@ const Page = ({ params }) => {
     setEntityType,
   } = useEdit();
 
-  const { content, events } = communityData;
+  let events, content;
+
+  if (communityData) {
+    ({ events, content } = communityData);
+  }
 
   useEffect(() => {
     if (community) {
@@ -48,9 +69,6 @@ const Page = ({ params }) => {
     }
   }, [community]);
 
-  const paragraph1Ref = useRef();
-  const paragraph2Ref = useRef();
-
   const [selectedEvent, setSelectedEvent] = useState(null);
 
   const [isCreatingNewEvent, setIsCreatingNewEvent] = useState(false);
@@ -60,7 +78,7 @@ const Page = ({ params }) => {
   };
 
   const setEvents = (events) => {
-    // this is cityData.events
+    // this is events
     setCommunityData({
       ...communityData,
       events,
@@ -84,6 +102,48 @@ const Page = ({ params }) => {
     } else {
       modifyEvent(event.id, event);
     }
+    setSelectedEvent(null);
+    setIsCreatingNewEvent(false);
+  };
+
+  const handleChangePhoto = (url, key) => {
+    setCommunityData((prevState) => {
+      const newPhotos = { ...prevState.content.galleryPhotos };
+      if (newPhotos[key]) {
+        newPhotos[key] = {
+          ...newPhotos[key],
+          src: url,
+        };
+      }
+
+      return {
+        ...prevState,
+        content: {
+          ...prevState.content,
+          galleryPhotos: newPhotos,
+        },
+      };
+    });
+  };
+
+  const handleChangeMap = (url) => {
+    setCommunityData({
+      ...cityData,
+      content: {
+        ...cityData.content,
+        mapUrl: url,
+      },
+    });
+  };
+
+  const handleDeleteEvent = (eventId) => {
+    try {
+      deleteEvent(eventId);
+      toast.success("Event Deleted - Make sure to save to sync your changes.");
+    } catch (err) {
+      toast.error(JSON.stringify(err));
+    }
+
     setSelectedEvent(null);
     setIsCreatingNewEvent(false);
   };
@@ -148,14 +208,15 @@ const Page = ({ params }) => {
         <Typography variant="h2" align="center" color="primary">
           myHometown{" "}
           <span style={{ textTransform: "capitalize" }}>
-            {cityName}
+            {cityQuery}
             {" - Utah"}
           </span>
         </Typography>
 
         <PhotoGallery
-          photos={city.content.galleryPhotos}
+          photos={content.galleryPhotos}
           changePhoto={handleChangePhoto}
+          variant="variant2"
           isEdit
         />
 
@@ -168,7 +229,7 @@ const Page = ({ params }) => {
               gutterBottom
             >
               What Is myHometown{" "}
-              <span style={{ textTransform: "capitalize" }}>{cityName}</span>?
+              <span style={{ textTransform: "capitalize" }}>{cityQuery}</span>?
             </Typography>
 
             <TextField
@@ -201,7 +262,7 @@ const Page = ({ params }) => {
             <Divider />
             <TextField
               variant="standard"
-              defaultValue={cityData.content?.paragraph2Text}
+              defaultValue={content?.paragraph2Text}
               onChange={(event) => handleParagraphChange(event, "paragraph2")}
               multiline
               InputProps={{
@@ -260,9 +321,9 @@ const Page = ({ params }) => {
                   }}
                 >
                   <UploadImage setUrl={handleChangeMap} />
-                  {cityData.content?.mapUrl ? (
+                  {content?.mapUrl ? (
                     <img
-                      src={cityData.content.mapUrl}
+                      src={content.mapUrl}
                       style={{
                         width: "100%",
                         height: "auto",
@@ -290,21 +351,8 @@ const Page = ({ params }) => {
           gutterBottom
           sx={{ textTransform: "capitalize" }}
         >
-          {cityName}&apos;s Communities
+          {cityQuery}&apos;s Communities
         </Typography>
-
-        <Grid container spacing={2} paddingY={3}>
-          {city.communities &&
-            city.communities.map((community, index) => (
-              <CommunityCard
-                key={community.name}
-                community={community}
-                city={cityQuery}
-                gridProps={{ xs: 12, sm: communityCardSize }}
-                index={index}
-              />
-            ))}
-        </Grid>
 
         <Divider sx={{ my: 5 }} />
 
@@ -316,10 +364,10 @@ const Page = ({ params }) => {
           gutterBottom
           sx={{ textTransform: "capitalize" }}
         >
-          {cityName}&apos;s Community Statistics
+          {cityQuery}&apos;s Community Statistics
         </Typography>
 
-        <StatsCounter stats={city.stats} isEdit />
+        {/* <StatsCounter stats={city.stats} isEdit /> */}
 
         <EventDialog_NewEdit
           show={isCreatingNewEvent || selectedEvent !== null}
@@ -333,10 +381,10 @@ const Page = ({ params }) => {
           <Divider sx={{ my: 5 }} />
         </Grid>
 
-        {/* <pre>{JSON.stringify(cityData.events, null, 4)}</pre> */}
+        {/* <pre>{JSON.stringify(events, null, 4)}</pre> */}
 
         <UpcomingEvents
-          events={cityData.events}
+          events={communityData.events}
           maxEvents={5}
           isEdit
           onSelect={onSelectEvent}
@@ -347,12 +395,12 @@ const Page = ({ params }) => {
 
         {/* <pre>{JSON.stringify(cityData, null, 4)}</pre> */}
 
-        <EventsCalendar
-          events={events}
+        {/* <EventsCalendar
+          events={communityData.events}
           onSelectEvent={onSelectEvent}
           onSelectSlot={(slot) => setSelectedEvent(slot)}
           isEdit
-        />
+        /> */}
       </Container>
     </>
   );
