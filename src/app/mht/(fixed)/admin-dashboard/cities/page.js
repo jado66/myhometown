@@ -166,10 +166,10 @@ export default function Management() {
               <Link
                 component={"a"}
                 color={"primary"}
-                href={"mailto:admin-representative@myhometown.org"}
+                href={"mailto:JerryCraven@gmail.com"}
                 underline={"none"}
               >
-                Contact a myHometown Admin.
+                Contact a myHometown Admin - JerryCraven@gmail.com
               </Link>
             </Typography>
           </>
