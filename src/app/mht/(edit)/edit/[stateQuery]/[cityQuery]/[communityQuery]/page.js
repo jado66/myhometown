@@ -208,8 +208,9 @@ const Page = ({ params }) => {
         <Typography variant="h2" align="center" color="primary">
           myHometown{" "}
           <span style={{ textTransform: "capitalize" }}>
+            {communityQuery}
+            {" - "}
             {cityQuery}
-            {" - Utah"}
           </span>
         </Typography>
 
@@ -222,15 +223,43 @@ const Page = ({ params }) => {
 
         <Grid container spacing={2} paddingY={3}>
           <Grid item xs={12}>
-            <Typography
-              variant="h3"
-              align="center"
-              color="primary"
-              gutterBottom
-            >
-              What Is myHometown{" "}
-              <span style={{ textTransform: "capitalize" }}>{cityQuery}</span>?
-            </Typography>
+            <TextField
+              variant="standard"
+              defaultValue={`What Is myHometown ${communityQuery}?`}
+              onChange={(event) => handleHeaderChange(event)}
+              multiline
+              InputProps={{
+                disableUnderline: true,
+                sx: {
+                  fontSize: "2rem",
+                  textAlign: "center",
+                  color: (theme) => theme.palette.primary.main,
+                  textTransform: "capitalize",
+                  "& .Mui-focused": {
+                    backgroundColor: "#f0f0f0",
+                    borderRadius: "4px",
+                  },
+                },
+              }}
+              fullWidth
+              sx={{
+                fontFamily: "inherit",
+                fontSize: "2rem",
+                border: "none",
+                margin: 0,
+                padding: "10px 16px",
+                textAlign: "center",
+                "& .MuiInput-underline:before": {
+                  borderBottom: "none",
+                },
+                "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+                  borderBottom: "none",
+                },
+                "& .MuiInput-underline:after": {
+                  borderBottom: "none",
+                },
+              }}
+            />
 
             <TextField
               variant="standard"
@@ -239,7 +268,13 @@ const Page = ({ params }) => {
               multiline
               InputProps={{
                 disableUnderline: true,
-                sx: { fontSize: "1rem" },
+                sx: {
+                  fontSize: "1rem",
+                  "& .Mui-focused": {
+                    backgroundColor: "#f0f0f0", // Example of changing background color when focused
+                    borderRadius: "4px",
+                  },
+                },
               }}
               fullWidth
               sx={{
@@ -257,6 +292,7 @@ const Page = ({ params }) => {
                 "& .MuiInput-underline:after": {
                   borderBottom: "none",
                 },
+                // Adding focused style here
               }}
             />
             <Divider />
@@ -351,20 +387,7 @@ const Page = ({ params }) => {
           gutterBottom
           sx={{ textTransform: "capitalize" }}
         >
-          {cityQuery}&apos;s Communities
-        </Typography>
-
-        <Divider sx={{ my: 5 }} />
-
-        <Typography
-          variant="h4"
-          component="h2"
-          textAlign="center"
-          color="primary"
-          gutterBottom
-          sx={{ textTransform: "capitalize" }}
-        >
-          {cityQuery}&apos;s Community Statistics
+          {communityQuery}&apos;s Community Statistics
         </Typography>
 
         {/* <StatsCounter stats={city.stats} isEdit /> */}
