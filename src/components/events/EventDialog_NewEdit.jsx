@@ -100,8 +100,12 @@ export const EventDialog_NewEdit = ({
         // Set end to one day after start
         newEvent.end = moment(newEvent.start).add(1, "day");
       } else {
-        // Set end to one hour after start (ending at midnight)
-        newEvent.end = moment(newEvent.start).endOf("day");
+        // Set end to same day as start, keeping the time
+        newEvent.end = moment(newEvent.start).set({
+          hour: newEvent.end.hour(),
+          minute: newEvent.end.minute(),
+          second: newEvent.end.second(),
+        });
       }
       return newEvent;
     });
@@ -117,9 +121,16 @@ export const EventDialog_NewEdit = ({
           newEvent.isMultiDay ? newEvent.end : newEvent.start
         ).endOf("day");
       } else {
-        // Start now, end null
+        // Start now, end one hour later on the same day
         newEvent.start = moment();
-        newEvent.end = null;
+        newEvent.end = moment(newEvent.start).add(1, "hour");
+        if (!newEvent.isMultiDay) {
+          newEvent.end = moment(newEvent.start).set({
+            hour: newEvent.end.hour(),
+            minute: newEvent.end.minute(),
+            second: newEvent.end.second(),
+          });
+        }
       }
       return newEvent;
     });
@@ -136,19 +147,24 @@ export const EventDialog_NewEdit = ({
     setCurrentEvent((prev) => {
       const newEvent = { ...prev, [field]: date };
 
-      if (!prev?.isAllDay) {
-        return newEvent;
+      if (field === "start" && !prev.isMultiDay && !prev.isAllDay) {
+        // Adjust end date for single-day events
+        newEvent.end = moment(date).set({
+          hour: prev.end ? prev.end.hour() : date.hour(),
+          minute: prev.end ? prev.end.minute() : date.minute(),
+          second: prev.end ? prev.end.second() : date.second(),
+        });
+      } else if (prev.isAllDay) {
+        if (field === "start") {
+          newEvent.start = moment(date).startOf("day");
+          if (!prev.isMultiDay) {
+            newEvent.end = moment(date).endOf("day");
+          }
+        } else if (field === "end" && prev.isMultiDay) {
+          newEvent.end = moment(date).endOf("day");
+        }
       }
 
-      if (field === "start" && !prev.isMultiDay) {
-        // Adjust end date for single-day events
-        newEvent.start = moment(date).startOf("day");
-        newEvent.end = moment(date).endOf("day");
-      } else if (field === "start" && prev.isMultiDay) {
-        newEvent.start = moment(date).startOf("day");
-      } else if (field === "end" && prev.isMultiDay) {
-        newEvent.start = moment(date).endOf("day");
-      }
       return newEvent;
     });
   };
@@ -437,14 +453,14 @@ export const EventDialog_NewEdit = ({
                 </Grid>
               )}
 
-              <Grid item>
+              {/* <Grid item>
                 <TextField
                   label="Resource"
                   value={currentEvent?.resource || ""}
                   onChange={handleChange("resource")}
                   fullWidth
                 />
-              </Grid>
+              </Grid> */}
             </Grid>
           )}
         </DialogContent>

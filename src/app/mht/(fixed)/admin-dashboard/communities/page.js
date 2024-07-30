@@ -261,7 +261,10 @@ export default function Management() {
                       onClick={() => goToEditCommunity(community)}
                     >
                       <CardMedia
-                        image={fakeCommunityImages[i]}
+                        image={
+                          community?.content?.galleryPhotos["1"].src ||
+                          fakeCommunityImages[i]
+                        }
                         title={community.name}
                         sx={{
                           height: 140,
@@ -277,17 +280,10 @@ export default function Management() {
                         >
                           {community.name}
                         </Box>
-                        <Typography
-                          align={"left"}
-                          variant={"body2"}
-                          color="textSecondary"
-                        >
-                          Description
-                        </Typography>
                       </Box>
                       <Box component={CardActions} justifyContent={"flex-end"}>
                         <Button size="small" href="">
-                          Edit
+                          Edit Community Page
                         </Button>
                       </Box>
                     </Box>
