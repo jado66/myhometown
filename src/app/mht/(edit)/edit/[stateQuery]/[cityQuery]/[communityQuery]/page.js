@@ -128,9 +128,9 @@ const Page = ({ params }) => {
 
   const handleChangeMap = (url) => {
     setCommunityData({
-      ...cityData,
+      ...communityData,
       content: {
-        ...cityData.content,
+        ...communityData.content,
         mapUrl: url,
       },
     });
@@ -168,6 +168,17 @@ const Page = ({ params }) => {
         },
       });
     }
+  };
+
+  const handleHeaderChange = (e, name) => {
+    const { value } = e.target;
+    setCommunityData({
+      ...communityData,
+      content: {
+        ...communityData.content,
+        header: value,
+      },
+    });
   };
 
   if (!hasLoaded) {
@@ -225,7 +236,7 @@ const Page = ({ params }) => {
           <Grid item xs={12}>
             <TextField
               variant="standard"
-              defaultValue={`What Is myHometown ${communityQuery}?`}
+              value={content?.header || `What Is myHometown ${communityQuery}?`}
               onChange={(event) => handleHeaderChange(event)}
               multiline
               InputProps={{
@@ -263,7 +274,7 @@ const Page = ({ params }) => {
 
             <TextField
               variant="standard"
-              defaultValue={content?.paragraph1Text}
+              value={content?.paragraph1Text}
               onChange={(event) => handleParagraphChange(event, "paragraph1")}
               multiline
               InputProps={{
@@ -298,7 +309,7 @@ const Page = ({ params }) => {
             <Divider />
             <TextField
               variant="standard"
-              defaultValue={content?.paragraph2Text}
+              value={content?.paragraph2Text}
               onChange={(event) => handleParagraphChange(event, "paragraph2")}
               multiline
               InputProps={{
@@ -390,7 +401,7 @@ const Page = ({ params }) => {
           {communityQuery}&apos;s Community Statistics
         </Typography>
 
-        {/* <StatsCounter stats={city.stats} isEdit /> */}
+        {/* <StatsCounter stats={community.stats} isEdit /> */}
 
         <EventDialog_NewEdit
           show={isCreatingNewEvent || selectedEvent !== null}
