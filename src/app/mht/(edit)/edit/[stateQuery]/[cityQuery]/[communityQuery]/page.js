@@ -259,7 +259,7 @@ const Page = ({ params }) => {
 
         <Typography variant="h3" align="center" color="primary">
           <span style={{ textTransform: "capitalize" }}>
-            {communityQuery.replace("-", " ")}
+            {communityQuery.replace("-", " ")} Community
           </span>
         </Typography>
 

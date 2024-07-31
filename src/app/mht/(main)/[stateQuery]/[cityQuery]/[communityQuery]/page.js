@@ -10,6 +10,7 @@ import {
   Typography,
   Button,
   Link,
+  Box,
 } from "@mui/material";
 import ContentEditable from "react-contenteditable";
 import { useEffect, useState, useRef } from "react";
@@ -132,12 +133,12 @@ const Page = ({ params }) => {
         <Grid container spacing={2} paddingY={3}>
           <Grid item xs={12}>
             <Typography
-              variant="h3"
+              variant="h4"
               align="center"
               color="primary"
               gutterBottom
             >
-              What Is myHometown
+              {community.content.header}
             </Typography>
 
             <MultiLineTypography text={community.content.paragraph1Text} />
@@ -147,30 +148,43 @@ const Page = ({ params }) => {
             <MultiLineTypography text={community.content.paragraph2Text} />
           </Grid>
         </Grid>
-        <Grid container spacing={2} paddingY={3}>
-          <Grid item xs={12}>
-            <Card
+        <Grid item xs={12} display="flex" justifyContent="center">
+          <Grid item xs={10} sm={8} md={6}>
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              position="relative"
               sx={{
-                height: "300px",
-                alignContent: "center",
-                justifyContent: "center",
+                width: "100%",
+                height: "100%",
+                backgroundColor: "transparent",
               }}
             >
-              <Typography variant="h4" component="h2" align="center">
-                Community map
-              </Typography>
-            </Card>
+              <img
+                src={community?.content?.mapUrl}
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  objectFit: "cover",
+                }}
+              />
+            </Box>
           </Grid>
         </Grid>
 
         <Divider sx={{ my: 5 }} />
 
-        <UpcomingEvents events={events} maxEvents={5} isLoading={isLoading} />
+        <UpcomingEvents
+          events={community.events}
+          maxEvents={5}
+          isLoading={isLoading}
+        />
 
         <Divider sx={{ my: 5 }} />
 
         <EventsCalendar
-          events={events}
+          events={community.events}
           onSelectEvent={onSelectEvent}
           isLoading={isLoading}
         />

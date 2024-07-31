@@ -136,6 +136,24 @@ export default function Management() {
     );
   }
 
+  const goToViewCommunity = (community) => {
+    // alert(JSON.stringify(community, null, 4));
+
+    const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+
+    router.push(
+      rootUrl +
+        `/${community.city.state
+          .toLowerCase()
+          .replaceAll(/\s/g, "-")}/${community.city.name
+          .toLowerCase()
+          .replaceAll(/\s/g, "-")}/${community.name
+          .toLowerCase()
+          .replaceAll(/\s/g, "-")}
+        `
+    );
+  };
+
   const goToEditCommunity = (community) => {
     // alert(JSON.stringify(community, null, 4));
 
@@ -282,7 +300,18 @@ export default function Management() {
                         </Box>
                       </Box>
                       <Box component={CardActions} justifyContent={"flex-end"}>
-                        <Button size="small" href="">
+                        <Button
+                          size="small"
+                          href=""
+                          onClick={goToViewCommunity}
+                        >
+                          View Community Page
+                        </Button>
+                        <Button
+                          size="small"
+                          href=""
+                          onClick={goToEditCommunity}
+                        >
                           Edit Community Page
                         </Button>
                       </Box>
