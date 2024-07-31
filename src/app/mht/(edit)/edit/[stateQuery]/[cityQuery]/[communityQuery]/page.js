@@ -173,6 +173,16 @@ const Page = ({ params }) => {
     });
   };
 
+  const handleChangeMarketingImage = (url, index) => {
+    setCommunityData({
+      ...communityData,
+      content: {
+        ...communityData.content,
+        [`marketingImage${index}`]: url,
+      },
+    });
+  };
+
   const handleDeleteEvent = (eventId) => {
     try {
       deleteEvent(eventId);
@@ -214,6 +224,17 @@ const Page = ({ params }) => {
       content: {
         ...communityData.content,
         header: value,
+      },
+    });
+  };
+
+  const handleMarketingHeaderChange = (e, name) => {
+    const { value } = e.target;
+    setCommunityData({
+      ...communityData,
+      content: {
+        ...communityData.content,
+        marketingHeader: value,
       },
     });
   };
@@ -424,9 +445,114 @@ const Page = ({ params }) => {
               </RoleGuard>
             </Grid>
           </Grid>
-        </Grid>
+          <Grid item xs={12} display="flex" justifyContent="center">
+            <Divider sx={{ my: 5 }} />
+          </Grid>
 
-        <Divider sx={{ my: 5 }} />
+          <TextField
+            variant="standard"
+            defaultValue={content?.marketingHeader || "Your Flyer Title"}
+            onChange={(event) => handleMarketingHeaderChange(event)}
+            multiline
+            InputProps={{
+              disableUnderline: true,
+              style: {
+                fontSize: "2rem",
+                textAlign: "center",
+                color: "#00357d",
+                textTransform: "capitalize",
+              },
+            }}
+            fullWidth
+            sx={{
+              fontFamily: "inherit",
+              fontSize: "2rem",
+              border: "none",
+              margin: 0,
+              padding: "10px 16px",
+              "& .MuiInputBase-input": {
+                textAlign: "center",
+              },
+              "& .MuiInput-underline:before": {
+                borderBottom: "none",
+              },
+              "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+                borderBottom: "none",
+              },
+              "& .MuiInput-underline:after": {
+                borderBottom: "none",
+              },
+              "& .Mui-focused": {
+                backgroundColor: "#f0f0f0",
+                borderRadius: "4px",
+              },
+            }}
+          />
+
+          <Divider sx={{ my: 5 }} />
+
+          <Grid item xs={12} display="flex" justifyContent="center">
+            <Grid item xs={12} sm={6}>
+              <Box
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                position="relative"
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  backgroundColor: "transparent",
+                }}
+              >
+                <UploadImage setUrl={() => (handleChangeMarketingImage, 1)} />
+                {content?.marketingImage1 ? (
+                  <img
+                    src={content.marketingImage1}
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <Typography variant="h4" component="h2" align="center">
+                    Marketing Image 1
+                  </Typography>
+                )}
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Box
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                position="relative"
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  minHeight: "100px",
+                  backgroundColor: "transparent",
+                }}
+              >
+                <UploadImage setUrl={() => (handleChangeMarketingImage, 2)} />
+                {content?.marketingImage2 ? (
+                  <img
+                    src={content.marketingImage2}
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <Typography variant="h4" component="h2" align="center">
+                    Marketing Image 2
+                  </Typography>
+                )}
+              </Box>
+            </Grid>
+          </Grid>
+        </Grid>
 
         {/* <Typography
           variant="h4"
