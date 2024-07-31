@@ -73,8 +73,11 @@ const EditLayout = ({
             mx: "auto",
             boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
             justifyContent: "center",
+            maxWidth: {
+              lg: "md",
+              xl: "lg",
+            },
           }}
-          maxWidth="md"
         >
           {children}
           <Divider />

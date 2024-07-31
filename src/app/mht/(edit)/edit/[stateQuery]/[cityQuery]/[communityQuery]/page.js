@@ -490,7 +490,7 @@ const Page = ({ params }) => {
           </span>
         </Typography>
 
-        <pre>{JSON.stringify(communityData, null, 4)}</pre>
+        {/* <pre>{JSON.stringify(communityData, null, 4)}</pre> */}
 
         <PhotoGallery
           photos={content.galleryPhotos}
@@ -506,6 +506,7 @@ const Page = ({ params }) => {
               value={content?.header || `What Is myHometown ${communityQuery}?`}
               onChange={(event) => handleHeaderChange(event)}
               multiline
+              fullWidth
               InputProps={{
                 disableUnderline: true,
                 sx: {
@@ -513,13 +514,14 @@ const Page = ({ params }) => {
                   textAlign: "center",
                   color: (theme) => theme.palette.primary.main,
                   textTransform: "capitalize",
+                  display: "flex",
+                  justifyContent: "center", // Add this line
                   "& .Mui-focused": {
                     backgroundColor: "#f0f0f0",
                     borderRadius: "4px",
                   },
                 },
               }}
-              fullWidth
               sx={{
                 fontFamily: "inherit",
                 fontSize: "2rem",
@@ -527,6 +529,9 @@ const Page = ({ params }) => {
                 margin: 0,
                 padding: "10px 16px",
                 textAlign: "center",
+                "& .MuiInputBase-input": {
+                  textAlign: "center", // Add this line
+                },
                 "& .MuiInput-underline:before": {
                   borderBottom: "none",
                 },
