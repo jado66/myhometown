@@ -188,10 +188,6 @@ const Page = ({ params }) => {
           onSelectEvent={onSelectEvent}
           isLoading={isLoading}
         />
-
-        <Divider sx={{ my: 5 }} />
-
-        <ClassesTreeView classes={mockClassesData} />
       </Container>
     </>
   );

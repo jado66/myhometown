@@ -31,6 +31,7 @@ import { Info } from "@mui/icons-material";
 import UploadImage from "@/components/util/UploadImage";
 import { StatsCounter } from "@/components/StatsCounter";
 import { v4 as uuidv4 } from "uuid";
+import { ClassesTreeView } from "@/components/events/ClassesTreeView";
 
 const communityDataContentTemplate = {
   paragraph1Text: faker.lorem.paragraph(),
@@ -394,7 +395,7 @@ const Page = ({ params }) => {
             />
           </Grid>
           <Grid item xs={12} display="flex" justifyContent="center">
-            <Grid item xs={10} sm={8} md={6}>
+            <Grid item xs={10} sm={8}>
               <RoleGuard
                 roles={["admin"]}
                 user={user}
@@ -504,10 +505,12 @@ const Page = ({ params }) => {
                   backgroundColor: "transparent",
                 }}
               >
-                <UploadImage setUrl={() => (handleChangeMarketingImage, 1)} />
-                {content?.marketingImage1 ? (
+                <UploadImage
+                  setUrl={(url) => handleChangeMarketingImage(url, 1)}
+                />
+                {communityData.content?.marketingImage1 ? (
                   <img
-                    src={content.marketingImage1}
+                    src={communityData.content.marketingImage1}
                     style={{
                       width: "100%",
                       height: "auto",
@@ -521,6 +524,7 @@ const Page = ({ params }) => {
                 )}
               </Box>
             </Grid>
+
             <Grid item xs={12} sm={6}>
               <Box
                 display="flex"
@@ -534,10 +538,12 @@ const Page = ({ params }) => {
                   backgroundColor: "transparent",
                 }}
               >
-                <UploadImage setUrl={() => (handleChangeMarketingImage, 2)} />
-                {content?.marketingImage2 ? (
+                <UploadImage
+                  setUrl={(url) => handleChangeMarketingImage(url, 2)}
+                />
+                {communityData.content?.marketingImage2 ? (
                   <img
-                    src={content.marketingImage2}
+                    src={communityData.content.marketingImage2}
                     style={{
                       width: "100%",
                       height: "auto",
@@ -599,6 +605,9 @@ const Page = ({ params }) => {
           onSelectSlot={(slot) => setSelectedEvent(slot)}
           isEdit
         />
+        {/* <Divider sx={{ my: 5 }} /> */}
+
+        {/* <ClassesTreeView classes={communityData.classes} /> */}
       </Container>
     </>
   );

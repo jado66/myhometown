@@ -255,7 +255,7 @@ const Topbar = ({ onSidebarOpen }) => {
             </Menu>
           </Box>
 
-          <Box marginX={2}>
+          {/* <Box marginX={2}>
             <Link
               underline="none"
               component="a"
@@ -264,8 +264,8 @@ const Topbar = ({ onSidebarOpen }) => {
             >
               About Us
             </Link>
-          </Box>
-          <Box marginX={2}>
+          </Box> */}
+          {/* <Box marginX={2}>
             <Link
               underline="none"
               component="a"
@@ -274,7 +274,7 @@ const Topbar = ({ onSidebarOpen }) => {
             >
               Donate
             </Link>
-          </Box>
+          </Box> */}
         </Box>
       </Box>
     </Box>
