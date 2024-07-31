@@ -156,7 +156,7 @@ const UpcomingEventCard = ({ event, dateFormatter, onSelect }) => {
               {!event.allDay ? ` - ${endDate}` : ", All Day Event"}
             </Typography>
 
-            <Typography variant="body2" sx={{ textTransform: "capitalize" }}>
+            <Typography variant="body2">
               {event.location.replaceAll("-", " ")}
             </Typography>
           </Box>

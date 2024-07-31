@@ -428,7 +428,7 @@ const Page = ({ params }) => {
 
         <Divider sx={{ my: 5 }} />
 
-        <Typography
+        {/* <Typography
           variant="h4"
           component="h2"
           textAlign="center"
@@ -437,7 +437,7 @@ const Page = ({ params }) => {
           sx={{ textTransform: "capitalize" }}
         >
           {communityQuery}&apos;s Community Statistics
-        </Typography>
+        </Typography> */}
 
         {/* <StatsCounter stats={community.stats} isEdit /> */}
 
