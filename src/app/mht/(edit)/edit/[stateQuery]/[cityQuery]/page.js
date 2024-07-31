@@ -111,8 +111,6 @@ const Page = ({ params }) => {
     }));
   };
 
-  // const { deleteEvent, modifyEvent, addEvent } = useHandleEvents(setEvents);
-
   const closeEventDialog = () => {
     setSelectedEvent(null);
     setIsCreatingNewEvent(false);

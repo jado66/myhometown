@@ -60,7 +60,7 @@ export const EventsCalendar = ({
   // Ensure events are properly formatted
   const formattedEvents = useMemo(
     () =>
-      events.map((event) => ({
+      (events || []).map((event) => ({
         ...event,
         start: new Date(event.start),
         end: new Date(event.end),

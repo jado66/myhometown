@@ -30,6 +30,7 @@ import { useUser } from "@/hooks/use-user";
 import { Info } from "@mui/icons-material";
 import UploadImage from "@/components/util/UploadImage";
 import { StatsCounter } from "@/components/StatsCounter";
+import { v4 as uuidv4 } from "uuid";
 
 const communityDataContentTemplate = {
   paragraph1Text: faker.lorem.paragraph(),
@@ -85,8 +86,44 @@ const Page = ({ params }) => {
     });
   };
 
-  const { deleteEvent, modifyEvent, addEvent } = useHandleEvents(setEvents);
+  const modifyEvent = (modifiedEvent) => {
+    const id = modifiedEvent.id;
 
+    if (!id) {
+      alert("no ID!!!!");
+      return;
+    }
+
+    setCommunityData((prevCommunityData) => ({
+      ...prevCommunityData,
+      events: prevCommunityData.events.map((event) =>
+        event.id === id ? modifiedEvent : event
+      ),
+    }));
+  };
+
+  const addEvent = (newEvent) => {
+    const uniqueId = uuidv4();
+
+    newEvent.id = uniqueId;
+
+    setCommunityData((prevCommunityData) => ({
+      ...prevCommunityData,
+      events: [...prevCommunityData.events, newEvent],
+    }));
+  };
+
+  const deleteEvent = (eventId) => {
+    if (!eventId) {
+      alert("No ID provided for deletion!");
+      return;
+    }
+
+    setCommunityData((prevCommunityData) => ({
+      ...prevCommunityData,
+      events: prevCommunityData.events.filter((event) => event.id !== eventId),
+    }));
+  };
   const closeEventDialog = () => {
     setSelectedEvent(null);
     setIsCreatingNewEvent(false);
@@ -217,11 +254,12 @@ const Page = ({ params }) => {
     <>
       <Container sx={{ paddingTop: 3, marginBottom: 2 }}>
         <Typography variant="h2" align="center" color="primary">
-          myHometown{" "}
+          myHometown Orem
+        </Typography>
+
+        <Typography variant="h3" align="center" color="primary">
           <span style={{ textTransform: "capitalize" }}>
-            {communityQuery}
-            {" - "}
-            {cityQuery}
+            {communityQuery.replace("-", " ")}
           </span>
         </Typography>
 
@@ -429,12 +467,12 @@ const Page = ({ params }) => {
 
         {/* <pre>{JSON.stringify(cityData, null, 4)}</pre> */}
 
-        {/* <EventsCalendar
+        <EventsCalendar
           events={communityData.events}
           onSelectEvent={onSelectEvent}
           onSelectSlot={(slot) => setSelectedEvent(slot)}
           isEdit
-        /> */}
+        />
       </Container>
     </>
   );
