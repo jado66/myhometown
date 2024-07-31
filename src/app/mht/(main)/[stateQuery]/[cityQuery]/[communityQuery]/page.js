@@ -69,20 +69,23 @@ const Page = ({ params }) => {
     }
   }, [community, hasLoaded]);
 
+  const alertNotEdit = () => {
+    alert("this isn't edit");
+  };
+
   if (!hasLoaded) {
     return (
-      <>
-        <div
-          style={{
-            height: "100vh",
-            padding: "5em",
-            justifyContent: "center",
-            display: "flex",
-          }}
-        >
-          <Loading size={100} />
-        </div>
-      </>
+      <div
+        style={{
+          flex: 1,
+          height: "100vh",
+          padding: "5em",
+          justifyContent: "center",
+          display: "flex",
+        }}
+      >
+        <Loading size={100} />
+      </div>
     );
   }
 
@@ -187,6 +190,20 @@ const Page = ({ params }) => {
           events={community.events}
           onSelectEvent={onSelectEvent}
           isLoading={isLoading}
+        />
+
+        <Divider sx={{ my: 5 }} />
+
+        <ClassesTreeView
+          classes={community.classes}
+          onCreateClassCategory={alertNotEdit}
+          onCreateSubclass={alertNotEdit}
+          onDeleteClassCategory={alertNotEdit}
+          onDeleteSubclass={alertNotEdit}
+          shiftDownClassCategory={alertNotEdit}
+          shiftUpClassCategory={alertNotEdit}
+          shiftUpSubclass={alertNotEdit}
+          shiftDownSubclass={alertNotEdit}
         />
       </Container>
     </>

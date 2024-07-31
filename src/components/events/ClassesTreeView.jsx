@@ -24,6 +24,7 @@ import {
   Brush,
   BrushOutlined,
   Carpenter,
+  Delete,
   LocalHospital,
   Plumbing,
   Translate,
@@ -40,20 +41,35 @@ const StyledTreeItem = styled(TreeItem)(({ theme }) => ({
   },
 }));
 
-export const ClassesTreeView = ({ classes, setClasses, isEdit = true }) => {
+export const ClassesTreeView = ({
+  classes,
+  onCreateClassCategory,
+  onCreateSubclass,
+  onDeleteClassCategory,
+  onDeleteSubclass,
+  shiftDownClassCategory,
+  shiftUpClassCategory,
+  shiftUpSubclass,
+  shiftDownSubclass,
+  isEdit,
+}) => {
   const [isAddNewCategory, setAddNewCategory] = useState(false);
 
   const [isShowIframeHelpDialog, setShowIframeHelpDialog] = useState(false);
   const showIframeHelpDialog = () => setShowIframeHelpDialog(true);
   const hideIframeHelpDialog = () => setShowIframeHelpDialog(false);
 
-  if (!classes || classes.length === 0) {
+  if (!classes) {
     return null;
   }
 
   const renderTreeItems = (category) => {
     return (
       <ClassesCategory
+        isEdit={isEdit}
+        onDeleteSubclass={onDeleteSubclass}
+        onDeleteClassCategory={onDeleteClassCategory}
+        onCreateSubclass={onCreateSubclass}
         category={category}
         showIframeHelpDialog={showIframeHelpDialog}
       />
@@ -84,20 +100,23 @@ export const ClassesTreeView = ({ classes, setClasses, isEdit = true }) => {
           >
             {classes.map((classItem) => renderTreeItems(classItem))}
             {isAddNewCategory && (
-              <CreateCategoryForm onClose={() => setAddNewCategory(false)} />
+              <CreateCategoryForm
+                onClose={() => setAddNewCategory(false)}
+                onCreate={onCreateClassCategory}
+              />
             )}
             {isEdit && !isAddNewCategory && (
-              <>
+              <Grid>
                 <Divider />
                 <Button
                   startIcon={<Add />}
                   onClick={() => setAddNewCategory(true)}
-                  sx={{ my: 1, mx: "auto" }}
+                  sx={{ my: 1 }}
                   fullWidth
                 >
                   Add New Category
                 </Button>
-              </>
+              </Grid>
             )}
           </SimpleTreeView>
         </Grid>
@@ -106,7 +125,14 @@ export const ClassesTreeView = ({ classes, setClasses, isEdit = true }) => {
   );
 };
 
-const ClassesCategory = ({ category, isEdit = true, showIframeHelpDialog }) => {
+const ClassesCategory = ({
+  category,
+  isEdit,
+  onDeleteClassCategory,
+  onDeleteSubclass,
+  showIframeHelpDialog,
+  onCreateSubclass,
+}) => {
   const [isAddNewClass, setAddNewClass] = useState(false);
 
   return (
@@ -115,7 +141,7 @@ const ClassesCategory = ({ category, isEdit = true, showIframeHelpDialog }) => {
       itemId={category.id.toString()}
       label={
         <div style={{ display: "flex", alignItems: "center" }}>
-          {category.icon}
+          {ExampleIcons[category.icon]}
           <Typography sx={{ marginLeft: "1em" }}>{category.title}</Typography>
         </div>
       }
@@ -124,14 +150,14 @@ const ClassesCategory = ({ category, isEdit = true, showIframeHelpDialog }) => {
         ? category.classes.map((classObj) => (
             <Accordion key={`accordion-${classObj.id}`} elevation={0}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                {classObj.icon}
+                {ExampleIcons[classObj.icon]}
                 <Typography sx={{ marginLeft: "1em" }}>
                   {category.title}
                 </Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <iframe
-                  src={`https://docs.google.com/forms/d/${classObj.googleFormID}/viewform?embedded=true`}
+                  src={`https://docs.google.com/forms/d/e/${classObj.googleFormID}/viewform?embedded=true`}
                   width="100%"
                   height="500px"
                   frameBorder="0"
@@ -140,6 +166,17 @@ const ClassesCategory = ({ category, isEdit = true, showIframeHelpDialog }) => {
                 >
                   Loading…
                 </iframe>
+
+                {isEdit && (
+                  <Button
+                    startIcon={<Delete />}
+                    onClick={() => onDeleteSubclass(category.id, classObj.id)}
+                    sx={{ my: 1, mx: "auto" }}
+                    fullWidth
+                  >
+                    Delete Class
+                  </Button>
+                )}
               </AccordionDetails>
             </Accordion>
           ))
@@ -149,20 +186,31 @@ const ClassesCategory = ({ category, isEdit = true, showIframeHelpDialog }) => {
         <CreateClassForm
           category={category}
           onClose={() => setAddNewClass(false)}
+          onCreateSubclass={onCreateSubclass}
           showIframeHelpDialog={showIframeHelpDialog}
         />
       )}
       {isEdit && !isAddNewClass && (
         <>
-          <Divider />
-          <Button
-            startIcon={<Add />}
-            onClick={() => setAddNewClass(true)}
-            sx={{ my: 1, mx: "auto" }}
-            fullWidth
-          >
-            Add New Class
-          </Button>
+          <Grid display="flex" justifyContent="center" flexDirection="column">
+            <Divider sx={{ height: 1, width: "100%" }} />
+            <Grid flexDirection="row" display="flex" justifyContent="center">
+              <Button
+                startIcon={<Add />}
+                onClick={() => setAddNewClass(true)}
+                sx={{ my: 1, mx: 1 }}
+              >
+                Add New Class
+              </Button>
+              <Button
+                startIcon={<Delete />}
+                onClick={() => onDeleteClassCategory(category.id)}
+                sx={{ my: 1, mx: 1 }}
+              >
+                Delete Category
+              </Button>
+            </Grid>
+          </Grid>
         </>
       )}
     </StyledTreeItem>
@@ -204,12 +252,10 @@ const IconSelect = ({ icon, onSelect }) => (
 );
 
 const MAX_TITLE_LENGTH = 50;
-const iframeRegex =
-  /<iframe.*src="https:\/\/docs.google.com\/forms\/.*><\/iframe>/;
 
 // // Component to create a new class within a category
 
-const CreateCategoryForm = ({ category, onCreate, onClose }) => {
+const CreateCategoryForm = ({ onCreate, onClose }) => {
   const [title, setTitle] = useState("");
   const [icon, setIcon] = useState("None");
 
@@ -234,7 +280,7 @@ const CreateCategoryForm = ({ category, onCreate, onClose }) => {
       >
         <Grid item xs={12}>
           <Typography variant="h6" textAlign="center">
-            Add New Class
+            Add New Class Category
           </Typography>
         </Grid>
         <Grid
@@ -254,7 +300,7 @@ const CreateCategoryForm = ({ category, onCreate, onClose }) => {
               fullWidth
               size="small"
               value={title}
-              label="Class Title"
+              label="Category Title"
               onChange={(e) => setTitle(e.target.value)}
               margin="normal"
               InputProps={{
@@ -281,10 +327,11 @@ const CreateCategoryForm = ({ category, onCreate, onClose }) => {
               onClick={() => {
                 onCreate(icon, title);
                 setTitle(""); // Reset after adding
+                onClose();
               }}
               disabled={!isFormValid()}
             >
-              Add Class
+              Add Category
             </Button>
           </Grid>
         </Grid>
@@ -295,7 +342,7 @@ const CreateCategoryForm = ({ category, onCreate, onClose }) => {
 
 const CreateClassForm = ({
   category,
-  onCreate,
+  onCreateSubclass,
   onClose,
   showIframeHelpDialog,
 }) => {
@@ -304,15 +351,31 @@ const CreateClassForm = ({
   const [icon, setIcon] = useState("None");
 
   const MAX_TITLE_LENGTH = 50;
-  const iframeRegex =
-    /<iframe.*src="https:\/\/docs.google.com\/forms\/.*><\/iframe>/;
+
+  const extractGoogleFormId = (iframe) => {
+    const match = iframe.match(
+      /<iframe[^>]*src="https:\/\/docs\.google\.com\/forms\/d\/e\/([^"]+)\/viewform/
+    );
+    return match ? match[1] : null;
+  };
+
+  const googleFormId = extractGoogleFormId(googleFormIframe);
+
+  // Debugging output
+  console.log("Title:", title);
+  console.log("Google Form Iframe:", googleFormIframe);
+  console.log("Google Form ID:", googleFormId);
 
   const isFormValid = () => {
-    return (
+    const valid =
       title.length > 0 &&
       title.length <= MAX_TITLE_LENGTH &&
-      iframeRegex.test(googleFormIframe)
-    );
+      googleFormId !== null;
+
+    // More debugging output
+    console.log("Is Form Valid:", valid);
+
+    return valid;
   };
 
   return (
@@ -380,9 +443,9 @@ const CreateClassForm = ({
                   </InputAdornment>
                 ),
               }}
-              error={!iframeRegex.test(googleFormIframe) && googleFormIframe}
+              error={googleFormId === null && googleFormIframe.length > 0}
               helperText={
-                !iframeRegex.test(googleFormIframe) && googleFormIframe
+                googleFormId === null && googleFormIframe.length > 0
                   ? "Invalid iframe code."
                   : ""
               }
@@ -401,7 +464,7 @@ const CreateClassForm = ({
               variant="contained"
               fullWidth
               onClick={() => {
-                onCreate(title, googleFormIframe);
+                onCreateSubclass(category.id, icon, title, googleFormId);
                 setTitle(""); // Reset after adding
                 setGoogleFormIframe(""); // Reset after adding
               }}

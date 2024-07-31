@@ -229,6 +229,97 @@ const Page = ({ params }) => {
     });
   };
 
+  const onCreateClassCategory = (iconName, title) => {
+    const id = uuidv4();
+
+    const newClassCategory = {
+      icon: iconName,
+      title: title,
+      id: id,
+      classes: [],
+    };
+
+    setCommunityData({
+      ...communityData,
+      classes: [...communityData.classes, newClassCategory],
+    });
+  };
+
+  const onCreateSubclass = (classCategoryId, iconName, title, googleFormID) => {
+    const id = uuidv4();
+
+    const newSubclass = {
+      icon: iconName,
+      title: title,
+      id: id,
+      googleFormID: googleFormID,
+    };
+
+    setCommunityData((prevState) => {
+      // Find the index of the class category where the new subclass should be added
+      const updatedClasses = prevState.classes.map((classCategory) => {
+        if (classCategory.id === classCategoryId) {
+          return {
+            ...classCategory,
+            classes: [...classCategory.classes, newSubclass],
+          };
+        }
+        return classCategory;
+      });
+
+      return {
+        ...prevState,
+        classes: updatedClasses,
+      };
+    });
+  };
+
+  const onDeleteSubclass = (classCategoryId, subclassId) => {
+    const shouldDelete = window.confirm(
+      "Are you sure you want to delete this subclass?"
+    );
+
+    if (shouldDelete) {
+      setCommunityData((prevState) => {
+        const updatedClasses = prevState.classes.map((classCategory) => {
+          if (classCategory.id === classCategoryId) {
+            return {
+              ...classCategory,
+              classes: classCategory.classes.filter(
+                (subclass) => subclass.id !== subclassId
+              ),
+            };
+          }
+          return classCategory;
+        });
+
+        return {
+          ...prevState,
+          classes: updatedClasses,
+        };
+      });
+    }
+  };
+
+  const onDeleteClassCategory = (classCategoryId) => {
+    const shouldDelete = window.confirm(
+      "Are you sure you want to delete this class category?"
+    );
+
+    if (shouldDelete) {
+      setCommunityData((prevState) => {
+        const updatedClasses = prevState.classes.filter(
+          (classCategory) => classCategory.id !== classCategoryId
+        );
+
+        return {
+          ...prevState,
+          classes: updatedClasses,
+        };
+      });
+    }
+  };
+
   const handleMarketingHeaderChange = (e, name) => {
     const { value } = e.target;
     setCommunityData({
@@ -237,6 +328,120 @@ const Page = ({ params }) => {
         ...communityData.content,
         marketingHeader: value,
       },
+    });
+  };
+
+  const swapArrayElements = (array, index1, index2) => {
+    const newArray = [...array];
+    [newArray[index1], newArray[index2]] = [newArray[index2], newArray[index1]];
+    return newArray;
+  };
+
+  const shiftUpClassCategory = (classCategoryId) => {
+    setCommunityData((prevState) => {
+      const index = prevState.content.classes.findIndex(
+        (classCategory) => classCategory.id === classCategoryId
+      );
+      if (index > 0) {
+        const updatedClasses = swapArrayElements(
+          prevState.content.classes,
+          index,
+          index - 1
+        );
+        return {
+          ...prevState,
+          content: {
+            ...prevState.content,
+            classes: updatedClasses,
+          },
+        };
+      }
+      return prevState; // No change if the index is already the first one.
+    });
+  };
+
+  const shiftDownClassCategory = (classCategoryId) => {
+    setCommunityData((prevState) => {
+      const index = prevState.content.classes.findIndex(
+        (classCategory) => classCategory.id === classCategoryId
+      );
+      if (index < prevState.content.classes.length - 1) {
+        const updatedClasses = swapArrayElements(
+          prevState.content.classes,
+          index,
+          index + 1
+        );
+        return {
+          ...prevState,
+          content: {
+            ...prevState.content,
+            classes: updatedClasses,
+          },
+        };
+      }
+      return prevState; // No change if the index is already the last one.
+    });
+  };
+
+  const shiftUpSubclass = (classCategoryId, subclassId) => {
+    setCommunityData((prevState) => {
+      const updatedClasses = prevState.content.classes.map((classCategory) => {
+        if (classCategory.id === classCategoryId) {
+          const index = classCategory.classes.findIndex(
+            (subclass) => subclass.id === subclassId
+          );
+          if (index > 0) {
+            return {
+              ...classCategory,
+              classes: swapArrayElements(
+                classCategory.classes,
+                index,
+                index - 1
+              ),
+            };
+          }
+        }
+        return classCategory;
+      });
+
+      return {
+        ...prevState,
+        content: {
+          ...prevState.content,
+          classes: updatedClasses,
+        },
+      };
+    });
+  };
+
+  const shiftDownSubclass = (classCategoryId, subclassId) => {
+    setCommunityData((prevState) => {
+      const updatedClasses = prevState.content.classes.map((classCategory) => {
+        if (classCategory.id === classCategoryId) {
+          const index = classCategory.classes.findIndex(
+            (subclass) => subclass.id === subclassId
+          );
+          if (index < classCategory.classes.length - 1) {
+            return {
+              ...classCategory,
+              classes: swapArrayElements(
+                classCategory.classes,
+                index,
+                index + 1
+              ),
+            };
+          }
+        }
+        return classCategory;
+      });
+
+      return {
+        ...prevState,
+        content: {
+          ...prevState.content,
+          classes: updatedClasses,
+        },
+      };
     });
   };
 
@@ -284,6 +489,8 @@ const Page = ({ params }) => {
             {communityQuery.replace("-", " ")} Community
           </span>
         </Typography>
+
+        <pre>{JSON.stringify(communityData, null, 4)}</pre>
 
         <PhotoGallery
           photos={content.galleryPhotos}
@@ -452,7 +659,7 @@ const Page = ({ params }) => {
 
           <TextField
             variant="standard"
-            defaultValue={content?.marketingHeader || "Your Flyer Title"}
+            value={content?.marketingHeader || "Your Flyer Title"}
             onChange={(event) => handleMarketingHeaderChange(event)}
             multiline
             InputProps={{
@@ -500,6 +707,7 @@ const Page = ({ params }) => {
                 alignItems="center"
                 position="relative"
                 sx={{
+                  px: 0.5,
                   width: "100%",
                   height: "100%",
                   backgroundColor: "transparent",
@@ -532,6 +740,7 @@ const Page = ({ params }) => {
                 alignItems="center"
                 position="relative"
                 sx={{
+                  px: 0.5,
                   width: "100%",
                   height: "100%",
                   minHeight: "100px",
@@ -605,9 +814,20 @@ const Page = ({ params }) => {
           onSelectSlot={(slot) => setSelectedEvent(slot)}
           isEdit
         />
-        {/* <Divider sx={{ my: 5 }} /> */}
+        <Divider sx={{ my: 5 }} />
 
-        {/* <ClassesTreeView classes={communityData.classes} /> */}
+        <ClassesTreeView
+          isEdit
+          classes={communityData.classes}
+          onCreateClassCategory={onCreateClassCategory}
+          onCreateSubclass={onCreateSubclass}
+          onDeleteClassCategory={onDeleteClassCategory}
+          onDeleteSubclass={onDeleteSubclass}
+          shiftDownClassCategory={shiftDownClassCategory}
+          shiftUpClassCategory={shiftUpClassCategory}
+          shiftUpSubclass={shiftUpSubclass}
+          shiftDownSubclass={shiftDownSubclass}
+        />
       </Container>
     </>
   );
