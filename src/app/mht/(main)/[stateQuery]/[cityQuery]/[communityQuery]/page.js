@@ -176,8 +176,85 @@ const Page = ({ params }) => {
           </Grid>
         </Grid>
 
-        <Divider sx={{ my: 5 }} />
+        <Grid item xs={12} display="flex" justifyContent="center">
+          <Divider sx={{ my: 5 }} />
+        </Grid>
 
+        <Grid
+          item
+          xs={12}
+          display="flex"
+          justifyContent="center"
+          flexDirection="column"
+        >
+          {community?.content?.marketingHeader && (
+            <Typography
+              variant="h4"
+              align="center"
+              sx={{ textTransform: "capitalize", mb: 5, color: "#00357d" }}
+            >
+              {community.content?.marketingHeader}
+            </Typography>
+          )}
+
+          {community?.content?.marketingImage1 && (
+            <>
+              <Grid item xs={12} display="flex" justifyContent="center">
+                <Grid item xs={12} sm={6}>
+                  <Box
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    position="relative"
+                    sx={{
+                      px: 0.5,
+                      width: "100%",
+                      height: "100%",
+                      backgroundColor: "transparent",
+                    }}
+                  >
+                    <img
+                      src={community?.content?.marketingImage1}
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </Box>
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <Box
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    position="relative"
+                    sx={{
+                      px: 0.5,
+                      width: "100%",
+                      height: "100%",
+                      minHeight: "100px",
+                      backgroundColor: "transparent",
+                    }}
+                  >
+                    <img
+                      src={community?.content.marketingImage2}
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </Box>
+                </Grid>
+              </Grid>
+            </>
+          )}
+        </Grid>
+        <Grid item xs={12}>
+          <Divider sx={{ my: 5 }} />
+        </Grid>
         <UpcomingEvents
           events={community.events}
           maxEvents={5}
@@ -211,44 +288,3 @@ const Page = ({ params }) => {
 };
 
 export default Page;
-
-const mockClassesData = [
-  {
-    icon: <BrushIcon />,
-    title: "Art Classes",
-    id: 1,
-    classes: [
-      {
-        icon: <BrushIcon />,
-        id: 2,
-        title: "Watercolor Painting",
-        googleFormID: "1SkvcoXcd8VbeKUg8gPGGgOMYjdYGZ-BA7jWEfAq4Lkc",
-      },
-      {
-        icon: <BrushIcon />,
-        id: 3,
-        title: "Oil Painting",
-        googleFormID: "1SkvcoXcd8VbeKUg8gPGGgOMYjdYGZ-BA7jWEfAq4Lkc",
-      },
-    ],
-  },
-  {
-    icon: <TranslateIcon />,
-    title: "Language Classes",
-    id: 4,
-    classes: [
-      {
-        icon: <TranslateIcon />,
-        title: "English for Beginners",
-        id: 5,
-        googleFormID: "1SkvcoXcd8VbeKUg8gPGGgOMYjdYGZ-BA7jWEfAq4Lkc",
-      },
-      {
-        icon: <TranslateIcon />,
-        id: 6,
-        title: "Advanced Spanish",
-        googleFormID: "1vw4oEsH0Zaca7PX_tzxsuLt0vtf33jihVB8dxpriaf8",
-      },
-    ],
-  },
-];
