@@ -32,6 +32,7 @@ import UploadImage from "@/components/util/UploadImage";
 import { StatsCounter } from "@/components/StatsCounter";
 import { v4 as uuidv4 } from "uuid";
 import { ClassesTreeView } from "@/components/events/ClassesTreeView";
+import { VolunteerSignUps } from "@/components/VolunteerSignUps";
 
 const communityDataContentTemplate = {
   paragraph1Text: faker.lorem.paragraph(),
@@ -328,6 +329,21 @@ const Page = ({ params }) => {
         ...communityData.content,
         marketingHeader: value,
       },
+    });
+  };
+
+  const handleVolunteerSignUpHeaderChange = (e, name) => {
+    const { value } = e.target;
+    setCommunityData({
+      ...communityData,
+      volunteerHeaderText: value,
+    });
+  };
+
+  const handleSignUpFormIdChange = (value) => {
+    setCommunityData({
+      ...communityData,
+      signUpFormId: value,
     });
   };
 
@@ -832,6 +848,15 @@ const Page = ({ params }) => {
           shiftUpClassCategory={shiftUpClassCategory}
           shiftUpSubclass={shiftUpSubclass}
           shiftDownSubclass={shiftDownSubclass}
+        />
+        <Divider sx={{ my: 5 }} />
+
+        <VolunteerSignUps
+          isEdit
+          volunteerHeaderText={communityData.volunteerHeaderText}
+          setVolunteerHeaderText={handleVolunteerSignUpHeaderChange}
+          signUpFormId={communityData.signUpFormId}
+          setSignUpFormId={handleSignUpFormIdChange}
         />
       </Container>
     </>

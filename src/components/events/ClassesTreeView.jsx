@@ -405,10 +405,10 @@ const CreateClassForm = ({
           sx={{ px: 2 }}
           alignItems="center"
         >
-          <Grid item xs={3} sm={2}>
+          <Grid item xs={3} sm={3}>
             <IconSelect onSelect={(e) => setIcon(e.target.value)} icon={icon} />
           </Grid>
-          <Grid item xs={9} sm={3}>
+          <Grid item xs={9} sm={9}>
             <TextField
               fullWidth
               size="small"
@@ -426,6 +426,22 @@ const CreateClassForm = ({
             />
           </Grid>
           <Grid item xs={12} sm={7}>
+            <Divider sx={{ mb: 3 }} />
+          </Grid>
+          <Grid item xs={12} sm={7} display="flex" flexDirection="column">
+            <Grid item xs={12}>
+              <Typography variant="body" textAlign="left">
+                Copy the link from Google Forms
+              </Typography>
+              <Button
+                variant="outlined"
+                onClick={showIframeHelpDialog}
+                sx={{ ml: 2 }}
+              >
+                Get Help <HelpOutlineIcon sx={{ ml: 1 }} />
+              </Button>
+            </Grid>
+
             <TextField
               fullWidth
               size="small"
@@ -433,16 +449,6 @@ const CreateClassForm = ({
               onChange={(e) => setGoogleFormIframe(e.target.value)}
               placeholder="Google Form iframe code"
               margin="normal"
-              InputProps={{
-                style: { height: "47px" },
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={showIframeHelpDialog}>
-                      <HelpOutlineIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
               error={googleFormId === null && googleFormIframe.length > 0}
               helperText={
                 googleFormId === null && googleFormIframe.length > 0

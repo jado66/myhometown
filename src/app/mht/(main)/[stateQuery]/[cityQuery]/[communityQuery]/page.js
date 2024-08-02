@@ -28,6 +28,7 @@ import BrushIcon from "@mui/icons-material/Brush"; // Example icon - make sure t
 import TranslateIcon from "@mui/icons-material/Translate";
 import { ClassesTreeView } from "@/components/events/ClassesTreeView";
 import { MultiLineTypography } from "@/components/MultiLineTypography";
+import { VolunteerSignUps } from "@/components/VolunteerSignUps";
 
 const Page = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params; //TODO change me to stateQuery... VsCode hates renaming folders
@@ -52,17 +53,6 @@ const Page = ({ params }) => {
     setSelectedEvent(event);
   };
 
-  const handleParagraphChange = (e, name) => {
-    const { value } = e.target;
-
-    if (name === "paragraph1") {
-      setParagraph1Text(value);
-    } else {
-      setParagraph2Text(value);
-    }
-
-    localStorage.setItem(name, value);
-  };
   useEffect(() => {
     if (community && hasLoaded) {
       localStorage.setItem("lastCommunity", JSON.stringify(community));
@@ -281,6 +271,15 @@ const Page = ({ params }) => {
           shiftUpClassCategory={alertNotEdit}
           shiftUpSubclass={alertNotEdit}
           shiftDownSubclass={alertNotEdit}
+        />
+
+        <Divider sx={{ my: 5 }} />
+
+        <VolunteerSignUps
+          volunteerHeaderText={community.volunteerHeaderText}
+          setVolunteerHeaderText={alertNotEdit}
+          signUpFormId={community.signUpFormId}
+          setSignUpFormId={alertNotEdit}
         />
       </Container>
     </>
