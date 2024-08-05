@@ -33,6 +33,17 @@ import InputAdornment from "@mui/material/InputAdornment";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { IframeHelpDialog } from "./IframeHelpDialog";
 import BearIcon from "@/assets/svg/icons/BearIcon";
+import CookingIcon from "@/assets/svg/icons/CookingIcon";
+import ArtsIcon from "@/assets/svg/icons/ArtsIcon";
+import LanguageIcon from "@/assets/svg/icons/LanguageIcon";
+import CommunityService1Icon from "@/assets/svg/icons/CommunityService1Icon";
+import CommunityService2Icon from "@/assets/svg/icons/CommunityService2Icon";
+import LifeSkillsIcon from "@/assets/svg/icons/LifeSkillsIcon";
+import MusicIcon from "@/assets/svg/icons/MusicIcon";
+import GuitarIcon from "@/assets/svg/icons/GuitarIcon";
+import UkeIcon from "@/assets/svg/icons/UkeIcon";
+import LegalIcon from "@/assets/svg/icons/LegalIcon";
+import PianoIcon from "@/assets/svg/icons/PianoIcon";
 
 const StyledTreeItem = styled(TreeItem)(({ theme }) => ({
   "& .MuiTreeItem-content": {
@@ -220,12 +231,18 @@ const ClassesCategory = ({
 
 const ExampleIcons = {
   None: <div style={{ height: "30px" }}>No Icon</div>,
-  BrushIcon: <Brush />,
-  TranslateIcon: <Translate />,
-  Plumbing: <Plumbing />,
-  Carpenter: <Carpenter />,
-  LocalHospital: <LocalHospital />,
+  BrushIcon: <ArtsIcon />,
+  TranslateIcon: <LanguageIcon />,
   Bear: <BearIcon />,
+  Cooking: <CookingIcon />,
+  Community1: <CommunityService1Icon />,
+  Community2: <CommunityService2Icon />,
+  LifeSkills: <LifeSkillsIcon />,
+  // Music: <MusicIcon />,
+  Guitar: <GuitarIcon />,
+  Uke: <UkeIcon />,
+  Legal: <LegalIcon />,
+  Piano: <PianoIcon />,
 
   // Add other icons here...
 };

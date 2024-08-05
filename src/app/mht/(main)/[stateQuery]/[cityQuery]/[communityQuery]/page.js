@@ -303,6 +303,7 @@ const Page = ({ params }) => {
           shiftUpSubclass={alertNotEdit}
           shiftDownSubclass={alertNotEdit}
         />
+        <Divider sx={{ my: 5 }} />
 
         {!showSignUp ? (
           <Grid
@@ -328,8 +329,6 @@ const Page = ({ params }) => {
           </Grid>
         ) : (
           <>
-            <Divider sx={{ my: 5 }} />
-
             <VolunteerSignUps
               volunteerHeaderText={community.volunteerHeaderText}
               setVolunteerHeaderText={alertNotEdit}
@@ -338,6 +337,7 @@ const Page = ({ params }) => {
             />
           </>
         )}
+        <Divider sx={{ my: 5 }} />
       </Container>
     </>
   );
