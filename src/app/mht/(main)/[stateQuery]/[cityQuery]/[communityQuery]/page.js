@@ -42,6 +42,8 @@ const Page = ({ params }) => {
     communityTemplate
   );
 
+  const [showSignUp, setShowSignup] = useState(false);
+
   const { events, isLoading, error, deleteEvent, modifyEvent, updateEvent } =
     useEvents();
 
@@ -302,14 +304,40 @@ const Page = ({ params }) => {
           shiftDownSubclass={alertNotEdit}
         />
 
-        <Divider sx={{ my: 5 }} />
+        {!showSignUp ? (
+          <Grid
+            item
+            xs={8}
+            mt={4}
+            sx={{ mx: "auto" }}
+            display="flex"
+            flexDirection="column"
+          >
+            <Button
+              variant="outlined"
+              onClick={() => setShowSignup(true)}
+              sx={{ mx: "auto", mb: 2 }}
+              size="large"
+            >
+              Become a Volunteer
+            </Button>
+            <Typography variant="body">
+              Want to volunteer? Click here. We would love to have you as part
+              of the family.
+            </Typography>
+          </Grid>
+        ) : (
+          <>
+            <Divider sx={{ my: 5 }} />
 
-        <VolunteerSignUps
-          volunteerHeaderText={community.volunteerHeaderText}
-          setVolunteerHeaderText={alertNotEdit}
-          signUpFormId={community.signUpFormId}
-          setSignUpFormId={alertNotEdit}
-        />
+            <VolunteerSignUps
+              volunteerHeaderText={community.volunteerHeaderText}
+              setVolunteerHeaderText={alertNotEdit}
+              signUpFormId={community.signUpFormId}
+              setSignUpFormId={alertNotEdit}
+            />
+          </>
+        )}
       </Container>
     </>
   );
