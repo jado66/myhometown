@@ -88,7 +88,7 @@ const Topbar = ({ onSidebarOpen }) => {
           title="myhometown"
           height={{ xs: 28, md: 32 }}
           width={10}
-          sx={{ position: "relative" }}
+          sx={{ position: "relative", mb: "8px" }}
         >
           <MyHometownLogo
             // height="100%"
