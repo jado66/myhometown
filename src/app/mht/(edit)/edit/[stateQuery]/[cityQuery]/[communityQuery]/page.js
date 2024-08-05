@@ -33,6 +33,7 @@ import { StatsCounter } from "@/components/StatsCounter";
 import { v4 as uuidv4 } from "uuid";
 import { ClassesTreeView } from "@/components/events/ClassesTreeView";
 import { VolunteerSignUps } from "@/components/VolunteerSignUps";
+import { LightBox } from "@/components/LightBox";
 
 const communityDataContentTemplate = {
   paragraph1Text: faker.lorem.paragraph(),
@@ -624,54 +625,33 @@ const Page = ({ params }) => {
           </Grid>
           <Grid item xs={12} display="flex" justifyContent="center">
             <Grid item xs={10} sm={8}>
-              <RoleGuard
-                roles={["admin"]}
-                user={user}
-                alternateContent={
-                  <Tooltip
-                    title="Only an Admin can modify this."
-                    placement="top"
-                    arrow
-                  >
-                    <Info
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        right: 0,
-                        margin: "0.5em",
-                      }}
-                    />
-                  </Tooltip>
-                }
+              <Box
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                position="relative"
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  backgroundColor: "transparent",
+                }}
               >
-                <Box
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  position="relative"
-                  sx={{
-                    width: "100%",
-                    height: "100%",
-                    backgroundColor: "transparent",
-                  }}
-                >
-                  <UploadImage setUrl={handleChangeMap} />
-                  {content?.mapUrl ? (
-                    <img
-                      src={content.mapUrl}
-                      style={{
-                        width: "100%",
-                        height: "auto",
-                        objectFit: "cover",
-                      }}
-                    />
-                  ) : (
-                    <Typography variant="h4" component="h2" align="center">
-                      Community map
-                    </Typography>
-                  )}
-                </Box>
-              </RoleGuard>
+                <UploadImage setUrl={handleChangeMap} />
+                {content?.mapUrl ? (
+                  <img
+                    src={content.mapUrl}
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <Typography variant="h4" component="h2" align="center">
+                    Community map
+                  </Typography>
+                )}
+              </Box>
             </Grid>
           </Grid>
           <Grid item xs={12} display="flex" justifyContent="center">
@@ -728,7 +708,7 @@ const Page = ({ params }) => {
                 alignItems="center"
                 position="relative"
                 sx={{
-                  px: 0.5,
+                  px: 1,
                   width: "100%",
                   height: "100%",
                   backgroundColor: "transparent",
@@ -738,13 +718,19 @@ const Page = ({ params }) => {
                   setUrl={(url) => handleChangeMarketingImage(url, 1)}
                 />
                 {communityData.content?.marketingImage1 ? (
-                  <img
+                  <Box
+                    component="img"
                     src={communityData.content.marketingImage1}
-                    style={{
+                    sx={{
                       width: "100%",
                       height: "auto",
                       objectFit: "cover",
+                      boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+                      borderRadius: 4,
                     }}
+                    onClick={() =>
+                      openImageDialog(communityData.content.marketingImage1)
+                    }
                   />
                 ) : (
                   <Typography variant="h4" component="h2" align="center">
@@ -761,7 +747,7 @@ const Page = ({ params }) => {
                 alignItems="center"
                 position="relative"
                 sx={{
-                  px: 0.5,
+                  px: 1,
                   width: "100%",
                   height: "100%",
                   minHeight: "100px",
@@ -772,13 +758,19 @@ const Page = ({ params }) => {
                   setUrl={(url) => handleChangeMarketingImage(url, 2)}
                 />
                 {communityData.content?.marketingImage2 ? (
-                  <img
+                  <Box
+                    component="img"
                     src={communityData.content.marketingImage2}
-                    style={{
+                    sx={{
                       width: "100%",
+                      borderRadius: 4,
                       height: "auto",
+                      boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
                       objectFit: "cover",
                     }}
+                    onClick={() =>
+                      openImageDialog(communityData.content.marketingImage2)
+                    }
                   />
                 ) : (
                   <Typography variant="h4" component="h2" align="center">
@@ -833,6 +825,7 @@ const Page = ({ params }) => {
           events={communityData.events}
           onSelectEvent={onSelectEvent}
           onSelectSlot={(slot) => setSelectedEvent(slot)}
+          onAdd={startCreatingNewEvent}
           isEdit
         />
         <Divider sx={{ my: 5 }} />

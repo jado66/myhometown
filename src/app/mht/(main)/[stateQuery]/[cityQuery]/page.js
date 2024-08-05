@@ -11,6 +11,7 @@ import { cityTemplate } from "@/constants/templates/cityTemplate";
 import { CommunityCard } from "@/components/CommunityCard";
 import { MultiLineTypography } from "@/components/MultiLineTypography";
 import { StatsCounter } from "@/components/StatsCounter";
+import { LightBox } from "@/components/LightBox";
 
 const Page = ({ params }) => {
   const { stateQuery, cityQuery } = params; //TODO change me to stateQuery... VsCode hates renaming folders

@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback } from "react";
 import { Calendar, momentLocalizer, Views } from "react-big-calendar";
 import moment from "moment";
-import { Grid, styled, Typography, Card } from "@mui/material";
+import { Grid, styled, Typography, Card, Box, Button } from "@mui/material";
 import Loading from "../util/Loading";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
@@ -28,6 +28,8 @@ export const EventsCalendar = ({
   onSelectEvent,
   onSelectSlot,
   isLoading,
+  startCreatingNewEvent,
+  isEdit,
 }) => {
   const { defaultDate, views } = useMemo(
     () => ({
@@ -97,10 +99,17 @@ export const EventsCalendar = ({
             endAccessor="end"
             onSelectEvent={handleSelectEvent}
             onSelectSlot={handleSelectSlot}
-            selectable
           />
         </Grid>
       </Card>
+
+      {isEdit && (
+        <Box display="flex" justifyContent="center" mt={2}>
+          <Button variant="outlined" onClick={startCreatingNewEvent}>
+            Add New Event
+          </Button>
+        </Box>
+      )}
     </>
   );
 };

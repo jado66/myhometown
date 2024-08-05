@@ -77,60 +77,70 @@ const PhotoGallery = ({ isEdit, photos, changePhoto, variant = "default" }) => {
 
   return (
     <Box>
-      <Box>
-        <ImageList
-          variant="quilted"
-          cols={12}
-          rowHeight={isMd ? 150 : 110}
-          gap={isMd ? 16 : 8}
-        >
-          {photoLayout.map(({ key, cols, rows }) => {
-            let item = photos[key];
-            return (
-              <ImageListItem
-                key={key}
-                cols={cols}
-                rows={rows}
-                sx={{ position: "relative" }}
-                onClick={() => openImageDialog(item?.src)}
-              >
-                {isEdit && (
-                  <UploadImage setUrl={(url) => handlePhotoChange(url, key)} />
-                )}
-                {item?.src ? (
-                  <img
-                    height="100%"
-                    width="100%"
-                    src={item.src}
-                    alt="..."
-                    loading="lazy"
-                    style={{
-                      objectFit: "cover",
-                      cursor: "pointer",
-                      borderRadius: 4,
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      height: "100%",
-                      width: "100%",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      backgroundColor: "lightgrey",
-                      fontSize: "48px",
-                    }}
-                  >
-                    <ImageIcon fontSize="inherit" />
-                  </div>
-                )}
-              </ImageListItem>
-            );
-          })}
-        </ImageList>
-        <LightBox closeImageDialog={closeImageDialog} image={selectedImage} />
-      </Box>
+      <ImageList
+        variant="quilted"
+        cols={12}
+        rowHeight={isMd ? 150 : 110}
+        gap={isMd ? 16 : 8}
+        sx={{ overflow: "visible" }} // Allow overflow to show box shadow
+      >
+        {photoLayout.map(({ key, cols, rows }) => {
+          let item = photos[key];
+          return (
+            <ImageListItem
+              key={key}
+              cols={cols}
+              rows={rows}
+              sx={{
+                position: "relative",
+                overflow: "visible", // Allow overflow to show box shadow
+                borderRadius: "16px", // Apply border radius to ImageListItem
+              }}
+              onClick={() => openImageDialog(item?.src)}
+            >
+              {isEdit && (
+                <UploadImage setUrl={(url) => handlePhotoChange(url, key)} />
+              )}
+              {item?.src ? (
+                <Box
+                  component="img"
+                  src={item.src}
+                  alt="..."
+                  loading="lazy"
+                  sx={{
+                    height: "100%",
+                    width: "100%",
+                    objectFit: "cover",
+                    cursor: "pointer",
+                    borderRadius: "16px",
+                    boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+                    transition: "box-shadow 0.3s ease-in-out",
+                    "&:hover": {
+                      boxShadow: "0px 4px 12px 0px rgba(0, 0, 0, 0.7)",
+                    },
+                  }}
+                />
+              ) : (
+                <Box
+                  sx={{
+                    height: "100%",
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: "lightgrey",
+                    fontSize: "48px",
+                    borderRadius: "16px",
+                  }}
+                >
+                  <ImageIcon fontSize="inherit" />
+                </Box>
+              )}
+            </ImageListItem>
+          );
+        })}
+      </ImageList>
+      <LightBox closeImageDialog={closeImageDialog} image={selectedImage} />
     </Box>
   );
 };

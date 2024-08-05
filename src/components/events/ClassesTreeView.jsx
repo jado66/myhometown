@@ -32,6 +32,7 @@ import {
 import InputAdornment from "@mui/material/InputAdornment";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { IframeHelpDialog } from "./IframeHelpDialog";
+import BearIcon from "@/assets/svg/icons/BearIcon";
 
 const StyledTreeItem = styled(TreeItem)(({ theme }) => ({
   "& .MuiTreeItem-content": {
@@ -224,6 +225,7 @@ const ExampleIcons = {
   Plumbing: <Plumbing />,
   Carpenter: <Carpenter />,
   LocalHospital: <LocalHospital />,
+  Bear: <BearIcon />,
 
   // Add other icons here...
 };

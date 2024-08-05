@@ -29,9 +29,11 @@ import TranslateIcon from "@mui/icons-material/Translate";
 import { ClassesTreeView } from "@/components/events/ClassesTreeView";
 import { MultiLineTypography } from "@/components/MultiLineTypography";
 import { VolunteerSignUps } from "@/components/VolunteerSignUps";
+import { LightBox } from "@/components/LightBox";
 
 const Page = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params; //TODO change me to stateQuery... VsCode hates renaming folders
+  const [selectedImage, setSelectedImage] = useState();
 
   const { community, hasLoaded } = useCommunity(
     communityQuery,
@@ -61,6 +63,14 @@ const Page = ({ params }) => {
 
   const alertNotEdit = () => {
     alert("this isn't edit");
+  };
+
+  const openImageDialog = (image) => {
+    setSelectedImage(image);
+  };
+
+  const closeImageDialog = () => {
+    setSelectedImage(null);
   };
 
   if (!hasLoaded) {
@@ -98,6 +108,8 @@ const Page = ({ params }) => {
 
   return (
     <>
+      <LightBox closeImageDialog={closeImageDialog} image={selectedImage} />
+
       <EventDialog
         open={selectedEvent}
         onClose={closeEventDialog}
@@ -155,8 +167,10 @@ const Page = ({ params }) => {
               }}
             >
               <img
+                onClick={() => openImageDialog(community?.content?.mapUrl)}
                 src={community?.content?.mapUrl}
                 style={{
+                  cursor: "pointer",
                   width: "100%",
                   height: "auto",
                   objectFit: "cover",
@@ -203,13 +217,20 @@ const Page = ({ params }) => {
                       backgroundColor: "transparent",
                     }}
                   >
-                    <img
-                      src={community?.content?.marketingImage1}
-                      style={{
+                    <Box
+                      component="img"
+                      src={community.content.marketingImage1}
+                      sx={{
+                        cursor: "pointer",
                         width: "100%",
                         height: "auto",
                         objectFit: "cover",
+                        boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+                        borderRadius: 4,
                       }}
+                      onClick={() =>
+                        openImageDialog(community.content.marketingImage1)
+                      }
                     />
                   </Box>
                 </Grid>
@@ -228,13 +249,20 @@ const Page = ({ params }) => {
                       backgroundColor: "transparent",
                     }}
                   >
-                    <img
-                      src={community?.content.marketingImage2}
-                      style={{
+                    <Box
+                      component="img"
+                      src={community.content.marketingImage2}
+                      sx={{
+                        cursor: "pointer",
                         width: "100%",
                         height: "auto",
                         objectFit: "cover",
+                        boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+                        borderRadius: 4,
                       }}
+                      onClick={() =>
+                        openImageDialog(community.content.marketingImage2)
+                      }
                     />
                   </Box>
                 </Grid>
@@ -246,6 +274,7 @@ const Page = ({ params }) => {
           <Divider sx={{ my: 5 }} />
         </Grid>
         <UpcomingEvents
+          onSelect={onSelectEvent}
           events={community.events}
           maxEvents={5}
           isLoading={isLoading}
