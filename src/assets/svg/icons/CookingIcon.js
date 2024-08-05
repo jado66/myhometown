@@ -1,7 +1,7 @@
 import { SvgIcon } from "@mui/material";
 
-const CookingIcon = ({ fillColor = "#318d43" }) => (
-  <SvgIcon viewBox="0 0 360 360">
+const CookingIcon = ({ fillColor = "#318d43", sx }) => (
+  <SvgIcon viewBox="0 0 360 360" sx={{ ...sx }}>
     <style type="text/css">
       {`
             .c{fill:${fillColor};stroke-width:0px}

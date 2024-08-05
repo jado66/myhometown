@@ -147,14 +147,20 @@ const ClassesCategory = ({
 }) => {
   const [isAddNewClass, setAddNewClass] = useState(false);
 
+  const IconWithProps = React.cloneElement(ExampleIcons[category.icon], {
+    sx: { height: 35, width: 35 },
+  });
+
   return (
     <StyledTreeItem
       key={category.id}
       itemId={category.id.toString()}
       label={
         <div style={{ display: "flex", alignItems: "center" }}>
-          {ExampleIcons[category.icon]}
-          <Typography sx={{ marginLeft: "1em" }}>{category.title}</Typography>
+          {IconWithProps}
+          <Typography sx={{ marginLeft: "1em" }} variant="h5">
+            {category.title}
+          </Typography>
         </div>
       }
     >
