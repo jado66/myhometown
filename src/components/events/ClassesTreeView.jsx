@@ -90,7 +90,7 @@ export const ClassesTreeView = ({
         textAlign="center"
         gutterBottom
       >
-        Community Resource Classes
+        Community Resource Center Classes
       </Typography>
 
       <Card sx={{ padding: 2, marginTop: 2 }}>

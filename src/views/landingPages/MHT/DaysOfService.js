@@ -38,14 +38,14 @@ const DaysOfServiceContent = () => {
           component="video"
           controls
           playsInline
-          poster="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/grad.webp"
+          poster="images/Days of Service Video Thumbnail.webp"
           sx={{
             mx: "auto",
             width: "100%",
             height: "100%",
             borderRadius: "12px",
           }}
-          src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/CRC+logo.webm"
+          src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Days+of+Service+(Hey)+.webm"
           title="Video 1"
         />
       </Grid>
