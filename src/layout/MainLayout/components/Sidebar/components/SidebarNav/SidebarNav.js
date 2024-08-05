@@ -13,6 +13,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import { ExpandLess } from "@mui/icons-material";
 import useManageCities from "@/hooks/use-manage-cities";
+import MyHometownLogo from "@/assets/svg/logos/MyHometown";
 
 const SidebarNav = ({ onClose }) => {
   const [expandCities, setExpandCities] = useState(false);
@@ -40,14 +41,31 @@ const SidebarNav = ({ onClose }) => {
     <Box>
       <Box
         display={"flex"}
-        justifyContent={"flex-end"}
+        justifyContent={"space-between"}
         onClick={() => onClose()}
       >
+        <Box
+          display={"flex"}
+          alignItems="baseline"
+          component="a"
+          underline="none"
+          href={rootUrl + "/"}
+          title="myhometown"
+          height={{ xs: 28, md: 32 }}
+          width={10}
+          sx={{ position: "relative", pt: 0, pl: 2 }}
+        >
+          <MyHometownLogo
+            // height="100%"
+            sx={{ height: 36 }}
+            type="full"
+          />
+        </Box>
         <IconButton>
-          <CloseIcon fontSize="small" />
+          <CloseIcon fontSize="small" color="black" />
         </IconButton>
       </Box>
-      <Box paddingX={2} paddingBottom={2}>
+      <Box paddingX={2} paddingBottom={1} paddingTop={3}>
         <Box>
           <Box marginBottom={2}>
             <NextLink
@@ -61,6 +79,7 @@ const SidebarNav = ({ onClose }) => {
                   marginBottom: 1,
                   display: "block",
                   textDecoration: "none",
+                  color: "black",
                 }}
               >
                 Home
@@ -81,6 +100,7 @@ const SidebarNav = ({ onClose }) => {
                   mb: 0,
                   display: "flex",
                   alignItems: "flex-start",
+                  color: "black",
                 }}
               >
                 Cities
@@ -101,6 +121,7 @@ const SidebarNav = ({ onClose }) => {
                         marginBottom: 1,
                         mt: 1,
                         display: "block",
+                        color: "black",
                       }}
                     >
                       Ogden
@@ -116,6 +137,7 @@ const SidebarNav = ({ onClose }) => {
                         fontWeight: 700,
                         marginBottom: 1,
                         display: "block",
+                        color: "black",
                       }}
                     >
                       Orem
@@ -131,6 +153,7 @@ const SidebarNav = ({ onClose }) => {
                         fontWeight: 700,
                         marginBottom: 1,
                         display: "block",
+                        color: "black",
                       }}
                     >
                       Provo
@@ -147,6 +170,7 @@ const SidebarNav = ({ onClose }) => {
                         fontWeight: 700,
                         marginBottom: 1,
                         display: "block",
+                        color: "black",
                       }}
                     >
                       Salt Lake City
@@ -162,6 +186,7 @@ const SidebarNav = ({ onClose }) => {
                         fontWeight: 700,
                         marginBottom: 1,
                         display: "block",
+                        color: "black",
                       }}
                     >
                       West Valley City
@@ -183,6 +208,7 @@ const SidebarNav = ({ onClose }) => {
                   marginBottom: 1,
                   display: "block",
                   textDecoration: "none",
+                  color: "black",
                 }}
               >
                 Community Resource Centers
@@ -200,6 +226,7 @@ const SidebarNav = ({ onClose }) => {
                   fontWeight: 700,
                   marginBottom: 1,
                   display: "block",
+                  color: "black",
                 }}
               >
                 Days Of Service

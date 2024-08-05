@@ -87,11 +87,15 @@ const MainLayout = ({
           <AppBar
             position={"fixed"}
             sx={{
-              backgroundColor: theme.palette.background.paper,
+              backgroundColor: "#1bc7bc",
             }}
             elevation={1}
           >
-            <Container paddingY={{ xs: 1 / 2, sm: 1 }}>
+            <Container
+              paddingY={{ xs: 1 / 2, sm: 1 }}
+              paddingX={{ xs: 8, lg: 0 }}
+              maxWidth={{ lg: "md", xl: "lg" }}
+            >
               <Topbar onSidebarOpen={handleSidebarOpen} />
             </Container>
           </AppBar>

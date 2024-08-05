@@ -91,8 +91,8 @@ const Topbar = ({ onSidebarOpen }) => {
           sx={{ position: "relative" }}
         >
           <MyHometownLogo
-            height="100%"
-            sx={{ width: { md: "100%", xs: "50px" } }}
+            // height="100%"
+            sx={{ height: 36 }}
             type="full"
           />
         </Box>
@@ -117,9 +117,11 @@ const Topbar = ({ onSidebarOpen }) => {
               component="a"
               href="#"
               onClick={handleCitiesClick}
-              color="textPrimary"
+              color="black"
+              fontWeight="bold"
               display="flex"
               alignContent="center"
+              fontSize="larger"
             >
               Cities
               {/* {
@@ -137,14 +139,20 @@ const Topbar = ({ onSidebarOpen }) => {
               keepMounted
               sx={{
                 maxHeight: 500,
-                mt: 1.75,
+                mt: 1.5,
                 display: "flex",
                 flexDirection: "column",
+              }}
+              PaperProps={{
+                sx: {
+                  backgroundColor: "#1bc7bc",
+                },
               }}
             >
               <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
+                sx={{ color: "black", fontWeight: "bold" }}
                 href={rootUrl + `/maintenance`}
               >
                 Ogden
@@ -153,6 +161,7 @@ const Topbar = ({ onSidebarOpen }) => {
               <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
+                sx={{ color: "black", fontWeight: "bold" }}
                 href={rootUrl + `/utah/orem/geneva-heights`}
               >
                 Orem
@@ -160,6 +169,7 @@ const Topbar = ({ onSidebarOpen }) => {
               <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
+                sx={{ color: "black", fontWeight: "bold" }}
                 href={rootUrl + `/maintenance`}
               >
                 Provo
@@ -167,6 +177,7 @@ const Topbar = ({ onSidebarOpen }) => {
               <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
+                sx={{ color: "black", fontWeight: "bold" }}
                 href={rootUrl + `/maintenance`}
               >
                 Salt Lake City
@@ -174,6 +185,7 @@ const Topbar = ({ onSidebarOpen }) => {
               <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
+                sx={{ color: "black", fontWeight: "bold" }}
                 href={rootUrl + `/maintenance`}
               >
                 West Valley City
@@ -223,8 +235,10 @@ const Topbar = ({ onSidebarOpen }) => {
               component="a"
               href="#"
               onClick={handleResourcesClick}
-              color="textPrimary"
+              color="black"
               display="flex"
+              fontWeight="bold"
+              fontSize="larger"
               alignContent="center"
             >
               Resources
@@ -241,12 +255,23 @@ const Topbar = ({ onSidebarOpen }) => {
               open={Boolean(resourcesAnchorEl)}
               onClose={handleResourcesClose}
               keepMounted
-              sx={{ maxHeight: 500, mt: 1.75 }}
+              sx={{ maxHeight: 500, mt: 1.5 }}
+              PaperProps={{
+                sx: { backgroundColor: "#1bc7bc" },
+              }}
             >
-              <MenuItem component="a" href="/community-resource-centers">
+              <MenuItem
+                component="a"
+                href="/community-resource-centers"
+                sx={{ color: "black", fontWeight: "bold" }}
+              >
                 Community Resource Centers
               </MenuItem>
-              <MenuItem component="a" href="days-of-service">
+              <MenuItem
+                component="a"
+                href="days-of-service"
+                sx={{ color: "black", fontWeight: "bold" }}
+              >
                 Days of Services
               </MenuItem>
               {/* <MenuItem component="a">Immigration</MenuItem>

@@ -100,6 +100,7 @@ const MyHometownLogo = ({ type, sx }) => {
           height: 36, //{ xs: 28, md: 32 },
           width: 200,
           marginRight: "auto", // Ensures the SVG aligns to the left
+          ...sx,
         }}
         viewBox="0 0 1300 165"
       >

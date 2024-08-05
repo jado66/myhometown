@@ -167,13 +167,16 @@ const ClassesCategory = ({
       {Array.isArray(category.classes) && category.classes.length > 0
         ? category.classes.map((classObj) => (
             <Accordion key={`accordion-${classObj.id}`} elevation={0}>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                onClick={(event) => event.stopPropagation()}
+              >
                 {ExampleIcons[classObj.icon]}
                 <Typography sx={{ marginLeft: "1em" }}>
                   {category.title}
                 </Typography>
               </AccordionSummary>
-              <AccordionDetails>
+              <AccordionDetails onClick={(event) => event.stopPropagation()}>
                 <iframe
                   src={`https://docs.google.com/forms/d/e/${classObj.googleFormID}/viewform?embedded=true`}
                   width="100%"
@@ -326,7 +329,10 @@ const CreateCategoryForm = ({ onCreate, onClose }) => {
               size="small"
               value={title}
               label="Category Title"
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                e.stopPropagation();
+                setTitle(e.target.value);
+              }}
               margin="normal"
               InputProps={{
                 style: { height: "47px" },
@@ -439,7 +445,10 @@ const CreateClassForm = ({
               size="small"
               value={title}
               label="Class Title"
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                e.stopPropagation();
+                setTitle(e.target.value);
+              }}
               margin="normal"
               InputProps={{
                 style: { height: "47px" },
@@ -471,7 +480,10 @@ const CreateClassForm = ({
               fullWidth
               size="small"
               value={googleFormIframe}
-              onChange={(e) => setGoogleFormIframe(e.target.value)}
+              onChange={(e) => {
+                e.stopPropagation();
+                setGoogleFormIframe(e.target.value);
+              }}
               placeholder="Google Form iframe code"
               margin="normal"
               error={googleFormId === null && googleFormIframe.length > 0}
