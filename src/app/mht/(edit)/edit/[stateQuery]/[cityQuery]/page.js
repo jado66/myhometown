@@ -354,6 +354,7 @@ const Page = ({ params }) => {
                     width: "100%",
                     height: "100%",
                     backgroundColor: "transparent",
+                    border: "1px solid black",
                   }}
                 >
                   <UploadImage setUrl={handleChangeMap} />

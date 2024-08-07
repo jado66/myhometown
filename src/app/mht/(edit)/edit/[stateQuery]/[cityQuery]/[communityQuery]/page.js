@@ -31,9 +31,9 @@ import { Info } from "@mui/icons-material";
 import UploadImage from "@/components/util/UploadImage";
 import { StatsCounter } from "@/components/StatsCounter";
 import { v4 as uuidv4 } from "uuid";
-import { ClassesTreeView } from "@/components/events/ClassesTreeView";
 import { VolunteerSignUps } from "@/components/VolunteerSignUps";
 import { LightBox } from "@/components/LightBox";
+import { ClassesTreeView } from "@/components/events/ClassesTreeView";
 
 const communityDataContentTemplate = {
   paragraph1Text: faker.lorem.paragraph(),
@@ -356,21 +356,18 @@ const Page = ({ params }) => {
 
   const shiftUpClassCategory = (classCategoryId) => {
     setCommunityData((prevState) => {
-      const index = prevState.content.classes.findIndex(
+      const index = prevState.classes.findIndex(
         (classCategory) => classCategory.id === classCategoryId
       );
       if (index > 0) {
         const updatedClasses = swapArrayElements(
-          prevState.content.classes,
+          prevState.classes,
           index,
           index - 1
         );
         return {
           ...prevState,
-          content: {
-            ...prevState.content,
-            classes: updatedClasses,
-          },
+          classes: updatedClasses,
         };
       }
       return prevState; // No change if the index is already the first one.
@@ -379,21 +376,18 @@ const Page = ({ params }) => {
 
   const shiftDownClassCategory = (classCategoryId) => {
     setCommunityData((prevState) => {
-      const index = prevState.content.classes.findIndex(
+      const index = prevState.classes.findIndex(
         (classCategory) => classCategory.id === classCategoryId
       );
       if (index < prevState.content.classes.length - 1) {
         const updatedClasses = swapArrayElements(
-          prevState.content.classes,
+          prevState.classes,
           index,
           index + 1
         );
         return {
           ...prevState,
-          content: {
-            ...prevState.content,
-            classes: updatedClasses,
-          },
+          classes: updatedClasses,
         };
       }
       return prevState; // No change if the index is already the last one.
@@ -402,7 +396,7 @@ const Page = ({ params }) => {
 
   const shiftUpSubclass = (classCategoryId, subclassId) => {
     setCommunityData((prevState) => {
-      const updatedClasses = prevState.content.classes.map((classCategory) => {
+      const updatedClasses = prevState.classes.map((classCategory) => {
         if (classCategory.id === classCategoryId) {
           const index = classCategory.classes.findIndex(
             (subclass) => subclass.id === subclassId
@@ -423,17 +417,14 @@ const Page = ({ params }) => {
 
       return {
         ...prevState,
-        content: {
-          ...prevState.content,
-          classes: updatedClasses,
-        },
+        classes: updatedClasses,
       };
     });
   };
 
   const shiftDownSubclass = (classCategoryId, subclassId) => {
     setCommunityData((prevState) => {
-      const updatedClasses = prevState.content.classes.map((classCategory) => {
+      const updatedClasses = prevState.classes.map((classCategory) => {
         if (classCategory.id === classCategoryId) {
           const index = classCategory.classes.findIndex(
             (subclass) => subclass.id === subclassId
@@ -450,6 +441,63 @@ const Page = ({ params }) => {
           }
         }
         return classCategory;
+      });
+
+      return {
+        ...prevState,
+        classes: updatedClasses,
+      };
+    });
+  };
+
+  const onUpdateClassCategory = (categoryId, newTitle, newIcon) => {
+    setCommunityData((prevState) => {
+      const updatedClasses = prevState.classes.map((category) => {
+        if (category.id === categoryId) {
+          return {
+            ...category,
+            title: newTitle,
+            icon: newIcon,
+          };
+        }
+        return category;
+      });
+
+      return {
+        ...prevState,
+        classes: updatedClasses,
+      };
+    });
+  };
+
+  const onUpdateSubclass = (
+    categoryId,
+    subclassId,
+    newTitle,
+    newIcon,
+    newGoogleFormId
+  ) => {
+    setCommunityData((prevState) => {
+      const updatedClasses = prevState.content.classes.map((category) => {
+        if (category.id === categoryId) {
+          const updatedSubclasses = category.classes.map((subclass) => {
+            if (subclass.id === subclassId) {
+              return {
+                ...subclass,
+                title: newTitle,
+                icon: newIcon,
+                googleFormID: newGoogleFormId,
+              };
+            }
+            return subclass;
+          });
+
+          return {
+            ...category,
+            classes: updatedSubclasses,
+          };
+        }
+        return category;
       });
 
       return {
@@ -634,6 +682,7 @@ const Page = ({ params }) => {
                   width: "100%",
                   height: "100%",
                   backgroundColor: "transparent",
+                  border: "1px solid black",
                 }}
               >
                 <UploadImage setUrl={handleChangeMap} />
@@ -644,6 +693,8 @@ const Page = ({ params }) => {
                       width: "100%",
                       height: "auto",
                       objectFit: "cover",
+                      border: "1px solid black",
+                      boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
                     }}
                   />
                 ) : (
@@ -842,6 +893,8 @@ const Page = ({ params }) => {
           shiftUpClassCategory={shiftUpClassCategory}
           shiftUpSubclass={shiftUpSubclass}
           shiftDownSubclass={shiftDownSubclass}
+          onUpdateClassCategory={onUpdateClassCategory}
+          onUpdateSubclass={onUpdateSubclass}
         />
         <Divider sx={{ my: 5 }} />
 
