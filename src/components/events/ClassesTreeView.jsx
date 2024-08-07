@@ -346,12 +346,6 @@ const CreateCategoryForm = ({ onCreate, onClose }) => {
         </Grid>
         <Grid item xs={12} display="flex" flexDirection="row">
           <Grid item xs={4} sm={2}>
-            <Button variant="contained" fullWidth onClick={onClose}>
-              Cancel
-            </Button>
-          </Grid>
-          <Grid item xs={4} sm={8} />
-          <Grid item xs={4} sm={2}>
             <Button
               variant="contained"
               fullWidth
@@ -363,6 +357,12 @@ const CreateCategoryForm = ({ onCreate, onClose }) => {
               disabled={!isFormValid()}
             >
               Add Category
+            </Button>
+          </Grid>
+          <Grid item xs={4} sm={8} />
+          <Grid item xs={4} sm={2}>
+            <Button variant="contained" fullWidth onClick={onClose}>
+              Cancel
             </Button>
           </Grid>
         </Grid>
@@ -497,12 +497,6 @@ const CreateClassForm = ({
         </Grid>
         <Grid item xs={12} display="flex" flexDirection="row">
           <Grid item xs={4} sm={2}>
-            <Button variant="contained" fullWidth onClick={onClose}>
-              Cancel
-            </Button>
-          </Grid>
-          <Grid item xs={4} sm={8} />
-          <Grid item xs={4} sm={2}>
             <Button
               variant="contained"
               fullWidth
@@ -510,10 +504,17 @@ const CreateClassForm = ({
                 onCreateSubclass(category.id, icon, title, googleFormId);
                 setTitle(""); // Reset after adding
                 setGoogleFormIframe(""); // Reset after adding
+                onClose();
               }}
               disabled={!isFormValid()}
             >
               Add Class
+            </Button>
+          </Grid>
+          <Grid item xs={4} sm={8} />
+          <Grid item xs={4} sm={2}>
+            <Button variant="contained" fullWidth onClick={onClose}>
+              Cancel
             </Button>
           </Grid>
         </Grid>
