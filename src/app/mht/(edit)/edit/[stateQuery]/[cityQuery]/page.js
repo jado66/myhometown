@@ -449,6 +449,7 @@ const Page = ({ params }) => {
           onSelectEvent={onSelectEvent}
           onSelectSlot={(slot) => setSelectedEvent(slot)}
           onAdd={startCreatingNewEvent}
+          startCreatingNewEvent={startCreatingNewEvent}
           isEdit
         />
       </Container>
