@@ -379,7 +379,7 @@ const Page = ({ params }) => {
       const index = prevState.classes.findIndex(
         (classCategory) => classCategory.id === classCategoryId
       );
-      if (index < prevState.content.classes.length - 1) {
+      if (index < prevState.classes.length - 1) {
         const updatedClasses = swapArrayElements(
           prevState.classes,
           index,
@@ -473,12 +473,12 @@ const Page = ({ params }) => {
   const onUpdateSubclass = (
     categoryId,
     subclassId,
-    newTitle,
     newIcon,
+    newTitle,
     newGoogleFormId
   ) => {
     setCommunityData((prevState) => {
-      const updatedClasses = prevState.content.classes.map((category) => {
+      const updatedClasses = prevState.classes.map((category) => {
         if (category.id === categoryId) {
           const updatedSubclasses = category.classes.map((subclass) => {
             if (subclass.id === subclassId) {
@@ -502,10 +502,7 @@ const Page = ({ params }) => {
 
       return {
         ...prevState,
-        content: {
-          ...prevState.content,
-          classes: updatedClasses,
-        },
+        classes: updatedClasses,
       };
     });
   };

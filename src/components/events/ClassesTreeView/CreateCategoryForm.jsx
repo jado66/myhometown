@@ -1,14 +1,6 @@
-import {
-  Button,
-  Grid,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Typography,
-  Divider,
-  TreeItem,
-} from "@mui/material";
-const { IconSelect } = require("./IconSelect");
+import { Button, Grid, Typography, Divider, TextField } from "@mui/material";
+import { IconSelect } from "./IconSelect";
+import { useState } from "react";
 
 export const CreateCategoryForm = ({ onCreate, onClose }) => {
   const [title, setTitle] = useState("");
@@ -35,7 +27,7 @@ export const CreateCategoryForm = ({ onCreate, onClose }) => {
       >
         <Grid item xs={12}>
           <Typography variant="h6" textAlign="center">
-            Add New Class Category
+            Add New Category
           </Typography>
         </Grid>
         <Grid
@@ -57,8 +49,8 @@ export const CreateCategoryForm = ({ onCreate, onClose }) => {
               value={title}
               label="Category Title"
               onChange={(e) => {
-                e.stopPropagation();
                 setTitle(e.target.value);
+                e.stopPropagation();
               }}
               margin="normal"
               InputProps={{
@@ -73,6 +65,13 @@ export const CreateCategoryForm = ({ onCreate, onClose }) => {
         </Grid>
         <Grid item xs={12} display="flex" flexDirection="row">
           <Grid item xs={4} sm={2}>
+            <Button fullWidth onClick={onClose}>
+              Cancel
+            </Button>
+          </Grid>
+
+          <Grid item xs={4} sm={8} />
+          <Grid item xs={4} sm={2}>
             <Button
               variant="contained"
               fullWidth
@@ -84,12 +83,6 @@ export const CreateCategoryForm = ({ onCreate, onClose }) => {
               disabled={!isFormValid()}
             >
               Add Category
-            </Button>
-          </Grid>
-          <Grid item xs={4} sm={8} />
-          <Grid item xs={4} sm={2}>
-            <Button variant="contained" fullWidth onClick={onClose}>
-              Cancel
             </Button>
           </Grid>
         </Grid>

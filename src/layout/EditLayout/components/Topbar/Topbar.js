@@ -1,53 +1,49 @@
-'use client'
+"use client";
 
-import React from 'react';
-import PropTypes from 'prop-types';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import MyHometownLogo from '@/assets/svg/logos/MyHometown';
-import { useEdit } from '@/hooks/use-edit';
+import React from "react";
+import PropTypes from "prop-types";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import MyHometownLogo from "@/assets/svg/logos/MyHometown";
+import { useEdit } from "@/hooks/use-edit";
+import { Typography } from "@mui/material";
 
 const Topbar = () => {
-
   const { saveData, isDirty } = useEdit();
-  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'? '/mht':''
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
 
   return (
     <Box
-      display={'flex'}
-      justifyContent={'space-between'}
-      alignItems={'center'}
-      width={'100%'}
+      display={"flex"}
+      justifyContent={"space-between"}
+      alignItems={"center"}
+      width={"100%"}
     >
-      <Box display={'flex'} alignItems={'center'}>
-        
+      <Box display={"flex"} alignItems={"center"} sx={{ flexGrow: 1 }}></Box>
+      <Box display={"flex"} alignItems={"center"} sx={{ flexGrow: 1 }}>
         <Box
-          display={'flex'}
-          alignItems="baseline"
-          component="a"
-          underline="none"
-          href="/"
+          display={"flex"}
           title="myhometown"
+          justifyContent="center"
           height={{ xs: 28, md: 32 }}
-          
         >
-          {/* <MyHometownLogo height='100%' width='100%' /> */}
+          <Typography variant="h4" color="primary">
+            You Are In Editing Mode
+          </Typography>
         </Box>
       </Box>
-      <Box display="flex" alignItems={'center'}>
-      
-        <Box sx={{ display:  'flex' }} alignItems={'center'}>
+      <Box display="flex" alignItems={"center"}>
+        <Box sx={{ display: "flex" }} alignItems={"center"}>
           <Box>
             <Button
               variant="outlined"
               component="a"
-              href={rootUrl+"/admin-dashboard"}
+              href={rootUrl + "/admin-dashboard"}
             >
               Admin Dashboard
             </Button>
           </Box>
-        
-          
+
           <Box marginX={2}>
             <Button
               variant="contained"
@@ -59,7 +55,6 @@ const Topbar = () => {
               Save Changes
             </Button>
           </Box>
-          
         </Box>
       </Box>
     </Box>

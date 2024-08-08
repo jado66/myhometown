@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { Button, Grid, Card, Typography, TextField } from "@mui/material";
+import { Button, Grid, Card, Typography, Divider } from "@mui/material";
 import { SimpleTreeView } from "@mui/x-tree-view/SimpleTreeView";
-import { Add, Edit } from "@mui/icons-material";
+import { Add } from "@mui/icons-material";
 
 import { IframeHelpDialog } from "../IframeHelpDialog";
-import { ClassesCategory } from "./ClassCategories";
+import { ClassCategory } from "./ClassCategory";
 import { CreateCategoryForm } from "./CreateCategoryForm";
 
 export const ClassesTreeView = ({
@@ -15,12 +15,17 @@ export const ClassesTreeView = ({
   onDeleteSubclass,
   onUpdateClassCategory,
   onUpdateSubclass,
+  shiftDownClassCategory,
+  shiftUpClassCategory,
+  shiftDownSubclass,
+  shiftUpSubclass,
   isEdit,
 }) => {
   const [isAddNewCategory, setAddNewCategory] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState(null);
   const [editingClassId, setEditingClassId] = useState(null);
   const [isShowIframeHelpDialog, setShowIframeHelpDialog] = useState(false);
+  const [expandedItems, setExpandedItems] = useState([]);
 
   const showIframeHelpDialog = () => setShowIframeHelpDialog(true);
   const hideIframeHelpDialog = () => setShowIframeHelpDialog(false);
@@ -49,15 +54,26 @@ export const ClassesTreeView = ({
     setEditingClassId(null);
   };
 
+  const toggleExpandCategory = (e, categoryId, forceOpen = false) => {
+    if (expandedItems === categoryId && !forceOpen) {
+      setExpandedItems(null); // Collapse if already expanded
+    } else {
+      setExpandedItems(categoryId); // Expand otherwise
+    }
+  };
+
   if (!classes) {
     return null;
   }
 
-  const renderTreeItems = (category) => {
+  const renderTreeItems = (category, index) => {
     return (
-      <ClassesCategory
+      <ClassCategory
         key={category.id}
         isEdit={isEdit}
+        onToggleExpand={(e, category, forceOpen) =>
+          toggleExpandCategory(e, category, forceOpen)
+        }
         onDeleteSubclass={onDeleteSubclass}
         onDeleteClassCategory={onDeleteClassCategory}
         onCreateSubclass={onCreateSubclass}
@@ -69,6 +85,12 @@ export const ClassesTreeView = ({
         onEditCategory={handleEditCategory}
         onEditClass={handleEditClass}
         onUpdateCategory={handleUpdateCategory}
+        shiftUpClassCategory={shiftUpClassCategory}
+        shiftDownClassCategory={shiftDownClassCategory}
+        shiftUpSubclass={shiftUpSubclass}
+        shiftDownSubclass={shiftDownSubclass}
+        isFirstCategory={index === 0}
+        isLastCategory={index === classes.length - 1}
       />
     );
   };
@@ -88,14 +110,16 @@ export const ClassesTreeView = ({
       >
         Community Resource Center Classes
       </Typography>
-
       <Card sx={{ padding: 2, marginTop: 2 }}>
         <Grid item xs={12}>
           <SimpleTreeView
             aria-label="classes tree view"
             disabledItemsFocusable={true}
+            expandedItems={expandedItems ? [expandedItems] : []}
           >
-            {classes.map((classItem) => renderTreeItems(classItem))}
+            {classes.map((classItem, index) =>
+              renderTreeItems(classItem, index)
+            )}
             {isAddNewCategory && (
               <CreateCategoryForm
                 onClose={() => setAddNewCategory(false)}
@@ -103,16 +127,21 @@ export const ClassesTreeView = ({
               />
             )}
             {isEdit && !isAddNewCategory && (
-              <Grid>
-                <Button
-                  startIcon={<Add />}
-                  onClick={() => setAddNewCategory(true)}
-                  sx={{ my: 1 }}
-                  fullWidth
-                >
-                  Add New Category
-                </Button>
-              </Grid>
+              <>
+                <Grid>
+                  <Divider sx={{ my: 1 }} />
+                </Grid>
+                <Grid item xs={12} display="flex" justifyContent="center">
+                  <Button
+                    startIcon={<Add />}
+                    onClick={() => setAddNewCategory(true)}
+                    sx={{ my: 1 }}
+                    variant="outlined"
+                  >
+                    Add New Category
+                  </Button>
+                </Grid>
+              </>
             )}
           </SimpleTreeView>
         </Grid>

@@ -1,17 +1,40 @@
-import React, { useState } from "react";
-import { Button, Grid, Typography, TextField, Divider } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import {
+  Button,
+  Grid,
+  Typography,
+  TextField,
+  Divider,
+  FormControlLabel,
+  Checkbox,
+} from "@mui/material";
 
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { IconSelect } from "./IconSelect";
 
 export const CreateClassForm = ({
   category,
+  initialData,
   onCreateSubclass,
+  onUpdateSubclass,
   onClose,
   showIframeHelpDialog,
 }) => {
-  const [title, setTitle] = useState("");
-  const [googleFormIframe, setGoogleFormIframe] = useState("");
-  const [icon, setIcon] = useState("None");
+  const [title, setTitle] = useState(initialData ? initialData.title : "");
+  const [googleFormIframe, setGoogleFormIframe] = useState(
+    initialData
+      ? `<iframe src="https://docs.google.com/forms/d/e/${initialData.googleFormID}/viewform?embedded=true" width="640" height="551" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>`
+      : ""
+  );
+  const [icon, setIcon] = useState(initialData ? initialData.icon : "None");
+  const [isOnlyClass, setIsOnlyClass] = useState(false);
+
+  useEffect(() => {
+    if (isOnlyClass) {
+      setIcon(category.icon);
+      setTitle(category.title);
+    }
+  }, [isOnlyClass]);
 
   const MAX_TITLE_LENGTH = 50;
 
@@ -41,6 +64,17 @@ export const CreateClassForm = ({
     return valid;
   };
 
+  const handleSubmit = () => {
+    if (initialData) {
+      onUpdateSubclass(category.id, initialData.id, icon, title, googleFormId);
+    } else {
+      onCreateSubclass(category.id, icon, title, googleFormId);
+    }
+    setTitle(""); // Reset after submission
+    setGoogleFormIframe(""); // Reset after submission
+    onClose();
+  };
+
   return (
     <>
       <Divider />
@@ -56,7 +90,7 @@ export const CreateClassForm = ({
       >
         <Grid item xs={12}>
           <Typography variant="h6" textAlign="center">
-            Add New Class
+            {initialData ? "Edit Class" : `Add Class to ${category.title}`}
           </Typography>
         </Grid>
         <Grid
@@ -68,18 +102,50 @@ export const CreateClassForm = ({
           sx={{ px: 2 }}
           alignItems="center"
         >
-          <Grid item xs={3} sm={3}>
-            <IconSelect onSelect={(e) => setIcon(e.target.value)} icon={icon} />
-          </Grid>
           <Grid item xs={9} sm={9}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={isOnlyClass}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    setIsOnlyClass((prev) => !prev);
+                  }}
+                  color="primary"
+                />
+              }
+              label="Is this the only class in this category?"
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Divider />
+          </Grid>
+          <Grid item xs={3} sm={3} display={isOnlyClass ? "none" : "block"}>
+            <IconSelect
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              onSelect={(e) => {
+                setIcon(e.target.value);
+                e.stopPropagation();
+              }}
+              icon={icon}
+              disabled={isOnlyClass}
+            />
+          </Grid>
+          <Grid item xs={9} sm={9} display={isOnlyClass ? "none" : "block"}>
             <TextField
               fullWidth
               size="small"
               value={title}
               label="Class Title"
-              onChange={(e) => {
+              onKeyDown={(e) => {
                 e.stopPropagation();
+              }}
+              onChange={(e) => {
                 setTitle(e.target.value);
+                e.stopPropagation();
               }}
               margin="normal"
               InputProps={{
@@ -89,9 +155,10 @@ export const CreateClassForm = ({
               helperText={
                 title.length > MAX_TITLE_LENGTH ? "Title is too long." : ""
               }
+              disabled={isOnlyClass}
             />
           </Grid>
-          <Grid item xs={12} sm={7}>
+          <Grid item xs={12} display={isOnlyClass ? "none" : "block"}>
             <Divider sx={{ mb: 3 }} />
           </Grid>
           <Grid item xs={12} sm={7} display="flex" flexDirection="column">
@@ -112,9 +179,12 @@ export const CreateClassForm = ({
               fullWidth
               size="small"
               value={googleFormIframe}
-              onChange={(e) => {
+              onKeyDown={(e) => {
                 e.stopPropagation();
+              }}
+              onChange={(e) => {
                 setGoogleFormIframe(e.target.value);
+                e.stopPropagation();
               }}
               placeholder="Google Form iframe code"
               margin="normal"
@@ -129,24 +199,20 @@ export const CreateClassForm = ({
         </Grid>
         <Grid item xs={12} display="flex" flexDirection="row">
           <Grid item xs={4} sm={2}>
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={() => {
-                onCreateSubclass(category.id, icon, title, googleFormId);
-                setTitle(""); // Reset after adding
-                setGoogleFormIframe(""); // Reset after adding
-                onClose();
-              }}
-              disabled={!isFormValid()}
-            >
-              Add Class
+            <Button fullWidth onClick={onClose}>
+              Cancel
             </Button>
           </Grid>
           <Grid item xs={4} sm={8} />
+
           <Grid item xs={4} sm={2}>
-            <Button variant="contained" fullWidth onClick={onClose}>
-              Cancel
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={handleSubmit}
+              disabled={!isFormValid()}
+            >
+              {initialData ? "Update Class" : "Add Class"}
             </Button>
           </Grid>
         </Grid>

@@ -36,7 +36,7 @@ export const ExampleIcons = {
   // Add other icons here...
 };
 
-export const IconSelect = ({ icon, onSelect }) => (
+export const IconSelect = ({ icon, onSelect, disabled }) => (
   <FormControl
     fullWidth
     sx={{ my: "auto", height: "40px !important" }}
@@ -56,6 +56,7 @@ export const IconSelect = ({ icon, onSelect }) => (
           },
         },
       }}
+      disabled={disabled}
     >
       {Object.entries(ExampleIcons).map(([name, icon]) => (
         <MenuItem key={name} value={name}>
