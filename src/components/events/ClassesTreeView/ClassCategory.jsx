@@ -39,7 +39,6 @@ export const ClassCategory = ({
   editingCategoryId,
   editingClassId,
   onEditCategory,
-  onEditClass,
   onUpdateCategory,
   shiftUpClassCategory,
   shiftDownClassCategory,

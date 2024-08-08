@@ -86,6 +86,7 @@ export const ClassSignup = ({
       {isEdit && showOptions && (
         <ClassDropdownActions
           classObj={classObj}
+          categoryId={category.id}
           onEditClass={() => handleEditClass(classObj.id)}
           onDeleteClass={onDeleteSubclass}
           shiftUpClass={shiftUpClass}

@@ -395,6 +395,7 @@ const Page = ({ params }) => {
   };
 
   const shiftUpSubclass = (classCategoryId, subclassId) => {
+    alert(JSON.stringify({ classCategoryId, subclassId }));
     setCommunityData((prevState) => {
       const updatedClasses = prevState.classes.map((classCategory) => {
         if (classCategory.id === classCategoryId) {

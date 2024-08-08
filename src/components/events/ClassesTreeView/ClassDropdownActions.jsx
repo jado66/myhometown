@@ -4,6 +4,7 @@ import { useState } from "react";
 
 export const ClassDropdownActions = ({
   classObj,
+  categoryId,
   onEditClass,
   onDeleteClass,
   shiftUpClass,
@@ -55,7 +56,7 @@ export const ClassDropdownActions = ({
       >
         <MenuItem
           onClick={(e) => {
-            onEditClass(classObj.id);
+            onEditClass(categoryId, classObj.id);
             handleClose(e);
           }}
         >
@@ -63,7 +64,7 @@ export const ClassDropdownActions = ({
         </MenuItem>
         <MenuItem
           onClick={(e) => {
-            onDeleteClass(classObj.id);
+            onDeleteClass(categoryId, classObj.id);
             handleClose(e);
           }}
         >
@@ -71,7 +72,7 @@ export const ClassDropdownActions = ({
         </MenuItem>
         <MenuItem
           onClick={(e) => {
-            shiftUpClass(classObj.id);
+            shiftUpClass(categoryId, classObj.id);
             handleClose(e);
           }}
           disabled={isFirstClass}
@@ -80,7 +81,7 @@ export const ClassDropdownActions = ({
         </MenuItem>
         <MenuItem
           onClick={(e) => {
-            shiftDownClass(classObj.id);
+            shiftDownClass(categoryId, classObj.id);
             handleClose(e);
           }}
           disabled={isLastClass}
