@@ -90,9 +90,9 @@ const CommunityResourceContent = () => {
           variant="body1"
           sx={{ flexGrow: 1, color: "black", mb: 3, fontSize: "larger" }}
         >
-          Our Community Resource Center program uses church meetinghouses or
-          other public buildings to provide ongoing educational opportunities—at
-          no cost.
+          Our Community Resource Centers use church meetinghouses or other
+          public buildings to provide ongoing educational opportunities— at no
+          cost.
         </Typography>
 
         <Typography variant="h3" sx={{ color: "black", fontWeight: "bold" }}>

@@ -100,10 +100,9 @@ const Home = () => {
               variant="body1"
               sx={{ color: "black", fontSize: "larger" }}
             >
-              At myHometown we breath new life into aging and under loved
-              neighborhoods by renewing landscapes, refurbishing homes and
-              buildings, and provides educational opportunities through
-              neighborhood Community Resource Centers.
+              At myHometown, we revitalize aging neighborhoods by refurbishing
+              homes and buildings, renewing landscapes, and adding new
+              educational opportunities through Community Resource Centers.
             </Typography>
             <Divider sx={{ my: 3 }} />
             <Typography
@@ -111,8 +110,8 @@ const Home = () => {
               sx={{ color: "black", fontSize: "larger" }}
             >
               We lift the lives of residents and attract individuals and
-              families who want to move in, stay, and contribute to the
-              long-term viability of the community.
+              families who want to move in, stay and contribute to the long-term
+              viability of the community.
             </Typography>
           </Grid>
 
@@ -160,10 +159,9 @@ const Home = () => {
               variant="body1"
               sx={{ color: "black", fontSize: "larger" }}
             >
-              At myHometown we breath new life into aging and under loved
-              neighborhoods by renewing landscapes, refurbishing homes and
-              buildings, and provides educational opportunities through
-              neighborhood Community Resource Centers.
+              At myHometown, we revitalize aging neighborhoods by refurbishing
+              homes and buildings, renewing landscapes, and adding new
+              educational opportunities through Community Resource Centers.
             </Typography>
           </Grid>
 
@@ -219,8 +217,8 @@ const Home = () => {
               sx={{ color: "black", fontSize: "larger" }}
             >
               We lift the lives of residents and attract individuals and
-              families who want to move in, stay, and contribute to the
-              long-term viability of the community.
+              families who want to move in, stay and contribute to the long-term
+              viability of the community.
             </Typography>
           </Grid>
         </>
@@ -265,7 +263,9 @@ const Home = () => {
         </Grid>
         <ImageAccordion
           title="A Cooperative Partnership"
-          content={`We thrive through a cooperative partnership with faith groups, local governments, non-profit organizations, educational institutions, community-minded businesses.`}
+          content={`We thrive through a cooperative partnership with faith groups, local
+governments, non-profit organizations, educational institutions and
+community-minded businesses.`}
           bgColor="#a16faf" //febc18 y - e45620 o - lb 1bc7bc - db 00357d - lp a16faf - lp 592569 - nc efefe7 - cg 63666a
           contentColor="#ffffff"
           cornerIcon={<MyHometownHouse />}
@@ -313,7 +313,9 @@ const Home = () => {
 
         <ImageAccordion
           title="How We Make a Difference"
-          content="Leader from myHometown join with residents and volunteers to re-landscape yards and parks, refurbish homes, address code violations, and more. It’s common to complete 10-15 projects in a single day and to repeat these Days of Service monthly throughout the spring and summer."
+          content="We help people come together in a way that results in neighbors
+helping neighbors. They quickly discover the benefits of working
+together and what it means to build a sense of community."
           bgColor="#318D43"
           contentColor="#ffffff"
           cornerIcon={<MyHometownHouse />}
