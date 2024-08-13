@@ -1,8 +1,8 @@
 import { SvgIcon } from "@mui/material";
 
 const PianoIcon = ({ fillColor = "#318d43", sx }) => (
-  <SvgIcon viewBox="0 0 360 360">
-    <style type="text/css" sx={{ ...sx }}>
+  <SvgIcon viewBox="0 0 360 360" sx={{ ...sx }}>
+    <style type="text/css">
       {`
             .c{fill:${fillColor};stroke-width:0px}
             .st1{display:none;}

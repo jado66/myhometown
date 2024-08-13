@@ -122,6 +122,11 @@ const Topbar = ({ onSidebarOpen }) => {
               display="flex"
               alignContent="center"
               fontSize="larger"
+              sx={{
+                "&:hover": {
+                  color: "#3A3B3C",
+                },
+              }}
             >
               Cities
               {/* {
@@ -152,7 +157,13 @@ const Topbar = ({ onSidebarOpen }) => {
               <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
-                sx={{ color: "black", fontWeight: "bold" }}
+                sx={{
+                  color: "black",
+                  fontWeight: "bold",
+                  "&:hover": {
+                    color: "#3A3B3C",
+                  },
+                }}
                 href={rootUrl + `/maintenance`}
               >
                 Ogden
@@ -161,7 +172,13 @@ const Topbar = ({ onSidebarOpen }) => {
               <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
-                sx={{ color: "black", fontWeight: "bold" }}
+                sx={{
+                  color: "black",
+                  fontWeight: "bold",
+                  "&:hover": {
+                    color: "#3A3B3C",
+                  },
+                }}
                 href={rootUrl + `/utah/orem/geneva-heights`}
               >
                 Orem
@@ -169,7 +186,13 @@ const Topbar = ({ onSidebarOpen }) => {
               <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
-                sx={{ color: "black", fontWeight: "bold" }}
+                sx={{
+                  color: "black",
+                  fontWeight: "bold",
+                  "&:hover": {
+                    color: "#3A3B3C",
+                  },
+                }}
                 href={rootUrl + `/maintenance`}
               >
                 Provo
@@ -177,7 +200,13 @@ const Topbar = ({ onSidebarOpen }) => {
               <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
-                sx={{ color: "black", fontWeight: "bold" }}
+                sx={{
+                  color: "black",
+                  fontWeight: "bold",
+                  "&:hover": {
+                    color: "#3A3B3C",
+                  },
+                }}
                 href={rootUrl + `/maintenance`}
               >
                 Salt Lake City
@@ -185,7 +214,13 @@ const Topbar = ({ onSidebarOpen }) => {
               <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
-                sx={{ color: "black", fontWeight: "bold" }}
+                sx={{
+                  color: "black",
+                  fontWeight: "bold",
+                  "&:hover": {
+                    color: "#3A3B3C",
+                  },
+                }}
                 href={rootUrl + `/maintenance`}
               >
                 West Valley City
@@ -233,15 +268,20 @@ const Topbar = ({ onSidebarOpen }) => {
             <Link
               underline="none"
               component="a"
-              href="#"
+              href="/days-of-service"
               onClick={handleResourcesClick}
               color="black"
               display="flex"
               fontWeight="bold"
               fontSize="larger"
               alignContent="center"
+              sx={{
+                "&:hover": {
+                  color: "#3A3B3C",
+                },
+              }}
             >
-              Resources
+              Days Of Service
               {/* {
                 !resourcesAnchorEl ?
                 <ExpandMore/>
@@ -249,35 +289,33 @@ const Topbar = ({ onSidebarOpen }) => {
                 <ExpandLess/>
               } */}
             </Link>
-            <Menu
-              id="resources-menu"
-              anchorEl={resourcesAnchorEl}
-              open={Boolean(resourcesAnchorEl)}
-              onClose={handleResourcesClose}
-              keepMounted
-              sx={{ maxHeight: 500, mt: 1.5 }}
-              PaperProps={{
-                sx: { backgroundColor: "#1bc7bc" },
+          </Box>
+
+          <Box marginX={2}>
+            <Link
+              underline="none"
+              component="a"
+              href="/community-resource-centers"
+              onClick={handleResourcesClick}
+              color="black"
+              display="flex"
+              fontWeight="bold"
+              fontSize="larger"
+              alignContent="center"
+              sx={{
+                "&:hover": {
+                  color: "#3A3B3C",
+                },
               }}
             >
-              <MenuItem
-                component="a"
-                href="/community-resource-centers"
-                sx={{ color: "black", fontWeight: "bold" }}
-              >
-                Community Resource Centers
-              </MenuItem>
-              <MenuItem
-                component="a"
-                href="days-of-service"
-                sx={{ color: "black", fontWeight: "bold" }}
-              >
-                Days of Services
-              </MenuItem>
-              {/* <MenuItem component="a">Immigration</MenuItem>
-              <MenuItem component="a">Mental Health</MenuItem>
-              <MenuItem component="a">Education</MenuItem> */}
-            </Menu>
+              Community Resource Centers
+              {/* {
+                !resourcesAnchorEl ?
+                <ExpandMore/>
+                :
+                <ExpandLess/>
+              } */}
+            </Link>
           </Box>
 
           {/* <Box marginX={2}>

@@ -156,7 +156,7 @@ const Page = ({ params }) => {
           </Grid>
         </Grid>
         <Grid item xs={12} display="flex" justifyContent="center">
-          <Grid item xs={10} sm={8} md={6}>
+          <Grid item xs={10} sm={10} md={8}>
             <Box
               display="flex"
               justifyContent="center"
@@ -176,6 +176,8 @@ const Page = ({ params }) => {
                   width: "100%",
                   height: "auto",
                   objectFit: "cover",
+                  border: "1px solid black",
+                  boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
                 }}
               />
             </Box>

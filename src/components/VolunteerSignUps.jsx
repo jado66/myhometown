@@ -81,7 +81,9 @@ export const VolunteerSignUps = ({
             {volunteerHeaderText
               ? volunteerHeaderText
               : "Sign Up as a Volunteer"}
+            <Button>Close Form</Button>
           </Typography>
+
           <Grid
             item
             xs={12}

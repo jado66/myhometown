@@ -58,7 +58,7 @@ const DaysOfServiceContent = () => {
           variant="body1"
           sx={{ flexGrow: 1, color: "black", mb: 3, fontSize: "larger" }}
         >
-          Leader from myHometown join with community residents and volunteers,
+          Leaders from myHometown join with community residents and volunteers,
           at large group events, to re-landscape yards and parks, refurbish
           homes, address code violations, and more. It’s common to complete
           10-15 projects in a single day and to repeat these Days of Service
