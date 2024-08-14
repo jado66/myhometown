@@ -132,7 +132,7 @@ export const VolunteerSignUps = ({
     );
   } else {
     return (
-      <>
+      <div id="volunteer">
         <Typography
           variant="h4"
           component="h2"
@@ -172,7 +172,7 @@ export const VolunteerSignUps = ({
             )}
           </Grid>
         </Card>
-      </>
+      </div>
     );
   }
 };

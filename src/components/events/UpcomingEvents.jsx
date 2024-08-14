@@ -143,6 +143,7 @@ const UpcomingEventCard = ({ event, dateFormatter, onSelect }) => {
         },
       }}
       onClick={() => onSelect(event)}
+      id="events"
     >
       <Grid container>
         <Grid item xs={12} sm={6}>

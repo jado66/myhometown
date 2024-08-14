@@ -25,21 +25,19 @@ const Contact = ({ themeMode = "light" }) => {
     >
       {" "}
       <Container px={{ md: 5, xs: 0 }} paddingTop={"0 !important"}>
-        <Grid container spacing={isMd ? 8 : 4}>
+        <Grid container spacing={isMd ? 4 : 4}>
           <Grid item container xs={12} alignItems={"center"}>
             <Form />
           </Grid>
+          <Grid item xs={12} alignItems={"center"}>
+            <Divider sx={{ borderWidth: 3, borderColor: "black" }} />
+          </Grid>
+
           <Grid item xs={12} sx={{ px: { xs: 2 } }}>
             <Map themeMode={themeMode} />
           </Grid>
         </Grid>
       </Container>
-      <Divider sx={{ borderWidth: 3, mx: 5, borderColor: "black" }} />
-      <Box bgcolor={theme.palette.alternate.main}>
-        <Container maxWidth={800} pb={"0 !important"}>
-          <Faq />
-        </Container>
-      </Box>
     </Container>
   );
 };

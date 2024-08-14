@@ -36,9 +36,9 @@ const CitiesStrongAbout = () => {
       <Container paddingTop={"0 !important"}>
         <Headline />
       </Container>
-      <Container paddingTop={"0 !important"}>
+      {/* <Container paddingTop={"0 !important"}>
         <Values />
-      </Container>
+      </Container> */}
       <Container paddingTop={"0 !important"}>
         <Team />
       </Container>

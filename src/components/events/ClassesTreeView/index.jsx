@@ -96,7 +96,7 @@ export const ClassesTreeView = ({
   };
 
   return (
-    <>
+    <div id="sign-ups">
       <IframeHelpDialog
         open={isShowIframeHelpDialog}
         handleClose={hideIframeHelpDialog}
@@ -146,6 +146,6 @@ export const ClassesTreeView = ({
           </SimpleTreeView>
         </Grid>
       </Card>
-    </>
+    </div>
   );
 };
