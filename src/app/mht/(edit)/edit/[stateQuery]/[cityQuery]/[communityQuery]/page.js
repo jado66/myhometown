@@ -902,6 +902,7 @@ const Page = ({ params }) => {
           setVolunteerHeaderText={handleVolunteerSignUpHeaderChange}
           signUpFormId={communityData.signUpFormId}
           setSignUpFormId={handleSignUpFormIdChange}
+          onClose={() => {}}
         />
       </Container>
     </>

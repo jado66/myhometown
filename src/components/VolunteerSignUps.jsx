@@ -7,11 +7,12 @@ import {
   TextField,
   styled,
   useTheme,
+  Box,
 } from "@mui/material";
 import { TreeItem } from "@mui/x-tree-view/TreeItem";
-
 import InputAdornment from "@mui/material/InputAdornment";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import CloseIcon from "@mui/icons-material/Close";
 import { IframeHelpDialog } from "./events/IframeHelpDialog";
 
 const StyledTreeItem = styled(TreeItem)(({ theme }) => ({
@@ -28,6 +29,7 @@ export const VolunteerSignUps = ({
   setVolunteerHeaderText,
   signUpFormId,
   setSignUpFormId,
+  onClose,
 }) => {
   const [isEditingValues, setEditingValues] = useState(false);
   const [rawIframeCode, setRawIframeCode] = useState("");
@@ -63,6 +65,31 @@ export const VolunteerSignUps = ({
     return null;
   }
 
+  const HeaderWithCloseButton = () => (
+    <Box
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      width="100%"
+      sx={{ position: "relative" }}
+      mb={2}
+    >
+      <Typography variant="h4" component="h2" color="primary">
+        {volunteerHeaderText ? volunteerHeaderText : "Sign Up as a Volunteer"}
+      </Typography>
+      {!isEdit && (
+        <Button
+          variant="outlined"
+          onClick={onClose}
+          startIcon={<CloseIcon />}
+          sx={{ position: "absolute", top: 0, right: 0, mr: 3 }}
+        >
+          Close Form
+        </Button>
+      )}
+    </Box>
+  );
+
   if (isEditingValues || !signUpFormId) {
     return (
       <>
@@ -81,7 +108,6 @@ export const VolunteerSignUps = ({
             {volunteerHeaderText
               ? volunteerHeaderText
               : "Sign Up as a Volunteer"}
-            <Button>Close Form</Button>
           </Typography>
 
           <Grid
@@ -90,8 +116,9 @@ export const VolunteerSignUps = ({
             display="flex"
             flexDirection="row"
             alignItems="center"
+            mt={2}
           >
-            <Typography variant="body" textAlign="left">
+            <Typography variant="body1" textAlign="left">
               Copy the link from Google Forms
             </Typography>
             <Button
@@ -109,8 +136,8 @@ export const VolunteerSignUps = ({
             onChange={(e) => setRawIframeCode(e.target.value)}
             placeholder="Google Form iframe code"
             margin="normal"
-            error={error}
-            helperText={error ? error : ""}
+            error={!!error}
+            helperText={error || ""}
             InputProps={{
               endAdornment: (
                 <InputAdornment
@@ -133,17 +160,9 @@ export const VolunteerSignUps = ({
   } else {
     return (
       <div id="volunteer">
-        <Typography
-          variant="h4"
-          component="h2"
-          color="primary"
-          textAlign="center"
-          gutterBottom
-        >
-          {volunteerHeaderText ? volunteerHeaderText : "Sign up as a Volunteer"}
-        </Typography>
+        <HeaderWithCloseButton />
 
-        <Card sx={{ padding: 2, marginTop: 2 }}>
+        <Card sx={{ padding: 2 }}>
           <Grid
             item
             xs={12}
@@ -158,12 +177,13 @@ export const VolunteerSignUps = ({
               frameBorder="0"
               marginHeight="0"
               marginWidth="0"
+              title="Volunteer Sign Up Form"
             >
               Loading…
             </iframe>
             {isEdit && (
               <Button
-                sx={{ mx: "auto" }}
+                sx={{ mx: "auto", mt: 2 }}
                 variant="outlined"
                 onClick={toggleEditing}
               >

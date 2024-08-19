@@ -337,6 +337,7 @@ const Page = ({ params }) => {
               setVolunteerHeaderText={alertNotEdit}
               signUpFormId={community.signUpFormId}
               setSignUpFormId={alertNotEdit}
+              onClose={() => setShowSignup(false)}
             />
           </>
         )}
