@@ -147,6 +147,18 @@ const UpcomingEventCard = ({ event, dateFormatter, onSelect }) => {
     >
       <Grid container>
         <Grid item xs={12} sm={6}>
+          <Box display="flex" flexDirection="column">
+            <Typography variant="body1" gutterBottom>
+              {event.title}
+            </Typography>
+            <Typography variant="body2">{event.description}</Typography>
+          </Box>
+        </Grid>
+
+        <Grid item xs={12} sx={{ display: { xs: "block", sm: "none" } }}>
+          <Divider sx={{ my: 2 }} />
+        </Grid>
+        <Grid item xs={12} sm={6}>
           <Box display="flex" sx={{ minWidth: "300px" }} flexDirection="column">
             <Typography
               variant="body2"
@@ -160,17 +172,6 @@ const UpcomingEventCard = ({ event, dateFormatter, onSelect }) => {
             <Typography variant="body2">
               {event.location.replaceAll("-", " ")}
             </Typography>
-          </Box>
-        </Grid>
-        <Grid item xs={12} sx={{ display: { xs: "block", sm: "none" } }}>
-          <Divider sx={{ my: 2 }} />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <Box display="flex" flexDirection="column">
-            <Typography variant="body1" gutterBottom>
-              {event.title}
-            </Typography>
-            <Typography variant="body2">{event.description}</Typography>
           </Box>
         </Grid>
       </Grid>

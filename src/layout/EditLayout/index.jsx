@@ -46,19 +46,19 @@ const EditLayout = ({
 
   return (
     <div style={{ backgroundColor: "#fff" }}>
-      <HideOnScroll>
-        <AppBar
-          position={"fixed"}
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-          }}
-          elevation={1}
-        >
-          <Container paddingY={{ xs: 1 / 2, sm: 1 }}>
-            <Topbar />
-          </Container>
-        </AppBar>
-      </HideOnScroll>
+      {/* <HideOnScroll> */}
+      <AppBar
+        position={"fixed"}
+        sx={{
+          backgroundColor: theme.palette.background.paper,
+        }}
+        elevation={1}
+      >
+        <Container paddingY={{ xs: 1 / 2, sm: 1 }}>
+          <Topbar />
+        </Container>
+      </AppBar>
+      {/* </HideOnScroll> */}
       <Sidebar
         onClose={handleSidebarClose}
         open={openSidebar}

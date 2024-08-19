@@ -229,7 +229,7 @@ const SidebarNav = ({ onClose }) => {
                   color: "black",
                 }}
               >
-                Sign Up For Classes
+                Sign Classes
               </Typography>
             </NextLink>
           </Box>

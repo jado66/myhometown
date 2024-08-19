@@ -308,7 +308,7 @@ const Topbar = ({ onSidebarOpen }) => {
                 },
               }}
             >
-              Sign Up For Classes
+              Sign Classes
               {/* {
                 !resourcesAnchorEl ?
                 <ExpandMore/>
