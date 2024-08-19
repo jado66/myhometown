@@ -44,7 +44,7 @@ const DaysOfServiceContent = () => {
           component="video"
           controls
           playsInline
-          poster="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/grad.webp"
+          poster="images/Days of Service Video Thumbnail.webp"
           sx={{
             mx: "auto",
             width: "100%",

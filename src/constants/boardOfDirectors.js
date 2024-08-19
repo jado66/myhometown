@@ -84,7 +84,7 @@ field.`,
   },
   {
     name: "Eli Madrigal",
-    avatar: "/images/profile.png",
+    avatar: "/images/board/Eli Madrigal.webp",
   },
   {
     name: "Dr. Ann Millner",

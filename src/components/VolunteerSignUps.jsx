@@ -140,7 +140,7 @@ export const VolunteerSignUps = ({
           textAlign="center"
           gutterBottom
         >
-          {volunteerHeaderText ? volunteerHeaderText : "Sign up as a volunteer"}
+          {volunteerHeaderText ? volunteerHeaderText : "Sign up as a Volunteer"}
         </Typography>
 
         <Card sx={{ padding: 2, marginTop: 2 }}>
