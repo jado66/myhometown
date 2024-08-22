@@ -60,9 +60,9 @@ const DaysOfServiceContent = () => {
         >
           Leaders from myHometown join with community residents and volunteers,
           at large group events, to re-landscape yards and parks, refurbish
-          homes, address code violations, and more. It’s common to complete
+          homes, address code violations, and more. It's common to complete
           10-15 projects in a single day and to repeat these Days of Service
-          monthly throughout the spring and summer.n
+          monthly throughout the spring and summer
         </Typography>
       </Grid>
     </>

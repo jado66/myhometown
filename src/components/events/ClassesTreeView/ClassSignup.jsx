@@ -56,6 +56,37 @@ export const ClassSignup = ({
     handleCloseEdit();
   };
 
+  const renderHeader = () => {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        position="relative"
+        sx={{
+          px: 1,
+          width: "100%",
+          height: "100%",
+          minHeight: "100px",
+          backgroundColor: "transparent",
+          mb: 2,
+        }}
+      >
+        <Box
+          component="img"
+          src={localClassObj.headerImage}
+          sx={{
+            width: "100%",
+            borderRadius: 4,
+            height: "auto",
+            objectFit: "cover",
+            mt: 1,
+          }}
+        />
+      </Box>
+    );
+  };
+
   const renderContent = () => {
     console.log("Rendering content. Current classObj:", localClassObj);
 
@@ -75,7 +106,6 @@ export const ClassSignup = ({
     } else {
       return (
         <>
-          {/* <pre>{JSON.stringify(localClassObj, null, 2)}</pre> */}
           <iframe
             src={`https://docs.google.com/forms/d/e/${localClassObj.googleFormID}/viewform?embedded=true`}
             width="100%"
@@ -153,6 +183,7 @@ export const ClassSignup = ({
               />
             </Box>
           )}
+          {editingClassId !== localClassObj.id && renderHeader()}
           {renderContent()}
         </Box>
       ) : (
@@ -170,6 +201,8 @@ export const ClassSignup = ({
             {accordionSummaryContent}
           </AccordionSummary>
           <AccordionDetails onClick={(event) => event.stopPropagation()}>
+            {editingClassId !== localClassObj.id && renderHeader()}
+
             {renderContent()}
           </AccordionDetails>
         </Accordion>

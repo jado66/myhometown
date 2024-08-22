@@ -11,9 +11,11 @@ import {
   RadioGroup,
   FormControl,
   FormLabel,
+  Box,
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { IconSelect } from "./IconSelect";
+import UploadImage from "@/components/util/UploadImage";
 
 export const CreateClassForm = ({
   category,
@@ -31,8 +33,11 @@ export const CreateClassForm = ({
   );
   const [icon, setIcon] = useState(initialData ? initialData.icon : "None");
   const [isOnlyClass, setIsOnlyClass] = useState(false);
-  const [contentType, setContentType] = useState("form");
-  const [information, setInformation] = useState("");
+  const [contentType, setContentType] = useState(
+    initialData.contentType || "form"
+  );
+  const [headerImage, setHeaderImage] = useState(initialData.headerImage || "");
+  const [information, setInformation] = useState(initialData.information || "");
 
   useEffect(() => {
     if (isOnlyClass) {
@@ -73,6 +78,7 @@ export const CreateClassForm = ({
       icon,
       title,
       contentType,
+      headerImage,
       ...(contentType === "form" ? { googleFormId } : { information }),
     };
 
@@ -85,6 +91,7 @@ export const CreateClassForm = ({
     setTitle("");
     setGoogleFormIframe("");
     setInformation("");
+    setHeaderImage("");
     onClose();
   };
 
@@ -105,6 +112,42 @@ export const CreateClassForm = ({
             {initialData ? "Edit Class" : `Add Class to ${category.title}`}
           </Typography>
         </Grid>
+
+        <Grid item xs={12}>
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            position="relative"
+            sx={{
+              px: 1,
+              width: "100%",
+              height: "100%",
+              minHeight: "100px",
+              backgroundColor: "transparent",
+              mb: 2,
+            }}
+          >
+            <UploadImage setUrl={setHeaderImage} />
+            {headerImage ? (
+              <Box
+                component="img"
+                src={headerImage}
+                sx={{
+                  width: "100%",
+                  borderRadius: 4,
+                  height: "auto",
+                  objectFit: "cover",
+                }}
+              />
+            ) : (
+              <Typography variant="h4" component="h2" align="center">
+                Class Header Image
+              </Typography>
+            )}
+          </Box>
+        </Grid>
+        <Divider sx={{ my: 3 }} />
 
         <Grid item xs={12}>
           <FormControlLabel
