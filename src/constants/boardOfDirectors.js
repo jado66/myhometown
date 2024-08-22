@@ -169,17 +169,17 @@ Association.`,
   {
     name: "Kimberly Teitter",
     avatar: "/images/board/KimberlyTeitter.jpg",
-    bio: `Dr Applewhite is a licensed clinical psychologist, published author, adjunct professor,
+    bio: `Dr Teitter is a licensed clinical psychologist, published author, adjunct professor,
 and entrepreneur based in the Salt Lake City area. She holds a BA in Psychology from
 New York University and an MS and Doctor of Psychology in School-Clinical Child
 Psychology from the Ferkauf Graduate School of Psychology at Yeshiva University.
-Dr. Applewhite completed a postdoctoral fellowship in Leadership and Education in
+Dr. Teitter completed a postdoctoral fellowship in Leadership and Education in
 Adolescent Health psychology at Boston Children's Hospital and was a fellow at
 Harvard Medical School. Currently, she serves as the Program Director of the
 Dialectical Behavior Therapy program at the Utah Center for Evidence-Based
 Treatment, specializing in chronic suicidality and emotion regulation issues. She also
 teaches as an adjunct instructor at the University of Utah Health Huntsman Mental
-Health Institute. Dr. Applewhite is a dedicated wife and mother of two daughters.`,
+Health Institute. Dr. Teitter is a dedicated wife and mother of two daughters.`,
   },
   {
     name: "Dr. Jared Theurer",
