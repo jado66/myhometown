@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Grid,
@@ -16,6 +16,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { CreateClassForm } from "./CreateClassForm";
 import { ExampleIcons, IconSelect } from "./IconSelect";
 import { ClassDropdownActions } from "./ClassDropdownActions";
+import { MultiLineTypography } from "@/components/MultiLineTypography";
 
 export const ClassSignup = ({
   classObj,
@@ -31,6 +32,15 @@ export const ClassSignup = ({
 }) => {
   const [showOptions, setShowOptions] = useState(false);
   const [editingClassId, setEditingClassId] = useState(null);
+  const [localClassObj, setLocalClassObj] = useState(classObj);
+
+  useEffect(() => {
+    setLocalClassObj(classObj);
+  }, [classObj]);
+
+  useEffect(() => {
+    console.log("localClassObj updated:", localClassObj);
+  }, [localClassObj]);
 
   const handleEditClass = (id) => {
     setEditingClassId(id);
@@ -40,54 +50,58 @@ export const ClassSignup = ({
     setEditingClassId(null);
   };
 
-  const handleUpdateSubclass = (
-    categoryId,
-    classId,
-    icon,
-    title,
-    googleFormId
-  ) => {
-    // Implement your subclass update logic here
+  const handleUpdateSubclass = (categoryId, classId, updatedData) => {
+    onUpdateSubclass(categoryId, classId, updatedData);
+    setLocalClassObj(updatedData);
     handleCloseEdit();
   };
 
-  const content = (
-    <>
-      {editingClassId === classObj.id ? (
+  const renderContent = () => {
+    console.log("Rendering content. Current classObj:", localClassObj);
+
+    if (editingClassId === localClassObj.id) {
+      return (
         <CreateClassForm
           category={category}
-          initialData={classObj}
+          initialData={localClassObj}
           onClose={handleCloseEdit}
           onCreateSubclass={handleUpdateSubclass}
           showIframeHelpDialog={showIframeHelpDialog}
           onUpdateSubclass={onUpdateSubclass}
         />
-      ) : (
-        <iframe
-          src={`https://docs.google.com/forms/d/e/${classObj.googleFormID}/viewform?embedded=true`}
-          width="100%"
-          height="500px"
-          frameBorder="0"
-          marginHeight="0"
-          marginWidth="0"
-        >
-          Loading…
-        </iframe>
-      )}
-    </>
-  );
+      );
+    } else if (localClassObj.contentType === "information") {
+      return <MultiLineTypography text={localClassObj.information} />;
+    } else {
+      return (
+        <>
+          {/* <pre>{JSON.stringify(localClassObj, null, 2)}</pre> */}
+          <iframe
+            src={`https://docs.google.com/forms/d/e/${localClassObj.googleFormID}/viewform?embedded=true`}
+            width="100%"
+            height="500px"
+            frameBorder="0"
+            marginHeight="0"
+            marginWidth="0"
+          >
+            Loading…
+          </iframe>
+        </>
+      );
+    }
+  };
 
   const accordionSummaryContent = (
     <>
-      {ExampleIcons[classObj.icon]}
-      <Typography sx={{ marginLeft: "1em" }}>{classObj.title}</Typography>
+      {ExampleIcons[localClassObj.icon]}
+      <Typography sx={{ marginLeft: "1em" }}>{localClassObj.title}</Typography>
 
       <Box sx={{ flexGrow: 1 }} />
       {isEdit && showOptions && (
         <ClassDropdownActions
-          classObj={classObj}
+          classObj={localClassObj}
           categoryId={category.id}
-          onEditClass={() => handleEditClass(classObj.id)}
+          onEditClass={() => handleEditClass(localClassObj.id)}
           onDeleteClass={onDeleteSubclass}
           shiftUpClass={shiftUpClass}
           shiftDownClass={shiftDownClass}
@@ -98,59 +112,68 @@ export const ClassSignup = ({
     </>
   );
 
-  return isFirstClass && isLastClass ? (
-    <Box
-      key={`class-content-${classObj.id}`}
-      elevation={0}
-      onMouseEnter={() => setShowOptions(true)}
-      onMouseLeave={() => setShowOptions(false)}
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        mb: 2,
-        flexDirection: "column",
-      }}
-    >
-      {isEdit && (
+  return (
+    <>
+      {/* <Box sx={{ mb: 2, p: 2, border: "1px solid #ccc", borderRadius: "4px" }}>
+        <Typography variant="h6">Debug Information:</Typography>
+        <pre>{JSON.stringify(localClassObj, null, 2)}</pre>
+      </Box> */}
+
+      {isFirstClass && isLastClass ? (
         <Box
+          key={`class-content-${localClassObj.id}`}
+          elevation={0}
+          onMouseEnter={() => setShowOptions(true)}
+          onMouseLeave={() => setShowOptions(false)}
           sx={{
             display: "flex",
-            mt: 2,
-            mr: 4,
-            width: "100%",
-            justifyContent: "flex-end",
+            alignItems: "center",
+            mb: 2,
+            flexDirection: "column",
           }}
         >
-          <ClassDropdownActions
-            classObj={classObj}
-            onEditClass={() => handleEditClass(classObj.id)}
-            onDeleteClass={onDeleteSubclass}
-            shiftUpClass={shiftUpClass}
-            shiftDownClass={shiftDownClass}
-            isFirstClass={isFirstClass}
-            isLastClass={isLastClass}
-          />
+          {isEdit && (
+            <Box
+              sx={{
+                display: "flex",
+                mt: 2,
+                mr: 4,
+                width: "100%",
+                justifyContent: "flex-end",
+              }}
+            >
+              <ClassDropdownActions
+                classObj={localClassObj}
+                onEditClass={() => handleEditClass(localClassObj.id)}
+                onDeleteClass={onDeleteSubclass}
+                shiftUpClass={shiftUpClass}
+                shiftDownClass={shiftDownClass}
+                isFirstClass={isFirstClass}
+                isLastClass={isLastClass}
+              />
+            </Box>
+          )}
+          {renderContent()}
         </Box>
+      ) : (
+        <Accordion
+          key={`accordion-${localClassObj.id}`}
+          elevation={0}
+          onMouseEnter={() => setShowOptions(true)}
+          onMouseLeave={() => setShowOptions(false)}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            onClick={(event) => event.stopPropagation()}
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            {accordionSummaryContent}
+          </AccordionSummary>
+          <AccordionDetails onClick={(event) => event.stopPropagation()}>
+            {renderContent()}
+          </AccordionDetails>
+        </Accordion>
       )}
-      {content}
-    </Box>
-  ) : (
-    <Accordion
-      key={`accordion-${classObj.id}`}
-      elevation={0}
-      onMouseEnter={() => setShowOptions(true)}
-      onMouseLeave={() => setShowOptions(false)}
-    >
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon />}
-        onClick={(event) => event.stopPropagation()}
-        sx={{ display: "flex", alignItems: "center" }}
-      >
-        {accordionSummaryContent}
-      </AccordionSummary>
-      <AccordionDetails onClick={(event) => event.stopPropagation()}>
-        {content}
-      </AccordionDetails>
-    </Accordion>
+    </>
   );
 };

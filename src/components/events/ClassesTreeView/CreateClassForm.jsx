@@ -7,8 +7,11 @@ import {
   Divider,
   FormControlLabel,
   Checkbox,
+  Radio,
+  RadioGroup,
+  FormControl,
+  FormLabel,
 } from "@mui/material";
-
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { IconSelect } from "./IconSelect";
 
@@ -28,6 +31,8 @@ export const CreateClassForm = ({
   );
   const [icon, setIcon] = useState(initialData ? initialData.icon : "None");
   const [isOnlyClass, setIsOnlyClass] = useState(false);
+  const [contentType, setContentType] = useState("form");
+  const [information, setInformation] = useState("");
 
   useEffect(() => {
     if (isOnlyClass) {
@@ -47,31 +52,39 @@ export const CreateClassForm = ({
 
   const googleFormId = extractGoogleFormId(googleFormIframe);
 
-  // Debugging output
-  console.log("Title:", title);
-  console.log("Google Form Iframe:", googleFormIframe);
-  console.log("Google Form ID:", googleFormId);
-
   const isFormValid = () => {
-    const valid =
-      title.length > 0 &&
-      title.length <= MAX_TITLE_LENGTH &&
-      googleFormId !== null;
-
-    // More debugging output
-    console.log("Is Form Valid:", valid);
-
-    return valid;
+    if (contentType === "form") {
+      return (
+        title.length > 0 &&
+        title.length <= MAX_TITLE_LENGTH &&
+        googleFormId !== null
+      );
+    } else {
+      return (
+        title.length > 0 &&
+        title.length <= MAX_TITLE_LENGTH &&
+        information.trim().length > 0
+      );
+    }
   };
 
   const handleSubmit = () => {
+    const data = {
+      icon,
+      title,
+      contentType,
+      ...(contentType === "form" ? { googleFormId } : { information }),
+    };
+
     if (initialData) {
-      onUpdateSubclass(category.id, initialData.id, icon, title, googleFormId);
+      onUpdateSubclass(category.id, initialData.id, data);
     } else {
-      onCreateSubclass(category.id, icon, title, googleFormId);
+      onCreateSubclass(category.id, data);
     }
-    setTitle(""); // Reset after submission
-    setGoogleFormIframe(""); // Reset after submission
+
+    setTitle("");
+    setGoogleFormIframe("");
+    setInformation("");
     onClose();
   };
 
@@ -83,74 +96,43 @@ export const CreateClassForm = ({
         item
         xs={12}
         display="flex"
-        flexDirection="row"
-        spacing={1}
+        flexDirection="column"
+        spacing={2}
         sx={{ p: 2 }}
-        alignItems="center"
       >
         <Grid item xs={12}>
           <Typography variant="h6" textAlign="center">
             {initialData ? "Edit Class" : `Add Class to ${category.title}`}
           </Typography>
         </Grid>
-        <Grid
-          container
-          xs={12}
-          display="flex"
-          flexDirection="row"
-          spacing={1}
-          sx={{ px: 2 }}
-          alignItems="center"
-        >
-          <Grid item xs={9} sm={9}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={isOnlyClass}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    setIsOnlyClass((prev) => !prev);
-                  }}
-                  color="primary"
-                />
-              }
-              label="Is this the only class in this category?"
-            />
-          </Grid>
 
-          <Grid item xs={12}>
-            <Divider />
-          </Grid>
-          <Grid item xs={3} sm={3} display={isOnlyClass ? "none" : "block"}>
+        <Grid item xs={12}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isOnlyClass}
+                onChange={(e) => setIsOnlyClass(e.target.checked)}
+              />
+            }
+            label="Is this the only class in this category?"
+          />
+        </Grid>
+
+        <Grid item container spacing={2}>
+          <Grid item xs={12} sm={3} display={isOnlyClass ? "none" : "block"}>
             <IconSelect
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              onSelect={(e) => {
-                setIcon(e.target.value);
-                e.stopPropagation();
-              }}
+              onSelect={(e) => setIcon(e.target.value)}
               icon={icon}
               disabled={isOnlyClass}
             />
           </Grid>
-          <Grid item xs={9} sm={9} display={isOnlyClass ? "none" : "block"}>
+          <Grid item xs={12} sm={9} display={isOnlyClass ? "none" : "block"}>
             <TextField
               fullWidth
               size="small"
               value={title}
               label="Class Title"
-              onKeyDown={(e) => {
-                e.stopPropagation();
-              }}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                e.stopPropagation();
-              }}
-              margin="normal"
-              InputProps={{
-                style: { height: "47px" },
-              }}
+              onChange={(e) => setTitle(e.target.value)}
               error={title.length > MAX_TITLE_LENGTH}
               helperText={
                 title.length > MAX_TITLE_LENGTH ? "Title is too long." : ""
@@ -158,34 +140,45 @@ export const CreateClassForm = ({
               disabled={isOnlyClass}
             />
           </Grid>
-          <Grid item xs={12} display={isOnlyClass ? "none" : "block"}>
-            <Divider sx={{ mb: 3 }} />
-          </Grid>
-          <Grid item xs={12} sm={7} display="flex" flexDirection="column">
-            <Grid item xs={12}>
-              <Typography variant="body" textAlign="left">
-                Copy the link from Google Forms
-              </Typography>
-              <Button
-                variant="outlined"
-                onClick={showIframeHelpDialog}
-                sx={{ ml: 2 }}
-              >
-                Get Help <HelpOutlineIcon sx={{ ml: 1 }} />
-              </Button>
-            </Grid>
+        </Grid>
 
+        <Divider sx={{ my: 3 }} />
+        <Grid item xs={12}>
+          <FormControl component="fieldset">
+            <FormLabel component="legend">Content Type</FormLabel>
+            <RadioGroup
+              row
+              value={contentType}
+              onChange={(e) => setContentType(e.target.value)}
+            >
+              <FormControlLabel value="form" control={<Radio />} label="Form" />
+              <FormControlLabel
+                value="information"
+                control={<Radio />}
+                label="Information"
+              />
+            </RadioGroup>
+          </FormControl>
+        </Grid>
+        <Divider sx={{ my: 3 }} />
+
+        {contentType === "form" ? (
+          <Grid item xs={12}>
+            <Typography variant="body2">
+              Copy the link from Google Forms
+            </Typography>
+            <Button
+              variant="outlined"
+              onClick={showIframeHelpDialog}
+              sx={{ ml: 2 }}
+            >
+              Get Help <HelpOutlineIcon sx={{ ml: 1 }} />
+            </Button>
             <TextField
               fullWidth
               size="small"
               value={googleFormIframe}
-              onKeyDown={(e) => {
-                e.stopPropagation();
-              }}
-              onChange={(e) => {
-                setGoogleFormIframe(e.target.value);
-                e.stopPropagation();
-              }}
+              onChange={(e) => setGoogleFormIframe(e.target.value)}
               placeholder="Google Form iframe code"
               margin="normal"
               error={googleFormId === null && googleFormIframe.length > 0}
@@ -196,19 +189,33 @@ export const CreateClassForm = ({
               }
             />
           </Grid>
-        </Grid>
-        <Grid item xs={12} display="flex" flexDirection="row">
-          <Grid item xs={4} sm={2}>
-            <Button fullWidth onClick={onClose}>
-              Cancel
-            </Button>
+        ) : (
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              value={information}
+              onChange={(e) => {
+                setInformation(e.target.value);
+                e.stopPropagation();
+              }}
+              onKeyDown={(e) => {
+                e.stopPropagation();
+              }}
+              label="Information"
+              placeholder="Enter class information here"
+            />
           </Grid>
-          <Grid item xs={4} sm={8} />
+        )}
 
-          <Grid item xs={4} sm={2}>
+        <Grid item container justifyContent="space-between">
+          <Grid item>
+            <Button onClick={onClose}>Cancel</Button>
+          </Grid>
+          <Grid item>
             <Button
               variant="contained"
-              fullWidth
               onClick={handleSubmit}
               disabled={!isFormValid()}
             >

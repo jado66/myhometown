@@ -471,13 +471,7 @@ const Page = ({ params }) => {
     });
   };
 
-  const onUpdateSubclass = (
-    categoryId,
-    subclassId,
-    newIcon,
-    newTitle,
-    newGoogleFormId
-  ) => {
+  const onUpdateSubclass = (categoryId, subclassId, data) => {
     setCommunityData((prevState) => {
       const updatedClasses = prevState.classes.map((category) => {
         if (category.id === categoryId) {
@@ -485,9 +479,7 @@ const Page = ({ params }) => {
             if (subclass.id === subclassId) {
               return {
                 ...subclass,
-                title: newTitle,
-                icon: newIcon,
-                googleFormID: newGoogleFormId,
+                ...data,
               };
             }
             return subclass;
