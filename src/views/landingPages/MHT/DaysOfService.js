@@ -62,7 +62,7 @@ const DaysOfServiceContent = () => {
           at large group events, to re-landscape yards and parks, refurbish
           homes, address code violations, and more. It's common to complete
           10-15 projects in a single day and to repeat these Days of Service
-          monthly throughout the spring and summer
+          monthly throughout the spring and summer.
         </Typography>
       </Grid>
     </>
