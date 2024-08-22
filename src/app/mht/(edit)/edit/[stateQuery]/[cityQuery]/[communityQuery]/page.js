@@ -89,9 +89,7 @@ const Page = ({ params }) => {
     });
   };
 
-  const modifyEvent = (modifiedEvent) => {
-    const id = modifiedEvent.id;
-
+  const modifyEvent = (id, modifiedEvent) => {
     if (!id) {
       alert("no ID!!!!");
       return;

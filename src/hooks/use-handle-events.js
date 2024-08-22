@@ -6,10 +6,10 @@ export const useHandleEvents = (setEvents) => {
   };
 
   const modifyEvent = (modifiedEvent) => {
+    alert(JSON.stringify(modifiedEvent, null, 4));
     const id = { modifiedEvent };
 
     if (!id) {
-      alert("no ID!!!!");
       return;
     }
 
