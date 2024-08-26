@@ -80,7 +80,7 @@ export const EventDialog = ({ onClose, event }) => {
         </Typography>
 
         <Typography variant="body1">
-          <strong>Whena: </strong>
+          <strong>When: </strong>
           {displayDateInfo}
         </Typography>
       </DialogContent>
