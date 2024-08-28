@@ -208,7 +208,7 @@ const Page = ({ params }) => {
           {community?.content?.marketingImage1 && (
             <>
               <Grid item xs={12} display="flex" justifyContent="center">
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={6} sm={12}>
                   <Box
                     display="flex"
                     justifyContent="center"
@@ -239,7 +239,7 @@ const Page = ({ params }) => {
                   </Box>
                 </Grid>
 
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={6} sm={12}>
                   <Box
                     display="flex"
                     justifyContent="center"
