@@ -110,20 +110,20 @@ const AdminDashboardPages = () => {
                   href: rootUrl + "/admin-dashboard/communities",
                   requiredRole: "community-admin",
                 },
-                {
-                  title: "Email Communications",
-                  subtitle: "Send emails to your city or community members. ",
-                  media: "/message.png",
-                  href: rootUrl + "/maintenance",
-                },
-                {
-                  title: "Text (SMS) Communications",
-                  subtitle:
-                    "Send text notifications to your city or community members. ",
-                  media: "/text.png",
-                  href: rootUrl + "/maintenance",
-                },
                 // {
+                //   title: "Email Communications",
+                //   subtitle: "Send emails to your city or community members. ",
+                //   media: "/message.png",
+                //   href: rootUrl + "/maintenance",
+                // },
+                // {
+                //   title: "Text (SMS) Communications",
+                //   subtitle:
+                //     "Send text notifications to your city or community members. ",
+                //   media: "/text.png",
+                //   href: rootUrl + "/maintenance",
+                // },
+                // // {
                 //   title: 'Give Butter Campaigns',
                 //   subtitle:
                 //     'Create and manage Give Butter campaigns.',

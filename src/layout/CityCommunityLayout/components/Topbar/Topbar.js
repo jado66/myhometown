@@ -150,7 +150,7 @@ const Topbar = ({ onSidebarOpen }) => {
               }}
               PaperProps={{
                 sx: {
-                  backgroundColor: "#1bc7bc",
+                  backgroundColor: "#1b75bc",
                 },
               }}
             >

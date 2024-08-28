@@ -87,7 +87,7 @@ const CityCommunityLayout = ({
         <AppBar
           position={"fixed"}
           sx={{
-            backgroundColor: "#1bc7bc",
+            backgroundColor: "#1b75bc",
           }}
           elevation={1}
         >
