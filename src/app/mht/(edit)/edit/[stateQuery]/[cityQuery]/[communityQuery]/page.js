@@ -534,7 +534,7 @@ const Page = ({ params }) => {
     <>
       <Container sx={{ paddingTop: 3, marginBottom: 2 }}>
         <Typography variant="h2" align="center" color="primary">
-          myHometown Orem
+          myHometown {community.city.name}
         </Typography>
 
         <Typography variant="h3" align="center" color="primary">
