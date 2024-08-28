@@ -34,7 +34,6 @@ const Home = () => {
         noMusic
         noTop
       />
-
       <Box sx={{ width: "100%" }}>
         <Typography
           variant="h3"
@@ -54,7 +53,6 @@ const Home = () => {
           </Typography>
         </Typography>
       </Box>
-
       <Grid
         item
         xs={12}
@@ -87,7 +85,6 @@ const Home = () => {
           Education Enhanced
         </Typography>
       </Grid>
-
       {isMd ? (
         <>
           <Grid
@@ -223,7 +220,6 @@ const Home = () => {
           </Grid>
         </>
       )}
-
       <Grid
         item
         xs={12}
@@ -272,7 +268,6 @@ community-minded businesses.`}
           rounded
         />
       </Grid>
-
       <Grid
         item
         xs={12}
@@ -323,15 +318,6 @@ together and what it means to build a sense of community."
           right
         />
       </Grid>
-
-      <Grid xs={12}>
-        <Divider sx={{ mb: 0, mt: 2 }} />
-      </Grid>
-      <CommunityResourceContent />
-      <Grid xs={12}>
-        <Divider sx={{ my: 0 }} />
-      </Grid>
-      <DaysOfServiceContent />
     </>
   );
 };
