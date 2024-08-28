@@ -204,7 +204,11 @@ const AddEditCommunityDialog = ({
                 <Button
                   type="submit"
                   color="primary"
-                  href={`/edit/${community.city.state.toLowerCase()}/${community.city.name.toLowerCase()}/${community.name
+                  href={`/edit/${community.city.state
+                    .toLowerCase()
+                    .replaceAll(/\s/g, "-")}/${community.city.name
+                    .toLowerCase()
+                    .replaceAll(/\s/g, "-")}/${community.name
                     .toLowerCase()
                     .replaceAll(/\s/g, "-")}`}
                 >
