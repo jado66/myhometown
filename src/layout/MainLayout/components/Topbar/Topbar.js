@@ -221,7 +221,7 @@ const Topbar = ({ onSidebarOpen }) => {
                     color: "#3A3B3C",
                   },
                 }}
-                href={rootUrl + `/utah/west-valley-city`}
+                href={rootUrl + `/maintenance`}
               >
                 West Valley City
               </MenuItem>

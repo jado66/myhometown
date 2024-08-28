@@ -177,7 +177,7 @@ const SidebarNav = ({ onClose }) => {
                     </Typography>
                   </NextLink>
                   <NextLink
-                    href={rootUrl + `/utah/west-valley-city`}
+                    href={rootUrl + `/maintenance`}
                     style={{ textDecoration: "none", color: "#686868" }}
                   >
                     <Typography
