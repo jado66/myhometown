@@ -82,7 +82,13 @@ export const VolunteerSignUps = ({
           variant="outlined"
           onClick={onClose}
           startIcon={<CloseIcon />}
-          sx={{ position: "absolute", top: 0, right: 0, mr: 3 }}
+          sx={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            mr: 3,
+            mb: { xs: 4, md: 0 },
+          }}
         >
           Close Form
         </Button>
