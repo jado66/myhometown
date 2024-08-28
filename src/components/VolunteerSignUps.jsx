@@ -14,6 +14,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import { IframeHelpDialog } from "./events/IframeHelpDialog";
+import { Edit } from "@mui/icons-material";
 
 const StyledTreeItem = styled(TreeItem)(({ theme }) => ({
   "& .MuiTreeItem-content": {
@@ -25,6 +26,7 @@ const StyledTreeItem = styled(TreeItem)(({ theme }) => ({
 
 export const VolunteerSignUps = ({
   isEdit,
+
   volunteerHeaderText,
   setVolunteerHeaderText,
   signUpFormId,
@@ -68,6 +70,7 @@ export const VolunteerSignUps = ({
   const HeaderWithCloseButton = () => (
     <Box
       display="flex"
+      flexDirection="column"
       justifyContent="center"
       alignItems="center"
       width="100%"
@@ -77,11 +80,26 @@ export const VolunteerSignUps = ({
       <Typography variant="h4" component="h2" color="primary">
         {volunteerHeaderText ? volunteerHeaderText : "Sign Up as a Volunteer"}
       </Typography>
-      {!isEdit && (
+      {!isEdit ? (
         <Button
           variant="outlined"
           onClick={onClose}
           startIcon={<CloseIcon />}
+          sx={{
+            position: { md: "absolute", xs: "relative" },
+            top: 0,
+            right: 0,
+            mr: 3,
+            mt: { md: 0, xs: 2 },
+          }}
+        >
+          Close Form
+        </Button>
+      ) : (
+        <Button
+          variant="outlined"
+          onClick={toggleEditing}
+          startIcon={<Edit />}
           sx={{
             position: "absolute",
             top: 0,
@@ -90,7 +108,7 @@ export const VolunteerSignUps = ({
             mb: { xs: 4, md: 0 },
           }}
         >
-          Close Form
+          Edit Volunteer Form
         </Button>
       )}
     </Box>
@@ -187,15 +205,6 @@ export const VolunteerSignUps = ({
             >
               Loading…
             </iframe>
-            {isEdit && (
-              <Button
-                sx={{ mx: "auto", mt: 2 }}
-                variant="outlined"
-                onClick={toggleEditing}
-              >
-                Edit
-              </Button>
-            )}
           </Grid>
         </Card>
       </div>
