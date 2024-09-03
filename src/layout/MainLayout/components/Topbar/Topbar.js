@@ -193,7 +193,7 @@ const Topbar = ({ onSidebarOpen }) => {
                     color: "#3A3B3C",
                   },
                 }}
-                href={rootUrl + `/maintenance`}
+                href={rootUrl + `/utah/provo`}
               >
                 Provo
               </MenuItem>

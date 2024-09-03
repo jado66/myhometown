@@ -186,7 +186,7 @@ export const VolunteerSignUps = ({
       <div id="volunteer">
         <HeaderWithCloseButton />
 
-        <Card sx={{ padding: 2 }}>
+        <Box sx={{ padding: 2 }}>
           <Grid
             item
             xs={12}
@@ -206,7 +206,7 @@ export const VolunteerSignUps = ({
               Loading…
             </iframe>
           </Grid>
-        </Card>
+        </Box>
       </div>
     );
   }

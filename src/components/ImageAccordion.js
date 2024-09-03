@@ -56,7 +56,7 @@ export const ImageAccordion = ({
       <AccordionDetails
         sx={{ px: 3, pt: 0 }}
         PaperProps={{
-          sx: { flex: 1, position: "relative" },
+          sx: { flex: 1, position: "relative", overflow: "auto" },
         }}
       >
         {/* <DividerStyled /> */}
