@@ -15,7 +15,7 @@ import useManageCities from "@/hooks/use-manage-cities";
 import LanguageIcon from "@mui/icons-material/Language";
 import { ExpandLess, Translate } from "@mui/icons-material";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Cookies from "js-cookie";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import { cityStrings } from "@/constants/cities";
@@ -26,6 +26,8 @@ const Topbar = ({ onSidebarOpen }) => {
   const [citiesAnchorEl, setCitiesAnchorEl] = useState(null);
   const [resourcesAnchorEl, setResourcesAnchorEl] = useState(null);
 
+  const pathname = usePathname();
+  const router = useRouter();
   const [search, setSearch] = useState("");
 
   const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
@@ -63,6 +65,26 @@ const Topbar = ({ onSidebarOpen }) => {
       })
       .filter(([state, cities]) => cities.length > 0)
   );
+
+  const getNavigationPath = (basePath, newSection) => {
+    const parts = basePath.split("/").filter(Boolean);
+    const knownSections = ["days-of-service", "community-resource-centers"];
+
+    // Remove the last part if it's a known section
+    if (knownSections.includes(parts[parts.length - 1])) {
+      parts.pop();
+    }
+
+    // Add the new section
+    parts.push(newSection);
+
+    return "/" + parts.join("/");
+  };
+
+  const handleNavigation = (section) => {
+    const newPath = getNavigationPath(pathname, section);
+    router.push(newPath);
+  };
 
   const theme = useTheme();
 
@@ -150,7 +172,7 @@ const Topbar = ({ onSidebarOpen }) => {
               }}
               PaperProps={{
                 sx: {
-                  backgroundColor: "#1b75bc",
+                  backgroundColor: "#a16faf",
                 },
               }}
             >
@@ -204,8 +226,8 @@ const Topbar = ({ onSidebarOpen }) => {
             <Link
               underline="none"
               component="a"
-              href="#events"
-              onClick={handleResourcesClick}
+              href="#"
+              onClick={() => handleNavigation("days-of-service")}
               color="black"
               display="flex"
               fontWeight="bold"
@@ -231,8 +253,8 @@ const Topbar = ({ onSidebarOpen }) => {
             <Link
               underline="none"
               component="a"
-              href="/community"
-              onClick={handleResourcesClick}
+              href="#"
+              onClick={() => handleNavigation("community-resource-centers")}
               color="black"
               display="flex"
               fontWeight="bold"
