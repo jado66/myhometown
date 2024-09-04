@@ -135,34 +135,37 @@ const Donate = () => {
               sx={{ borderWidth: 3, borderColor: "black", my: 4, mx: 3 }}
             />
           </Grid>
-          <Typography
-            sx={{
-              maxWidth: "600px",
-              textAlign: "center",
-              mx: "auto",
-              mb: 3,
-            }}
-          >
-            Your tax-deductible donation will help revitalize more
-            neighborhoods, provide more educational opportunities, and lift more
-            lives.
-          </Typography>
-
-          <WebsiteTestDonateForm />
-          <Typography
-            sx={{
-              maxWidth: "600px",
-              textAlign: "center",
-              mx: "auto",
-              fontWeight: "bold",
-              my: 3,
-            }}
-          >
-            For donations greater than $1000 please contact{" "}
-            <Link href="mailto:csffinance@citiesstrong.org">
-              csffinance@citiesstrong.org
-            </Link>
-          </Typography>
+          <Grid item xs={12} display="flex" flexDirection="column">
+            <Typography
+              sx={{
+                maxWidth: "600px",
+                textAlign: "center",
+                mx: "auto",
+                mb: 3,
+              }}
+            >
+              Your tax-deductible donation will help revitalize more
+              neighborhoods, provide more educational opportunities, and lift
+              more lives.
+            </Typography>
+            <Box sx={{ mx: "auto" }}>
+              <WebsiteTestDonateForm />
+            </Box>
+            <Typography
+              sx={{
+                maxWidth: "600px",
+                textAlign: "center",
+                mx: "auto",
+                fontWeight: "bold",
+                my: 3,
+              }}
+            >
+              For donations greater than $1000 please contact{" "}
+              <Link href="mailto:csffinance@citiesstrong.org">
+                csffinance@citiesstrong.org
+              </Link>
+            </Typography>
+          </Grid>
         </Grid>
         <Divider sx={{ borderWidth: 3, mx: 5, mb: 5, borderColor: "black" }} />
         <Box>
