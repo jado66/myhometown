@@ -85,7 +85,11 @@ const Team = () => {
                   height={160}
                   width={160}
                   variant="square"
-                  sx={{ mx: "auto", borderRadius: 1.5 }}
+                  sx={{
+                    mx: "auto",
+                    borderRadius: 1.5,
+                    boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+                  }}
                 />
                 <Box marginTop={1}>
                   <ListItemText
@@ -157,7 +161,11 @@ const Team = () => {
                   height={160}
                   width={160}
                   variant="square"
-                  sx={{ mx: "auto", borderRadius: 1.5 }}
+                  sx={{
+                    mx: "auto",
+                    borderRadius: 1.5,
+                    boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+                  }}
                 />
                 <Box marginTop={1}>
                   <ListItemText
