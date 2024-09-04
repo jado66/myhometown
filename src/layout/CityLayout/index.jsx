@@ -87,7 +87,7 @@ const CityLayout = ({
         <AppBar
           position={"fixed"}
           sx={{
-            backgroundColor: "#1b75bc",
+            backgroundColor: "#a16faf",
           }}
           elevation={1}
         >
@@ -120,7 +120,10 @@ const CityLayout = ({
             }}
           >
             {children}
-            <Divider />
+
+            <Grid xs={12}>
+              <Divider sx={{ my: 2 }} />
+            </Grid>
             <Footer />
             <Container paddingY={4}></Container>
           </Grid>

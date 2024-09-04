@@ -1,5 +1,12 @@
 "use client";
-import { Box, Container, Divider, Grid, Typography } from "@mui/material";
+import {
+  Box,
+  CardMedia,
+  Container,
+  Divider,
+  Grid,
+  Typography,
+} from "@mui/material";
 import { useState } from "react";
 import UpcomingEvents from "@/components/events/UpcomingEvents";
 import { EventsCalendar } from "@/components/events/EventsCalendar";
@@ -83,7 +90,7 @@ const Page = ({ params }) => {
       />
 
       <Container sx={{ paddingTop: 3, marginBottom: 2 }}>
-        <Typography variant="h2" align="center" color="primary">
+        <Typography variant="h2" align="center" sx={{ color: "black" }}>
           myHometown{" "}
           <span style={{ textTransform: "capitalize" }}>
             {cityName}
@@ -128,7 +135,39 @@ const Page = ({ params }) => {
             imageSrc={"/myhometown/city-page/5 DOS volunteers.webp"}
             content="…and improve the appearance of our neighborhoods."
           />
+        </Grid>
 
+        <Grid
+          item
+          xs={12}
+          px={4}
+          mb={4}
+          display="flex"
+          justifyContent="center"
+          flexDirection="column"
+        >
+          <Typography variant="h5" textAlign="center" gutterBottom>
+            Mayor Kaufusi on myHometown
+          </Typography>
+
+          <CardMedia
+            component="video"
+            poster="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Mayor+final+ss.webp"
+            controls
+            playsInline
+            sx={{
+              borderRadius: "12px",
+
+              boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+              // height: { md: "485px", xs: "230px" },
+            }}
+            src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Provo+Mayor+Final.webm"
+          />
+        </Grid>
+
+        <Divider sx={{ my: 4, mx: 4 }} />
+
+        <Grid>
           <ImageWithAccordion
             imageSrc={"/myhometown/city-page/Dumpsters.webp"}
             title="What does Provo City do?"
@@ -178,11 +217,10 @@ interests of the community.`}
           variant="h4"
           component="h2"
           textAlign="center"
-          color="primary"
+          sx={{ color: "black" }}
           gutterBottom
-          sx={{ textTransform: "capitalize" }}
         >
-          myHometown Communities in {cityName}
+          myHometown Communities in Provo
         </Typography>
 
         <Grid container>
