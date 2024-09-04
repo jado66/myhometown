@@ -37,7 +37,7 @@ const Page = ({ params }) => {
         <div
           style={{
             height: "100vh",
-            width: "100vh",
+            width: "100vw",
             padding: "5em",
             justifyContent: "center",
             display: "flex",
@@ -104,33 +104,33 @@ const Page = ({ params }) => {
         {/* <PhotoGallery photos={city.content.galleryPhotos} /> */}
         <CarouselComponent
           images={[
-            "/mht/city-page/4 volunteers.webp",
-            "/mht/city-page/russian.webp",
-            "/mht/city-page/DOS big grin.webp",
-            "/mht/city-page/provo city hall.webp",
-            "/mht/city-page/tutoring.1.webp",
+            "/myhometown/city-page/four people.webp",
+            "/myhometown/city-page/russian.webp",
+            "/myhometown/city-page/big grin.webp",
+            "/myhometown/city-page/provo town hall.webp",
+            "/myhometown/city-page/tutoring.webp",
           ]}
         />
 
         <Grid container spacing={2} paddingY={3}>
           <ImageDescriptionBlock
             index={0}
-            imageSrc={"/mht/city-page/Party.webp"}
+            imageSrc={"/myhometown/city-page/Party.webp"}
             content="We create opportunities to build camaraderie and strengthen friendships…"
           />
           <ImageDescriptionBlock
             index={1}
-            imageSrc={"/mht/city-page/ESL class.webp"}
+            imageSrc={"/myhometown/city-page/ESL class.webp"}
             content="…we support and enhance educational opportunities…"
           />
           <ImageDescriptionBlock
             index={2}
-            imageSrc={"/mht/city-page/5 DOS volunteers.webp"}
+            imageSrc={"/myhometown/city-page/5 DOS volunteers.webp"}
             content="…and improve the appearance of our neighborhoods."
           />
 
           <ImageWithAccordion
-            imageSrc={"/mht/city-page/Dumpsters.webp"}
+            imageSrc={"/myhometown/city-page/Dumpsters.webp"}
             title="What does Provo City do?"
             content={`Provo City actively supports myHometown by coordinating city resources and offering in-kind services such as supplying dumpsters, equipment, street cleaning, and tree removal. The
 city also provides limited funding, including grants for specific projects.`}
@@ -138,7 +138,7 @@ city also provides limited funding, including grants for specific projects.`}
           />
 
           <ImageWithAccordion
-            imageSrc={"/mht/city-page/two men esl.webp"}
+            imageSrc={"/myhometown/city-page/two men esl.webp"}
             title="What do volunteers do?"
             content={`Volunteers play a crucial role by staffing Community Resource Centers and organizing and participating in Days of Service.
 
@@ -150,13 +150,13 @@ Days of service volunteers identify neighborhood needs and coordinate additional
           />
 
           <ImageWithAccordion
-            imageSrc={"/mht/city-page/class women.webp"}
+            imageSrc={"/myhometown/city-page/class women.webp"}
             title="What do neighbors do?"
             content={`Neighbors support community efforts by attending classes, encouraging their children to participate in tutoring sessions, volunteering at Days of Service and joining in social activities at the Community Resource Centers.  Neighbors can support myHometown Provo by asking, “How Can I Help?”`}
             index={2}
           />
           {/* <ImageWithAccordion
-            imageSrc={"/mht/city-page/CRC reading.webp"}
+            imageSrc={"/myhometown/city-page/CRC reading.webp"}
             title="Community Resource Centers"
             content={`The Community Resource Center, or CRC, serves as a hub for the community,
 by offering free educational classes and tutoring. Specific classes offered are
@@ -165,20 +165,11 @@ interests of the community.`}
             index={3}
           />
           <ImageWithAccordion
-            imageSrc={"/mht/city-page/grey hair weeder.webp"}
+            imageSrc={"/myhometown/city-page/grey hair weeder.webp"}
             title="Day of Service"
             content={`Volunteers join with community residents at large group events to re-landscape yards and parks, refurbish homes, address code violations, and more. It's not unusual to complete 10-15 projects in a single day and to repeat these Days of Service monthly throughout the spring and summer.`}
             index={4}
           /> */}
-
-          <Grid item xs={12} display="flex" justifyContent="center">
-            <Grid item md={6} sm={8} xs={10}>
-              <img
-                src={city.content?.mapUrl}
-                style={{ width: "100%", height: "auto", objectFit: "cover" }}
-              />
-            </Grid>
-          </Grid>
         </Grid>
 
         <Divider sx={{ my: 5 }} />
@@ -216,19 +207,19 @@ interests of the community.`}
             ))} */}
           <CommunityCard
             title="Pioneer Park"
-            imageSrc="/mht/city-page/Provo Pioneer.001.webp"
+            imageSrc="/myhometown/city-page/pioneer map.webp"
             href="./provo/pioneer-park"
             index={0}
           />
           <CommunityCard
             title="South Freedom"
-            imageSrc="/mht/city-page/Provo freedom.001.webp"
+            imageSrc="/myhometown/city-page/freedom.webp"
             href="./provo/south-freedom"
             index={1}
           />
           <CommunityCard
             title="Dixon"
-            imageSrc="/mht/city-page/Provo dixon.002.webp"
+            imageSrc="/myhometown/city-page/Dixon.webp"
             href="./provo/dixon"
             index={2}
           />
