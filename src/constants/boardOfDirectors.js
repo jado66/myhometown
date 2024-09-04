@@ -111,8 +111,9 @@ giving back to the community and continues to make significant contributions in 
 field.`,
   },
   {
-    name: "David Johnson",
+    name: "David R. Johnson",
     avatar: "/images/board/David Johnson.jpg",
+    bio: `David R. Johnson is an accomplished investor and manager, overseeing a diverse portfolio of commercial and residential properties across four western states. His real estate endeavors have significantly contributed to the revitalization of areas like Sugarhouse and Millcreek. With nearly two decades of experience as Vice President of Sorenson Communications, David managed annual revenues of $300 million and led a team of over 400 employees. His visionary leadership expanded the company from a small, family-owned business to a major enterprise. David also played a key role in Salt Lake City's successful bid for the 2002 Olympic Winter Games and served as Senior Vice President of the Salt Lake Olympic Organizing Committee. A University of Utah graduate and lifelong Utah resident, David has lived in the Salt Lake City area with his wife and four children for over 30 years.`,
   },
   {
     name: "Bruce Jardine",

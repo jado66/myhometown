@@ -90,6 +90,7 @@ export default function CitiesStrongBiosPage() {
                     width: "100%",
                     height: "auto",
                     borderRadius: "8px",
+                    boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
                   }}
                 />
               </Grid>
