@@ -132,7 +132,7 @@ const Page = ({ params }) => {
           />
           <ImageDescriptionBlock
             index={2}
-            imageSrc={"/myhometown/city-page/5 DOS volunteers.webp"}
+            imageSrc={"/myhometown/city-page/neighborhood-revitalization.webp"}
             content="…and improve the appearance of our neighborhoods."
           />
         </Grid>
