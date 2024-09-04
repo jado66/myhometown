@@ -7,6 +7,7 @@ import {
   Box,
   Divider,
   useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import useGiveButterScripts from "@/hooks/use-give-butter-scripts";
 import { WebsiteTestDonateForm } from "@/constants/give-butter/constants";
@@ -34,6 +35,7 @@ const items = [
 const Donate = () => {
   const { isLoaded } = useGiveButterScripts();
   const theme = useTheme();
+  const isMd = useMediaQuery(theme.breakpoints.up("md"));
 
   return (
     <>
@@ -101,33 +103,31 @@ const Donate = () => {
           </Grid>
 
           <Grid item md={5} xs={12}>
-            <Grid
-              item
-              xs={12}
+            <Box
               sx={{
-                backgroundColor: "grey",
                 height: "350px",
                 overflow: "hidden",
                 position: "relative",
-                boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
                 my: { md: 0, xs: 5 },
               }}
             >
-              <img
+              <Box
+                component="img"
                 src="/cities-strong/homepage/thank-you-girl.webp"
                 alt="Thank you"
-                // Lazy load the image
-                style={{
-                  width: "100%",
+                sx={{
+                  width: "auto",
                   height: "100%",
-                  objectFit: "cover", // Ensures the image covers the entire area
-                  position: "absolute",
-                  objectPosition: "right", // Shifts the image to the left
-                  top: "0",
-                  left: "0px",
+                  boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+
+                  objectFit: "cover",
+                  objectPosition: isMd ? "right center" : "center",
                 }}
               />
-            </Grid>
+            </Box>
           </Grid>
 
           <Grid item xs={12} sx={{ display: { md: "block", xs: "none" } }}>
