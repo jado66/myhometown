@@ -416,30 +416,32 @@ const CityImage = ({ src, title, sx }) => {
   return (
     <Grid
       item
-      xs={6}
+      xs={12}
+      sm={6}
       md={4}
-      sx={{ padding: 4, px: { xs: 1, md: 2 }, pt: { xs: 2, md: 4 }, pb: 2 }}
+      sx={{
+        padding: 2,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
     >
-      <Grid
-        sx={{ mx: "auto" }}
-        component={Typography}
+      <Typography
         variant={isMd ? "h5" : "h6"}
         fontWeight={700}
         gutterBottom
-        align={"center"}
+        align="center"
       >
         {title}
-      </Grid>
+      </Typography>
 
-      <Grid
-        item
-        xs={12}
+      <Box
         sx={{
-          backgroundColor: "grey",
-          height: { md: "225px", xs: "150px" },
-          overflow: "hidden",
+          width: "100%",
+          paddingTop: "75%", // 4:3 aspect ratio
           position: "relative",
-          boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+          overflow: "hidden",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.15)",
         }}
       >
         <Box
@@ -448,15 +450,16 @@ const CityImage = ({ src, title, sx }) => {
           alt={title}
           loading="lazy"
           sx={{
-            height: "100%",
-            objectFit: "cover", // Ensures the image covers the entire area
             position: "absolute",
-            objectPosition: "right", // Shifts the image to the left
-            left: "0px",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
             ...sx,
           }}
         />
-      </Grid>
+      </Box>
     </Grid>
   );
 };
