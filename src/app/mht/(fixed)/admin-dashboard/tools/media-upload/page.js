@@ -3,7 +3,6 @@ import React, { useState, useRef } from "react";
 import {
   Container,
   Grid,
-  IconButton,
   Tooltip,
   LinearProgress,
   Typography,
@@ -68,22 +67,22 @@ function UploadMedia({ setUrl }) {
             style={{ display: "none" }}
             ref={fileInput}
             multiple={false}
-            accept="video/*,image/*"
+            accept="video/*,image/*,.pdf,image/webp"
           />
           {!uploading ? (
-            <IconButton
+            <Button
+              variant="outlined"
               sx={{
                 position: "absolute",
                 top: "50%",
                 transform: "translateY(-50%)",
-                backgroundColor: "lightgrey",
-                color: "black",
                 margin: "0.5em",
               }}
               onClick={handleClick}
             >
-              <VideoLibrary fontSize="large" />
-            </IconButton>
+              Click to Upload Media{" "}
+              <VideoLibrary fontSize="large" sx={{ ml: 2 }} />
+            </Button>
           ) : (
             <Grid item xs={12} sx={{ width: "100%", position: "relative" }}>
               <LinearProgress variant="determinate" value={progress} />

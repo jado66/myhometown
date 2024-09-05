@@ -10,7 +10,12 @@ export function useUploadFile() {
       return null;
     }
 
-    if (!file.type.startsWith("video/") && !file.type.startsWith("image/")) {
+    if (
+      !file.type.startsWith("video/") &&
+      !file.type.startsWith("image/") &&
+      file.type !== "application/pdf" &&
+      file.type !== "image/webp"
+    ) {
       console.error("Invalid file type");
       return null;
     }
