@@ -28,13 +28,10 @@ function UploadMedia({ setUrl }) {
 
       if (result) {
         console.log("Successfully uploaded file.");
-        toast.success(
-          "Video uploaded successfully. Make sure to save your changes.",
-          {
-            toastId: "video-uploaded-successfully",
-            autoClose: 10000,
-          }
-        );
+        toast.success("Media uploaded successfully!", {
+          toastId: "video-uploaded-successfully",
+          autoClose: 10000,
+        });
       }
     } else {
       console.log("No file selected.");
@@ -71,7 +68,7 @@ function UploadMedia({ setUrl }) {
             style={{ display: "none" }}
             ref={fileInput}
             multiple={false}
-            accept="video/*"
+            accept="video/*,image/*"
           />
           {!uploading ? (
             <IconButton

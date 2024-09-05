@@ -10,7 +10,7 @@ export function useUploadFile() {
       return null;
     }
 
-    if (!file.type.startsWith("video/")) {
+    if (!file.type.startsWith("video/") && !file.type.startsWith("image/")) {
       console.error("Invalid file type");
       return null;
     }
