@@ -1,53 +1,83 @@
 "use client";
 import {
-  Card,
+  CardMedia,
   Container,
   Divider,
   Grid,
-  IconButton,
-  TextField,
-  Tooltip,
-  Box,
   Typography,
+  useTheme,
 } from "@mui/material";
-import { fa, faker } from "@faker-js/faker";
-import GallerySLC from "@/views/supportingPages/About/components/GallerySLC/Gallery";
-import ContentEditable from "react-contenteditable";
-import { useEffect, createRef, useState, useRef } from "react";
-import createFakeEvents from "@/util/events/create-fake-events";
-import UpcomingEvents from "@/components/events/UpcomingEvents";
-import { EventsCalendar } from "@/components/events/EventsCalendar";
-import { EventDialog } from "@/components/events/EventDialog";
-import { EventDialog_NewEdit } from "@/components/events/EventDialog_NewEdit";
-import useEvents from "@/hooks/use-events";
+
+import { useEffect } from "react";
+
 import useCity from "@/hooks/use-city";
 import Loading from "@/components/util/Loading";
 import { useEdit } from "@/hooks/use-edit";
-import PhotoGallery from "@/components/PhotoGallery";
 import { cityTemplate } from "@/constants/templates/cityTemplate";
-import { useHandleEvents } from "@/hooks/use-handle-events";
-import RoleGuard from "@/guards/role-guard";
+
 import { useUser } from "@/hooks/use-user";
-import { Info } from "@mui/icons-material";
-import UploadImage from "@/components/util/UploadImage";
-import { CommunityCard } from "@/components/CommunityCard";
-import { StatsCounter } from "@/components/StatsCounter";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "react-toastify";
+
+import CarouselComponent from "@/components/ui/Carousel";
+import { ImageWithAccordion } from "@/components/MyHometown/PageComponents/ImageWithAccordion";
+import { ImageDescriptionBlock } from "@/components/MyHometown/PageComponents/ImageDescriptionBlock";
+import { CommunityCard } from "@/components/MyHometown/PageComponents/CommunityCard";
+import StyledTextField from "@/components/MyHometown/PageComponents/StyledTextField";
 
 const Page = ({ params }) => {
   const { user } = useUser();
 
-  const { stateQuery, cityQuery } = params; //TODO change me to stateQuery... VsCode hates renaming folders
+  const { stateQuery, cityQuery } = params;
+
+  const theme = useTheme();
 
   const { city, hasLoaded } = useCity(cityQuery, stateQuery, cityTemplate);
   const { data: cityData, setData: setCityData, setEntityType } = useEdit();
 
-  let events, content;
+  const editTextByKey = (key, newText) => {
+    setCityData((prevData) => ({
+      ...prevData,
+      content: {
+        ...prevData.content,
+        [key]: newText,
+      },
+    }));
+  };
 
-  if (cityData) {
-    ({ events, content } = cityData);
-  }
+  const editCarouselImage = (index, newImageSrc) => {
+    setCityData((prevData) => ({
+      ...prevData,
+      content: {
+        ...prevData.content,
+        carousalImages: prevData.content.carousalImages.map((img, i) =>
+          i === index ? newImageSrc : img
+        ),
+      },
+    }));
+  };
+
+  const addCarouselImage = (newImageSrc) => {
+    setCityData((prevData) => ({
+      ...prevData,
+      content: {
+        ...prevData.content,
+        carousalImages: [...prevData.content.carousalImages, newImageSrc],
+      },
+    }));
+  };
+
+  const removeCarouselImage = (index) => {
+    setCityData((prevData) => ({
+      ...prevData,
+      content: {
+        ...prevData.content,
+        carousalImages: prevData.content.carousalImages.filter(
+          (_, i) => i !== index
+        ),
+      },
+    }));
+  };
 
   useEffect(() => {
     if (city) {
@@ -56,165 +86,25 @@ const Page = ({ params }) => {
     }
   }, [city]);
 
-  const [selectedEvent, setSelectedEvent] = useState(null);
-
-  const [isCreatingNewEvent, setIsCreatingNewEvent] = useState(false);
-
-  const startCreatingNewEvent = () => {
-    setIsCreatingNewEvent(true);
-  };
-
-  const setEvents = (events) => {
-    // Assume cityData is coming from useState or props
-    setCityData((prevCityData) => ({
-      ...prevCityData,
-      events,
-    }));
-  };
-
-  const modifyEvent = (modifiedEvent) => {
-    const id = modifiedEvent.id;
-
-    if (!id) {
-      alert("no ID!!!!");
-      return;
-    }
-
-    setCityData((prevCityData) => ({
-      ...prevCityData,
-      events: prevCityData.events.map((event) =>
-        event.id === id ? modifiedEvent : event
-      ),
-    }));
-  };
-
-  const addEvent = (newEvent) => {
-    const uniqueId = uuidv4();
-
-    newEvent.id = uniqueId;
-
-    setCityData((prevCityData) => ({
-      ...prevCityData,
-      events: [...prevCityData.events, newEvent],
-    }));
-  };
-
-  const deleteEvent = (eventId) => {
-    if (!eventId) {
-      alert("No ID provided for deletion!");
-      return;
-    }
-
-    setCityData((prevCityData) => ({
-      ...prevCityData,
-      events: prevCityData.events.filter((event) => event.id !== eventId),
-    }));
-  };
-
-  const closeEventDialog = () => {
-    setSelectedEvent(null);
-    setIsCreatingNewEvent(false);
-  };
-
-  const onSelectEvent = (event) => {
-    setSelectedEvent(event);
-  };
-
-  const handleSaveEvent = (event) => {
-    if (isCreatingNewEvent) {
-      addEvent(event);
-      toast.success(
-        "New Event Added - Make sure to save to sync your changes."
-      );
-    } else {
-      toast.success("Event Modified - Make sure to save to sync your changes.");
-      modifyEvent(event);
-    }
-    setSelectedEvent(null);
-    setIsCreatingNewEvent(false);
-  };
-
-  const handleDeleteEvent = (eventId) => {
-    try {
-      deleteEvent(eventId);
-      toast.success("Event Deleted - Make sure to save to sync your changes.");
-    } catch (err) {
-      toast.error(JSON.stringify(err));
-    }
-
-    setSelectedEvent(null);
-    setIsCreatingNewEvent(false);
-  };
-
-  const handleChangeMap = (url) => {
-    setCityData({
-      ...cityData,
-      content: {
-        ...cityData.content,
-        mapUrl: url,
-      },
-    });
-  };
-
-  const handleChangePhoto = (url, key) => {
-    setCityData((prevState) => {
-      const newPhotos = { ...prevState.content.galleryPhotos };
-      if (newPhotos[key]) {
-        newPhotos[key] = {
-          ...newPhotos[key],
-          src: url,
-        };
-      }
-
-      return {
-        ...prevState,
-        content: {
-          ...prevState.content,
-          galleryPhotos: newPhotos,
-        },
-      };
-    });
-  };
-
-  const handleParagraphChange = (e, name) => {
-    const { value } = e.target;
-
-    if (name === "paragraph1") {
-      setCityData({
-        ...cityData,
-        content: {
-          ...cityData.content,
-          paragraph1Text: value,
-        },
-      });
-    } else {
-      setCityData({
-        ...cityData,
-        content: {
-          ...cityData.content,
-          paragraph2Text: value,
-        },
-      });
-    }
-  };
-
   if (!hasLoaded) {
     return (
-      <div
-        style={{
-          height: "100vh",
-          width: "100vh",
-          padding: "5em",
-          justifyContent: "center",
-          display: "flex",
-        }}
-      >
-        <Loading size={100} />
-      </div>
+      <>
+        <div
+          style={{
+            height: "100vh",
+            width: "100vw",
+            padding: "5em",
+            justifyContent: "center",
+            display: "flex",
+          }}
+        >
+          <Loading size={100} />
+        </div>
+      </>
     );
   }
 
-  if (hasLoaded && !city) {
+  if (hasLoaded && !cityData) {
     return (
       <div
         style={{
@@ -233,16 +123,18 @@ const Page = ({ params }) => {
 
   const cityName = cityQuery.replaceAll("-", " ");
 
-  const communityCardSize = city?.communities?.length
-    ? 12 / city.communities.length
-    : 12;
+  // const communityCardSize = city?.communities?.length
+  //   ? 12 / city.communities.length
+  //   : 12;
 
   console.log(city);
 
   return (
     <>
       <Container sx={{ paddingTop: 3, marginBottom: 2 }}>
-        <Typography variant="h2" align="center" color="primary">
+        <pre>{JSON.stringify(cityData.content, null, 4)}</pre>
+
+        <Typography variant="h2" align="center" sx={{ color: "black" }}>
           myHometown{" "}
           <span style={{ textTransform: "capitalize" }}>
             {cityName}
@@ -250,217 +142,118 @@ const Page = ({ params }) => {
           </span>
         </Typography>
 
-        <PhotoGallery
-          photos={city.content.galleryPhotos}
-          changePhoto={handleChangePhoto}
+        <Grid container>
+          <Grid item xs={10} sx={{ mx: "auto" }}>
+            <StyledTextField
+              variant="h6"
+              sx={{ textAlign: "center", color: "black !important" }}
+              value={cityData.content?.paragraph1Text}
+              onChange={(newValue) => editTextByKey("paragraph1Text", newValue)}
+            />
+          </Grid>
+        </Grid>
+
+        <CarouselComponent
+          images={cityData.content?.carousalImages}
           isEdit
+          removeCarouselImage={removeCarouselImage}
+          editCarouselImage={editCarouselImage}
+          addCarouselImage={addCarouselImage}
         />
 
         <Grid container spacing={2} paddingY={3}>
-          <Grid item xs={12}>
-            <Typography
-              variant="h3"
-              align="center"
-              color="primary"
-              gutterBottom
-            >
-              What Is myHometown{" "}
-              <span style={{ textTransform: "capitalize" }}>{cityName}</span>?
+          {cityData.content?.staggeredImages.map((image, index) => (
+            <ImageDescriptionBlock
+              key={index}
+              index={index}
+              imageSrc={image.imageSrc}
+              content={image.content}
+            />
+          ))}
+        </Grid>
+
+        <Grid
+          item
+          xs={12}
+          px={4}
+          mb={4}
+          display="flex"
+          justifyContent="center"
+          flexDirection="column"
+        >
+          <Typography variant="h5" textAlign="center" gutterBottom>
+            {cityData.content?.video.title}
+          </Typography>
+
+          <CardMedia
+            component="video"
+            poster={cityData.content?.video.mediaThumbnail}
+            controls
+            playsInline
+            sx={{
+              borderRadius: "12px",
+              boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+            }}
+            src={cityData.content?.video.mediaSrc}
+          />
+        </Grid>
+
+        <Divider sx={{ my: 4, mx: 4 }} />
+
+        <Grid>
+          {cityData.content?.imageAccordions.map((accordion, index) => (
+            <ImageWithAccordion
+              key={index}
+              imageSrc={accordion.imageSrc}
+              title={accordion.title}
+              content={accordion.content}
+              index={index}
+            />
+          ))}
+        </Grid>
+
+        <Divider sx={{ my: 5 }} />
+
+        <Typography
+          variant="h4"
+          component="h2"
+          textAlign="center"
+          sx={{ color: "black" }}
+          gutterBottom
+        >
+          {cityData.content?.communitiesHeader}
+        </Typography>
+
+        <Grid container>
+          <Grid item xs={10} sx={{ mx: "auto" }}>
+            <Typography variant="h6" align="center" sx={{ color: "black" }}>
+              {cityData.content?.communitiesSubheader}
             </Typography>
-
-            <TextField
-              variant="standard"
-              defaultValue={content?.paragraph1Text}
-              onChange={(event) => handleParagraphChange(event, "paragraph1")}
-              multiline
-              InputProps={{
-                disableUnderline: true,
-                sx: { fontSize: "1rem" },
-              }}
-              fullWidth
-              sx={{
-                fontFamily: "inherit",
-                fontSize: "1rem",
-                border: "none",
-                margin: 0,
-                padding: "10px 16px",
-                "& .MuiInput-underline:before": {
-                  borderBottom: "none",
-                },
-                "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-                  borderBottom: "none",
-                },
-                "& .MuiInput-underline:after": {
-                  borderBottom: "none",
-                },
-              }}
-            />
-            <Divider />
-            <TextField
-              variant="standard"
-              defaultValue={cityData.content?.paragraph2Text}
-              onChange={(event) => handleParagraphChange(event, "paragraph2")}
-              multiline
-              InputProps={{
-                disableUnderline: true,
-              }}
-              fullWidth
-              sx={{
-                fontFamily: "inherit",
-                fontSize: "1rem",
-                border: "none",
-                margin: 0,
-                padding: "10px 16px",
-                "& .MuiInput-underline:before": {
-                  borderBottom: "none",
-                },
-                "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-                  borderBottom: "none",
-                },
-                "& .MuiInput-underline:after": {
-                  borderBottom: "none",
-                },
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} display="flex" justifyContent="center">
-            <Grid item xs={10} sm={8} md={6}>
-              <RoleGuard
-                roles={["admin"]}
-                user={user}
-                alternateContent={
-                  <Tooltip
-                    title="Only an Admin can modify this."
-                    placement="top"
-                    arrow
-                  >
-                    <Info
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        right: 0,
-                        margin: "0.5em",
-                      }}
-                    />
-                  </Tooltip>
-                }
-              >
-                <Box
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  position="relative"
-                  sx={{
-                    width: "100%",
-                    height: "100%",
-                    backgroundColor: "transparent",
-                    border: "1px solid black",
-                  }}
-                >
-                  <UploadImage setUrl={handleChangeMap} />
-                  {cityData.content?.mapUrl ? (
-                    <img
-                      src={cityData.content.mapUrl}
-                      style={{
-                        width: "100%",
-                        height: "auto",
-                        objectFit: "cover",
-                      }}
-                    />
-                  ) : (
-                    <Typography variant="h4" component="h2" align="center">
-                      Community map
-                    </Typography>
-                  )}
-                </Box>
-              </RoleGuard>
-            </Grid>
           </Grid>
         </Grid>
 
-        <Divider sx={{ my: 5 }} />
-
-        <Typography
-          variant="h4"
-          component="h2"
-          textAlign="center"
-          color="primary"
-          gutterBottom
-          sx={{ textTransform: "capitalize" }}
-        >
-          {cityName}&apos;s Communities
-        </Typography>
-
-        <Grid container spacing={2} paddingY={3}>
-          {city.communities &&
-            city.communities.map((community, index) => (
-              <CommunityCard
-                key={community.name}
-                community={community}
-                city={cityQuery}
-                gridProps={{ xs: 12, sm: communityCardSize }}
-                index={index}
-              />
-            ))}
+        <Grid container spacing={5} padding={3}>
+          <CommunityCard
+            title="Pioneer Park"
+            imageSrc="/myhometown/city-page/pioneer map.webp"
+            href="./provo/pioneer-park"
+            index={0}
+          />
+          <CommunityCard
+            title="South Freedom"
+            imageSrc="/myhometown/city-page/freedom.webp"
+            href="./provo/south-freedom"
+            index={1}
+          />
+          <CommunityCard
+            title="Dixon"
+            imageSrc="/myhometown/city-page/Dixon.webp"
+            href="./provo/dixon"
+            index={2}
+          />
         </Grid>
-
-        <Divider sx={{ my: 5 }} />
-
-        <Typography
-          variant="h4"
-          component="h2"
-          textAlign="center"
-          color="primary"
-          gutterBottom
-          sx={{ textTransform: "capitalize" }}
-        >
-          {cityName}&apos;s Community Statistics
-        </Typography>
-
-        <StatsCounter stats={city.stats} isEdit />
-
-        <EventDialog_NewEdit
-          show={isCreatingNewEvent || selectedEvent !== null}
-          onClose={closeEventDialog}
-          event={selectedEvent}
-          onSave={handleSaveEvent}
-          onDelete={handleDeleteEvent}
-          isEdit={!isCreatingNewEvent}
-        />
-        <Grid item md={12}>
-          <Divider sx={{ my: 5 }} />
-        </Grid>
-
-        {/* <pre>{JSON.stringify(cityData.events, null, 4)}</pre> */}
-
-        <UpcomingEvents
-          events={cityData.events}
-          maxEvents={5}
-          isEdit
-          onSelect={onSelectEvent}
-          onAdd={startCreatingNewEvent}
-        />
-
-        <Divider sx={{ my: 5 }} />
-
-        {/* <pre>{JSON.stringify(cityData, null, 4)}</pre> */}
-
-        <EventsCalendar
-          events={events}
-          onSelectEvent={onSelectEvent}
-          onSelectSlot={(slot) => setSelectedEvent(slot)}
-          onAdd={startCreatingNewEvent}
-          startCreatingNewEvent={startCreatingNewEvent}
-          isEdit
-        />
       </Container>
     </>
   );
 };
 export default Page;
-
-function onPasteAsPlainText(event) {
-  event.preventDefault();
-  var text = event.clipboardData.getData("text/plain");
-  document.execCommand("insertHTML", false, text);
-}

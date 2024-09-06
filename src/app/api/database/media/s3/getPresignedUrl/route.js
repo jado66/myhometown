@@ -16,7 +16,7 @@ export async function POST(request) {
       Key: key,
       Conditions: [
         ["content-length-range", 0, 1073741824], // up to 1GB
-        ["starts-with", "$Content-Type", "video/"], // restrict to video content types
+        ["starts-with", "$Content-Type", ""], // restrict to video content types
       ],
       Fields: {
         acl: "public-read",
