@@ -44,6 +44,15 @@ const CarouselComponent = ({
               position: "relative",
             }}
           >
+            {isEdit && (
+              <UploadImage
+                setUrl={(newUrl) => editCarouselImage(index, newUrl)}
+                onRemove={() => {
+                  removeCarouselImage(index);
+                }}
+                right="5%"
+              />
+            )}
             <img
               src={image}
               alt={`slide ${index}`}
@@ -53,14 +62,6 @@ const CarouselComponent = ({
                 boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
               }}
             />
-            {isEdit && (
-              <UploadImage
-                setUrl={(newUrl) => editCarouselImage(index, newUrl)}
-                onRemove={() => {
-                  removeCarouselImage(index);
-                }}
-              />
-            )}
           </Box>
         ))}
         {isEdit && (
@@ -88,11 +89,8 @@ const CarouselComponent = ({
               sx={{
                 width: "100%",
                 height: "80px",
-                backgroundColor: "#e0e0e0",
-                "&:hover": {
-                  backgroundColor: "#d0d0d0",
-                },
               }}
+              // variant="outlined"
             >
               {loading ? (
                 <Loading size={25} />

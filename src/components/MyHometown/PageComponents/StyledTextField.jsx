@@ -11,6 +11,7 @@ const StyledTextField = ({
   onChange,
   variant = "body1",
   sx,
+  placeholder = "Click to edit",
   ...props
 }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -23,6 +24,10 @@ const StyledTextField = ({
       inputRef.current.select();
     }
   }, [isEditing]);
+
+  useEffect(() => {
+    setTempValue(value);
+  }, [value]);
 
   const handleClick = () => {
     setIsEditing(true);
@@ -78,7 +83,7 @@ const StyledTextField = ({
       style={{ cursor: "text" }}
       {...sx}
     >
-      {value}
+      {value || <span style={{ color: "#aaa" }}>{placeholder}</span>}
     </Typography>
   );
 };

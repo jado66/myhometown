@@ -1,5 +1,6 @@
 "use client";
 import {
+  Button,
   CardMedia,
   Container,
   Divider,
@@ -79,6 +80,163 @@ const Page = ({ params }) => {
     }));
   };
 
+  const editStaggeredImage = (index, newUrl) => {
+    setCityData((prevData) => ({
+      ...prevData,
+      content: {
+        ...prevData.content,
+        staggeredImages: prevData.content.staggeredImages.map(
+          (staggeredImage, i) =>
+            i === index
+              ? { ...staggeredImage, imageSrc: newUrl }
+              : staggeredImage
+        ),
+      },
+    }));
+  };
+
+  const editStaggeredImageText = (index, newText) => {
+    setCityData((prevData) => ({
+      ...prevData,
+      content: {
+        ...prevData.content,
+        staggeredImages: prevData.content.staggeredImages.map(
+          (staggeredImage, i) =>
+            i === index
+              ? { ...staggeredImage, content: newText }
+              : staggeredImage
+        ),
+      },
+    }));
+  };
+
+  const addNewStaggeredImage = () => {
+    setCityData((prevData) => {
+      const lastItem =
+        prevData.content.staggeredImages[
+          prevData.content.staggeredImages.length - 1
+        ];
+      const newItem = { ...lastItem };
+
+      return {
+        ...prevData,
+        content: {
+          ...prevData.content,
+          staggeredImages: [...prevData.content.staggeredImages, newItem],
+        },
+      };
+    });
+  };
+
+  const removeLastStaggeredImage = () => {
+    if (cityData.content?.staggeredImages.length === 1) {
+      return;
+    }
+
+    setCityData((prevData) => {
+      const updatedStaggeredImages = prevData.content.staggeredImages.slice(
+        0,
+        -1
+      );
+
+      return {
+        ...prevData,
+        content: {
+          ...prevData.content,
+          staggeredImages: updatedStaggeredImages,
+        },
+      };
+    });
+  };
+
+  const editVideoTitle = (newTitle) => {
+    setCityData((prevData) => ({
+      ...prevData,
+      content: {
+        ...prevData.content,
+        video: { ...prevData.content.video, title: newTitle },
+      },
+    }));
+  };
+
+  const editAccordionImage = (index, newUrl) => {
+    setCityData((prevData) => ({
+      ...prevData,
+      content: {
+        ...prevData.content,
+        imageAccordions: prevData.content.imageAccordions.map((accordion, i) =>
+          i === index ? { ...accordion, imageSrc: newUrl } : accordion
+        ),
+      },
+    }));
+  };
+
+  const editAccordionTitle = (index, newTitle) => {
+    setCityData((prevData) => ({
+      ...prevData,
+      content: {
+        ...prevData.content,
+        imageAccordions: prevData.content.imageAccordions.map(
+          (imageAccordion, i) =>
+            i === index
+              ? { ...imageAccordion, title: newTitle }
+              : imageAccordion
+        ),
+      },
+    }));
+  };
+
+  const editAccordionContent = (index, newContent) => {
+    setCityData((prevData) => ({
+      ...prevData,
+      content: {
+        ...prevData.content,
+        imageAccordions: prevData.content.imageAccordions.map(
+          (imageAccordion, i) =>
+            i === index
+              ? { ...imageAccordion, content: newContent }
+              : imageAccordion
+        ),
+      },
+    }));
+  };
+
+  const addNewAccordion = () => {
+    setCityData((prevData) => {
+      const lastItem =
+        prevData.content.imageAccordions[
+          prevData.content.imageAccordions.length - 1
+        ];
+      const newItem = { ...lastItem };
+
+      return {
+        ...prevData,
+        content: {
+          ...prevData.content,
+          imageAccordions: [...prevData.content.imageAccordions, newItem],
+        },
+      };
+    });
+  };
+
+  const removeLastAccordion = () => {
+    if (cityData.content?.imageAccordions.length === 1) {
+      return;
+    }
+
+    setCityData((prevData) => {
+      const updatedAccordions = prevData.content.imageAccordions.slice(0, -1);
+
+      return {
+        ...prevData,
+        content: {
+          ...prevData.content,
+          imageAccordions: updatedAccordions,
+        },
+      };
+    });
+  };
+
   useEffect(() => {
     if (city) {
       setCityData(city);
@@ -132,8 +290,6 @@ const Page = ({ params }) => {
   return (
     <>
       <Container sx={{ paddingTop: 3, marginBottom: 2 }}>
-        <pre>{JSON.stringify(cityData.content, null, 4)}</pre>
-
         <Typography variant="h2" align="center" sx={{ color: "black" }}>
           myHometown{" "}
           <span style={{ textTransform: "capitalize" }}>
@@ -164,12 +320,31 @@ const Page = ({ params }) => {
         <Grid container spacing={2} paddingY={3}>
           {cityData.content?.staggeredImages.map((image, index) => (
             <ImageDescriptionBlock
+              isEdit
               key={index}
               index={index}
               imageSrc={image.imageSrc}
               content={image.content}
+              setImageSrc={editStaggeredImage}
+              editText={editStaggeredImageText}
             />
           ))}
+          <Grid item xs={12} display="flex" justifyContent="center">
+            <Button
+              onClick={addNewStaggeredImage}
+              variant="outlined"
+              sx={{ mr: 1 }}
+            >
+              Add New Staggered Image Section
+            </Button>
+            <Button
+              onClick={removeLastStaggeredImage}
+              variant="outlined"
+              disabled={cityData.content.staggeredImages.length === 1}
+            >
+              Remove Last Section
+            </Button>
+          </Grid>
         </Grid>
 
         <Grid
@@ -181,9 +356,12 @@ const Page = ({ params }) => {
           justifyContent="center"
           flexDirection="column"
         >
-          <Typography variant="h5" textAlign="center" gutterBottom>
-            {cityData.content?.video.title}
-          </Typography>
+          <StyledTextField
+            variant="h5"
+            sx={{ textAlign: "center", mb: 1 }}
+            value={cityData.content?.video.title}
+            onChange={(newValue) => editVideoTitle(newValue)}
+          />
 
           <CardMedia
             component="video"
@@ -207,28 +385,45 @@ const Page = ({ params }) => {
               imageSrc={accordion.imageSrc}
               title={accordion.title}
               content={accordion.content}
+              editImageSrc={editAccordionImage}
+              editContent={editAccordionContent}
+              editTitle={editAccordionTitle}
               index={index}
+              isEdit
             />
           ))}
+          <Grid item xs={12} display="flex" justifyContent="center">
+            <Button onClick={addNewAccordion} variant="outlined" sx={{ mr: 1 }}>
+              Add New Image Accordion
+            </Button>
+            <Button
+              onClick={removeLastAccordion}
+              disabled={cityData.content.imageAccordions.length === 1}
+              variant="outlined"
+            >
+              Remove Last
+            </Button>
+          </Grid>
         </Grid>
 
         <Divider sx={{ my: 5 }} />
-
-        <Typography
+        <StyledTextField
           variant="h4"
-          component="h2"
-          textAlign="center"
-          sx={{ color: "black" }}
-          gutterBottom
-        >
-          {cityData.content?.communitiesHeader}
-        </Typography>
+          sx={{ textAlign: "center", color: "black !important" }}
+          value={cityData.content?.communitiesHeader}
+          onChange={(newValue) => editTextByKey("communitiesHeader", newValue)}
+        />
 
         <Grid container>
           <Grid item xs={10} sx={{ mx: "auto" }}>
-            <Typography variant="h6" align="center" sx={{ color: "black" }}>
-              {cityData.content?.communitiesSubheader}
-            </Typography>
+            <StyledTextField
+              variant="h6"
+              sx={{ textAlign: "center", color: "black !important" }}
+              value={cityData.content?.communitiesSubheader}
+              onChange={(newValue) =>
+                editTextByKey("communitiesSubheader", newValue)
+              }
+            />
           </Grid>
         </Grid>
 

@@ -10,10 +10,14 @@ import {
 } from "@mui/material";
 
 import { styled } from "@mui/system";
+import StyledTextField from "./MyHometown/PageComponents/StyledTextField";
 
 export const ImageAccordion = ({
+  isEdit,
   title,
+  editTitle,
   content,
+  editContent,
   bgColor,
   contentColor = "black",
   right,
@@ -30,6 +34,7 @@ export const ImageAccordion = ({
         backgroundColor: bgColor || "#F1B42D",
         right: right ? 0 : "",
         borderRadius: rounded ? 3 : 0,
+        zIndex: 3,
       }}
       slotProps={{ transition: { timeout: 400 } }}
       slots={{ transition: Fade }}
@@ -49,8 +54,25 @@ export const ImageAccordion = ({
 
             fontSize: { xs: "1rem", md: "auto" }, // Adjust the font size as needed
           }}
+          onClick={isEdit ? (e) => e.stopPropagation() : undefined}
         >
-          {title}
+          {isEdit ? (
+            <StyledTextField
+              variant="outlined" // Assuming you meant 'outlined' instead of 'h6'
+              sx={{
+                color: "black",
+                fontSize: "larger",
+                mt: "auto",
+                mb: "auto",
+                fontSize: "larger",
+              }}
+              value={title}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(newText) => editTitle(newText)}
+            />
+          ) : (
+            <>{title}</>
+          )}
         </AccordionTitle>
       </AccordionSummary>
       <AccordionDetails
@@ -60,9 +82,26 @@ export const ImageAccordion = ({
         }}
       >
         {/* <DividerStyled /> */}
-        <Typography color={contentColor} variant="h6">
-          {content}
-        </Typography>
+        {isEdit ? (
+          <StyledTextField
+            variant="h6" // Assuming you meant 'outlined' instead of 'h6'
+            sx={{
+              color: "black",
+              fontSize: "larger",
+              mt: "auto",
+              mb: "auto",
+              fontSize: "larger",
+            }}
+            value={content}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(newText) => editContent(newText)}
+          />
+        ) : (
+          <Typography color={contentColor} variant="h6">
+            {content}
+          </Typography>
+        )}
+
         {cornerIcon && (
           <SvgIconWrapper right={right}>{cornerIcon}</SvgIconWrapper>
         )}

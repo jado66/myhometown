@@ -1,7 +1,16 @@
 "use client";
+import UploadImage from "@/components/util/UploadImage";
 import { Box, Grid, Typography } from "@mui/material";
+import StyledTextField from "./StyledTextField";
 
-export const ImageDescriptionBlock = ({ index, content, imageSrc }) => {
+export const ImageDescriptionBlock = ({
+  index,
+  content,
+  imageSrc,
+  setImageSrc,
+  editText,
+  isEdit,
+}) => {
   const descriptionContent = (
     <Grid
       item
@@ -13,18 +22,33 @@ export const ImageDescriptionBlock = ({ index, content, imageSrc }) => {
         flexDirection: "column",
       }}
     >
-      <Typography
-        variant="body1"
-        sx={{
-          color: "black",
-          fontSize: "larger",
-          mt: "auto",
-          mb: "auto",
-          fontSize: "larger",
-        }}
-      >
-        {content}
-      </Typography>
+      {isEdit ? (
+        <StyledTextField
+          variant="outlined" // Assuming you meant 'outlined' instead of 'h6'
+          sx={{
+            color: "black",
+            fontSize: "larger",
+            mt: "auto",
+            mb: "auto",
+            fontSize: "larger",
+          }}
+          value={content}
+          onChange={(newText) => editText(index, newText)}
+        />
+      ) : (
+        <Typography
+          variant="body1"
+          sx={{
+            color: "black",
+            fontSize: "larger",
+            mt: "auto",
+            mb: "auto",
+            fontSize: "larger",
+          }}
+        >
+          {content}
+        </Typography>
+      )}
     </Grid>
   );
   const imageContent = (
@@ -57,6 +81,15 @@ export const ImageDescriptionBlock = ({ index, content, imageSrc }) => {
             left: "0px",
           }}
         />
+        {isEdit && (
+          // <span>HE</span>
+          <>
+            <UploadImage
+              setUrl={(newUrl) => setImageSrc(index, newUrl)}
+              alwaysShow
+            />
+          </>
+        )}
       </Grid>
     </Grid>
   );

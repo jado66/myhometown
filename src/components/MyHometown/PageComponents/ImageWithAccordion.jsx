@@ -3,14 +3,19 @@ import { Box, Grid } from "@mui/material";
 
 import { ImageAccordion } from "@/components/ImageAccordion";
 import { MyHometownHouse } from "@/assets/svg/logos/MyHometownHouse";
+import UploadImage from "@/components/util/UploadImage";
 
 export const ImageWithAccordion = ({
   title,
+  editTitle,
   bgColor,
   imageSrc,
+  editImageSrc,
   contentColor,
+  editContent,
   content,
   index,
+  isEdit,
 }) => {
   const bgColors = ["#a16faf", "#1b75bc", "#febc18", "#318d43", "#e45620"];
   const contentColors = ["#000", "#fff", "#000", "#000", "#000"];
@@ -53,12 +58,22 @@ export const ImageWithAccordion = ({
             bottom: "0%",
           }}
         />
+        {isEdit && (
+          <UploadImage setUrl={(newUrl) => editImageSrc(index, newUrl)} />
+        )}
       </Grid>
       <ImageAccordion
+        isEdit={isEdit}
         title={title}
+        editTitle={(newTitle) => editTitle(index, newTitle)}
         content={content}
-        bgColor={bgColor ? bgColor : bgColors[index]} //febc18 y - e45620 o - lb 1bc7bc - db 00357d - lp a16faf - lp 592569 - nc efefe7 - cg 63666a
-        contentColor={contentColor ? contentColor : contentColors[index]}
+        editContent={(newContent) => editContent(index, newContent)}
+        bgColor={bgColor ? bgColor : bgColors[index % bgColors.length]} //febc18 y - e45620 o - lb 1bc7bc - db 00357d - lp a16faf - lp 592569 - nc efefe7 - cg 63666a
+        contentColor={
+          contentColor
+            ? contentColor
+            : contentColors[index % contentColors.length]
+        }
         cornerIcon={<MyHometownHouse />}
         rounded
         right={index % 2 == 1}

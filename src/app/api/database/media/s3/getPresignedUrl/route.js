@@ -6,7 +6,7 @@ export async function POST(request) {
   const { filename, contentType, originalFilename } = await request.json();
 
   try {
-    const client = new S3Client({ region: process.env.AWS_REGION });
+    const client = new S3Client({ region: "us-west-1" });
 
     const uniqueId = uuidv4();
     const key = `uploads/${uniqueId}-${originalFilename}`;
@@ -16,13 +16,13 @@ export async function POST(request) {
       Key: key,
       Conditions: [
         ["content-length-range", 0, 1073741824], // up to 1GB
-        ["starts-with", "$Content-Type", ""], // restrict to video content types
+        ["starts-with", "$Content-Type", contentType],
       ],
       Fields: {
         acl: "public-read",
         "Content-Type": contentType,
       },
-      Expires: 3600, // 1 hour, since video uploads might take longer
+      Expires: 3600, // 1 hour
     });
 
     return Response.json({ url, fields });

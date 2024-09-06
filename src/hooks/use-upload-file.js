@@ -53,14 +53,14 @@ export function useUploadFile() {
             if (event.lengthComputable) {
               const percentComplete = (event.loaded / event.total) * 100;
               setProgress(percentComplete);
-              // console.log(`Upload progress: ${percentComplete.toFixed(2)}%`);
             }
           };
 
           xhr.onload = () => {
             console.log(`XHR onload triggered. Status: ${xhr.status}`);
             if (xhr.status === 204) {
-              const objectUrl = `https://${fields.bucket}.s3.${process.env.NEXT_PUBLIC_AWS_REGION}.amazonaws.com/${fields.key}`;
+              // Use the key from the fields to construct the object URL
+              const objectUrl = `${url}${fields.key}`;
               setUploading(false);
               setProgress(100);
               console.log("File uploaded successfully. URL:", objectUrl);

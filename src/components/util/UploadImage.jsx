@@ -2,12 +2,13 @@
 import React, { useState, useRef } from "react";
 import { Grid, IconButton, Tooltip, useMediaQuery } from "@mui/material";
 import { useUploadFile } from "@/hooks/use-upload-file";
-import { AddPhotoAlternateTwoTone } from "@mui/icons-material";
+import { AddPhotoAlternateTwoTone, Delete } from "@mui/icons-material";
 import Loading from "./Loading";
 import { toast } from "react-toastify";
 import { useImageUpload } from "@/hooks/use-upload-image";
 
-function UploadImage({ setUrl, onRemove }) {
+function UploadImage({ setUrl, onRemove, alwaysShow, right }) {
+  //right is needed is some cases
   const fileInput = useRef();
 
   const { handleFileUpload, loading, error, isVisible, setIsVisible } =
@@ -43,11 +44,31 @@ function UploadImage({ setUrl, onRemove }) {
       />
       {!loading ? (
         <>
+          {onRemove && (
+            <IconButton
+              sx={{
+                position: "absolute",
+                top: "0%",
+                left: "0%",
+                color: "black",
+                backgroundColor: "lightgrey",
+                margin: "0.5em",
+                opacity: isVisible || alwaysShow ? 1 : 0,
+                transition: "visibility 0.05s, opacity 0.5s linear",
+                "&:hover": {
+                  backgroundColor: "white",
+                },
+              }}
+              onClick={onRemove}
+            >
+              <Delete fontSize="12px" />
+            </IconButton>
+          )}
           <IconButton
             sx={{
               position: "absolute",
               top: "0%",
-              right: "0%",
+              right: right || "0%",
               color: "black",
               backgroundColor: "lightgrey",
               margin: "0.5em",
