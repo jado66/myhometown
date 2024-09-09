@@ -326,7 +326,7 @@ const Page = ({ params }) => {
       ...communityData,
       content: {
         ...communityData.content,
-        marketingHeader: value,
+        name: value,
       },
     });
   };
@@ -700,7 +700,51 @@ const Page = ({ params }) => {
           <TextField
             variant="standard"
             value={content?.marketingHeader || "Your Flyer Title"}
-            onChange={(event) => handleMarketingHeaderChange(event)}
+            onChange={(event) =>
+              handleMarketingHeaderChange("marketingHeader1", event)
+            }
+            multiline
+            InputProps={{
+              disableUnderline: true,
+              style: {
+                fontSize: "2rem",
+                textAlign: "center",
+                color: "#00357d",
+                textTransform: "capitalize",
+              },
+            }}
+            fullWidth
+            sx={{
+              fontFamily: "inherit",
+              fontSize: "2rem",
+              border: "none",
+              margin: 0,
+              padding: "10px 16px",
+              "& .MuiInputBase-input": {
+                textAlign: "center",
+              },
+              "& .MuiInput-underline:before": {
+                borderBottom: "none",
+              },
+              "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+                borderBottom: "none",
+              },
+              "& .MuiInput-underline:after": {
+                borderBottom: "none",
+              },
+              "& .Mui-focused": {
+                backgroundColor: "#f0f0f0",
+                borderRadius: "4px",
+              },
+            }}
+          />
+
+          <TextField
+            variant="standard"
+            value={content?.marketingHeader || "Your Flyer Title"}
+            onChange={(event) =>
+              handleMarketingHeaderChange("marketingHeader1", event)
+            }
             multiline
             InputProps={{
               disableUnderline: true,

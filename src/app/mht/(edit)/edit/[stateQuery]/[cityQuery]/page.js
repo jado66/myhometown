@@ -337,7 +337,7 @@ const Page = ({ params }) => {
             <Button
               onClick={removeLastStaggeredImage}
               variant="outlined"
-              disabled={cityData.content.staggeredImages.length === 1}
+              disabled={cityData.content?.staggeredImages.length === 1}
             >
               Remove Last Section
             </Button>
@@ -395,7 +395,7 @@ const Page = ({ params }) => {
             </Button>
             <Button
               onClick={removeLastAccordion}
-              disabled={cityData.content.imageAccordions.length === 1}
+              disabled={cityData.content?.imageAccordions.length === 1}
               variant="outlined"
             >
               Remove Last
