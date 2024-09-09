@@ -143,9 +143,9 @@ export default function Management() {
 
     router.push(
       rootUrl +
-        `/${community.city.state
+        `/${community.state
           .toLowerCase()
-          .replaceAll(/\s/g, "-")}/${community.city.name
+          .replaceAll(/\s/g, "-")}/${community.city
           .toLowerCase()
           .replaceAll(/\s/g, "-")}/${community.name
           .toLowerCase()
@@ -161,9 +161,9 @@ export default function Management() {
 
     router.push(
       rootUrl +
-        `/edit/${community.city.state
+        `/edit/${community.state
           .toLowerCase()
-          .replaceAll(/\s/g, "-")}/${community.city.name
+          .replaceAll(/\s/g, "-")}/${community.city
           .toLowerCase()
           .replaceAll(/\s/g, "-")}/${community.name
           .toLowerCase()

@@ -58,9 +58,9 @@ const createCommunityColumns = (
       };
 
       const href = params.row.city
-        ? `/${params.row.city.state
+        ? `/${params.row.state
             .toLowerCase()
-            .replaceAll(/\s/g, "-")}/${params.row.city.name
+            .replaceAll(/\s/g, "-")}/${params.row.city
             .toLowerCase()
             .replaceAll(/\s/g, "-")}/${params.row.name
             .toLowerCase()

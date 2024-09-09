@@ -117,6 +117,17 @@ export const VolunteerSignUps = ({
   if (isEditingValues || !signUpFormId) {
     return (
       <>
+        <Box
+          component="img"
+          src={"cities.png"}
+          sx={{
+            width: "100%",
+            borderRadius: 4,
+            height: "auto",
+            objectFit: "cover",
+            mt: 1,
+          }}
+        />
         <IframeHelpDialog
           open={isShowIframeHelpDialog}
           handleClose={hideIframeHelpDialog}
