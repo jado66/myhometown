@@ -10,11 +10,11 @@ export async function GET(req, { params }) {
       .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" "),
-    "city.name": cityQuery
+    city: cityQuery
       .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" "),
-    "city.state": stateQuery
+    state: stateQuery
       .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" "),
