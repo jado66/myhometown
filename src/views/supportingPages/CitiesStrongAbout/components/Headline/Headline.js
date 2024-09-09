@@ -55,7 +55,8 @@ const Headline = () => {
                 maxWidth: "84vw",
                 mx: "auto",
               }}
-              src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Donor+Final+5+narr.webm"
+              poster="https://myhometown-bucket.s3.us-west-1.amazonaws.com/CSF+About+Us.png"
+              src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/7c21e39d-776e-4c90-8c20-6b54fa058e77-CSFAboutUsv6+(2).webm"
               title="Video 1"
               controls
               playsInline

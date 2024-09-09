@@ -13,11 +13,13 @@ const CarouselComponent = ({
   addCarouselImage,
   editCarouselImage,
   removeCarouselImage,
+  noDots,
+  speed,
 }) => {
   const settings = {
-    dots: true,
+    dots: noDots ? false : true,
     infinite: true,
-    speed: 500,
+    speed: speed ? speed : 500,
     slidesToShow: 3,
     slidesToScroll: 1,
     autoplay: !isEdit,
@@ -59,7 +61,7 @@ const CarouselComponent = ({
               style={{
                 width: "100%",
                 borderRadius: "12px",
-                boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+                // boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
               }}
             />
           </Box>

@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Container from "@/components/util/Container";
 import { Headline, Team } from "./components";
-import { useTheme } from "@mui/material";
+import { Divider, useTheme } from "@mui/material";
 import Stats from "./components/Stats";
 import Values from "./components/Values";
+import CarouselComponent from "@/components/ui/Carousel";
+import PartnerLogos from "./components/PartnerLogos/PartnerLogos";
 
 const CitiesStrongAbout = () => {
   const [viewPortEntered, setViewPortEntered] = useState(false);
@@ -48,6 +50,9 @@ const CitiesStrongAbout = () => {
           setViewPortVisibility={setViewPortVisibility}
           stats={stats}
         />
+      </Container>
+      <Container paddingY={"0 !important"} paddingBottom={"0 !important"}>
+        <PartnerLogos />
       </Container>
     </Container>
   );
