@@ -19,7 +19,7 @@ const Footer = () => {
       sx={{ px: { md: 5, sx: 0 } }}
     >
       <Grid item md={4} xs={12} sx={{ order: { md: 1, xs: 1 } }}>
-        <MyHometownLogo height={"100%"} width={"100%"} type="full" />
+        <MyHometownLogo height={"100%"} width={"100%"} type="dark-full" />
       </Grid>
       <Grid item md={4} xs={12} sx={{ order: { md: 2, xs: 3 } }}>
         <Typography

@@ -69,10 +69,7 @@ const Page = ({ params }) => {
       <Container sx={{ paddingTop: 3, marginBottom: 2 }}>
         <Typography variant="h2" align="center" sx={{ color: "black" }}>
           myHometown{" "}
-          <span style={{ textTransform: "capitalize" }}>
-            {cityName}
-            {" - Utah"}
-          </span>
+          <span style={{ textTransform: "capitalize" }}>{cityName}</span>
         </Typography>
 
         <Grid container>
