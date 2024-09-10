@@ -339,6 +339,7 @@ const Page = ({ params }) => {
           <>
             <VolunteerSignUps
               volunteerHeaderText={community.volunteerHeaderText}
+              volunteerHeaderImage={community.volunteerHeaderImage}
               setVolunteerHeaderText={alertNotEdit}
               signUpFormId={community.signUpFormId}
               setSignUpFormId={alertNotEdit}

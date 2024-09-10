@@ -236,6 +236,7 @@ export const VolunteerSignUps = ({
                 sx={{
                   width: "100%",
                   borderRadius: 4,
+                  mb: 3,
                   height: "auto",
                   boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
                   objectFit: "cover",
