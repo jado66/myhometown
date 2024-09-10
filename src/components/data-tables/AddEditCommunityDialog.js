@@ -108,9 +108,9 @@ const AddEditCommunityDialog = ({
 
   const href =
     initialCommunityState && initialCommunityState.city
-      ? `/${initialCommunityState.city.state
+      ? `/${initialCommunityState.state
           .toLowerCase()
-          .replaceAll(/\s/g, "-")}/${initialCommunityState.city.name
+          .replaceAll(/\s/g, "-")}/${initialCommunityState.city
           .toLowerCase()
           .replaceAll(/\s/g, "-")}/${initialCommunityState.name
           .toLowerCase()
@@ -131,12 +131,14 @@ const AddEditCommunityDialog = ({
             type="text"
             fullWidth
             value={community.name}
-            onChange={(e) =>
-              setCommunity({ ...community, name: e.target.value })
-            }
+            readonly
+            disabled
+            // onChange={(e) =>
+            //   setCommunity({ ...community, name: e.target.value })
+            // }
           />
 
-          <TextField
+          {/* <TextField
             sx={{ mt: 1 }}
             autoFocus
             margin="dense"
@@ -156,7 +158,7 @@ const AddEditCommunityDialog = ({
                 </Tooltip>
               ),
             }}
-          />
+          /> */}
           {/* <TextField
                         disabled
                         sx = {{mt:1}}
@@ -204,9 +206,9 @@ const AddEditCommunityDialog = ({
                 <Button
                   type="submit"
                   color="primary"
-                  href={`/edit/${community.city.state
+                  href={`/edit/${community.state
                     .toLowerCase()
-                    .replaceAll(/\s/g, "-")}/${community.city.name
+                    .replaceAll(/\s/g, "-")}/${community.city
                     .toLowerCase()
                     .replaceAll(/\s/g, "-")}/${community.name
                     .toLowerCase()

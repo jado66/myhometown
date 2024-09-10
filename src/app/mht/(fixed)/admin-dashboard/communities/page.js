@@ -331,19 +331,20 @@ export default function Management() {
           />
         )}
 
-        <RoleGuard requiredRole="admin" user={user}>
+        {/* <RoleGuard requiredRole="admin" user={user}>
           <Grid sx={{ mt: 3 }}>
             <Box display="flex" justifyContent="center" width="100%">
               <Button
                 variant="contained"
                 color="primary"
                 onClick={() => setShowAddCommunityForm(true)}
+                disabled
               >
                 Add a Community
               </Button>
             </Box>
           </Grid>
-        </RoleGuard>
+        </RoleGuard> */}
       </Card>
     </Grid>
   );

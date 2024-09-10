@@ -16,13 +16,13 @@ const createCommunityColumns = (
     field: "city",
     headerName: "City",
     width: 125,
-    renderCell: (params) => params.row.city?.name || "",
+    renderCell: (params) => params.row.city || "",
   },
   {
     field: "state",
     headerName: "State",
     width: 100,
-    renderCell: (params) => params.row.city?.state || "",
+    renderCell: (params) => params.row.state || "",
   },
   { field: "country", headerName: "Country", width: 150 },
   {
@@ -34,7 +34,7 @@ const createCommunityColumns = (
   {
     field: "communityOwners",
     headerName: "Managers",
-    width: 350,
+    width: 450,
     renderCell: (params) => <OnwersCell params={params} />,
   },
 
@@ -119,7 +119,7 @@ const createCommunityColumns = (
               )}
             </Button>
 
-            <Button
+            {/* <Button
               variant="outlined"
               color="error"
               size="small"
@@ -129,7 +129,7 @@ const createCommunityColumns = (
               <Tooltip title="Delete Community" placement="top" arrow>
                 <DeleteIcon fontSize="small" />
               </Tooltip>
-            </Button>
+            </Button> */}
           </Grid>
         );
       }

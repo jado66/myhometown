@@ -76,17 +76,18 @@ const createCityColumns = (
             )}
           </Button>
 
-          <Button
+          {/* <Button
             variant="outlined"
             color="error"
             size="small"
             onClick={onClickDelete}
+            disabled
             sx={{ marginLeft: 1 }}
           >
             <Tooltip title="Delete City" placement="top" arrow>
               <DeleteIcon fontSize="small" />
             </Tooltip>
-          </Button>
+          </Button> */}
         </Grid>
       );
     },

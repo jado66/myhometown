@@ -82,7 +82,7 @@ export default function Management() {
 
   const goToEditCity = (city) => {
     router.push(
-      `/edit/${city.state.toLowerCase()}/${city.name
+      `/edit/${state.toLowerCase()}/${city.name
         .toLowerCase()
         .replaceAll(/\s/g, "-")}`
     );
@@ -197,7 +197,7 @@ export default function Management() {
           </Box>
         )}
 
-        <RoleGuard requiredRole="admin" user={user}>
+        {/* <RoleGuard requiredRole="admin" user={user}>
           <Box display="flex" justifyContent="center" width="100%" m={3}>
             <Button
               variant="contained"
@@ -207,7 +207,7 @@ export default function Management() {
               Add a City
             </Button>
           </Box>
-        </RoleGuard>
+        </RoleGuard> */}
       </Grid>
     </>
   );

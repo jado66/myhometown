@@ -113,20 +113,24 @@ const AddEditCityDialog = ({
             id="name"
             label="City Name"
             type="text"
+            readonly
             fullWidth
+            disabled
             value={city.name}
-            onChange={(e) => setCity({ ...city, name: e.target.value })}
+            // onChange={(e) => setCity({ ...city, name: e.target.value })}
           />
 
-          <StateSelect
+          <TextField
             sx={{ mt: 1, mb: 0 }}
             margin="dense"
             id="state"
             label="State"
             type="text"
+            readonly
             fullWidth
             value={city.state}
-            onChange={(e) => setCity({ ...city, state: e.target.value })}
+            disabled
+            // onChange={(e) => setCity({ ...city, state: e.target.value })}
           />
           {/* <TextField
                         disabled
@@ -160,11 +164,11 @@ const AddEditCityDialog = ({
             />
           </FormControl>
 
-          <FormControl fullWidth sx={{ mt: -1, mb: 3 }}>
+          {/* <FormControl fullWidth sx={{ mt: -1, mb: 3 }}>
             <InputLabel>Linked Communities</InputLabel>
-          </FormControl>
+          </FormControl> */}
 
-          <FormControl fullWidth sx={{ mt: 1.5 }}>
+          {/* <FormControl fullWidth sx={{ mt: 1.5 }}>
             <CommunitySelect
               value={
                 city?.communities?.length > 0
@@ -177,7 +181,7 @@ const AddEditCityDialog = ({
               }
               onChange={handleCommunitySelectChange}
             />
-          </FormControl>
+          </FormControl> */}
         </DialogContent>
         <DialogActions
           sx={{
