@@ -15,6 +15,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import { IframeHelpDialog } from "./events/IframeHelpDialog";
 import { Edit } from "@mui/icons-material";
+import UploadImage from "./util/UploadImage";
 
 const StyledTreeItem = styled(TreeItem)(({ theme }) => ({
   "& .MuiTreeItem-content": {
@@ -26,7 +27,8 @@ const StyledTreeItem = styled(TreeItem)(({ theme }) => ({
 
 export const VolunteerSignUps = ({
   isEdit,
-
+  volunteerHeaderImage,
+  setVolunteerHeaderImage,
   volunteerHeaderText,
   setVolunteerHeaderText,
   signUpFormId,
@@ -117,17 +119,6 @@ export const VolunteerSignUps = ({
   if (isEditingValues || !signUpFormId) {
     return (
       <>
-        <Box
-          component="img"
-          src={"cities.png"}
-          sx={{
-            width: "100%",
-            borderRadius: 4,
-            height: "auto",
-            objectFit: "cover",
-            mt: 1,
-          }}
-        />
         <IframeHelpDialog
           open={isShowIframeHelpDialog}
           handleClose={hideIframeHelpDialog}
@@ -144,6 +135,40 @@ export const VolunteerSignUps = ({
               ? volunteerHeaderText
               : "Sign Up as a Volunteer"}
           </Typography>
+
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            position="relative"
+            sx={{
+              px: 1,
+              width: "100%",
+              height: "100%",
+              minHeight: "100px",
+              backgroundColor: "transparent",
+            }}
+          >
+            <UploadImage setUrl={(url) => setVolunteerHeaderImage(url)} />
+
+            {volunteerHeaderImage ? (
+              <Box
+                component="img"
+                src={volunteerHeaderImage}
+                sx={{
+                  width: "100%",
+                  borderRadius: 4,
+                  height: "auto",
+                  boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+                  objectFit: "cover",
+                }}
+              />
+            ) : (
+              <Typography variant="h4" component="h2" align="center">
+                Volunteer Header Image
+              </Typography>
+            )}
+          </Box>
 
           <Grid
             item
@@ -164,7 +189,6 @@ export const VolunteerSignUps = ({
               Get Help <HelpOutlineIcon sx={{ ml: 1 }} />
             </Button>
           </Grid>
-
           <TextField
             size="small"
             value={rawIframeCode}
@@ -205,6 +229,20 @@ export const VolunteerSignUps = ({
             justifyContent="center"
             flexDirection="column"
           >
+            {volunteerHeaderImage && (
+              <Box
+                component="img"
+                src={volunteerHeaderImage}
+                sx={{
+                  width: "100%",
+                  borderRadius: 4,
+                  height: "auto",
+                  boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+                  objectFit: "cover",
+                }}
+              />
+            )}
+
             <iframe
               src={`https://docs.google.com/forms/d/e/${signUpFormId}/viewform?embedded=true`}
               width="100%"

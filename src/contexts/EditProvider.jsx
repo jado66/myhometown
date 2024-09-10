@@ -57,9 +57,9 @@ const EditProvider = ({ children }) => {
   const saveCommunityData = async () => {
     try {
       const response = await fetch(
-        `/api/database/communities/${data.city.state
+        `/api/database/communities/${data.state
           .toLowerCase()
-          .replaceAll(/\s/g, "-")}/${data.city.name
+          .replaceAll(/\s/g, "-")}/${data.city
           .toLowerCase()
           .replaceAll(/\s/g, "-")}/${data.name
           .toLowerCase()

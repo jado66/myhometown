@@ -183,20 +183,23 @@ const Page = ({ params }) => {
           justifyContent="center"
           flexDirection="column"
         >
-          {community?.content?.marketingHeader && (
-            <Typography
-              variant="h4"
-              align="center"
-              sx={{ textTransform: "capitalize", mb: 5, color: "#00357d" }}
-            >
-              {community.content?.marketingHeader}
-            </Typography>
-          )}
-
           {community?.content?.marketingImage1 && (
             <>
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
+                  {community?.content?.marketingHeader && (
+                    <Typography
+                      variant="h4"
+                      align="center"
+                      sx={{
+                        textTransform: "capitalize",
+                        mb: 2,
+                        color: "#00357d",
+                      }}
+                    >
+                      {community.content?.marketingHeader}
+                    </Typography>
+                  )}
                   <Box
                     display="flex"
                     justifyContent="center"
@@ -204,7 +207,6 @@ const Page = ({ params }) => {
                     position="relative"
                     sx={{
                       width: "100%",
-                      height: "100%",
                       backgroundColor: "transparent",
                     }}
                   >
@@ -227,6 +229,20 @@ const Page = ({ params }) => {
                 </Grid>
 
                 <Grid item xs={12} md={6}>
+                  {community?.content?.marketingHeader2 && (
+                    <Typography
+                      variant="h4"
+                      align="center"
+                      sx={{
+                        textTransform: "capitalize",
+                        mt: { md: 0, xs: 6 },
+                        mb: 2,
+                        color: "#00357d",
+                      }}
+                    >
+                      {community.content?.marketingHeader2}
+                    </Typography>
+                  )}
                   <Box
                     display="flex"
                     justifyContent="center"
@@ -234,7 +250,6 @@ const Page = ({ params }) => {
                     position="relative"
                     sx={{
                       width: "100%",
-                      height: "100%",
                       minHeight: "100px",
                       backgroundColor: "transparent",
                     }}

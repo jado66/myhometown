@@ -326,7 +326,7 @@ const Page = ({ params }) => {
       ...communityData,
       content: {
         ...communityData.content,
-        name: value,
+        [name]: value,
       },
     });
   };
@@ -336,6 +336,13 @@ const Page = ({ params }) => {
     setCommunityData({
       ...communityData,
       volunteerHeaderText: value,
+    });
+  };
+
+  const handleVolunteerSignUpHeaderImageChange = (src) => {
+    setCommunityData({
+      ...communityData,
+      volunteerHeaderImage: src,
     });
   };
 
@@ -697,103 +704,59 @@ const Page = ({ params }) => {
             <Divider sx={{ my: 5 }} />
           </Grid>
 
-          <TextField
-            variant="standard"
-            value={content?.marketingHeader || "Your Flyer Title"}
-            onChange={(event) =>
-              handleMarketingHeaderChange("marketingHeader1", event)
-            }
-            multiline
-            InputProps={{
-              disableUnderline: true,
-              style: {
-                fontSize: "2rem",
-                textAlign: "center",
-                color: "#00357d",
-                textTransform: "capitalize",
-              },
-            }}
-            fullWidth
-            sx={{
-              fontFamily: "inherit",
-              fontSize: "2rem",
-              border: "none",
-              margin: 0,
-              padding: "10px 16px",
-              "& .MuiInputBase-input": {
-                textAlign: "center",
-              },
-              "& .MuiInput-underline:before": {
-                borderBottom: "none",
-              },
-              "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-                borderBottom: "none",
-              },
-              "& .MuiInput-underline:after": {
-                borderBottom: "none",
-              },
-              "& .Mui-focused": {
-                backgroundColor: "#f0f0f0",
-                borderRadius: "4px",
-              },
-            }}
-          />
-
-          <TextField
-            variant="standard"
-            value={content?.marketingHeader || "Your Flyer Title"}
-            onChange={(event) =>
-              handleMarketingHeaderChange("marketingHeader1", event)
-            }
-            multiline
-            InputProps={{
-              disableUnderline: true,
-              style: {
-                fontSize: "2rem",
-                textAlign: "center",
-                color: "#00357d",
-                textTransform: "capitalize",
-              },
-            }}
-            fullWidth
-            sx={{
-              fontFamily: "inherit",
-              fontSize: "2rem",
-              border: "none",
-              margin: 0,
-              padding: "10px 16px",
-              "& .MuiInputBase-input": {
-                textAlign: "center",
-              },
-              "& .MuiInput-underline:before": {
-                borderBottom: "none",
-              },
-              "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-                borderBottom: "none",
-              },
-              "& .MuiInput-underline:after": {
-                borderBottom: "none",
-              },
-              "& .Mui-focused": {
-                backgroundColor: "#f0f0f0",
-                borderRadius: "4px",
-              },
-            }}
-          />
-
           <Divider sx={{ my: 5 }} />
 
-          <Grid item xs={12} display="flex" justifyContent="center">
-            <Grid item xs={12} sm={6}>
+          <Grid container item xs={12} display="flex" justifyContent="center">
+            <Grid item xs={12} md={6}>
+              <TextField
+                variant="standard"
+                value={content?.marketingHeader || "Your Flyer Title"}
+                onChange={(event) =>
+                  handleMarketingHeaderChange(event, "marketingHeader")
+                }
+                multiline
+                InputProps={{
+                  disableUnderline: true,
+                  style: {
+                    fontSize: "2rem",
+                    textAlign: "center",
+                    color: "#00357d",
+                    textTransform: "capitalize",
+                  },
+                }}
+                fullWidth
+                sx={{
+                  fontFamily: "inherit",
+                  fontSize: "2rem",
+                  border: "none",
+                  margin: 0,
+                  padding: "10px 16px",
+                  "& .MuiInputBase-input": {
+                    textAlign: "center",
+                  },
+                  "& .MuiInput-underline:before": {
+                    borderBottom: "none",
+                  },
+                  "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+                    borderBottom: "none",
+                  },
+                  "& .MuiInput-underline:after": {
+                    borderBottom: "none",
+                  },
+                  "& .Mui-focused": {
+                    backgroundColor: "#f0f0f0",
+                    borderRadius: "4px",
+                  },
+                }}
+              />
               <Box
                 display="flex"
                 justifyContent="center"
-                alignItems="center"
+                // alignItems="center"
                 position="relative"
                 sx={{
                   px: 1,
                   width: "100%",
-                  height: "100%",
                   backgroundColor: "transparent",
                 }}
               >
@@ -823,16 +786,57 @@ const Page = ({ params }) => {
               </Box>
             </Grid>
 
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                variant="standard"
+                value={content?.marketingHeader2 || "Your Flyer Title"}
+                onChange={(event) =>
+                  handleMarketingHeaderChange(event, "marketingHeader2")
+                }
+                multiline
+                InputProps={{
+                  disableUnderline: true,
+                  style: {
+                    fontSize: "2rem",
+                    textAlign: "center",
+                    color: "#00357d",
+                    textTransform: "capitalize",
+                  },
+                }}
+                fullWidth
+                sx={{
+                  mt: { md: 0, xs: 6 },
+                  fontFamily: "inherit",
+                  fontSize: "2rem",
+                  border: "none",
+                  margin: 0,
+                  padding: "10px 16px",
+                  "& .MuiInputBase-input": {
+                    textAlign: "center",
+                  },
+                  "& .MuiInput-underline:before": {
+                    borderBottom: "none",
+                  },
+                  "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+                    borderBottom: "none",
+                  },
+                  "& .MuiInput-underline:after": {
+                    borderBottom: "none",
+                  },
+                  "& .Mui-focused": {
+                    backgroundColor: "#f0f0f0",
+                    borderRadius: "4px",
+                  },
+                }}
+              />
               <Box
                 display="flex"
                 justifyContent="center"
-                alignItems="center"
+                // alignItems="center"
                 position="relative"
                 sx={{
                   px: 1,
                   width: "100%",
-                  height: "100%",
                   minHeight: "100px",
                   backgroundColor: "transparent",
                 }}
@@ -933,7 +937,9 @@ const Page = ({ params }) => {
         <VolunteerSignUps
           isEdit
           volunteerHeaderText={communityData.volunteerHeaderText}
+          volunteerHeaderImage={communityData.volunteerHeaderImage}
           setVolunteerHeaderText={handleVolunteerSignUpHeaderChange}
+          setVolunteerHeaderImage={handleVolunteerSignUpHeaderImageChange}
           signUpFormId={communityData.signUpFormId}
           setSignUpFormId={handleSignUpFormIdChange}
           onClose={() => {}}

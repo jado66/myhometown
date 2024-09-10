@@ -111,6 +111,13 @@ export const EventDialog_NewEdit = ({
     });
   };
 
+  const toggleShowOnCalendar = () => {
+    setCurrentEvent((prev) => ({
+      ...prev,
+      hideOnUpcomingEvents: prev ? !prev.hideOnUpcomingEvents : true,
+    }));
+  };
+
   const toggleAllDay = () => {
     setCurrentEvent((prev) => {
       const newEvent = { ...prev, isAllDay: !prev.isAllDay };
@@ -463,6 +470,18 @@ export const EventDialog_NewEdit = ({
               </Grid> */}
             </Grid>
           )}
+
+          <Grid container item direction="row" sx={{ mt: 2 }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={!(currentEvent?.hideOnUpcomingEvents || false)}
+                  onChange={toggleShowOnCalendar}
+                />
+              }
+              label="Show in Upcoming Events"
+            />
+          </Grid>
         </DialogContent>
 
         <DialogActions>

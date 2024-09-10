@@ -22,7 +22,7 @@ const UpcomingEvents = ({
   // This function formats the date and time in an easily readable format
   const dateFormatter = (date, allDay) => {
     date = new Date(date);
-    let hoursMinutesFormat = { hour: "numeric", minute: "numeric" };
+    let hourmdinutesFormat = { hour: "numeric", minute: "numeric" };
     let month = date.toLocaleDateString(undefined, { month: "short" });
     let day = date.getDate();
     let weekday = date.toLocaleDateString(undefined, { weekday: "short" });
@@ -32,15 +32,17 @@ const UpcomingEvents = ({
     } else {
       return `${weekday} ${month} ${day}, ${date.toLocaleTimeString(
         [],
-        hoursMinutesFormat
+        hourmdinutesFormat
       )}`;
     }
   };
 
   // Sort events by start date, then slice array to contain at most maxEvents items
   const sortedEvents = [...events]
-    .filter((event) => moment(event.end).isAfter(moment()))
-
+    .filter(
+      (event) =>
+        moment(event.end).isAfter(moment()) && !event.hideOnUpcomingEvents
+    )
     .sort((a, b) => new Date(a.start) - new Date(b.start))
     .slice(0, maxEvents);
 
@@ -145,21 +147,28 @@ const UpcomingEventCard = ({ event, dateFormatter, onSelect }) => {
       onClick={() => onSelect(event)}
       id="events"
     >
-      <Grid container>
-        <Grid item xs={12} sm={6}>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <Typography variant="h6">{event.title}</Typography>
+        </Grid>
+        <Grid item xs={12} md={8}>
           <Box display="flex" flexDirection="column">
-            <Typography variant="body1" gutterBottom>
-              {event.title}
-            </Typography>
             <Typography variant="body2">{event.description}</Typography>
           </Box>
         </Grid>
 
-        <Grid item xs={12} sx={{ display: { xs: "block", sm: "none" } }}>
-          <Divider sx={{ my: 2 }} />
+        <Grid item xs={12} sx={{ display: { xs: "block", md: "none" } }}>
+          <Divider sx={{ my: 1 }} />
         </Grid>
-        <Grid item xs={12} sm={6}>
-          <Box display="flex" sx={{ minWidth: "300px" }} flexDirection="column">
+        <Grid item xs={12} md={4} sx={{ mt: 0 }}>
+          <Box
+            display="flex"
+            sx={{
+              minWidth: "300px",
+              pl: { md: 2, xs: 0 },
+              flexDirection: { md: "column", xs: "row" },
+            }}
+          >
             <Typography
               variant="body2"
               sx={{ color: "#777", minWidth: "275px" }}
