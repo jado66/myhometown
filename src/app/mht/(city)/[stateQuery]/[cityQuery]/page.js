@@ -154,24 +154,18 @@ const Page = ({ params }) => {
         </Grid>
 
         <Grid container spacing={5} padding={3}>
-          <CommunityCard
-            title="Pioneer Park"
-            imageSrc="/myhometown/city-page/pioneer map.webp"
-            href="./provo/pioneer-park"
-            index={0}
-          />
-          <CommunityCard
-            title="South Freedom"
-            imageSrc="/myhometown/city-page/freedom.webp"
-            href="./provo/south-freedom"
-            index={1}
-          />
-          <CommunityCard
-            title="Dixon"
-            imageSrc="/myhometown/city-page/Dixon.webp"
-            href="./provo/dixon"
-            index={2}
-          />
+          {city.communities.map((community, index) => (
+            <CommunityCard
+              key={index}
+              title={community.title + " Community "}
+              imageSrc={
+                community.imageSrc ||
+                "/myhometown/city-page/city-placeholder.jpg"
+              }
+              href={community.href}
+              index={index}
+            />
+          ))}
         </Grid>
       </Container>
     </>
