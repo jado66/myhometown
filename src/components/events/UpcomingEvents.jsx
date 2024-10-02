@@ -178,9 +178,11 @@ const UpcomingEventCard = ({ event, dateFormatter, onSelect }) => {
               {!event.allDay ? ` - ${endDate}` : ", All Day Event"}
             </Typography>
 
-            <Typography variant="body2">
-              {event.location.replaceAll("-", " ")}
-            </Typography>
+            {event.location && (
+              <Typography variant="body2">
+                {event.location.replaceAll("-", " ")}
+              </Typography>
+            )}
           </Box>
         </Grid>
       </Grid>
