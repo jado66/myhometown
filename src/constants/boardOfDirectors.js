@@ -48,18 +48,18 @@ community transformation, saying, "I love seeing our cities transformed as local
 residents provide leadership to transform living conditions and lives by helping to teach
 skills in our My Hometown Community Resource Centers."`,
   },
-  {
-    name: "Steve Petersen",
-    position: "Vice President",
-    avatar: "/images/board/Steve Petersen.jpg",
-    bio: `Steve is the President, CEO, and Chairman of the Board of Petersen Incorporated. He
-has served on the Board of Trustees for Weber State University and was the former
-President of the Utah Steel Fabricators Association. Steve spent 23 years on the Board
-of Directors of the Bank of Utah and was honored by Ernst and Young as the
-Entrepreneur of the Year in Utah for Engineering. He has been active in various
-community action groups for 40 years and recently completed two years as the City
-Chair for My Hometown Ogden.`,
-  },
+  //   {
+  //     name: "Steve Petersen",
+  //     position: "Vice President",
+  //     avatar: "/images/board/Steve Petersen.jpg",
+  //     bio: `Steve is the President, CEO, and Chairman of the Board of Petersen Incorporated. He
+  // has served on the Board of Trustees for Weber State University and was the former
+  // President of the Utah Steel Fabricators Association. Steve spent 23 years on the Board
+  // of Directors of the Bank of Utah and was honored by Ernst and Young as the
+  // Entrepreneur of the Year in Utah for Engineering. He has been active in various
+  // community action groups for 40 years and recently completed two years as the City
+  // Chair for My Hometown Ogden.`,
+  //   },
   {
     name: "Ted Hill",
     position: "Treasurer",
@@ -86,18 +86,18 @@ Achievement of Utah "High Impact Program."`,
 ];
 
 export const boardOfDirectors = [
-  {
-    name: "Craig Burton",
-    avatar: "/images/board/Craig Burton.jpg",
-    bio: `Nicole is a renowned attorney licensed in Utah and Wyoming, with a distinguished 25-
-year career in public service. As the co-founder of My Hometown, she has shown a
-profound dedication to community improvement. Now retired from public service, Nicole
-brings her expertise to UTOPIA Fiber, focusing on telecommunications, contract, and
-real estate law. She represents private clients in legislative and government relations,
-specializing in development, land use, and transactional law. Nicole is passionate about
-giving back to the community and continues to make significant contributions in her
-field.`,
-  },
+  //   {
+  //     name: "Craig Burton",
+  //     avatar: "/images/board/Craig Burton.jpg",
+  //     bio: `Nicole is a renowned attorney licensed in Utah and Wyoming, with a distinguished 25-
+  // year career in public service. As the co-founder of My Hometown, she has shown a
+  // profound dedication to community improvement. Now retired from public service, Nicole
+  // brings her expertise to UTOPIA Fiber, focusing on telecommunications, contract, and
+  // real estate law. She represents private clients in legislative and government relations,
+  // specializing in development, land use, and transactional law. Nicole is passionate about
+  // giving back to the community and continues to make significant contributions in her
+  // field.`,
+  //   },
   {
     name: "Nicole Cottle",
     avatar: "/images/board/Nicole Cottle.jpg",

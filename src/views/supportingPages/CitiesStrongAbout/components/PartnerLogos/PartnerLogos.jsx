@@ -32,27 +32,29 @@ const PartnerLogos = () => {
 
       <LogoCarouselComponent
         images={[
-          "/images/partners/cat.webp",
-
-          "/images/partners/zion 2.webp", //b
-
-          "/images/partners/Arbor Pro.webp",
-          "/images/partners/Bank Ut.webp",
-          "/images/partners/BPS.webp",
-          "/images/partners/england2.webp", //b
-          "/images/partners/alta.webp", //
-
-          "/images/partners/diamond.webp",
-          "/images/partners/durham.webp",
-          "/images/partners/home depot.webp", //b
-          "/images/partners/Kapp.webp",
-          "/images/partners/key.webp",
-          "/images/partners/slc.webp", //b
-          "/images/partners/lowes.webp",
-          "/images/partners/Orem.webp",
-          "/images/partners/petersen.webp",
-          "/images/partners/provo.webp",
-          "/images/partners/wvc.webp", //b
+          "/images/partners/Alta Bank TR.png",
+          "/images/partners/Arbor pro.png",
+          "/images/partners/Briskley TR.png",
+          "/images/partners/Diamond TR.png",
+          "/images/partners/Durham TR.png",
+          "/images/partners/england TR.png",
+          "/images/partners/HD TR.png",
+          "/images/partners/Key TR.png",
+          "/images/partners/Knapp TR.png",
+          "/images/partners/Lowes TR.png",
+          "/images/partners/Morin TR.png",
+          "/images/partners/ogden TR.png",
+          "/images/partners/Orem TR.png",
+          // "/images/partners/Petersen TR.png",
+          "/images/partners/Peterson TR.png",
+          "/images/partners/Provo TR.png",
+          "/images/partners/Simple TR.png",
+          "/images/partners/simplified TR.png",
+          "/images/partners/SLC TR.png",
+          "/images/partners/Utah bank TR.png",
+          "/images/partners/Wheeler TR.png",
+          "/images/partners/WVC TR.png",
+          "/images/partners/Zion TR.png",
         ]}
         noDots
         speed={0}

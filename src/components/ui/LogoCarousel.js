@@ -1,15 +1,20 @@
 import React from "react";
 import Slider from "react-slick";
-import { Box, Button } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
+import useMediaQuery from "@mui/material/useMediaQuery";
+
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 const LogoCarouselComponent = ({ images, noDots, speed }) => {
+  const theme = useTheme();
+  const isMd = useMediaQuery(theme.breakpoints.up("md"));
+
   const settings = {
     dots: noDots ? false : true,
     infinite: true,
     speed: 1500,
-    slidesToShow: 4,
+    slidesToShow: isMd ? 4 : 2,
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 1500,

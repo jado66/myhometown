@@ -8,7 +8,7 @@ import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import ListItemText from "@mui/material/ListItemText";
-import Avatar from "@mui/material/Avatar";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 import {
   boardOfDirectors,
@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 const Team = () => {
   const theme = useTheme();
   const router = useRouter();
+  const isMd = useMediaQuery(theme.breakpoints.up("md"));
 
   const goToBios = (name) => {
     const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/cs" : "";
@@ -58,7 +59,7 @@ const Team = () => {
 
       <Grid container spacing={1} justifyContent="center">
         {executiveCommittee.map((item, i) => (
-          <Grid item sm={6} md={3} key={i}>
+          <Grid item xs={6} sm={3} key={i}>
             <Box
               component={Card}
               borderRadius={3}
@@ -77,13 +78,17 @@ const Team = () => {
               }}
             >
               <CardContent
-                sx={{ display: "flex", flexDirection: "column", p: 1 }}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  p: isMd ? 1 : 0,
+                }}
               >
                 <Box
                   component="img"
                   src={item.avatar}
-                  height={160}
-                  width={160}
+                  height={isMd ? 160 : 140}
+                  width={isMd ? 160 : 140}
                   variant="square"
                   sx={{
                     mx: "auto",
@@ -133,7 +138,7 @@ const Team = () => {
 
       <Grid container spacing={1} justifyContent="center">
         {boardOfDirectors.map((item, i) => (
-          <Grid item sm={6} md={3} key={i}>
+          <Grid item xs={6} sm={3} key={i}>
             <Box
               component={Card}
               borderRadius={3}
@@ -153,13 +158,17 @@ const Team = () => {
               }}
             >
               <CardContent
-                sx={{ display: "flex", flexDirection: "column", p: 1 }}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  p: isMd ? 1 : 0,
+                }}
               >
                 <Box
                   component="img"
                   src={item.avatar}
-                  height={160}
-                  width={160}
+                  height={isMd ? 160 : 140}
+                  width={isMd ? 160 : 140}
                   variant="square"
                   sx={{
                     mx: "auto",
