@@ -31,14 +31,14 @@ export const pages = () => {
         //   title: 'Email Communications',
         //   href:  rootUrl+'/tools/email',
         // },
-        // {
-        //   title: 'SMS Communications',
-        //   href:  rootUrl+'/tools/sms',
-        // },
-        // {
-        //   title: 'Give Butter Campaigns',
-        //   href: '/maintenance',
-        // },
+        {
+          title: "Texting",
+          href: rootUrl + "/admin-dashboard/tools/sms",
+        },
+        {
+          title: "Contact Directory",
+          href: rootUrl + "/admin-dashboard/tools/directory",
+        },
       ],
     },
     {
