@@ -30,7 +30,7 @@ const Home = () => {
   return (
     <>
       <ResponsiveVideoBanner
-        src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Banner 2 MHT 3440X1000.webm"
+        src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/uploads/834c2c3b-38ae-4e87-9a1d-8b4f9ced2d1c-Banner+2+MHT+3440X1000+w+text.m4v"
         noMusic
         noTop
       />
@@ -53,7 +53,7 @@ const Home = () => {
           </Typography>
         </Typography>
       </Box>
-      <Grid
+      {/* <Grid
         item
         xs={12}
         display="flex"
@@ -84,7 +84,7 @@ const Home = () => {
         >
           Education Enhanced
         </Typography>
-      </Grid>
+      </Grid> */}
       {isMd ? (
         <>
           <Grid

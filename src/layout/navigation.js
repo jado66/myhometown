@@ -32,12 +32,12 @@ export const pages = () => {
         //   href:  rootUrl+'/tools/email',
         // },
         // {
-        //   title: 'SMS Communications',
-        //   href:  rootUrl+'/tools/sms',
+        //   title: "Texting",
+        //   href: rootUrl + "/admin-dashboard/tools/sms",
         // },
         // {
-        //   title: 'Give Butter Campaigns',
-        //   href: '/maintenance',
+        //   title: "Contact Directory",
+        //   href: rootUrl + "/admin-dashboard/tools/directory",
         // },
       ],
     },

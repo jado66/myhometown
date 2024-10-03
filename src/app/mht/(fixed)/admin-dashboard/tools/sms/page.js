@@ -1,13 +1,13 @@
 "use client";
 import React from "react";
-import { Container } from "@mui/material";
+import { Grid, Card } from "@mui/material";
 import BulkSimpleTexting from "./components/BulkSimpleTexting";
 
 const SendSMS = () => {
   return (
-    <Container maxWidth="sm" sx={{ my: 10 }}>
+    <Grid container item sm={12} display="flex" sx={{ position: "relative" }}>
       <BulkSimpleTexting />
-    </Container>
+    </Grid>
   );
 };
 

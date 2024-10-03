@@ -2,10 +2,21 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import Button from "@mui/material/Button";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-const BackButton = ({ href, text = "Back", ...props }) => {
+const BackButton = ({
+  href,
+  text = "Back",
+  top = "64px",
+  onClick,
+  ...props
+}) => {
   const router = useRouter();
 
   const handleClick = () => {
+    if (onClick) {
+      onClick();
+      return;
+    }
+
     if (href) {
       router.push(href);
     } else {
@@ -20,7 +31,7 @@ const BackButton = ({ href, text = "Back", ...props }) => {
       sx={{
         marginBottom: "1rem",
         position: "absolute",
-        top: "64px",
+        top: top,
         left: 0,
         marginLeft: 6,
         marginTop: 2,
