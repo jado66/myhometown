@@ -58,7 +58,6 @@ export default function TranslationTyper() {
     }
 
     let i = 0;
-    setDisplayedText("");
     const typing = setInterval(() => {
       if (i < text.length) {
         setDisplayedText((prev) => prev + text[i]);
@@ -84,6 +83,7 @@ export default function TranslationTyper() {
           });
           const data = await response.json();
           setTranslatedText(data.translatedText);
+          setDisplayedText(""); // Clear the displayed text before typing
           typeText(data.translatedText);
         } catch (error) {
           console.error("Translation error:", error);
