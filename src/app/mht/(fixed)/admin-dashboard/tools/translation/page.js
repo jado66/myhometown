@@ -1,15 +1,6 @@
 "use client";
-
-import { useState, useEffect, useCallback } from "react";
-import {
-  TextField,
-  Card,
-  CardContent,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-} from "@mui/material";
+import React, { useState, useEffect, useCallback } from "react";
+import { TextField, Card, CardContent } from "@mui/material";
 import { styled } from "@mui/system";
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -21,11 +12,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
   marginBottom: theme.spacing(2),
-}));
-
-const StyledFormControl = styled(FormControl)(({ theme }) => ({
-  marginBottom: theme.spacing(2),
-  minWidth: 120,
+  textTransform: "capitalize",
 }));
 
 const useDebounce = (value, delay) => {
@@ -46,29 +33,22 @@ const useDebounce = (value, delay) => {
 
 export default function TranslationTyper() {
   const [inputText, setInputText] = useState("");
-  const [translatedText, setTranslatedText] = useState("");
-  const [displayedText, setDisplayedText] = useState("");
-  const [targetLanguage, setTargetLanguage] = useState("es");
+  const [translations, setTranslations] = useState({
+    spanish: "",
+    portuguese: "",
+    filipino: "",
+  });
+  const [displayedTexts, setDisplayedTexts] = useState({
+    spanish: "",
+    portuguese: "",
+    filipino: "",
+  });
+  const [typingIndices, setTypingIndices] = useState({
+    spanish: 0,
+    portuguese: 0,
+    filipino: 0,
+  });
   const debouncedInputText = useDebounce(inputText, 500);
-
-  const typeText = useCallback((text) => {
-    if (!text) {
-      setDisplayedText("");
-      return;
-    }
-
-    let i = 0;
-    const typing = setInterval(() => {
-      if (i < text.length) {
-        setDisplayedText((prev) => prev + text[i]);
-        i++;
-      } else {
-        clearInterval(typing);
-      }
-    }, 25);
-
-    return () => clearInterval(typing);
-  }, []);
 
   useEffect(() => {
     const translate = async () => {
@@ -79,66 +59,101 @@ export default function TranslationTyper() {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ text: debouncedInputText, targetLanguage }),
+            body: JSON.stringify({ text: debouncedInputText }),
           });
           const data = await response.json();
-          setTranslatedText(data.translatedText);
-          setDisplayedText(""); // Clear the displayed text before typing
-          typeText(data.translatedText);
+          setTranslations(data);
+          setDisplayedTexts({ spanish: "", portuguese: "", filipino: "" });
+          setTypingIndices({ spanish: 0, portuguese: 0, filipino: 0 });
         } catch (error) {
           console.error("Translation error:", error);
-          setTranslatedText("Error in translation");
-          setDisplayedText("Error in translation");
+          const errorMessage = "Error in translation";
+          setTranslations({
+            spanish: errorMessage,
+            portuguese: errorMessage,
+            filipino: errorMessage,
+          });
+          setDisplayedTexts({
+            spanish: errorMessage,
+            portuguese: errorMessage,
+            filipino: errorMessage,
+          });
         }
       } else {
-        setTranslatedText("");
-        setDisplayedText("");
+        setTranslations({ spanish: "", portuguese: "", filipino: "" });
+        setDisplayedTexts({ spanish: "", portuguese: "", filipino: "" });
+        setTypingIndices({ spanish: 0, portuguese: 0, filipino: 0 });
       }
     };
     translate();
-  }, [debouncedInputText, targetLanguage, typeText]);
+  }, [debouncedInputText]);
+
+  useEffect(() => {
+    const typingInterval = setInterval(() => {
+      let allCompleted = true;
+      setTypingIndices((prevIndices) => {
+        const newIndices = { ...prevIndices };
+        Object.keys(newIndices).forEach((lang) => {
+          if (newIndices[lang] < (translations[lang]?.length || 0)) {
+            newIndices[lang]++;
+            allCompleted = false;
+          }
+        });
+        return newIndices;
+      });
+
+      setDisplayedTexts((prevTexts) => {
+        const newTexts = { ...prevTexts };
+        Object.keys(newTexts).forEach((lang) => {
+          newTexts[lang] =
+            translations[lang]?.slice(0, typingIndices[lang]) || "";
+        });
+        return newTexts;
+      });
+
+      if (allCompleted) {
+        clearInterval(typingInterval);
+      }
+    }, 25);
+
+    return () => clearInterval(typingInterval);
+  }, [translations, typingIndices]);
 
   return (
     <StyledCard>
       <CardContent>
-        <StyledFormControl fullWidth>
-          <InputLabel id="language-select-label">Target Language</InputLabel>
-          <Select
-            labelId="language-select-label"
-            id="language-select"
-            value={targetLanguage}
-            label="Target Language"
-            onChange={(e) => setTargetLanguage(e.target.value)}
-          >
-            <MenuItem value="es">Spanish</MenuItem>
-            <MenuItem value="fr">French</MenuItem>
-            <MenuItem value="de">German</MenuItem>
-            <MenuItem value="it">Italian</MenuItem>
-            <MenuItem value="pt">Portuguese</MenuItem>
-            <MenuItem value="ch">Chinese</MenuItem>
-          </Select>
-        </StyledFormControl>
         <StyledTextField
           fullWidth
           multiline
           rows={4}
+          label="Your Text"
           variant="outlined"
           placeholder="Enter text to translate..."
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           inputProps={{ "aria-label": "Text to translate" }}
         />
-        <StyledTextField
-          fullWidth
-          multiline
-          rows={4}
-          variant="outlined"
-          value={displayedText}
-          InputProps={{
-            readOnly: true,
-          }}
-          inputProps={{ "aria-label": "Translated text" }}
-        />
+        {Object.entries(displayedTexts).map(([language, text]) => {
+          // Substitute "filipino" with "Tagalog"
+
+          const languageLabel = language === "filipino" ? "Tagalog" : language;
+
+          return (
+            <StyledTextField
+              key={language}
+              fullWidth
+              multiline
+              rows={4}
+              variant="outlined"
+              value={text}
+              InputProps={{
+                readOnly: true,
+              }}
+              label={languageLabel}
+              inputProps={{ "aria-label": `${language} translation` }}
+            />
+          );
+        })}
       </CardContent>
     </StyledCard>
   );
