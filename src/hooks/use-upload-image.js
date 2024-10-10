@@ -21,6 +21,7 @@ export const useImageUpload = (setUrl) => {
             toastId: "image-uploaded-successfully", // Your unique ID for the toast
           }
         );
+
         setUrl(result.url);
       }
     } else {

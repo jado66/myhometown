@@ -237,6 +237,15 @@ const Page = ({ params }) => {
     });
   };
 
+  const editCommunityImage = (index, newUrl) => {
+    setCityData((prevData) => ({
+      ...prevData,
+      communities: prevData.communities.map((community, i) =>
+        i === index ? { ...community, imageSrc: newUrl } : community
+      ),
+    }));
+  };
+
   useEffect(() => {
     if (city) {
       setCityData(city);
@@ -425,6 +434,23 @@ const Page = ({ params }) => {
         </Grid>
 
         <Grid container spacing={5} padding={3}>
+          {cityData?.communities &&
+            cityData?.communities.map((community, index) => (
+              <CommunityCard
+                isEdit
+                setUrl={(newUrl) => editCommunityImage(index, newUrl)}
+                key={index}
+                title={community.title + " Community "}
+                imageSrc={
+                  community.imageSrc ||
+                  "/myhometown/city-page/city-placeholder.jpg"
+                }
+                href={community.href}
+                index={index}
+              />
+            ))}
+        </Grid>
+        {/* <Grid container spacing={5} padding={3}>
           <CommunityCard
             title="Pioneer Park"
             imageSrc="/myhometown/city-page/pioneer map.webp"
@@ -443,7 +469,7 @@ const Page = ({ params }) => {
             href="./provo/dixon"
             index={2}
           />
-        </Grid>
+        </Grid> */}
       </Container>
     </>
   );
