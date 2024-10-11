@@ -245,14 +245,12 @@ const Page = ({ params }) => {
     });
   };
 
-  const onCreateSubclass = (classCategoryId, iconName, title, googleFormID) => {
+  const onCreateSubclass = (classCategoryId, data) => {
     const id = uuidv4();
 
     const newSubclass = {
-      icon: iconName,
-      title: title,
-      id: id,
-      googleFormID: googleFormID,
+      id,
+      ...data,
     };
 
     setCommunityData((prevState) => {
@@ -400,7 +398,6 @@ const Page = ({ params }) => {
   };
 
   const shiftUpSubclass = (classCategoryId, subclassId) => {
-    alert(JSON.stringify({ classCategoryId, subclassId }));
     setCommunityData((prevState) => {
       const updatedClasses = prevState.classes.map((classCategory) => {
         if (classCategory.id === classCategoryId) {
@@ -917,6 +914,8 @@ const Page = ({ params }) => {
           isEdit
         />
         <Divider sx={{ my: 5 }} />
+
+        {/* <pre>{JSON.stringify(communityData.classes, null, 4)}</pre> */}
 
         <ClassesTreeView
           isEdit

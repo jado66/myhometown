@@ -92,32 +92,33 @@ const Page = ({ params }) => {
             />
           ))}
         </Grid>
+        {city.content.video.mediaSrc && (
+          <Grid
+            item
+            xs={12}
+            px={4}
+            mb={4}
+            display="flex"
+            justifyContent="center"
+            flexDirection="column"
+          >
+            <Typography variant="h5" textAlign="center" gutterBottom>
+              {city.content.video.title}
+            </Typography>
 
-        <Grid
-          item
-          xs={12}
-          px={4}
-          mb={4}
-          display="flex"
-          justifyContent="center"
-          flexDirection="column"
-        >
-          <Typography variant="h5" textAlign="center" gutterBottom>
-            {city.content.video.title}
-          </Typography>
-
-          <CardMedia
-            component="video"
-            poster={city.content.video.mediaThumbnail}
-            controls
-            playsInline
-            sx={{
-              borderRadius: "12px",
-              boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
-            }}
-            src={city.content.video.mediaSrc}
-          />
-        </Grid>
+            <CardMedia
+              component="video"
+              poster={city.content.video.mediaThumbnail}
+              controls
+              playsInline
+              sx={{
+                borderRadius: "12px",
+                boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+              }}
+              src={city.content.video.mediaSrc}
+            />
+          </Grid>
+        )}
 
         <Divider sx={{ my: 4, mx: 4 }} />
 

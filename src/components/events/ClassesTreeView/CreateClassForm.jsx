@@ -34,10 +34,19 @@ export const CreateClassForm = ({
   const [icon, setIcon] = useState(initialData ? initialData.icon : "None");
   const [isOnlyClass, setIsOnlyClass] = useState(false);
   const [contentType, setContentType] = useState(
-    initialData.contentType || "form"
+    initialData?.contentType || "form"
   );
-  const [headerImage, setHeaderImage] = useState(initialData.headerImage || "");
-  const [information, setInformation] = useState(initialData.information || "");
+  const [headerImage, setHeaderImage] = useState(
+    initialData?.headerImage || ""
+  );
+  const [information, setInformation] = useState(
+    initialData?.information || ""
+  );
+
+  const handleTitleChange = (e) => {
+    e.stopPropagation();
+    setTitle(e.target.value);
+  };
 
   useEffect(() => {
     if (isOnlyClass) {
@@ -58,6 +67,10 @@ export const CreateClassForm = ({
   const googleFormId = extractGoogleFormId(googleFormIframe);
 
   const isFormValid = () => {
+    if (!title) {
+      return false;
+    }
+
     if (contentType === "form") {
       return (
         title.length > 0 &&
@@ -175,10 +188,13 @@ export const CreateClassForm = ({
               size="small"
               value={title}
               label="Class Title"
-              onChange={(e) => setTitle(e.target.value)}
-              error={title.length > MAX_TITLE_LENGTH}
+              onChange={(e) => handleTitleChange(e)}
+              onKeyDown={(e) => {
+                e.stopPropagation();
+              }}
+              error={title?.length > MAX_TITLE_LENGTH}
               helperText={
-                title.length > MAX_TITLE_LENGTH ? "Title is too long." : ""
+                title?.length > MAX_TITLE_LENGTH ? "Title is too long." : ""
               }
               disabled={isOnlyClass}
             />

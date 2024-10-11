@@ -1,8 +1,8 @@
-import React from 'react';
-import { useTheme } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
-import Container from '@/components/util/Container';
+import React from "react";
+import { useTheme } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
+import Container from "@/components/util/Container";
 import {
   About,
   Hero,
@@ -10,7 +10,7 @@ import {
   PremiumFeatures,
   Reviews,
   Partners,
-} from './components';
+} from "./components";
 
 const Software = () => {
   const theme = useTheme();
@@ -23,25 +23,25 @@ const Software = () => {
       <Container>
         <Features />
       </Container>
-      <Box bgcolor={theme.palette.alternate.main} position={'relative'}>
+      <Box bgcolor={theme.palette.alternate.main} position={"relative"}>
         <Container position="relative" zIndex={2}>
           <About />
         </Container>
         <Box
-          component={'svg'}
+          component={"svg"}
           preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
           x="0px"
           y="0px"
           viewBox="0 0 1921 273"
           sx={{
-            position: 'absolute',
-            width: '100%',
+            position: "absolute",
+            width: "100%",
             left: 0,
             bottom: 0,
             right: 0,
             zIndex: 1,
-            height: '35%',
+            height: "35%",
           }}
         >
           <polygon

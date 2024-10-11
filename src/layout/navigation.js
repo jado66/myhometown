@@ -61,11 +61,11 @@ export const pages = () => {
       pages: [
         {
           title: "Bug Report",
-          href: "/dev/user-testing",
+          href: rootUrl + "/bug-report",
         },
         {
           title: "Request a Feature",
-          href: "/dev/user-testing",
+          href: rootUrl + "/feature-request",
         },
       ],
     },
