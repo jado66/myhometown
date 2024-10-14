@@ -175,7 +175,11 @@ const Page = ({ params }) => {
                 community.imageSrc ||
                 "/myhometown/city-page/city-placeholder.jpg"
               }
-              href={community.href}
+              href={
+                community.visibility === "true"
+                  ? community.href
+                  : `../maintenance`
+              }
               index={index}
             />
           ))}
