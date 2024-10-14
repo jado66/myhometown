@@ -38,7 +38,7 @@ export const DaysOfServiceContent = () => {
           component="video"
           controls
           playsInline
-          poster="images/Days of Service Video Thumbnail.webp"
+          poster="https://myhometown-bucket.s3.us-west-1.amazonaws.com/uploads/DOS_Thumbnail.webp"
           sx={{
             mx: "auto",
             width: "100%",
