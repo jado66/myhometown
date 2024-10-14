@@ -13,14 +13,14 @@ import Divider from "@mui/material/Divider";
 import MyHometownLogo from "@/assets/svg/logos/MyHometown";
 import useManageCities from "@/hooks/use-manage-cities";
 import LanguageIcon from "@mui/icons-material/Language";
-import { ExpandLess, Translate } from "@mui/icons-material";
-import { useTranslations } from "next-intl";
+import { Translate } from "@mui/icons-material";
 import { useRouter, usePathname } from "next/navigation";
 import Cookies from "js-cookie";
-import ExpandMore from "@mui/icons-material/ExpandMore";
-import { cityStrings } from "@/constants/cities";
+import { useCommunityList } from "@/hooks/useCommunityList";
 
 const Topbar = ({ onSidebarOpen }) => {
+  const { communities } = useCommunityList();
+
   const { groupedCityStrings } = useManageCities(null, true);
 
   const [citiesAnchorEl, setCitiesAnchorEl] = useState(null);
@@ -52,19 +52,6 @@ const Topbar = ({ onSidebarOpen }) => {
     setSearch(event.target.value);
     event.stopPropagation();
   };
-
-  let filteredGroupedCityStrings = Object.fromEntries(
-    Object.entries(groupedCityStrings)
-      .map(([state, cities]) => {
-        return [
-          state,
-          cities
-            .filter((city) => city.toLowerCase().includes(search.toLowerCase()))
-            .sort(),
-        ];
-      })
-      .filter(([state, cities]) => cities.length > 0)
-  );
 
   const getNavigationPath = (basePath, newSection) => {
     const parts = basePath.split("/").filter(Boolean);
@@ -151,12 +138,6 @@ const Topbar = ({ onSidebarOpen }) => {
               }}
             >
               Communities
-              {/* {
-                !citiesAnchorEl ?
-                <ExpandMore/>
-                :
-                <ExpandLess/>
-              } */}
             </Link>
             <Menu
               id="cities-menu"
@@ -176,7 +157,29 @@ const Topbar = ({ onSidebarOpen }) => {
                 },
               }}
             >
-              <MenuItem
+              {/* <pre>{JSON.stringify(communities, null, 2)}</pre> */}
+              {communities.map((community, index) => (
+                <MenuItem
+                  key={index}
+                  onClick={handleCitiesClose}
+                  component="a"
+                  sx={{
+                    color: "black",
+                    fontWeight: "bold",
+                    "&:hover": {
+                      color: "#3A3B3C",
+                    },
+                  }}
+                  href={
+                    community.visibility === "true"
+                      ? rootUrl + "/utah/" + community.href.replace(/^\.\//, "")
+                      : rootUrl + "/maintenance"
+                  }
+                >
+                  {community.title} Community
+                </MenuItem>
+              ))}
+              {/* <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
                 sx={{
@@ -189,9 +192,9 @@ const Topbar = ({ onSidebarOpen }) => {
                 href={rootUrl + `/utah/provo/pioneer-park`}
               >
                 Pioneer Park
-              </MenuItem>
+              </MenuItem> */}
 
-              <MenuItem
+              {/* <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
                 sx={{
@@ -204,8 +207,8 @@ const Topbar = ({ onSidebarOpen }) => {
                 href={rootUrl + `/utah/provo/south-freedom`}
               >
                 South Freedom
-              </MenuItem>
-              <MenuItem
+              </MenuItem> */}
+              {/* <MenuItem
                 onClick={handleCitiesClose}
                 component="a"
                 sx={{
@@ -218,7 +221,7 @@ const Topbar = ({ onSidebarOpen }) => {
                 href={rootUrl + `/utah/provo/dixon`}
               >
                 Dixon
-              </MenuItem>
+              </MenuItem> */}
             </Menu>
           </Box>
 

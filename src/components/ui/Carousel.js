@@ -1,6 +1,14 @@
 import React, { useRef } from "react";
 import Slider from "react-slick";
-import { Box, Typography, Container, Paper, Button } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Container,
+  Paper,
+  Button,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import UploadImage from "../util/UploadImage";
@@ -16,11 +24,15 @@ const CarouselComponent = ({
   noDots,
   speed,
 }) => {
+  const theme = useTheme();
+
+  const isMd = useMediaQuery(theme.breakpoints.up("md"));
+
   const settings = {
     dots: noDots ? false : true,
     infinite: true,
     speed: speed ? speed : 500,
-    slidesToShow: 3,
+    slidesToShow: isMd ? 3 : 1,
     slidesToScroll: 1,
     autoplay: !isEdit,
     autoplaySpeed: 3000,

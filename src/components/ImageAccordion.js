@@ -4,11 +4,10 @@ import {
   AccordionSummary,
   AccordionDetails,
   Typography,
-  Divider,
+  Box,
   Fade,
   useTheme,
 } from "@mui/material";
-
 import { styled } from "@mui/system";
 import StyledTextField from "./MyHometown/PageComponents/StyledTextField";
 
@@ -35,6 +34,8 @@ export const ImageAccordion = ({
         right: right ? 0 : "",
         borderRadius: rounded ? 3 : 0,
         zIndex: 3,
+        display: "flex",
+        flexDirection: "column",
       }}
       slotProps={{ transition: { timeout: 400 } }}
       slots={{ transition: Fade }}
@@ -51,20 +52,18 @@ export const ImageAccordion = ({
           textAlign="center"
           sx={{
             color: contentColor,
-
-            fontSize: { xs: "1rem", md: "auto" }, // Adjust the font size as needed
+            fontSize: { xs: "1rem", md: "auto" },
           }}
           onClick={isEdit ? (e) => e.stopPropagation() : undefined}
         >
           {isEdit ? (
             <StyledTextField
-              variant="outlined" // Assuming you meant 'outlined' instead of 'h6'
+              variant="outlined"
               sx={{
                 color: "black",
                 fontSize: "larger",
                 mt: "auto",
                 mb: "auto",
-                fontSize: "larger",
               }}
               value={title}
               onClick={(e) => e.stopPropagation()}
@@ -75,22 +74,24 @@ export const ImageAccordion = ({
           )}
         </AccordionTitle>
       </AccordionSummary>
-      <AccordionDetails
-        sx={{ px: 3, pt: 0 }}
-        PaperProps={{
-          sx: { flex: 1, position: "relative", overflow: "auto" },
+      <AccordionDetailsStyled
+        sx={{
+          px: 3,
+          pt: 0,
+          overflow: "auto",
+          flexGrow: 1,
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        {/* <DividerStyled /> */}
         {isEdit ? (
           <StyledTextField
-            variant="h6" // Assuming you meant 'outlined' instead of 'h6'
+            variant="outlined"
             sx={{
               color: "black",
               fontSize: "larger",
               mt: "auto",
               mb: "auto",
-              fontSize: "larger",
             }}
             value={content}
             onClick={(e) => e.stopPropagation()}
@@ -103,34 +104,29 @@ export const ImageAccordion = ({
         )}
 
         {cornerIcon && (
-          <SvgIconWrapper right={right}>{cornerIcon}</SvgIconWrapper>
+          <>
+            <Box sx={{ height: "20px" }} />
+
+            <SvgIconWrapper right={right}>{cornerIcon}</SvgIconWrapper>
+          </>
         )}
-      </AccordionDetails>
+      </AccordionDetailsStyled>
     </AccordionStyled>
   );
 };
 
 const SvgIconWrapper = styled("div")(({ right }) => ({
   position: "absolute",
-  bottom: "16px", // Adjust this value as necessary
-  left: right ? "auto" : "16px", // Condition for left positioning
-  right: right ? "16px" : "auto", // Condition for right positioning
+  bottom: "16px",
+  left: right ? "auto" : "16px",
+  right: right ? "16px" : "auto",
 }));
-
-const DividerStyled = styled(Divider)({
-  backgroundColor: "black",
-  width: "100%",
-  marginTop: 0,
-  borderWidth: "3px !important",
-  marginBottom: "1em",
-});
 
 const AccordionStyled = styled(Accordion)(({ theme }) => ({
   position: "absolute",
-  display: "flex",
-  flexDirection: "column",
   bottom: 0,
   width: "100%",
+  display: "flex",
   [theme.breakpoints.up("sm")]: {
     width: "75%",
   },
@@ -139,21 +135,70 @@ const AccordionStyled = styled(Accordion)(({ theme }) => ({
   [theme.breakpoints.up("md")]: {
     maxWidth: "50%",
   },
-
   "&.Mui-expanded": {
     height: "300px",
     [theme.breakpoints.up("sm")]: {
       height: "375px",
     },
+    display: "flex",
+    paddingBottom: "25px",
   },
   "&:not(.Mui-expanded)": {
     "& .MuiAccordionDetails-root": {
       display: "none",
     },
   },
+  "& .MuiAccordion-region": {
+    overflow: "auto",
+  },
   "&::before": {
     display: "none",
   },
+  "& .MuiAccordionDetails-root": {
+    overflow: "auto !important",
+  },
+  // Webkit browsers (Chrome, Safari, newer versions of Edge)
+  "&::-webkit-scrollbar": {
+    width: "6px",
+    background: "transparent", // Hide the background
+  },
+  "&::-webkit-scrollbar-track": {
+    background: "transparent", // Hide the track
+  },
+  "&::-webkit-scrollbar-thumb": {
+    background: "white", // Semi-transparent black
+    borderRadius: "3px",
+  },
+  "&::-webkit-scrollbar-thumb:hover": {
+    background: "rgba(0, 0, 0, 0.7)", // Darker on hover
+  },
+  "&::-webkit-scrollbar-button": {
+    display: "none", // Remove arrows
+  },
+
+  // Firefox
+  scrollbarWidth: "thin",
+  scrollbarColor: "white transparent",
+
+  // Edge and IE
+  "-ms-overflow-style": "none", // Hide default scrollbar for IE/Edge
+
+  // Hide scrollbar when not in use
+  "&::-webkit-scrollbar-thumb": {
+    background: "white",
+    borderRadius: "3px",
+    visibility: "hidden",
+  },
+  "&:hover::-webkit-scrollbar-thumb": {
+    visibility: "visible",
+  },
+}));
+
+const AccordionDetailsStyled = styled(AccordionDetails)(({ theme }) => ({
+  flexGrow: 1,
+  display: "flex",
+  flexDirection: "column",
+  overflow: "auto",
 }));
 
 const AccordionTitle = styled(Typography)({

@@ -16,7 +16,7 @@ import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import ArtsIcon from "@/assets/svg/icons/ArtsIcon";
 
 export const ExampleIcons = {
-  None: <div style={{ height: "30px" }}>No Icon</div>,
+  None: <div style={{ height: "30px", width: "35px" }}> </div>,
   BrushIcon: <ArtsIcon />,
   TranslateIcon: <LanguageIcon />,
   Bear: <BearIcon />,

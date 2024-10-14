@@ -12,6 +12,7 @@ import { pages } from "../navigation";
 import Container from "@/components/util/Container";
 import Head from "next/head";
 import { Grid } from "@mui/material";
+import { CommunityListProvider } from "@/contexts/CommuntyListProvider";
 
 const HideOnScroll = ({ children }) => {
   const trigger = useScrollTrigger();
@@ -56,79 +57,81 @@ const CityLayout = ({
 
   return (
     <>
-      <Head>
-        {/* Change metadata dynamically */}
-        <title>{metadata.title}</title>
-        <meta name="description" content={metadata.description} />
-        <link
-          rel="apple-touch-icon"
-          sizes="180x180"
-          href="/apple-touch-icon.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="32x32"
-          href="/favicon-32x32.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="16x16"
-          href="/favicon-16x16.png"
-        />
-        <link rel="manifest" href="/site.webmanifest" />
-        <meta name="msapplication-TileColor" content="#f3fbfb" />
-        <meta name="theme-color" content="#ffffff" />
-      </Head>
+      <CommunityListProvider>
+        <Head>
+          {/* Change metadata dynamically */}
+          <title>{metadata.title}</title>
+          <meta name="description" content={metadata.description} />
+          <link
+            rel="apple-touch-icon"
+            sizes="180x180"
+            href="/apple-touch-icon.png"
+          />
+          <link
+            rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/favicon-32x32.png"
+          />
+          <link
+            rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/favicon-16x16.png"
+          />
+          <link rel="manifest" href="/site.webmanifest" />
+          <meta name="msapplication-TileColor" content="#f3fbfb" />
+          <meta name="theme-color" content="#ffffff" />
+        </Head>
 
-      <div style={{ backgroundColor: "#fff" }}>
-        {/* <HideOnScroll> */}
-        <AppBar
-          position={"fixed"}
-          sx={{
-            backgroundColor: "#a16faf",
-          }}
-          elevation={1}
-        >
-          <Container
-            paddingY={{ xs: 1 / 2, sm: 1 }}
-            paddingX={{ xs: 8, lg: 0 }}
-            maxWidth={{ lg: "md", xl: "lg" }}
-          >
-            <Topbar onSidebarOpen={handleSidebarOpen} />
-          </Container>
-        </AppBar>
-        {/* </HideOnScroll> */}
-        <Sidebar
-          onClose={handleSidebarClose}
-          open={openSidebar}
-          variant="temporary"
-          pages={pages}
-        />
-        <main>
-          <Box height={{ xs: 56, md: 48 }} />
-          <Grid
-            container
+        <div style={{ backgroundColor: "#fff" }}>
+          {/* <HideOnScroll> */}
+          <AppBar
+            position={"fixed"}
             sx={{
-              mx: "auto",
-              boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
-              maxWidth: {
-                lg: "md",
-                xl: "lg",
-              },
+              backgroundColor: "#a16faf",
             }}
+            elevation={1}
           >
-            {children}
+            <Container
+              paddingY={{ xs: 1 / 2, sm: 1 }}
+              paddingX={{ xs: 8, lg: 0 }}
+              maxWidth={{ lg: "md", xl: "lg" }}
+            >
+              <Topbar onSidebarOpen={handleSidebarOpen} />
+            </Container>
+          </AppBar>
+          {/* </HideOnScroll> */}
+          <Sidebar
+            onClose={handleSidebarClose}
+            open={openSidebar}
+            variant="temporary"
+            pages={pages}
+          />
+          <main>
+            <Box height={{ xs: 56, md: 48 }} />
+            <Grid
+              container
+              sx={{
+                mx: "auto",
+                boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
+                maxWidth: {
+                  lg: "md",
+                  xl: "lg",
+                },
+              }}
+            >
+              {children}
 
-            <Grid xs={12}>
-              <Divider sx={{ my: 2 }} />
+              <Grid xs={12}>
+                <Divider sx={{ my: 2 }} />
+              </Grid>
+              <Footer />
+              <Container paddingY={4}></Container>
             </Grid>
-            <Footer />
-            <Container paddingY={4}></Container>
-          </Grid>
-        </main>
-      </div>
+          </main>
+        </div>
+      </CommunityListProvider>
     </>
   );
 };

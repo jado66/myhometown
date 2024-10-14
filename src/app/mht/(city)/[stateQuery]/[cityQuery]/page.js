@@ -15,11 +15,22 @@ import CarouselComponent from "@/components/ui/Carousel";
 import { ImageWithAccordion } from "@/components/MyHometown/PageComponents/ImageWithAccordion";
 import { ImageDescriptionBlock } from "@/components/MyHometown/PageComponents/ImageDescriptionBlock";
 import { CommunityCard } from "@/components/MyHometown/PageComponents/CommunityCard";
+import { useEffect } from "react";
+import { useCommunityList } from "@/hooks/useCommunityList";
 
 const Page = ({ params }) => {
   const { stateQuery, cityQuery } = params;
 
   const { city, hasLoaded } = useCity(cityQuery, stateQuery, cityTemplate);
+
+  const { setCommunities } = useCommunityList();
+
+  useEffect(() => {
+    if (city?.communities) {
+      // alert("city.communities: " + JSON.stringify(city.communities));
+      setCommunities(city.communities);
+    }
+  }, [city]);
 
   if (!hasLoaded) {
     return (
@@ -92,6 +103,7 @@ const Page = ({ params }) => {
             />
           ))}
         </Grid>
+
         {city.content.video.mediaSrc && (
           <Grid
             item
