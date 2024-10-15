@@ -1,6 +1,7 @@
 "use client";
 import {
   Box,
+  Breadcrumbs,
   CardMedia,
   Container,
   Divider,
@@ -17,6 +18,7 @@ import { ImageDescriptionBlock } from "@/components/MyHometown/PageComponents/Im
 import { CommunityCard } from "@/components/MyHometown/PageComponents/CommunityCard";
 import { useEffect } from "react";
 import { useCommunityList } from "@/hooks/useCommunityList";
+import Link from "next/link";
 
 const Page = ({ params }) => {
   const { stateQuery, cityQuery } = params;
@@ -78,6 +80,35 @@ const Page = ({ params }) => {
   return (
     <>
       <Container sx={{ paddingTop: 3, marginBottom: 2 }}>
+        <Breadcrumbs
+          separator="-"
+          aria-label="breadcrumb"
+          sx={{ mx: "auto", width: "fit-content" }}
+        >
+          <Link
+            color="inherit"
+            href="/"
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            Home
+          </Link>
+
+          <Typography
+            variant="body1"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              textTransform: "capitalize",
+              fontWeight: "bold",
+              color: "black",
+            }}
+          >
+            {cityQuery.replaceAll("-", " ")} City
+          </Typography>
+        </Breadcrumbs>
+
+        <Divider sx={{ my: 2 }} />
+
         <Typography variant="h2" align="center" sx={{ color: "black" }}>
           myHometown{" "}
           <span style={{ textTransform: "capitalize" }}>{cityName}</span>

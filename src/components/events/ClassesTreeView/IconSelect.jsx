@@ -14,6 +14,7 @@ import PianoIcon from "@/assets/svg/icons/PianoIcon";
 
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import ArtsIcon from "@/assets/svg/icons/ArtsIcon";
+import TutoringIcon from "@/assets/svg/icons/TutoringIcon";
 
 export const ExampleIcons = {
   None: <div style={{ height: "30px", width: "35px" }}> </div>,
@@ -27,6 +28,7 @@ export const ExampleIcons = {
   Community1: <CommunityService1Icon />,
   Community2: <CommunityService2Icon />,
   LifeSkills: <LifeSkillsIcon />,
+  // Tutoring: <TutoringIcon />,
   // Music: <MusicIcon />,
   Guitar: <GuitarIcon />,
   Uke: <UkeIcon />,

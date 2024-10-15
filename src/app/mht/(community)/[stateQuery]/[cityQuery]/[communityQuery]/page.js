@@ -11,6 +11,7 @@ import {
   Button,
   Link,
   Box,
+  Breadcrumbs,
 } from "@mui/material";
 import ContentEditable from "react-contenteditable";
 import { useEffect, useState, useRef } from "react";
@@ -111,6 +112,47 @@ const Page = ({ params }) => {
           text={`Back to ${cityQuery.replaceAll("-", " ")}`}
           href={`../../../${stateQuery}/${cityQuery}`}
         /> */}
+
+        <Breadcrumbs
+          separator="-"
+          aria-label="breadcrumb"
+          sx={{ mx: "auto", width: "fit-content" }}
+        >
+          <Link
+            color="inherit"
+            href="/"
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            Home
+          </Link>
+
+          <Link
+            color="inherit"
+            href={`../${cityQuery}`}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              textTransform: "capitalize",
+            }}
+          >
+            {cityQuery.replaceAll("-", " ")}
+          </Link>
+
+          <Typography
+            variant="body1"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              textTransform: "capitalize",
+              fontWeight: "bold",
+              color: "black",
+            }}
+          >
+            {communityQuery.replaceAll("-", " ")} Community
+          </Typography>
+        </Breadcrumbs>
+
+        <Divider sx={{ my: 2 }} />
 
         <Typography
           variant="h2"
