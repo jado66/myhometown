@@ -114,7 +114,6 @@ export default function Management() {
 
   return (
     <>
-      <NotResponsiveAlert sx={{ mt: 8 }} />
       <AskYesNoDialog
         {...confirmDeleteCityProps}
         open={showConfirmDeleteCity}
@@ -126,7 +125,13 @@ export default function Management() {
         initialCityState={cityToEdit}
       />
 
-      <Grid container item sm={12} display="flex" sx={{ position: "relative" }}>
+      <Grid
+        container
+        item
+        sm={12}
+        display="flex"
+        sx={{ position: "relative", mt: "48px" }}
+      >
         <BackButton />
 
         <Box marginBottom={4} width="100%">
@@ -402,22 +407,7 @@ export function SingleCity({ city, goToEditCity, handleEditCity }) {
       display="flex"
       spacing={2}
     >
-      <Grid container spacing={2} padding={3}>
-        {city.communities &&
-          city.communities.map((community, index) => (
-            <CommunityCard
-              key={community.name}
-              community={community}
-              city={city.name}
-              gridProps={{ xs: 12, sm: communityCardSize }}
-              index={index}
-            />
-          ))}
-      </Grid>
-
-      <EventsCalendar events={city.events} onSelectEvent={() => {}} />
-
-      <Grid item xs={12} sm={6} sx={{ width: 1 }}>
+      <Grid item xs={12} sm={6} sx={{ width: 1, mb: 3 }}>
         <Box
           display="block"
           width="100%"
@@ -435,6 +425,7 @@ export function SingleCity({ city, goToEditCity, handleEditCity }) {
               width: "50%",
               mx: "auto",
               height: "100%",
+
               borderRadius: 3,
               cursor: "pointer",
               display: "flex",
@@ -444,31 +435,70 @@ export function SingleCity({ city, goToEditCity, handleEditCity }) {
             onClick={() => goToEditCity(city)}
           >
             <CardContent>
-              <Typography variant="h6" fontWeight={500} align="left">
-                {city.name}
-              </Typography>
-              <Typography align="left" variant="body2" color="textSecondary">
-                Description
+              <Typography variant="h6" fontWeight={500} align="center">
+                MyHometown {city.name}
               </Typography>
             </CardContent>
-            <CardActions sx={{ justifyContent: "flex-end" }}>
+            <CardActions>
               <Button
-                size="small"
+                sx={{ mx: "auto", mb: 2 }}
+                variant="outlined"
+                color="primary"
+                size="large"
                 href={`/edit/${city.state.toLowerCase()}/${city.name
                   .toLowerCase()
                   .replaceAll(/\s/g, "-")}`}
               >
-                Edit
+                Edit City Page
+              </Button>
+              <Button
+                sx={{ mx: "auto", mb: 2 }}
+                variant="outlined"
+                color="primary"
+                size="large"
+                href={`/${city.state.toLowerCase()}/${city.name
+                  .toLowerCase()
+                  .replaceAll(/\s/g, "-")}`}
+              >
+                View City Page
               </Button>
             </CardActions>
           </Card>
         </Box>
       </Grid>
 
-      {/* Form for adding volunteer hours */}
-      <Grid item xs={12} mt={4}>
-        <AddCityStatsForm city={city} updateCityStats={updateCityStats} />
+      <Divider width="100%" sx={{ mx: "auto", mb: 3 }} />
+
+      <Typography
+        variant="h4"
+        component="h2"
+        color="primary"
+        textAlign="center"
+      >
+        {city.name}&apos;s Communities
+      </Typography>
+
+      <Grid container spacing={2} padding={3}>
+        {city.communities &&
+          city.communities.map((community, index) => (
+            <CommunityCard
+              key={community.name}
+              community={community}
+              city={city.name}
+              gridProps={{ xs: 12, sm: communityCardSize }}
+              index={index}
+            />
+          ))}
       </Grid>
+
+      <Divider width="100%" sx={{ mx: "auto", mb: 3 }} />
+
+      <EventsCalendar events={city.events} onSelectEvent={() => {}} />
+
+      {/* Form for adding volunteer hours */}
+      {/* <Grid item xs={12} mt={4}>
+        <AddCityStatsForm city={city} updateCityStats={updateCityStats} />
+      </Grid> */}
     </Grid>
   );
 }
