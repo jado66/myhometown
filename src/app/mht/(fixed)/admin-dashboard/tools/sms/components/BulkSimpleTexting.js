@@ -19,6 +19,7 @@ import { Send, Info, Check, Close } from "@mui/icons-material";
 import Select from "react-select";
 import BackButton from "@/components/BackButton";
 import { useSendSMS } from "@/hooks/communications/useSendSMS";
+import { toast } from "react-toastify";
 
 export default function BulkSimpleTexting() {
   const [message, setMessage] = useState("");
@@ -29,6 +30,7 @@ export default function BulkSimpleTexting() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const { sendStatus, progress, sendMessages, reset } = useSendSMS();
+  const [hasSent, setHasSent] = useState(false);
 
   useEffect(() => {
     const savedContacts = JSON.parse(localStorage.getItem("contacts")) || [];
@@ -36,6 +38,10 @@ export default function BulkSimpleTexting() {
     setContacts(savedContacts);
     setGroups(savedGroups);
   }, []);
+
+  useEffect(() => {
+    setHasSent(false);
+  }, [message, selectedRecipients]);
 
   const formatTimestamp = (timestamp) => {
     try {
@@ -104,20 +110,13 @@ export default function BulkSimpleTexting() {
       (group) => group.contacts
     );
 
-    alert(
-      JSON.stringify({
-        message,
-        recipients: expandedRecipients,
-      })
-    );
-
     try {
       await sendMessages(message, expandedRecipients);
-      setMessage("");
-      setSelectedRecipients([]);
+
+      setHasSent(true);
     } catch (error) {
       console.error("Error sending messages:", error);
-      alert("Failed to send messages: " + error.message);
+      toast.error("Failed to send messages: " + error.message);
     }
   };
 
@@ -133,6 +132,14 @@ export default function BulkSimpleTexting() {
   const handleClosePopover = () => {
     setAnchorEl(null);
     setSelectedGroup(null);
+  };
+
+  const handleNewMessage = () => {
+    setMessage("");
+    setSelectedRecipients([]);
+    setHasSent(false);
+    reset();
+    setActiveTab(0);
   };
 
   const getGroupMembers = (groupValue) => {
@@ -318,9 +325,20 @@ export default function BulkSimpleTexting() {
                   color="primary"
                   onClick={handleSend}
                   startIcon={<Send />}
+                  disabled={hasSent}
                 >
                   Send
                 </Button>
+                {hasSent && (
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={handleNewMessage}
+                    sx={{ ml: 2 }}
+                  >
+                    Send Another Message
+                  </Button>
+                )}
               </Paper>
             )}
           </Box>
