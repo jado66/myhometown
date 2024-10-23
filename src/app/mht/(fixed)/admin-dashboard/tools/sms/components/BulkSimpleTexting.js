@@ -12,10 +12,13 @@ import {
   ListItem,
   ListItemText,
   Divider,
+  LinearProgress,
+  ListItemIcon,
 } from "@mui/material";
-import { Message, People, Send, Info } from "@mui/icons-material";
+import { Send, Info, Check, Close } from "@mui/icons-material";
 import Select from "react-select";
 import BackButton from "@/components/BackButton";
+import { useSendSMS } from "@/hooks/communications/useSendSMS";
 
 export default function BulkSimpleTexting() {
   const [message, setMessage] = useState("");
@@ -25,6 +28,7 @@ export default function BulkSimpleTexting() {
   const [activeTab, setActiveTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const { sendStatus, progress, sendMessages, reset } = useSendSMS();
 
   useEffect(() => {
     const savedContacts = JSON.parse(localStorage.getItem("contacts")) || [];
@@ -33,9 +37,49 @@ export default function BulkSimpleTexting() {
     setGroups(savedGroups);
   }, []);
 
+  const formatTimestamp = (timestamp) => {
+    try {
+      // First check if timestamp is valid
+      const date = new Date(timestamp);
+      if (isNaN(date.getTime())) {
+        throw new Error("Invalid date");
+      }
+
+      // Format the time in a locale-friendly way
+      return date.toLocaleTimeString(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+    } catch (error) {
+      console.warn("Invalid timestamp:", timestamp);
+      return "Time unavailable";
+    }
+  };
+
+  const renderMessageResult = (result) => {
+    console.log(
+      "Timestamp received:",
+      result.timestamp,
+      typeof result.timestamp
+    );
+
+    if (result.status === "failed") {
+      return `Error: ${result.error}`;
+    }
+
+    const timeString = formatTimestamp(result.timestamp);
+    console.log("Formatted time:", timeString);
+    return `Sent at ${timeString}`;
+  };
+
   const expandGroups = (recipients) => {
     return recipients.map((recipient) => {
-      if (recipient.value.startsWith("group:")) {
+      // Check if recipient and recipient.value exist and are strings
+      if (
+        typeof recipient.value === "string" &&
+        recipient.value.startsWith("group:")
+      ) {
         const groupName = recipient.value.replace("group:", "");
         const groupContacts = contacts.filter((contact) =>
           contact.groups.some((g) => g.value === groupName)
@@ -43,7 +87,7 @@ export default function BulkSimpleTexting() {
         return {
           groupName: recipient.label.props.children[0].props.children,
           contacts: groupContacts.map((contact) => ({
-            value: contact.id,
+            value: contact.phone,
             label: `${contact.name} (${contact.phone})`,
           })),
         };
@@ -55,13 +99,26 @@ export default function BulkSimpleTexting() {
     });
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const expandedRecipients = expandGroups(selectedRecipients).flatMap(
       (group) => group.contacts
     );
-    console.log("Sending message:", message);
-    console.log("To recipients:", expandedRecipients);
-    alert(JSON.stringify({ message, recipients: expandedRecipients }, null, 2));
+
+    alert(
+      JSON.stringify({
+        message,
+        recipients: expandedRecipients,
+      })
+    );
+
+    try {
+      await sendMessages(message, expandedRecipients);
+      setMessage("");
+      setSelectedRecipients([]);
+    } catch (error) {
+      console.error("Error sending messages:", error);
+      alert("Failed to send messages: " + error.message);
+    }
   };
 
   const handleRecipientSelection = (selected) => {
@@ -81,6 +138,52 @@ export default function BulkSimpleTexting() {
   const getGroupMembers = (groupValue) => {
     return contacts.filter((contact) =>
       contact.groups.some((g) => g.value === groupValue)
+    );
+  };
+
+  const renderProgress = () => {
+    if (sendStatus === "idle") return null;
+
+    return (
+      <Paper elevation={3} sx={{ p: 2, mt: 2, mx: "auto", mb: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Sending Progress
+        </Typography>
+        <Box sx={{ mb: 2 }}>
+          <LinearProgress
+            variant="determinate"
+            value={(progress.completed / progress.total) * 100}
+          />
+          <Typography variant="body2" sx={{ mt: 1 }}>
+            {progress.completed} of {progress.total} messages sent (
+            {progress.successful} successful, {progress.failed} failed)
+          </Typography>
+        </Box>
+
+        <List>
+          {progress.results.map((result, index) => (
+            <ListItem key={index}>
+              <ListItemIcon>
+                {result.status === "success" ? (
+                  <Check color="success" />
+                ) : (
+                  <Close color="error" />
+                )}
+              </ListItemIcon>
+              <ListItemText
+                primary={result.recipient}
+                secondary={renderMessageResult(result)}
+              />
+            </ListItem>
+          ))}
+        </List>
+
+        {sendStatus === "completed" && (
+          <Button variant="outlined" onClick={reset} sx={{ mt: 2 }}>
+            Clear Results
+          </Button>
+        )}
+      </Paper>
     );
   };
 
@@ -129,7 +232,7 @@ export default function BulkSimpleTexting() {
                   isMulti
                   options={[
                     ...contacts.map((c) => ({
-                      value: c.id,
+                      value: c.phone,
                       label: `${c.name} (${c.phone})`,
                     })),
                     ...groups.map((g) => ({
@@ -254,6 +357,7 @@ export default function BulkSimpleTexting() {
           </Box>
         )}
       </Popover>
+      {renderProgress()}
     </>
   );
 }
