@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   CssBaseline,
@@ -14,8 +14,16 @@ import {
   Divider,
   LinearProgress,
   ListItemIcon,
+  IconButton,
 } from "@mui/material";
-import { Send, Info, Check, Close } from "@mui/icons-material";
+import {
+  Send,
+  Info,
+  Check,
+  Close,
+  AttachFile,
+  Clear,
+} from "@mui/icons-material";
 import Select from "react-select";
 import BackButton from "@/components/BackButton";
 import { useSendSMS } from "@/hooks/communications/useSendSMS";
@@ -31,6 +39,9 @@ export default function BulkSimpleTexting() {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const { sendStatus, progress, sendMessages, reset } = useSendSMS();
   const [hasSent, setHasSent] = useState(false);
+  const [mediaFile, setMediaFile] = useState(null);
+  const [mediaPreview, setMediaPreview] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     const savedContacts = JSON.parse(localStorage.getItem("contacts")) || [];
@@ -41,7 +52,61 @@ export default function BulkSimpleTexting() {
 
   useEffect(() => {
     setHasSent(false);
-  }, [message, selectedRecipients]);
+  }, [message, selectedRecipients, mediaFile]);
+
+  const handleFileSelect = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+
+      // Create FormData for S3 upload
+      const response = await fetch("/api/database/media/s3/getPresignedUrl", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type,
+          originalFilename: file.name,
+        }),
+      });
+
+      const { url, fields } = await response.json();
+      const formData = new FormData();
+      Object.entries(fields).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+      formData.append("file", file);
+
+      // Upload to S3
+      const uploadResponse = await fetch(url, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error("Upload failed");
+      }
+
+      // Get the public URL
+      const mediaUrl = `https://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}.s3.us-west-1.amazonaws.com/${fields.key}`;
+
+      setMediaFile(mediaUrl);
+      setMediaPreview(URL.createObjectURL(file));
+      toast.success("Media uploaded successfully");
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload media");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveMedia = () => {
+    setMediaFile(null);
+    setMediaPreview(null);
+  };
 
   const formatTimestamp = (timestamp) => {
     try {
@@ -111,8 +176,7 @@ export default function BulkSimpleTexting() {
     );
 
     try {
-      await sendMessages(message, expandedRecipients);
-
+      await sendMessages(message, expandedRecipients, mediaFile);
       setHasSent(true);
     } catch (error) {
       console.error("Error sending messages:", error);
@@ -222,6 +286,64 @@ export default function BulkSimpleTexting() {
                 <Typography variant="h6" gutterBottom>
                   Compose Message
                 </Typography>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  variant="outlined"
+                  label="Message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  sx={{ mb: 2 }}
+                />
+
+                <Box sx={{ mb: 2 }}>
+                  <input
+                    type="file"
+                    accept="image/*,video/*"
+                    style={{ display: "none" }}
+                    id="media-upload"
+                    onChange={handleFileSelect}
+                  />
+                  <label htmlFor="media-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      startIcon={<AttachFile />}
+                      disabled={isUploading}
+                    >
+                      {isUploading ? "Uploading..." : "Attach Media"}
+                    </Button>
+                  </label>
+
+                  {mediaPreview && (
+                    <Box
+                      sx={{
+                        mt: 2,
+                        position: "relative",
+                        display: "inline-block",
+                      }}
+                    >
+                      <img
+                        src={mediaPreview}
+                        alt="Media preview"
+                        style={{ maxWidth: "200px", maxHeight: "200px" }}
+                      />
+                      <IconButton
+                        size="small"
+                        sx={{
+                          position: "absolute",
+                          top: -8,
+                          right: -8,
+                          backgroundColor: "white",
+                        }}
+                        onClick={handleRemoveMedia}
+                      >
+                        <Clear />
+                      </IconButton>
+                    </Box>
+                  )}
+                </Box>
                 <TextField
                   fullWidth
                   multiline

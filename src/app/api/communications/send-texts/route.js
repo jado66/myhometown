@@ -21,9 +21,12 @@ export async function POST(req) {
     });
   }
 
-  const { message, recipients } = await req.json();
+  const { message, recipients, mediaUrl } = await req.json();
 
-  console.log(JSON.stringify({ message, recipients }));
+  console.log(
+    "Received payload:",
+    JSON.stringify({ message, recipients, mediaUrl }, null, 2)
+  );
 
   const sendWithDelay = async (recipient, index) => {
     try {
@@ -34,14 +37,27 @@ export async function POST(req) {
 
       console.log("Sending message to:", phoneNumber);
 
-      const messageResponse = await client.messages.create({
+      // Construct the message options
+      const messageOptions = {
         body: message,
         to: phoneNumber,
         from: process.env.TWILIO_PHONE_NUMBER,
-      });
+      };
+
+      // Add mediaUrl if present
+      if (mediaUrl) {
+        // Ensure the URL is properly encoded
+        const encodedUrl = encodeURI(mediaUrl);
+        console.log("Encoded media URL:", encodedUrl);
+        messageOptions.mediaUrl = encodedUrl;
+      }
+
+      console.log("Message options:", messageOptions);
+
+      const messageResponse = await client.messages.create(messageOptions);
 
       const timestamp = new Date().toISOString();
-      console.log("Created timestamp:", timestamp); // Debug log
+      console.log("Message sent successfully:", messageResponse.sid);
 
       const result = {
         recipient: recipient.label || recipient.name,
@@ -50,21 +66,20 @@ export async function POST(req) {
         timestamp: timestamp,
       };
 
-      console.log("Sending result to stream:", result); // Debug log
       await sendMessageToStream(messageId, result);
       return true;
     } catch (error) {
-      const timestamp = new Date().toISOString();
-      console.log("Created error timestamp:", timestamp); // Debug log
+      console.error("Error details:", error);
 
+      const timestamp = new Date().toISOString();
       const result = {
         recipient: recipient.label || recipient.name,
         status: "failed",
         error: error.message,
         timestamp: timestamp,
+        details: error.code ? `Twilio Error Code: ${error.code}` : undefined,
       };
 
-      console.log("Sending error result to stream:", result); // Debug log
       await sendMessageToStream(messageId, result);
       return false;
     }
@@ -74,7 +89,6 @@ export async function POST(req) {
     const sendPromises = recipients.map(sendWithDelay);
     await Promise.all(sendPromises);
 
-    // Complete the stream
     await completeStream(messageId);
 
     return new Response(JSON.stringify({ success: true }), {
