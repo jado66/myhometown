@@ -1,6 +1,9 @@
 import twilio from "twilio";
 import { headers } from "next/headers";
 import { sendMessageToStream, completeStream } from "./stream/route";
+export const config = {
+  maxDuration: 60,
+};
 
 const client = twilio(
   process.env.TWILIO_ACCOUNT_SID,
