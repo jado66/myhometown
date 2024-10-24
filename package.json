@@ -48,6 +48,7 @@
     "slick-carousel": "^1.8.1",
     "uuid": "^9.0.1",
     "web-vitals": "^3.0.2",
+    "twilio": "^5.3.4",
     "yup": "^0.32.11"
   },
   "devDependencies": {
