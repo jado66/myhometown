@@ -188,7 +188,7 @@ export default function BulkMMSMessaging() {
           groupName: recipient.label.props.children[0].props.children,
           contacts: groupContacts.map((contact) => ({
             value: contact.phone,
-            label: `${contact.name} (${contact.phone})`,
+            label: `${contact.firstName} ${contact.lastName} (${contact.phone})`,
           })),
         };
       }
@@ -393,10 +393,6 @@ export default function BulkMMSMessaging() {
                 <Select
                   isMulti
                   options={[
-                    ...contacts.map((c) => ({
-                      value: c.phone,
-                      label: `${c.name} (${c.phone})`,
-                    })),
                     ...groups.map((g) => ({
                       value: `group:${g.value}`,
                       label: (
@@ -414,6 +410,10 @@ export default function BulkMMSMessaging() {
                           />
                         </div>
                       ),
+                    })),
+                    ...contacts.map((c) => ({
+                      value: c.phone,
+                      label: `${c.firstName} ${c.lastName} - ${c.phone}`,
                     })),
                   ]}
                   value={selectedRecipients}
@@ -568,7 +568,7 @@ export default function BulkMMSMessaging() {
               {getGroupMembers(selectedGroup.value).map((contact) => (
                 <ListItem key={contact.id}>
                   <ListItemText
-                    primary={contact.name}
+                    primary={`${contact.firstName} ${contact.lastName}`}
                     secondary={`${contact.phone} | ${contact.email}`}
                   />
                 </ListItem>
