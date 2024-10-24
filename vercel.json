@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/communications/*.js": {
+    "app/api/communications/send-texts/route.js": {
       "maxDuration": 60
     }
   }
