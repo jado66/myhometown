@@ -13,6 +13,8 @@ import {
   Box,
   Typography,
   Alert,
+  TableSortLabel,
+  InputAdornment,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -22,6 +24,7 @@ import {
   FileUpload as FileUploadIcon,
   FileDownload as FileDownloadIcon,
   Delete,
+  Search as SearchIcon,
 } from "@mui/icons-material";
 import Creatable from "react-select/creatable";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
@@ -31,7 +34,9 @@ const Directory = () => {
   const [groups, setGroups] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({
-    name: "",
+    firstName: "",
+    middleName: "",
+    lastName: "",
     phone: "",
     email: "",
     groups: [],
@@ -43,6 +48,216 @@ const Directory = () => {
     contactName: "",
   });
   const [isNewContact, setIsNewContact] = useState(false);
+
+  // Add new state for sorting and searching
+  const [orderBy, setOrderBy] = useState("lastName");
+  const [order, setOrder] = useState("asc");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredContacts, setFilteredContacts] = useState([]);
+
+  // Existing useEffects for localStorage...
+
+  // Add new useEffect for filtering and sorting contacts
+  useEffect(() => {
+    let filtered = [...contacts];
+
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (contact) =>
+          contact.firstName.toLowerCase().includes(query) ||
+          contact.lastName.toLowerCase().includes(query) ||
+          contact.email.toLowerCase().includes(query) ||
+          contact.phone.includes(query) ||
+          contact.groups.some((g) => g.label.toLowerCase().includes(query))
+      );
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let aValue = a[orderBy]?.toString().toLowerCase() ?? "";
+      let bValue = b[orderBy]?.toString().toLowerCase() ?? "";
+
+      // Special handling for groups
+      if (orderBy === "groups") {
+        aValue = a.groups
+          .map((g) => g.label)
+          .join(", ")
+          .toLowerCase();
+        bValue = b.groups
+          .map((g) => g.label)
+          .join(", ")
+          .toLowerCase();
+      }
+
+      if (order === "asc") {
+        return aValue.localeCompare(bValue);
+      }
+      return bValue.localeCompare(aValue);
+    });
+
+    setFilteredContacts(filtered);
+  }, [contacts, searchQuery, orderBy, order]);
+
+  const handleSort = (property) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+  };
+
+  const renderSortLabel = (property, label) => (
+    <TableSortLabel
+      active={orderBy === property}
+      direction={orderBy === property ? order : "asc"}
+      onClick={() => handleSort(property)}
+    >
+      {label}
+    </TableSortLabel>
+  );
+
+  const importContacts = (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const content = e.target.result;
+      const lines = content.split("\n").filter((line) => line.trim());
+      const errors = [];
+      const importedContacts = [];
+
+      // Get and normalize headers
+      const headers = lines[0].split(",").map((header) => {
+        const normalized = normalizeHeader(header.trim());
+        if (
+          ![
+            "firstName",
+            "lastName",
+            "middleName",
+            "email",
+            "phone",
+            "groups",
+          ].includes(normalized)
+        ) {
+          errors.push(`Unknown column header: ${header.trim()}`);
+        }
+        return normalized;
+      });
+
+      // Check for required headers
+      const requiredHeaders = ["firstName", "lastName", "phone"];
+      const missingHeaders = requiredHeaders.filter(
+        (header) => !headers.includes(header)
+      );
+      if (missingHeaders.length > 0) {
+        setError(`Missing required columns: ${missingHeaders.join(", ")}`);
+        return;
+      }
+
+      // Process each line
+      lines.slice(1).forEach((line, index) => {
+        const values = line.split(",").map((val) => val.trim());
+        if (values.length !== headers.length) {
+          errors.push(`Line ${index + 2}: Invalid number of columns`);
+          return;
+        }
+
+        // Create contact object using header mapping
+        const contact = {
+          id: Date.now() + Math.random(),
+          firstName: "",
+          middleName: "",
+          lastName: "",
+          phone: "",
+          email: "",
+          groups: [],
+        };
+
+        // Map values to correct fields
+        headers.forEach((header, i) => {
+          if (header === "groups") {
+            const groupsArray = values[i].split(";").filter(Boolean);
+            contact.groups = groupsArray.map((group) => {
+              const newGroup = createOption(group.trim());
+              // Add to global groups if not exists
+              if (!groups.some((g) => g.value === newGroup.value)) {
+                setGroups((prevGroups) => [...prevGroups, newGroup]);
+              }
+              return newGroup;
+            });
+          } else if (header === "phone") {
+            contact[header] = formatPhoneNumber(values[i]);
+          } else {
+            contact[header] = values[i];
+          }
+        });
+
+        // Validate the contact
+        if (!contact.firstName || !contact.lastName || !contact.phone) {
+          errors.push(`Line ${index + 2}: Missing required fields`);
+          return;
+        }
+
+        // Check for duplicate phone numbers
+        const isDuplicatePhone =
+          contacts.some((c) => c.phone === contact.phone) ||
+          importedContacts.some((c) => c.phone === contact.phone);
+
+        if (isDuplicatePhone) {
+          errors.push(
+            `Line ${index + 2}: Duplicate phone number ${contact.phone}`
+          );
+          return;
+        }
+
+        importedContacts.push(contact);
+      });
+
+      if (errors.length > 0) {
+        setError(`Import errors:\n${errors.join("\n")}`);
+      }
+
+      if (importedContacts.length > 0) {
+        setContacts([...contacts, ...importedContacts]);
+      }
+    };
+
+    reader.readAsText(file);
+  };
+
+  const normalizeHeader = (header) => {
+    // Remove special characters and spaces, convert to lowercase
+    const normalized = header.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    // Map various possible header names to standard format
+    const headerMap = {
+      firstname: "firstName",
+      first: "firstName",
+      fname: "firstName",
+      middlename: "middleName",
+      middle: "middleName",
+      mname: "middleName",
+      lastname: "lastName",
+      last: "lastName",
+      lname: "lastName",
+      surname: "lastName",
+      email: "email",
+      emailaddress: "email",
+      mail: "email",
+      phone: "phone",
+      phonenumber: "phone",
+      telephone: "phone",
+      tel: "phone",
+      mobile: "phone",
+      group: "groups",
+      groups: "groups",
+      category: "groups",
+      categories: "groups",
+      tags: "groups",
+    };
+
+    return headerMap[normalized] || normalized;
+  };
 
   // Load both contacts and groups from localStorage
   useEffect(() => {
@@ -63,8 +278,12 @@ const Directory = () => {
   }, [groups]);
 
   const validateContact = (contact, contactId = null) => {
-    if (!contact.name.trim()) {
-      setError("Name is required");
+    if (!contact.firstName.trim()) {
+      setError("First name is required");
+      return false;
+    }
+    if (!contact.lastName.trim()) {
+      setError("Last name is required");
       return false;
     }
     if (!contact.phone.trim()) {
@@ -84,10 +303,18 @@ const Directory = () => {
     return true;
   };
 
+  const getFullName = (contact) => {
+    return [contact.firstName, contact.middleName, contact.lastName]
+      .filter(Boolean)
+      .join(" ");
+  };
+
   const startEditing = (contact) => {
     setEditingId(contact.id);
     setEditForm({
-      name: contact.name,
+      firstName: contact.firstName,
+      middleName: contact.middleName,
+      lastName: contact.lastName,
       phone: contact.phone,
       email: contact.email,
       groups: contact.groups,
@@ -103,7 +330,9 @@ const Directory = () => {
     }
     setEditingId(null);
     setEditForm({
-      name: "",
+      firstName: "",
+      middleName: "",
+      lastName: "",
       phone: "",
       email: "",
       groups: [],
@@ -134,7 +363,9 @@ const Directory = () => {
   const addNewContact = () => {
     const newContact = {
       id: Date.now(),
-      name: "",
+      firstName: "",
+      middleName: "",
+      lastName: "",
       phone: "",
       email: "",
       groups: [],
@@ -166,7 +397,7 @@ const Directory = () => {
     setDeleteDialog({
       open: true,
       contactId: contact.id,
-      contactName: contact.name,
+      contactName: getFullName(contact),
     });
   };
 
@@ -187,67 +418,33 @@ const Directory = () => {
     });
   };
 
-  const importContacts = (event) => {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target.result;
-      const lines = content.split("\n");
-      const importedContacts = [];
-      const errors = [];
+  const formatPhoneNumber = (phone) => {
+    // Remove all non-numeric characters
+    const cleaned = phone.replace(/\D/g, "");
 
-      lines.slice(1).forEach((line, index) => {
-        const [name, phone, email, groupsString] = line.split(",");
-        const contactGroups = groupsString.split(";").map((group) => {
-          const newGroup = createOption(group.trim());
-          // Add to global groups if not exists
-          if (!groups.some((g) => g.value === newGroup.value)) {
-            setGroups((prevGroups) => [...prevGroups, newGroup]);
-          }
-          return newGroup;
-        });
+    // Check if it's a valid length (assuming US numbers for this example)
+    // You might want to adjust this based on your needs
+    if (cleaned.length < 10) return cleaned;
 
-        const newContact = {
-          id: Date.now() + Math.random(),
-          name: name.trim(),
-          phone: phone.trim(),
-          email: email.trim(),
-          groups: contactGroups,
-        };
+    // Format as (XXX) XXX-XXXX if 10 digits
+    if (cleaned.length === 10) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(
+        6
+      )}`;
+    }
 
-        // Check for duplicate phone numbers in existing contacts and previously imported contacts
-        const isDuplicatePhone =
-          contacts.some((c) => c.phone === phone.trim()) ||
-          importedContacts.some((c) => c.phone === phone.trim());
-
-        if (isDuplicatePhone) {
-          errors.push(
-            `Line ${index + 2}: Duplicate phone number ${phone.trim()}`
-          );
-        } else {
-          importedContacts.push(newContact);
-        }
-      });
-
-      if (errors.length > 0) {
-        setError(`Import errors:\n${errors.join("\n")}`);
-      }
-
-      if (importedContacts.length > 0) {
-        setContacts([...contacts, ...importedContacts]);
-      }
-    };
-    reader.readAsText(file);
+    // If longer than 10 digits, keep original formatting
+    return cleaned;
   };
 
   const exportContacts = () => {
-    const header = "Name,Phone,Email,Groups\n";
+    const header = "First Name,Middle Name,Last Name,Phone,Email,Groups\n";
     const csv = contacts
       .map(
         (contact) =>
-          `${contact.name},${contact.phone},${contact.email},${contact.groups
-            .map((g) => g.label)
-            .join(";")}`
+          `${contact.firstName},${contact.middleName},${contact.lastName},${
+            contact.phone
+          },${contact.email},${contact.groups.map((g) => g.label).join(";")}`
       )
       .join("\n");
     const blob = new Blob([header + csv], { type: "text/csv;charset=utf-8;" });
@@ -323,14 +520,35 @@ const Directory = () => {
         </Box>
       </Box>
 
+      {/* Add Search Box */}
+      <Box sx={{ mb: 2 }}>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="Search contacts..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
+
       <TableContainer>
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Phone</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Groups</TableCell>
+              <TableCell>
+                {renderSortLabel("firstName", "First Name")}
+              </TableCell>
+              <TableCell>{renderSortLabel("lastName", "Last Name")}</TableCell>
+              <TableCell>{renderSortLabel("phone", "Phone")}</TableCell>
+              <TableCell>{renderSortLabel("email", "Email")}</TableCell>
+              <TableCell>{renderSortLabel("groups", "Groups")}</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -340,20 +558,50 @@ const Directory = () => {
                 <TableCell>
                   {editingId === contact.id ? (
                     <TextField
-                      value={editForm.name}
+                      value={editForm.firstName}
                       onChange={(e) =>
-                        setEditForm({ ...editForm, name: e.target.value })
+                        setEditForm({ ...editForm, firstName: e.target.value })
                       }
                       size="small"
                       fullWidth
-                      error={error && error.includes("Name")}
+                      error={error && error.includes("First name")}
                       required
                     />
                   ) : (
-                    contact.name
+                    contact.firstName
                   )}
                 </TableCell>
+                {/* <TableCell>
+                  {editingId === contact.id ? (
+                    <TextField
+                      value={editForm.middleName}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, middleName: e.target.value })
+                      }
+                      size="small"
+                      fullWidth
+                    />
+                  ) : (
+                    contact.middleName
+                  )}
+                </TableCell> */}
                 <TableCell>
+                  {editingId === contact.id ? (
+                    <TextField
+                      value={editForm.lastName}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, lastName: e.target.value })
+                      }
+                      size="small"
+                      fullWidth
+                      error={error && error.includes("Last name")}
+                      required
+                    />
+                  ) : (
+                    contact.lastName
+                  )}
+                </TableCell>
+                <TableCell sx={{ whiteSpace: "nowrap" }}>
                   {editingId === contact.id ? (
                     <TextField
                       value={editForm.phone}
@@ -445,9 +693,20 @@ const Directory = () => {
                 </TableCell>
               </TableRow>
             ))}
+
+            {/* Add me a total */}
+            <TableRow>
+              <TableCell colSpan={2}>
+                <strong>Total:</strong>
+              </TableCell>
+              <TableCell>
+                <strong>{contacts.length}</strong>
+              </TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </TableContainer>
+
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
