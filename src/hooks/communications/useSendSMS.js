@@ -13,7 +13,7 @@ export function useSendSMS() {
   const eventSourceRef = useRef(null);
 
   const sendMessages = useCallback(
-    async (message, recipients, mediaUrl = null) => {
+    async (message, recipients, mediaUrls = []) => {
       setSendStatus("sending");
       setProgress((prev) => ({
         ...prev,
@@ -82,7 +82,9 @@ export function useSendSMS() {
           };
         });
 
-        console.log("Sending messages request...");
+        // Debug logging for media URLs
+        console.log("Sending messages with mediaUrls:", mediaUrls);
+
         const response = await fetch(
           `/api/communications/send-texts?messageId=${messageId}`,
           {
@@ -93,7 +95,9 @@ export function useSendSMS() {
             body: JSON.stringify({
               message,
               recipients,
-              mediaUrl,
+              mediaUrls: Array.isArray(mediaUrls)
+                ? mediaUrls
+                : [mediaUrls].filter(Boolean),
             }),
           }
         );

@@ -21,38 +21,96 @@ export async function POST(req) {
     });
   }
 
-  const { message, recipients, mediaUrl } = await req.json();
+  const { message, recipients, mediaUrls } = await req.json();
 
   console.log(
     "Received payload:",
-    JSON.stringify({ message, recipients, mediaUrl }, null, 2)
+    JSON.stringify({ message, recipients, mediaUrls }, null, 2)
   );
 
-  const sendWithDelay = async (recipient, index) => {
+  const validateAndEncodeMediaUrl = (url) => {
     try {
-      // Add delay between messages to prevent rate limiting
+      // First decode the URL to prevent double-encoding
+      const decodedUrl = decodeURIComponent(url);
+
+      // Split the URL into parts
+      const urlObj = new URL(decodedUrl);
+
+      // Properly encode each path segment
+      const pathSegments = urlObj.pathname
+        .split("/")
+        .map((segment) => encodeURIComponent(segment))
+        .join("/");
+
+      // Reconstruct the URL with encoded path
+      const encodedUrl = `${urlObj.protocol}//${urlObj.host}${pathSegments}`;
+
+      // Validate the encoded URL
+      if (
+        urlObj.protocol !== "https:" ||
+        !urlObj.hostname.includes("amazonaws.com")
+      ) {
+        return null;
+      }
+
+      console.log("Original URL:", url);
+      console.log("Encoded URL:", encodedUrl);
+
+      return encodedUrl;
+    } catch (error) {
+      console.error("URL validation error:", error);
+      return null;
+    }
+  };
+
+  const sendWithDelay = async (recipient, index) => {
+    let messageOptions;
+    try {
       await new Promise((resolve) => setTimeout(resolve, index * 200));
 
       const phoneNumber = recipient.value;
+      const formattedPhone = phoneNumber.replace(/\D/g, "");
 
-      console.log("Sending message to:", phoneNumber);
-
-      // Construct the message options
-      const messageOptions = {
+      messageOptions = {
         body: message,
-        to: phoneNumber,
+        to:
+          formattedPhone.length === 10
+            ? `+1${formattedPhone}`
+            : `+${formattedPhone}`,
         from: process.env.TWILIO_PHONE_NUMBER,
       };
 
-      // Add mediaUrl if present
-      if (mediaUrl) {
-        // Ensure the URL is properly encoded
-        const encodedUrl = encodeURI(mediaUrl);
-        console.log("Encoded media URL:", encodedUrl);
-        messageOptions.mediaUrl = encodedUrl;
+      if (mediaUrls && Array.isArray(mediaUrls) && mediaUrls.length > 0) {
+        // Process and validate URLs
+        const validUrls = mediaUrls
+          .filter(Boolean)
+          .map(validateAndEncodeMediaUrl)
+          .filter(Boolean);
+
+        if (validUrls.length > 0) {
+          messageOptions.mediaUrl = validUrls;
+          console.log("Final encoded mediaUrls:", validUrls);
+        }
+
+        // Verify URLs are accessible
+        for (const url of validUrls) {
+          try {
+            const response = await fetch(url, { method: "HEAD" });
+            if (!response.ok) {
+              console.warn(`Warning: Media URL is not accessible: ${url}`);
+              throw new Error(`Media URL is not accessible: ${url}`);
+            }
+          } catch (error) {
+            console.error("URL verification error:", error);
+            throw new Error(`Failed to verify media URL: ${error.message}`);
+          }
+        }
       }
 
-      console.log("Message options:", messageOptions);
+      console.log(
+        "Sending message with options:",
+        JSON.stringify(messageOptions, null, 2)
+      );
 
       const messageResponse = await client.messages.create(messageOptions);
 
@@ -64,12 +122,21 @@ export async function POST(req) {
         status: "success",
         messageId: messageResponse.sid,
         timestamp: timestamp,
+        mediaCount: messageOptions.mediaUrl
+          ? messageOptions.mediaUrl.length
+          : 0,
       };
 
       await sendMessageToStream(messageId, result);
       return true;
     } catch (error) {
-      console.error("Error details:", error);
+      console.error("Twilio Error Details:", {
+        message: error.message,
+        code: error.code,
+        moreInfo: error.moreInfo,
+        status: error.status,
+        details: error,
+      });
 
       const timestamp = new Date().toISOString();
       const result = {
@@ -78,6 +145,7 @@ export async function POST(req) {
         error: error.message,
         timestamp: timestamp,
         details: error.code ? `Twilio Error Code: ${error.code}` : undefined,
+        mediaUrls: messageOptions?.mediaUrl,
       };
 
       await sendMessageToStream(messageId, result);
