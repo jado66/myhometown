@@ -15,6 +15,7 @@ import {
   LinearProgress,
   ListItemIcon,
   IconButton,
+  Alert,
 } from "@mui/material";
 import {
   Send,
@@ -23,13 +24,17 @@ import {
   Close,
   AttachFile,
   Clear,
+  Warning,
+  Error,
 } from "@mui/icons-material";
 import Select from "react-select";
 import BackButton from "@/components/BackButton";
 import { useSendSMS } from "@/hooks/communications/useSendSMS";
 import { toast } from "react-toastify";
 
-export default function BulkSimpleTexting() {
+const MAX_ATTACHMENTS = 10;
+
+export default function BulkMMSMessaging() {
   const [message, setMessage] = useState("");
   const [contacts, setContacts] = useState([]);
   const [groups, setGroups] = useState([]);
@@ -39,8 +44,7 @@ export default function BulkSimpleTexting() {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const { sendStatus, progress, sendMessages, reset } = useSendSMS();
   const [hasSent, setHasSent] = useState(false);
-  const [mediaFile, setMediaFile] = useState(null);
-  const [mediaPreview, setMediaPreview] = useState(null);
+  const [mediaFiles, setMediaFiles] = useState([]); // Array of {url, preview} objects
   const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
@@ -52,60 +56,85 @@ export default function BulkSimpleTexting() {
 
   useEffect(() => {
     setHasSent(false);
-  }, [message, selectedRecipients, mediaFile]);
+  }, [message, selectedRecipients, mediaFiles]);
 
   const handleFileSelect = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+    const files = Array.from(event.target.files);
+
+    if (mediaFiles.length + files.length > MAX_ATTACHMENTS) {
+      toast.error(`Maximum ${MAX_ATTACHMENTS} attachments allowed`);
+      return;
+    }
+
+    setIsUploading(true);
 
     try {
-      setIsUploading(true);
+      for (const file of files) {
+        // Sanitize filename - replace spaces with underscores
+        const sanitizedFilename = file.name.replace(/\s+/g, "_");
 
-      // Create FormData for S3 upload
-      const response = await fetch("/api/database/media/s3/getPresignedUrl", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          filename: file.name,
-          contentType: file.type,
-          originalFilename: file.name,
-        }),
-      });
+        const response = await fetch("/api/database/media/s3/getPresignedUrl", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filename: sanitizedFilename,
+            contentType: file.type,
+            originalFilename: sanitizedFilename,
+          }),
+        });
 
-      const { url, fields } = await response.json();
-      const formData = new FormData();
-      Object.entries(fields).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
-      formData.append("file", file);
+        if (!response.ok) {
+          throw new Error("Failed to get presigned URL");
+        }
 
-      // Upload to S3
-      const uploadResponse = await fetch(url, {
-        method: "POST",
-        body: formData,
-      });
+        const { url, fields } = await response.json();
 
-      if (!uploadResponse.ok) {
-        throw new Error("Upload failed");
+        const formData = new FormData();
+        Object.entries(fields).forEach(([key, value]) => {
+          formData.append(key, value);
+        });
+        formData.append("file", file);
+
+        const uploadResponse = await fetch(url, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error("Upload failed");
+        }
+
+        // Construct and encode the URL
+        const bucketName =
+          fields.bucket || process.env.NEXT_PUBLIC_AWS_BUCKET_NAME;
+        const region = "us-west-1";
+        const mediaUrl = `https://${bucketName}.s3.${region}.amazonaws.com/${encodeURIComponent(
+          fields.key
+        )}`;
+
+        console.log("Constructed mediaUrl:", mediaUrl); // Debug log
+
+        setMediaFiles((prev) => [
+          ...prev,
+          {
+            url: mediaUrl,
+            preview: URL.createObjectURL(file),
+            type: file.type,
+          },
+        ]);
       }
 
-      // Get the public URL
-      const mediaUrl = `https://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}.s3.us-west-1.amazonaws.com/${fields.key}`;
-
-      setMediaFile(mediaUrl);
-      setMediaPreview(URL.createObjectURL(file));
       toast.success("Media uploaded successfully");
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Failed to upload media");
+      toast.error("Failed to upload media: " + error.message);
     } finally {
       setIsUploading(false);
+      event.target.value = "";
     }
   };
-
-  const handleRemoveMedia = () => {
-    setMediaFile(null);
-    setMediaPreview(null);
+  const handleRemoveMedia = (index) => {
+    setMediaFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const formatTimestamp = (timestamp) => {
@@ -171,12 +200,24 @@ export default function BulkSimpleTexting() {
   };
 
   const handleSend = async () => {
+    // Process recipients to keep only the first occurrence of each phone number
+    const phoneNumberMap = new Map();
+    const uniqueRecipients = [];
+
     const expandedRecipients = expandGroups(selectedRecipients).flatMap(
       (group) => group.contacts
     );
 
+    expandedRecipients.forEach((recipient) => {
+      if (!phoneNumberMap.has(recipient.value)) {
+        phoneNumberMap.set(recipient.value, true);
+        uniqueRecipients.push(recipient);
+      }
+    });
+
     try {
-      await sendMessages(message, expandedRecipients, mediaFile);
+      const mediaUrls = mediaFiles.map((file) => file.url);
+      await sendMessages(message, uniqueRecipients, mediaUrls);
       setHasSent(true);
     } catch (error) {
       console.error("Error sending messages:", error);
@@ -201,6 +242,7 @@ export default function BulkSimpleTexting() {
   const handleNewMessage = () => {
     setMessage("");
     setSelectedRecipients([]);
+    setMediaFiles([]);
     setHasSent(false);
     reset();
     setActiveTab(0);
@@ -211,6 +253,60 @@ export default function BulkSimpleTexting() {
       contact.groups.some((g) => g.value === groupValue)
     );
   };
+
+  const renderMediaPreviews = (files, showRemove = true) => (
+    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 2 }}>
+      {files.map((file, index) => (
+        <Box key={index} sx={{ position: "relative", display: "inline-block" }}>
+          {file.type.startsWith("image/") ? (
+            <img
+              src={file.preview}
+              alt={`Media ${index + 1}`}
+              style={{
+                width: "150px",
+                height: "150px",
+                objectFit: "cover",
+                borderRadius: "4px",
+              }}
+            />
+          ) : (
+            <Box
+              sx={{
+                width: "150px",
+                height: "150px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                bgcolor: "grey.200",
+                borderRadius: "4px",
+              }}
+            >
+              <Typography variant="body2">
+                {file.type.split("/")[1].toUpperCase()} File
+              </Typography>
+            </Box>
+          )}
+          {showRemove && (
+            <IconButton
+              size="small"
+              sx={{
+                position: "absolute",
+                top: -8,
+                right: -8,
+                backgroundColor: "white",
+                "&:hover": {
+                  backgroundColor: "grey.100",
+                },
+              }}
+              onClick={() => handleRemoveMedia(index)}
+            >
+              <Clear />
+            </IconButton>
+          )}
+        </Box>
+      ))}
+    </Box>
+  );
 
   const renderProgress = () => {
     if (sendStatus === "idle") return null;
@@ -283,77 +379,14 @@ export default function BulkSimpleTexting() {
           <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
             {activeTab === 0 && (
               <Paper elevation={3} sx={{ p: 2, mt: 2 }}>
-                <Typography variant="h6" gutterBottom>
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{ mb: 2, textAlign: "center" }}
+                >
                   Compose Message
                 </Typography>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  variant="outlined"
-                  label="Message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  sx={{ mb: 2 }}
-                />
 
-                <Box sx={{ mb: 2 }}>
-                  <input
-                    type="file"
-                    accept="image/*,video/*"
-                    style={{ display: "none" }}
-                    id="media-upload"
-                    onChange={handleFileSelect}
-                  />
-                  <label htmlFor="media-upload">
-                    <Button
-                      variant="outlined"
-                      component="span"
-                      startIcon={<AttachFile />}
-                      disabled={isUploading}
-                    >
-                      {isUploading ? "Uploading..." : "Attach Media"}
-                    </Button>
-                  </label>
-
-                  {mediaPreview && (
-                    <Box
-                      sx={{
-                        mt: 2,
-                        position: "relative",
-                        display: "inline-block",
-                      }}
-                    >
-                      <img
-                        src={mediaPreview}
-                        alt="Media preview"
-                        style={{ maxWidth: "200px", maxHeight: "200px" }}
-                      />
-                      <IconButton
-                        size="small"
-                        sx={{
-                          position: "absolute",
-                          top: -8,
-                          right: -8,
-                          backgroundColor: "white",
-                        }}
-                        onClick={handleRemoveMedia}
-                      >
-                        <Clear />
-                      </IconButton>
-                    </Box>
-                  )}
-                </Box>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  variant="outlined"
-                  label="Message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  sx={{ mb: 2 }}
-                />
                 <Typography variant="subtitle1" gutterBottom>
                   Select Recipients
                 </Typography>
@@ -388,6 +421,53 @@ export default function BulkSimpleTexting() {
                   placeholder="Select recipients or groups"
                 />
 
+                <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                  Message Content
+                </Typography>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  variant="outlined"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  sx={{ mb: 2 }}
+                />
+
+                <Divider sx={{ mb: 2 }} />
+
+                <Box sx={{ mb: 2 }}>
+                  <input
+                    type="file"
+                    accept="image/*,video/*"
+                    multiple
+                    style={{ display: "none" }}
+                    id="media-upload"
+                    onChange={handleFileSelect}
+                  />
+                  <label htmlFor="media-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      startIcon={<AttachFile />}
+                      disabled={
+                        isUploading || mediaFiles.length >= MAX_ATTACHMENTS
+                      }
+                    >
+                      {isUploading ? "Uploading..." : "Attach Media"}
+                    </Button>
+                  </label>
+
+                  {/* <Typography
+                    variant="caption"
+                    sx={{ display: "block", mt: 1 }}
+                  >
+                    {mediaFiles.length} of {MAX_ATTACHMENTS} attachments used
+                  </Typography> */}
+
+                  {mediaFiles.length > 0 && renderMediaPreviews(mediaFiles)}
+                </Box>
+
                 <Button
                   sx={{ mt: 2 }}
                   variant="contained"
@@ -402,18 +482,9 @@ export default function BulkSimpleTexting() {
 
             {activeTab === 2 && (
               <Paper elevation={3} sx={{ p: 2, mt: 2 }}>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom textAlign="center">
                   Review and Send
                 </Typography>
-                <Typography variant="body1" gutterBottom>
-                  Message:
-                </Typography>
-                <Paper
-                  elevation={1}
-                  sx={{ p: 2, mb: 2, backgroundColor: "grey.100" }}
-                >
-                  <Typography>{message}</Typography>
-                </Paper>
                 <Typography variant="body1" gutterBottom>
                   Selected Recipients:
                 </Typography>
@@ -421,27 +492,36 @@ export default function BulkSimpleTexting() {
                   elevation={1}
                   sx={{ p: 2, mb: 2, backgroundColor: "grey.100" }}
                 >
-                  {expandGroups(selectedRecipients).map((group, index) => (
-                    <Box key={index} sx={{ mb: 2 }}>
-                      <Typography
-                        variant="subtitle1"
-                        sx={{ fontWeight: "bold" }}
-                      >
-                        {group.groupName}
-                      </Typography>
-                      <List dense>
-                        {group.contacts.map((contact) => (
-                          <ListItem key={contact.value}>
-                            <ListItemText primary={contact.label} />
-                          </ListItem>
-                        ))}
-                      </List>
-                      {index < expandGroups(selectedRecipients).length - 1 && (
-                        <Divider />
-                      )}
-                    </Box>
-                  ))}
+                  <RecipientsList
+                    selectedRecipients={selectedRecipients}
+                    contacts={contacts}
+                  />
                 </Paper>
+                <Typography variant="body1" gutterBottom>
+                  Message:
+                </Typography>
+                <Paper
+                  elevation={1}
+                  sx={{ p: 2, mb: 2, backgroundColor: "grey.100" }}
+                >
+                  <Typography sx={{ display: "flex" }}>
+                    {message?.trim() || (
+                      <>
+                        <Warning sx={{ mr: 2 }} />
+                        No message provided
+                      </>
+                    )}
+                  </Typography>
+                </Paper>
+                {mediaFiles.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body1" gutterBottom>
+                      Attachments:
+                    </Typography>
+                    {renderMediaPreviews(mediaFiles, false)}
+                  </Box>
+                )}
+
                 <Button
                   variant="contained"
                   color="primary"
@@ -501,3 +581,149 @@ export default function BulkSimpleTexting() {
     </>
   );
 }
+
+const RecipientsList = ({ selectedRecipients, contacts }) => {
+  // Function to get all contacts from a group
+  const getGroupContacts = (groupName) => {
+    return contacts
+      .filter((contact) => contact.groups.some((g) => g.value === groupName))
+      .map((contact) => ({
+        value: contact.phone,
+        label: `${contact.name} (${contact.phone})`,
+        fromGroup: groupName,
+      }));
+  };
+
+  // Process recipients and track duplicates with their order of appearance
+  const processRecipients = () => {
+    const phoneNumberMap = new Map(); // Maps phone numbers to their first occurrence info
+    const duplicatesInfo = new Map(); // Maps phone numbers to their duplicate status and source
+    const groupedRecipients = [];
+
+    // First, process group recipients
+    const groupRecipients = selectedRecipients
+      .filter(
+        (r) => typeof r.value === "string" && r.value.startsWith("group:")
+      )
+      .map((recipient) => {
+        const groupName = recipient.value.replace("group:", "");
+        const groupContacts = getGroupContacts(groupName);
+
+        // Track all phone numbers from groups
+        groupContacts.forEach((contact) => {
+          if (!phoneNumberMap.has(contact.value)) {
+            // First occurrence
+            phoneNumberMap.set(contact.value, {
+              source: groupName,
+              type: "group",
+            });
+          } else {
+            // Duplicate occurrence
+            duplicatesInfo.set(contact.value, {
+              originalSource: phoneNumberMap.get(contact.value).source,
+              type: phoneNumberMap.get(contact.value).type,
+            });
+          }
+        });
+
+        return {
+          groupName: recipient.label.props.children[0].props.children,
+          contacts: groupContacts.map((contact) => ({
+            ...contact,
+            isDuplicate: duplicatesInfo.has(contact.value),
+            duplicateInfo: duplicatesInfo.get(contact.value),
+          })),
+        };
+      });
+
+    // Then, process individual recipients
+    const individualRecipients = selectedRecipients
+      .filter((r) => !r.value.startsWith("group:"))
+      .map((recipient) => {
+        const isDuplicate = phoneNumberMap.has(recipient.value);
+        if (!isDuplicate) {
+          phoneNumberMap.set(recipient.value, {
+            source: "individual",
+            type: "individual",
+          });
+        } else {
+          duplicatesInfo.set(recipient.value, {
+            originalSource: phoneNumberMap.get(recipient.value).source,
+            type: phoneNumberMap.get(recipient.value).type,
+          });
+        }
+        return {
+          ...recipient,
+          isDuplicate,
+          duplicateInfo: duplicatesInfo.get(recipient.value),
+        };
+      });
+
+    return {
+      groupRecipients,
+      individualRecipients:
+        individualRecipients.length > 0
+          ? [
+              {
+                groupName: "Individual Contacts",
+                contacts: individualRecipients,
+              },
+            ]
+          : [],
+    };
+  };
+
+  const { groupRecipients, individualRecipients } = processRecipients();
+  const allRecipients = [...groupRecipients, ...individualRecipients];
+
+  return (
+    <Box>
+      {allRecipients.map((group, index) => (
+        <Box key={index} sx={{ mb: 2 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+            {group.groupName}
+          </Typography>
+          <List dense>
+            {group.contacts.map((contact) => (
+              <ListItem key={contact.value}>
+                <ListItemText
+                  primary={
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Typography
+                        sx={{
+                          textDecoration: contact.isDuplicate
+                            ? "line-through"
+                            : "none",
+                          color: contact.isDuplicate
+                            ? "text.secondary"
+                            : "text.primary",
+                        }}
+                      >
+                        {contact.label}
+                      </Typography>
+                      {contact.isDuplicate && (
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            display: "flex",
+                            px: 1,
+                            py: 0.5,
+                            borderRadius: 1,
+                          }}
+                        >
+                          <Error sx={{ fontSize: 14, mr: 0.5, mt: "1px" }} />
+                          Duplicate
+                        </Typography>
+                      )}
+                    </Box>
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
+          {index < allRecipients.length - 1 && <Divider />}
+        </Box>
+      ))}
+    </Box>
+  );
+};
