@@ -1,17 +1,14 @@
 import twilio from "twilio";
 import { headers } from "next/headers";
 import { sendMessageToStream, completeStream } from "./stream/route";
-export const config = {
-  maxDuration: 60,
-};
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 const client = twilio(
   process.env.TWILIO_ACCOUNT_SID,
   process.env.TWILIO_AUTH_TOKEN
 );
-
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
 
 export async function POST(req) {
   const url = new URL(req.url);
