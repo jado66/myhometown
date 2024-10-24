@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 // Store active connections in memory
 const activeConnections = new Map();
 
+export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
