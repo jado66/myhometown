@@ -3,11 +3,5 @@
     "api/communications/*.js": {
       "maxDuration": 60
     }
-  },
-  "routes": [
-    {
-      "source": "/api/communications/(.*)",
-      "destination": "/api/communications/$1"
-    }
-  ]
+  }
 }
