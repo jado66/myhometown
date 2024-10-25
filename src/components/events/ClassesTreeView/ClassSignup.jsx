@@ -107,7 +107,7 @@ export const ClassSignup = ({
       return (
         <>
           <iframe
-            src={`https://docs.google.com/forms/d/e/${localClassObj.googleFormID}/viewform?embedded=true`}
+            src={`https://docs.google.com/forms/d/e/${localClassObj.googleFormId}/viewform?embedded=true`}
             width="100%"
             height="500px"
             frameBorder="0"
