@@ -16,6 +16,7 @@ import {
   ListItemIcon,
   IconButton,
   Alert,
+  AlertTitle,
 } from "@mui/material";
 import {
   Send,
@@ -31,6 +32,7 @@ import Select from "react-select";
 import BackButton from "@/components/BackButton";
 import { useSendSMS } from "@/hooks/communications/useSendSMS";
 import { toast } from "react-toastify";
+import { useRedisHealth } from "@/hooks/health/useRedisHealth";
 
 const MAX_ATTACHMENTS = 10;
 
@@ -46,6 +48,8 @@ export default function BulkMMSMessaging() {
   const [hasSent, setHasSent] = useState(false);
   const [mediaFiles, setMediaFiles] = useState([]); // Array of {url, preview} objects
   const [isUploading, setIsUploading] = useState(false);
+
+  const redisHealth = useRedisHealth(60000);
 
   useEffect(() => {
     const savedContacts = JSON.parse(localStorage.getItem("contacts")) || [];
@@ -353,6 +357,28 @@ export default function BulkMMSMessaging() {
       </Paper>
     );
   };
+
+  if (!redisHealth.isConnected && !redisHealth.isLoading) {
+    <Alert
+      severity="error"
+      sx={{
+        position: "sticky",
+        top: "64px",
+        zIndex: 1000,
+        mx: 3,
+        mt: 2,
+      }}
+    >
+      <AlertTitle>Texting Service Unavailable</AlertTitle>
+      The messaging service is currently experiencing technical difficulties.
+      Please try again later.
+      {redisHealth.lastChecked && (
+        <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+          Last checked: {new Date(redisHealth.lastChecked).toLocaleString()}
+        </Typography>
+      )}
+    </Alert>;
+  }
 
   return (
     <>
