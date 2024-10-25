@@ -33,8 +33,11 @@ import BackButton from "@/components/BackButton";
 import { useSendSMS } from "@/hooks/communications/useSendSMS";
 import { toast } from "react-toastify";
 import { useRedisHealth } from "@/hooks/health/useRedisHealth";
+import Loading from "@/components/util/Loading";
 
 const MAX_ATTACHMENTS = 10;
+const MAX_TOTAL_SIZE_MB = 5;
+const MAX_TOTAL_SIZE_BYTES = MAX_TOTAL_SIZE_MB * 1024 * 1024; // Convert MB to bytes
 
 export default function BulkMMSMessaging() {
   const [message, setMessage] = useState("");
@@ -46,8 +49,10 @@ export default function BulkMMSMessaging() {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const { sendStatus, progress, sendMessages, reset } = useSendSMS();
   const [hasSent, setHasSent] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [mediaFiles, setMediaFiles] = useState([]); // Array of {url, preview} objects
   const [isUploading, setIsUploading] = useState(false);
+  const [totalFileSize, setTotalFileSize] = useState(0);
 
   const redisHealth = useRedisHealth(60000);
 
@@ -58,15 +63,41 @@ export default function BulkMMSMessaging() {
     setGroups(savedGroups);
   }, []);
 
+  // upon completion send toast message with amount of messages sent / total
+  // useEffect(() => {
+  //   if (sendStatus === "completed") {
+  //     toast.success(
+  //       `Sent ${progress.successful} of ${progress.total} messages`
+  //     );
+  //   }
+  // }, [sendStatus]);
+
   useEffect(() => {
     setHasSent(false);
+    setIsSending(false);
   }, [message, selectedRecipients, mediaFiles]);
 
   const handleFileSelect = async (event) => {
     const files = Array.from(event.target.files);
 
+    // Check number of attachments
     if (mediaFiles.length + files.length > MAX_ATTACHMENTS) {
       toast.error(`Maximum ${MAX_ATTACHMENTS} attachments allowed`);
+      return;
+    }
+
+    // Calculate total size including existing files
+    const newTotalSize = files.reduce(
+      (acc, file) => acc + file.size,
+      totalFileSize
+    );
+
+    if (newTotalSize > MAX_TOTAL_SIZE_BYTES) {
+      toast.error(
+        `Total file size must be less than ${MAX_TOTAL_SIZE_MB}MB. Current total: ${formatFileSize(
+          newTotalSize
+        )}`
+      );
       return;
     }
 
@@ -108,7 +139,6 @@ export default function BulkMMSMessaging() {
           throw new Error("Upload failed");
         }
 
-        // Construct and encode the URL
         const bucketName =
           fields.bucket || process.env.NEXT_PUBLIC_AWS_BUCKET_NAME;
         const region = "us-west-1";
@@ -116,16 +146,17 @@ export default function BulkMMSMessaging() {
           fields.key
         )}`;
 
-        console.log("Constructed mediaUrl:", mediaUrl); // Debug log
-
         setMediaFiles((prev) => [
           ...prev,
           {
             url: mediaUrl,
             preview: URL.createObjectURL(file),
             type: file.type,
+            size: file.size, // Store file size
           },
         ]);
+
+        setTotalFileSize((prev) => prev + file.size);
       }
 
       toast.success("Media uploaded successfully");
@@ -138,7 +169,19 @@ export default function BulkMMSMessaging() {
     }
   };
   const handleRemoveMedia = (index) => {
-    setMediaFiles((prev) => prev.filter((_, i) => i !== index));
+    setMediaFiles((prev) => {
+      const removedFile = prev[index];
+      setTotalFileSize((prevSize) => prevSize - (removedFile.size || 0));
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const formatTimestamp = (timestamp) => {
@@ -221,11 +264,14 @@ export default function BulkMMSMessaging() {
 
     try {
       const mediaUrls = mediaFiles.map((file) => file.url);
+      setIsSending(true);
       await sendMessages(message, uniqueRecipients, mediaUrls);
       setHasSent(true);
+      setIsSending(false);
     } catch (error) {
       console.error("Error sending messages:", error);
       toast.error("Failed to send messages: " + error.message);
+      setIsSending(false);
     }
   };
 
@@ -248,6 +294,8 @@ export default function BulkMMSMessaging() {
     setSelectedRecipients([]);
     setMediaFiles([]);
     setHasSent(false);
+    setTotalFileSize(0);
+    setIsSending(false);
     reset();
     setActiveTab(0);
   };
@@ -290,6 +338,24 @@ export default function BulkMMSMessaging() {
               </Typography>
             </Box>
           )}
+          {activeTab === 0 && (
+            <Typography
+              variant="caption"
+              sx={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                bgcolor: "rgba(0, 0, 0, 0.6)",
+                color: "white",
+                padding: "4px",
+                textAlign: "center",
+              }}
+            >
+              {formatFileSize(file.size)}
+            </Typography>
+          )}
+
           {showRemove && (
             <IconButton
               size="small"
@@ -309,6 +375,11 @@ export default function BulkMMSMessaging() {
           )}
         </Box>
       ))}
+      {/* {mediaFiles.length > 0 && (
+        <Typography variant="caption" sx={{ width: "100%", mt: 1 }}>
+          Total size: {formatFileSize(totalFileSize)} / {MAX_TOTAL_SIZE_MB}MB
+        </Typography>
+      )} */}
     </Box>
   );
 
@@ -320,6 +391,18 @@ export default function BulkMMSMessaging() {
         <Typography variant="h6" gutterBottom>
           Sending Progress
         </Typography>
+
+        {/* Spinner */}
+        {sendStatus === "sending" && (
+          <>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              Sending messages...
+            </Typography>
+          </>
+        )}
+
+        {/* Progress bar */}
+
         <Box sx={{ mb: 2 }}>
           <LinearProgress
             variant="determinate"
@@ -458,6 +541,11 @@ export default function BulkMMSMessaging() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   sx={{ mb: 2 }}
+                  error={message.length > 1600}
+                  helperText={
+                    message.length > 1600 &&
+                    "MSM messages are limited to 1600 characters"
+                  }
                 />
 
                 <Divider sx={{ mb: 2 }} />
@@ -500,6 +588,7 @@ export default function BulkMMSMessaging() {
                   color="primary"
                   onClick={() => setActiveTab(2)}
                   startIcon={<Send />}
+                  disabled={selectedRecipients.length === 0}
                 >
                   Review and Send
                 </Button>
@@ -553,7 +642,7 @@ export default function BulkMMSMessaging() {
                   color="primary"
                   onClick={handleSend}
                   startIcon={<Send />}
-                  disabled={hasSent}
+                  disabled={hasSent || isSending}
                 >
                   Send
                 </Button>

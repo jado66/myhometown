@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import { toast } from "react-toastify";
 
 export function useSendSMS() {
   const [sendStatus, setSendStatus] = useState("idle");
@@ -11,6 +12,7 @@ export function useSendSMS() {
   });
 
   const eventSourceRef = useRef(null);
+  const processedMessagesRef = useRef(new Set());
 
   const sendMessages = useCallback(
     async (message, recipients, mediaUrls = []) => {
@@ -23,6 +25,9 @@ export function useSendSMS() {
         failed: 0,
         results: [],
       }));
+
+      // Clear the processed messages set
+      processedMessagesRef.current.clear();
 
       const messageId = Date.now().toString();
 
@@ -56,6 +61,12 @@ export function useSendSMS() {
               return;
             }
 
+            // type status
+            if (data.type === "status") {
+              console.log("Received status update:", data);
+              return;
+            }
+
             if (data.type === "error") {
               console.error("Stream error:", data.error);
               if (eventSourceRef.current) {
@@ -64,6 +75,14 @@ export function useSendSMS() {
               reject(new Error(data.error));
               return;
             }
+
+            // Deduplicate messages based on messageId and recipient
+            const messageKey = `${data.messageId}-${data.recipient}`;
+            if (processedMessagesRef.current.has(messageKey)) {
+              console.log("Duplicate message detected, skipping:", messageKey);
+              return;
+            }
+            processedMessagesRef.current.add(messageKey);
 
             // Update progress for individual message results
             setProgress((prev) => {
@@ -119,12 +138,32 @@ export function useSendSMS() {
 
         await messageCompletionPromise;
         setSendStatus("completed");
+
+        // Show completion toast with success/failure count
+        setProgress((prev) => {
+          const message =
+            prev.failed > 0
+              ? `Sent ${prev.successful} of ${prev.total} messages successfully (${prev.failed} failed)`
+              : `Successfully sent ${prev.successful} of ${prev.total} messages`;
+
+          if (prev.failed > 0) {
+            toast.warning(message);
+          } else {
+            toast.success(message);
+          }
+
+          return prev;
+        });
       } catch (error) {
         console.error("Send messages error:", error);
         setSendStatus("error");
         if (eventSourceRef.current) {
           eventSourceRef.current.close();
         }
+
+        // Show error toast
+        toast.error("Failed to send messages");
+
         throw error;
       }
     },
@@ -143,6 +182,7 @@ export function useSendSMS() {
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
     }
+    processedMessagesRef.current.clear();
   }, []);
 
   return {
