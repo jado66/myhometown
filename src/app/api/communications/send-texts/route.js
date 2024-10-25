@@ -113,9 +113,7 @@ export async function POST(req) {
       );
 
       const messageResponse = await client.messages.create(messageOptions);
-
       const timestamp = new Date().toISOString();
-      console.log("Message sent successfully:", messageResponse.sid);
 
       const result = {
         recipient: recipient.label || recipient.name,
@@ -130,22 +128,14 @@ export async function POST(req) {
       await sendMessageToStream(messageId, result);
       return true;
     } catch (error) {
-      console.error("Twilio Error Details:", {
-        message: error.message,
-        code: error.code,
-        moreInfo: error.moreInfo,
-        status: error.status,
-        details: error,
-      });
+      console.error("Twilio Error Details:", error);
 
-      const timestamp = new Date().toISOString();
       const result = {
         recipient: recipient.label || recipient.name,
         status: "failed",
         error: error.message,
-        timestamp: timestamp,
+        timestamp: new Date().toISOString(),
         details: error.code ? `Twilio Error Code: ${error.code}` : undefined,
-        mediaUrls: messageOptions?.mediaUrl,
       };
 
       await sendMessageToStream(messageId, result);
@@ -154,8 +144,16 @@ export async function POST(req) {
   };
 
   try {
-    const sendPromises = recipients.map(sendWithDelay);
-    await Promise.all(sendPromises);
+    // Process messages sequentially to maintain order
+    for (let i = 0; i < recipients.length; i++) {
+      await sendWithDelay(recipients[i], i);
+    }
+
+    // Send a completion message and close the stream
+    await sendMessageToStream(messageId, {
+      type: "complete",
+      timestamp: new Date().toISOString(),
+    });
 
     await completeStream(messageId);
 
@@ -167,7 +165,7 @@ export async function POST(req) {
     console.error("Error sending messages:", error);
 
     await sendMessageToStream(messageId, {
-      status: "error",
+      type: "error",
       error: error.message,
       timestamp: new Date().toISOString(),
     });

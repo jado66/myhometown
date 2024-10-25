@@ -38,53 +38,63 @@ export function useSendSMS() {
         );
 
         const messageCompletionPromise = new Promise((resolve, reject) => {
-          let processedCount = 0;
-          const totalExpectedMessages = recipients.length;
-
           eventSourceRef.current.onmessage = (event) => {
-            console.log("Received result:", event.data);
+            console.log("Received SSE message:", event.data);
             const data = JSON.parse(event.data);
 
-            if (
-              !data.type &&
-              (data.status === "success" || data.status === "failed")
-            ) {
-              processedCount++;
-
-              setProgress((prev) => {
-                const newResults = [...prev.results, data];
-                const successful = newResults.filter(
-                  (r) => r.status === "success"
-                ).length;
-                const failed = newResults.filter(
-                  (r) => r.status === "failed"
-                ).length;
-
-                return {
-                  ...prev,
-                  completed: successful + failed,
-                  successful,
-                  failed,
-                  results: newResults,
-                };
-              });
-
-              if (processedCount === totalExpectedMessages) {
-                console.log("All messages processed");
-                resolve();
-              }
+            if (data.type === "connected") {
+              console.log("SSE Connection established");
+              return;
             }
+
+            if (data.type === "complete") {
+              console.log("All messages processed, closing connection");
+              if (eventSourceRef.current) {
+                eventSourceRef.current.close();
+              }
+              resolve();
+              return;
+            }
+
+            if (data.type === "error") {
+              console.error("Stream error:", data.error);
+              if (eventSourceRef.current) {
+                eventSourceRef.current.close();
+              }
+              reject(new Error(data.error));
+              return;
+            }
+
+            // Update progress for individual message results
+            setProgress((prev) => {
+              const newResults = [...prev.results, data];
+              const successful = newResults.filter(
+                (r) => r.status === "success"
+              ).length;
+              const failed = newResults.filter(
+                (r) => r.status === "failed"
+              ).length;
+
+              return {
+                ...prev,
+                completed: successful + failed,
+                successful,
+                failed,
+                results: newResults,
+              };
+            });
           };
 
           eventSourceRef.current.onerror = (error) => {
-            console.error("SSE error:", error);
+            console.error("SSE connection error:", error);
+            if (eventSourceRef.current) {
+              eventSourceRef.current.close();
+            }
             reject(new Error("Stream connection error"));
           };
         });
 
-        // Debug logging for media URLs
-        console.log("Sending messages with mediaUrls:", mediaUrls);
-
+        // Send the messages
         const response = await fetch(
           `/api/communications/send-texts?messageId=${messageId}`,
           {
@@ -108,10 +118,6 @@ export function useSendSMS() {
         }
 
         await messageCompletionPromise;
-
-        if (eventSourceRef.current) {
-          eventSourceRef.current.close();
-        }
         setSendStatus("completed");
       } catch (error) {
         console.error("Send messages error:", error);
