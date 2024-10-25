@@ -23,50 +23,14 @@ export async function POST(req) {
 
   const { message, recipients, mediaUrls } = await req.json();
 
-  console.log(
-    "Received payload:",
-    JSON.stringify({ message, recipients, mediaUrls }, null, 2)
-  );
-
-  const validateAndEncodeMediaUrl = (url) => {
-    try {
-      // First decode the URL to prevent double-encoding
-      const decodedUrl = decodeURIComponent(url);
-
-      // Split the URL into parts
-      const urlObj = new URL(decodedUrl);
-
-      // Properly encode each path segment
-      const pathSegments = urlObj.pathname
-        .split("/")
-        .map((segment) => encodeURIComponent(segment))
-        .join("/");
-
-      // Reconstruct the URL with encoded path
-      const encodedUrl = `${urlObj.protocol}//${urlObj.host}${pathSegments}`;
-
-      // Validate the encoded URL
-      if (
-        urlObj.protocol !== "https:" ||
-        !urlObj.hostname.includes("amazonaws.com")
-      ) {
-        return null;
-      }
-
-      console.log("Original URL:", url);
-      console.log("Encoded URL:", encodedUrl);
-
-      return encodedUrl;
-    } catch (error) {
-      console.error("URL validation error:", error);
-      return null;
-    }
-  };
-
   const sendWithDelay = async (recipient, index) => {
     let messageOptions;
     try {
-      await new Promise((resolve) => setTimeout(resolve, index * 200));
+      // Ensure stream is active before proceeding
+      await sendMessageToStream(messageId, {
+        type: "status",
+        message: `Processing message ${index + 1} of ${recipients.length}`,
+      });
 
       const phoneNumber = recipient.value;
       const formattedPhone = phoneNumber.replace(/\D/g, "");
@@ -80,101 +44,108 @@ export async function POST(req) {
         from: process.env.TWILIO_PHONE_NUMBER,
       };
 
-      if (mediaUrls && Array.isArray(mediaUrls) && mediaUrls.length > 0) {
-        // Process and validate URLs
-        const validUrls = mediaUrls
-          .filter(Boolean)
-          .map(validateAndEncodeMediaUrl)
-          .filter(Boolean);
-
-        if (validUrls.length > 0) {
-          messageOptions.mediaUrl = validUrls;
-          console.log("Final encoded mediaUrls:", validUrls);
-        }
-
-        // Verify URLs are accessible
-        for (const url of validUrls) {
+      if (mediaUrls?.length > 0) {
+        messageOptions.mediaUrl = mediaUrls.filter(Boolean).map((url) => {
           try {
-            const response = await fetch(url, { method: "HEAD" });
-            if (!response.ok) {
-              console.warn(`Warning: Media URL is not accessible: ${url}`);
-              throw new Error(`Media URL is not accessible: ${url}`);
-            }
-          } catch (error) {
-            console.error("URL verification error:", error);
-            throw new Error(`Failed to verify media URL: ${error.message}`);
+            return decodeURIComponent(url);
+          } catch {
+            return url;
           }
-        }
+        });
       }
 
-      console.log(
-        "Sending message with options:",
-        JSON.stringify(messageOptions, null, 2)
-      );
-
+      // Send message through Twilio
       const messageResponse = await client.messages.create(messageOptions);
+
       const timestamp = new Date().toISOString();
 
-      const result = {
+      // Immediately send success status to stream
+      const success = await sendMessageToStream(messageId, {
         recipient: recipient.label || recipient.name,
         status: "success",
         messageId: messageResponse.sid,
-        timestamp: timestamp,
-        mediaCount: messageOptions.mediaUrl
-          ? messageOptions.mediaUrl.length
-          : 0,
-      };
+        timestamp,
+        mediaCount: messageOptions.mediaUrl?.length || 0,
+      });
 
-      await sendMessageToStream(messageId, result);
+      if (!success) {
+        throw new Error("Failed to send status to stream");
+      }
+
       return true;
     } catch (error) {
-      console.error("Twilio Error Details:", error);
+      console.error("Error in sendWithDelay:", error);
 
-      const result = {
+      // Try to send error status to stream
+      await sendMessageToStream(messageId, {
         recipient: recipient.label || recipient.name,
         status: "failed",
         error: error.message,
         timestamp: new Date().toISOString(),
-        details: error.code ? `Twilio Error Code: ${error.code}` : undefined,
-      };
+      });
 
-      await sendMessageToStream(messageId, result);
       return false;
     }
   };
 
   try {
-    // Process messages sequentially to maintain order
-    for (let i = 0; i < recipients.length; i++) {
-      await sendWithDelay(recipients[i], i);
+    // Process one message at a time
+    for (const [index, recipient] of recipients.entries()) {
+      await sendWithDelay(recipient, index);
     }
 
-    // Send a completion message and close the stream
-    await sendMessageToStream(messageId, {
+    // Send completion message
+    const completionSent = await sendMessageToStream(messageId, {
       type: "complete",
       timestamp: new Date().toISOString(),
     });
 
+    if (!completionSent) {
+      throw new Error("Failed to send completion status");
+    }
+
+    // Close the stream
     await completeStream(messageId);
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    // Return success response
+    return new Response(
+      JSON.stringify({
+        success: true,
+        messageId,
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
   } catch (error) {
-    console.error("Error sending messages:", error);
+    console.error("Error in send-texts API:", error);
 
+    // Try to send error status to stream
     await sendMessageToStream(messageId, {
       type: "error",
       error: error.message,
       timestamp: new Date().toISOString(),
     });
 
+    // Ensure stream is closed
     await completeStream(messageId);
 
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        error: error.message,
+        messageId,
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
   }
 }
