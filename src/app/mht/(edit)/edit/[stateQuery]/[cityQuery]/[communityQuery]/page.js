@@ -1,6 +1,7 @@
 "use client";
 import {
   Box,
+  Breadcrumbs,
   Card,
   Container,
   Divider,
@@ -34,6 +35,8 @@ import { v4 as uuidv4 } from "uuid";
 import { VolunteerSignUps } from "@/components/VolunteerSignUps";
 import { LightBox } from "@/components/LightBox";
 import { ClassesTreeView } from "@/components/events/ClassesTreeView";
+import Link from "next/link";
+import UnsavedChangesAlert from "@/components/util/UnsavedChangesAlert";
 
 const communityDataContentTemplate = {
   paragraph1Text: faker.lorem.paragraph(),
@@ -43,6 +46,8 @@ const communityDataContentTemplate = {
 const Page = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params;
   const { user } = useUser();
+
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
 
   const { community, hasLoaded } = useCommunity(
     communityQuery,
@@ -536,9 +541,50 @@ const Page = ({ params }) => {
 
   return (
     <>
+      <UnsavedChangesAlert hasUnsavedChanges={true} />
+
       <Container sx={{ paddingTop: 3, marginBottom: 2 }}>
+        <Breadcrumbs
+          separator="-"
+          aria-label="breadcrumb"
+          sx={{ mx: "auto", width: "fit-content" }}
+        >
+          <Link
+            color="inherit"
+            href={rootUrl + "/admin-dashboard"}
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            Admin Dashboard
+          </Link>
+
+          <Link
+            variant="body1"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              textTransform: "capitalize",
+            }}
+            href={rootUrl + `/edit/utah/${cityQuery}`}
+          >
+            {community.city.replaceAll("-", " ")} City
+          </Link>
+
+          <Typography
+            variant="body1"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              textTransform: "capitalize",
+              fontWeight: "bold",
+              color: "black",
+            }}
+          >
+            {communityQuery.replaceAll("-", " ")} Community
+          </Typography>
+        </Breadcrumbs>
+        <Divider sx={{ my: 2 }} />
         <Typography variant="h2" align="center" color="primary">
-          myHometown {community.city.name}
+          myHometown {community.city}
         </Typography>
 
         <Typography variant="h3" align="center" color="primary">

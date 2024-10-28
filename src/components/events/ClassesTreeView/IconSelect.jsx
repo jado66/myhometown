@@ -15,9 +15,18 @@ import PianoIcon from "@/assets/svg/icons/PianoIcon";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import ArtsIcon from "@/assets/svg/icons/ArtsIcon";
 import TutoringIcon from "@/assets/svg/icons/TutoringIcon";
+import FinanceIcon from "@/assets/svg/icons/FinanceIcon";
+import RecreationIcon from "@/assets/svg/icons/RecreationIcon";
+import HulaIcon from "@/assets/svg/icons/HulaIcon";
+import EmergencyPrepIcon from "@/assets/svg/icons/EmergencyPrep";
 
 export const ExampleIcons = {
   None: <div style={{ height: "30px", width: "35px" }}> </div>,
+  Finance: <FinanceIcon />,
+  Recreation: <RecreationIcon />,
+  EmergencyPrep: <EmergencyPrepIcon />,
+
+  // Hula: <HulaIcon />,
   BrushIcon: <ArtsIcon />,
   TranslateIcon: <LanguageIcon />,
   Bear: <BearIcon />,
