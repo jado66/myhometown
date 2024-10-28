@@ -20,21 +20,20 @@ const UpcomingEvents = ({
   onAdd,
 }) => {
   // This function formats the date and time in an easily readable format
-  const dateFormatter = (date, allDay) => {
+  const dateFormatter = (date, isAllDay) => {
     date = new Date(date);
-    let hourmdinutesFormat = { hour: "numeric", minute: "numeric" };
-    let month = date.toLocaleDateString(undefined, { month: "short" });
-    let day = date.getDate();
-    let weekday = date.toLocaleDateString(undefined, { weekday: "short" });
+    const month = date.toLocaleDateString(undefined, { month: "short" });
+    const day = date.getDate();
+    const weekday = date.toLocaleDateString(undefined, { weekday: "short" });
 
-    if (allDay) {
+    if (isAllDay) {
       return `${weekday} ${month} ${day}`;
-    } else {
-      return `${weekday} ${month} ${day}, ${date.toLocaleTimeString(
-        [],
-        hourmdinutesFormat
-      )}`;
     }
+
+    return `${weekday} ${month} ${day}, ${date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "numeric",
+    })}`;
   };
 
   // Sort events by start date, then slice array to contain at most maxEvents items
@@ -115,22 +114,28 @@ const UpcomingEventCard = ({ event, dateFormatter, onSelect }) => {
   const endDateObj = event.end ? new Date(event.end) : null;
 
   // Check if they are valid date objects
-  if (isNaN(startDateObj) || isNaN(endDateObj)) {
+  if (isNaN(startDateObj) || (event.end && isNaN(endDateObj))) {
     return null;
   }
 
-  const startDate = dateFormatter(startDateObj, event.allDay);
-  let endDate;
+  const startDate = dateFormatter(startDateObj, event.isAllDay);
+  let dateDisplay = startDate;
 
-  if (endDateObj.getDate() != startDateObj.getDate()) {
-    // If event spans multiple days, show end date
-    endDate = dateFormatter(event.end, event.allDay);
-  } else {
-    // If event is within a single day, show end time only
-    endDate = endDateObj.toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "numeric",
-    });
+  if (!event.isAllDay) {
+    if (endDateObj && endDateObj.getDate() !== startDateObj.getDate()) {
+      // Multi-day event with specific times
+      dateDisplay = `${startDate} - ${dateFormatter(endDateObj, false)}`;
+    } else if (endDateObj) {
+      // Same day event with end time
+      const endTime = endDateObj.toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "numeric",
+      });
+      dateDisplay = `${startDate} - ${endTime}`;
+    }
+  } else if (endDateObj && endDateObj.getDate() !== startDateObj.getDate()) {
+    // Multi-day all-day event
+    dateDisplay = `${startDate} - ${dateFormatter(endDateObj, true)}`;
   }
 
   return (
@@ -147,6 +152,7 @@ const UpcomingEventCard = ({ event, dateFormatter, onSelect }) => {
       onClick={() => onSelect(event)}
       id="events"
     >
+      {/* <pre>{JSON.stringify(event, null, 2)}</pre> */}
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Typography variant="h6">{event.title}</Typography>
@@ -174,8 +180,8 @@ const UpcomingEventCard = ({ event, dateFormatter, onSelect }) => {
               sx={{ color: "#777", minWidth: "275px" }}
               gutterBottom
             >
-              {`${startDate}`}
-              {!event.allDay ? ` - ${endDate}` : ", All Day Event"}
+              {dateDisplay}
+              {event.allDay && !dateDisplay.includes("-") && ", All Day Event"}
             </Typography>
 
             {event.location && (
