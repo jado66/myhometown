@@ -541,7 +541,7 @@ const Page = ({ params }) => {
 
   return (
     <>
-      <UnsavedChangesAlert hasUnsavedChanges={true} />
+      <UnsavedChangesAlert hasUnsavedChanges={false} />
 
       <Container sx={{ paddingTop: 3, marginBottom: 2 }}>
         <Breadcrumbs
