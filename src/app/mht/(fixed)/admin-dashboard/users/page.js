@@ -6,18 +6,20 @@ import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import AddEditUserDialog from "@/components/data-tables/AddEditUserDialog";
 import { DataTable } from "@/components/data-tables/DataTable";
 import { createUserColumns } from "@/constants/columns";
-import { Grid, Box, Typography } from "@mui/material";
+import { Grid, Box, Typography, Button } from "@mui/material";
 import BackButton from "@/components/BackButton";
 import Loading from "@/components/util/Loading";
 import { NotResponsiveAlert } from "@/util/NotResponsiveAlert";
+import CreateUserForm from "@/components/admin/CreateUserForm";
 
 export default function Management() {
   const { users, handleAddUser, handleEditUser, handleDeleteUser, hasLoaded } =
     useUsers();
 
   const [userToEdit, setUserToEdit] = useState(null);
-
   const [showAddUserForm, setShowAddUserForm] = useState(false);
+
+  const [showEditUserForm, setShowEditUserForm] = useState(false);
   const [showConfirmDeleteUser, setShowConfirmDeleteUser] = useState(false);
   const [confirmDeleteUserProps, setConfirmDeleteUserProps] = useState({});
 
@@ -37,14 +39,18 @@ export default function Management() {
     setShowConfirmDeleteUser(true);
   };
 
-  const handleCloseUserForm = () => {
-    setShowAddUserForm(false);
+  const handleCloseUserEditForm = () => {
+    setShowEditUserForm(false);
     setUserToEdit(null);
+  };
+
+  const handleCloseUserAddForm = () => {
+    setShowAddUserForm(false);
   };
 
   useEffect(() => {
     if (userToEdit) {
-      setShowAddUserForm(true);
+      setShowEditUserForm(true);
     }
   }, [userToEdit]);
 
@@ -55,13 +61,15 @@ export default function Management() {
       <BackButton />
       <NotResponsiveAlert sx={{ mt: 8 }} />
 
+      <CreateUserForm show={showAddUserForm} onClose={handleCloseUserAddForm} />
+
       <AskYesNoDialog
         {...confirmDeleteUserProps}
         open={showConfirmDeleteUser}
       />
       <AddEditUserDialog
-        open={showAddUserForm}
-        handleClose={handleCloseUserForm}
+        open={showEditUserForm}
+        handleClose={handleCloseUserEditForm}
         onSubmitForm={handleEditUser}
         initialUserState={userToEdit}
       />
@@ -108,6 +116,7 @@ export default function Management() {
             Here you can add, remove, or edit users and their roles.
           </Typography>
         </Box>
+
         {!hasLoaded ? (
           <Box display="flex" justifyContent="center">
             <Loading size={50} />
@@ -118,6 +127,8 @@ export default function Management() {
             rows={users}
             columns={userColumns}
             hiddenColumns={["_id", "country", "cities", "communities"]}
+            buttonText="Add User"
+            buttonFunction={() => setShowAddUserForm(true)}
           />
         )}
       </Card>
