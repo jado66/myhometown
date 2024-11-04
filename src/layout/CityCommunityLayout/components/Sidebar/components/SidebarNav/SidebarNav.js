@@ -111,7 +111,7 @@ const SidebarNav = ({ onClose }) => {
               <div style={{ marginLeft: "2em" }}>
                 <>
                   <NextLink
-                    href={rootUrl + `/maintenance`}
+                    href={rootUrl + `/utah/ogden`}
                     style={{ textDecoration: "none", color: "#686868" }}
                   >
                     <Typography
