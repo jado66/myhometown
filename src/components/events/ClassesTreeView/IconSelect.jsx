@@ -19,14 +19,15 @@ import FinanceIcon from "@/assets/svg/icons/FinanceIcon";
 import RecreationIcon from "@/assets/svg/icons/RecreationIcon";
 import HulaIcon from "@/assets/svg/icons/HulaIcon";
 import EmergencyPrepIcon from "@/assets/svg/icons/EmergencyPrep";
+import HomeworkIcon from "@/assets/svg/icons/HomeworkIcon";
 
 export const ExampleIcons = {
   None: <div style={{ height: "30px", width: "35px" }}> </div>,
   Finance: <FinanceIcon />,
   Recreation: <RecreationIcon />,
   EmergencyPrep: <EmergencyPrepIcon />,
-
-  // Hula: <HulaIcon />,
+  Homework: <HomeworkIcon />,
+  Hula: <HulaIcon />,
   BrushIcon: <ArtsIcon />,
   TranslateIcon: <LanguageIcon />,
   Bear: <BearIcon />,
