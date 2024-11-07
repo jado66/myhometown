@@ -6,8 +6,16 @@ import {
   Typography,
   Container,
   Box,
+  FormControl,
+  OutlinedInput,
+  FormControlLabel,
+  Checkbox,
+  MenuItem,
+  Select,
+  InputLabel,
   Paper,
   TextField,
+  Divider,
   Stack,
   Alert,
 } from "@mui/material";
@@ -32,6 +40,16 @@ const DEFAULT_VISIBLE_FIELDS = [
   "gender",
 ];
 
+const DAYS_OF_WEEK = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+
 export default function ClassSignup() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isFieldSelectorOpen, setIsFieldSelectorOpen] = useState(false);
@@ -41,23 +59,35 @@ export default function ClassSignup() {
     DEFAULT_VISIBLE_FIELDS.reduce((acc, key) => {
       acc[key] = {
         ...AVAILABLE_FIELDS[key],
-        visible: true, // Set visible to true for default fields
+        visible: true,
       };
       return acc;
     }, {})
   );
+
+  const [classConfig, setClassConfig] = useState({
+    className: "Class",
+    description: "",
+    startDate: "",
+    endDate: "",
+    meetingDays: [],
+    startTime: "",
+    endTime: "",
+    location: "",
+    capacity: "",
+    showCapacity: false,
+  });
 
   const [fieldOrder, setFieldOrder] = useState(DEFAULT_VISIBLE_FIELDS);
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
   const [submitStatus, setSubmitStatus] = useState(null);
 
-  const handleClassNameChange = (e) => {
-    setClassName(e.target.value);
-  };
-
-  const handleDescriptionChange = (e) => {
-    setClassDescription(e.target.value);
+  const handleClassConfigChange = (field, value) => {
+    setClassConfig((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   const handleFieldUpdate = (field, newConfig) => {
@@ -111,6 +141,59 @@ export default function ClassSignup() {
         [field]: null,
       }));
     }
+  };
+
+  const validateClassConfig = () => {
+    const newErrors = {};
+    const now = new Date();
+    const startDate = new Date(classConfig.startDate);
+    const endDate = new Date(classConfig.endDate);
+
+    if (!classConfig.className.trim()) {
+      newErrors.className = "Class name is required";
+    }
+
+    if (!classConfig.startDate) {
+      newErrors.startDate = "Start date is required";
+    } else if (startDate < now) {
+      newErrors.startDate = "Start date must be in the future";
+    }
+
+    if (!classConfig.endDate) {
+      newErrors.endDate = "End date is required";
+    } else if (endDate < startDate) {
+      newErrors.endDate = "End date must be after start date";
+    }
+
+    if (!classConfig.meetingDays.length) {
+      newErrors.meetingDays = "At least one meeting day is required";
+    }
+
+    if (!classConfig.startTime) {
+      newErrors.startTime = "Start time is required";
+    }
+
+    if (!classConfig.endTime) {
+      newErrors.endTime = "End time is required";
+    } else if (
+      classConfig.startTime &&
+      classConfig.endTime <= classConfig.startTime
+    ) {
+      newErrors.endTime = "End time must be after start time";
+    }
+
+    if (!classConfig.location.trim()) {
+      newErrors.location = "Location is required";
+    }
+
+    if (
+      classConfig.capacity &&
+      (isNaN(classConfig.capacity) || Number(classConfig.capacity) < 1)
+    ) {
+      newErrors.capacity = "Capacity must be a positive number";
+    }
+
+    return newErrors;
   };
 
   const validateForm = () => {
@@ -175,69 +258,241 @@ export default function ClassSignup() {
     setFieldOrder(items);
   };
 
+  const renderClassConfig = () => (
+    <Stack spacing={3} sx={{ mb: 4 }}>
+      {isEditMode ? (
+        <>
+          <TextField
+            fullWidth
+            label="Class Name"
+            value={classConfig.className}
+            onChange={(e) =>
+              handleClassConfigChange("className", e.target.value)
+            }
+            error={!!errors.className}
+            helperText={errors.className}
+          />
+
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            label="Class Description"
+            value={classConfig.description}
+            onChange={(e) =>
+              handleClassConfigChange("description", e.target.value)
+            }
+            placeholder="Enter class description here..."
+          />
+
+          <Stack direction="row" spacing={2}>
+            <TextField
+              fullWidth
+              label="Start Date"
+              type="date"
+              value={classConfig.startDate}
+              onChange={(e) =>
+                handleClassConfigChange("startDate", e.target.value)
+              }
+              InputLabelProps={{ shrink: true }}
+              error={!!errors.startDate}
+              helperText={errors.startDate}
+            />
+
+            <TextField
+              fullWidth
+              label="End Date"
+              type="date"
+              value={classConfig.endDate}
+              onChange={(e) =>
+                handleClassConfigChange("endDate", e.target.value)
+              }
+              InputLabelProps={{ shrink: true }}
+              error={!!errors.endDate}
+              helperText={errors.endDate}
+            />
+          </Stack>
+
+          <FormControl fullWidth error={!!errors.meetingDays}>
+            <InputLabel>Meeting Days</InputLabel>
+            <Select
+              multiple
+              value={classConfig.meetingDays}
+              onChange={(e) =>
+                handleClassConfigChange("meetingDays", e.target.value)
+              }
+              input={<OutlinedInput label="Meeting Days" />}
+            >
+              {DAYS_OF_WEEK.map((day) => (
+                <MenuItem key={day} value={day}>
+                  {day}
+                </MenuItem>
+              ))}
+            </Select>
+            {errors.meetingDays && (
+              <Typography color="error" variant="caption">
+                {errors.meetingDays}
+              </Typography>
+            )}
+          </FormControl>
+
+          <Stack direction="row" spacing={2}>
+            <TextField
+              fullWidth
+              label="Start Time"
+              type="time"
+              value={classConfig.startTime}
+              onChange={(e) =>
+                handleClassConfigChange("startTime", e.target.value)
+              }
+              InputLabelProps={{ shrink: true }}
+              error={!!errors.startTime}
+              helperText={errors.startTime}
+            />
+
+            <TextField
+              fullWidth
+              label="End Time"
+              type="time"
+              value={classConfig.endTime}
+              onChange={(e) =>
+                handleClassConfigChange("endTime", e.target.value)
+              }
+              InputLabelProps={{ shrink: true }}
+              error={!!errors.endTime}
+              helperText={errors.endTime}
+            />
+          </Stack>
+
+          <TextField
+            fullWidth
+            label="Location"
+            value={classConfig.location}
+            onChange={(e) =>
+              handleClassConfigChange("location", e.target.value)
+            }
+            error={!!errors.location}
+            helperText={errors.location}
+          />
+
+          <TextField
+            fullWidth
+            label="Class Capacity"
+            type="number"
+            value={classConfig.capacity}
+            onChange={(e) =>
+              handleClassConfigChange("capacity", e.target.value)
+            }
+            error={!!errors.capacity}
+            helperText={
+              errors.capacity || "Optional: Maximum number of students"
+            }
+          />
+
+          {classConfig.capacity && (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={classConfig.showCapacity}
+                  onChange={(e) =>
+                    handleClassConfigChange(
+                      "showCapacity",
+                      e.target.checked ? true : undefined
+                    )
+                  }
+                />
+              }
+              label="Show Class Capacity"
+            />
+          )}
+        </>
+      ) : (
+        <>
+          <Typography variant="h4" component="h1">
+            {classConfig.className} Signup
+          </Typography>
+
+          {classConfig.description && (
+            <Typography variant="body1">{classConfig.description}</Typography>
+          )}
+
+          <Stack spacing={1}>
+            {(classConfig.startDate ||
+              classConfig.endTime ||
+              classConfig.startTime ||
+              classConfig.location ||
+              (classConfig.capacity && classConfig.showCapacity) ||
+              (classConfig.meetingDays &&
+                classConfig.meetingDays.length > 0)) && (
+              <Typography variant="subtitle1" fontWeight="bold">
+                Class Information:
+              </Typography>
+            )}
+
+            {classConfig.meetingDays && classConfig.meetingDays.length > 0 && (
+              <Typography>
+                Meeting {formatMeetingDays(classConfig.meetingDays)}
+                {classConfig.startTime && classConfig.endTime && (
+                  <>
+                    , at {formatTime(classConfig.startTime)} -{" "}
+                    {formatTime(classConfig.endTime)}
+                  </>
+                )}
+              </Typography>
+            )}
+
+            {classConfig.startDate && classConfig.endDate && (
+              <Typography>
+                Starting on{" "}
+                {new Date(classConfig.startDate).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}{" "}
+                and ending on{" "}
+                {new Date(classConfig.endDate).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </Typography>
+            )}
+
+            {classConfig.location && (
+              <Typography>
+                <strong>Location:</strong> {classConfig.location}
+              </Typography>
+            )}
+
+            {classConfig.capacity && (
+              <Typography>
+                <strong>Class Capacity:</strong> {classConfig.capacity} students
+              </Typography>
+            )}
+          </Stack>
+        </>
+      )}
+
+      <Divider />
+    </Stack>
+  );
+
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Paper sx={{ p: 4 }}>
         <Stack spacing={3}>
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            {isEditMode ? (
-              <TextField
-                value={className}
-                onChange={handleClassNameChange}
-                variant="standard"
-                sx={{
-                  "& input": {
-                    typography: "h4",
-                    fontWeight: "bold",
-                    pb: 1,
-                  },
-                }}
-              />
-            ) : (
-              <Typography variant="h4" component="h1">
-                {className} Signup
-              </Typography>
-            )}
-            <Stack direction="row" spacing={2}>
-              {isEditMode && (
-                <Button
-                  variant="outlined"
-                  startIcon={<AddCircleOutlineIcon />}
-                  onClick={() => setIsFieldSelectorOpen(true)}
-                >
-                  Manage Form Fields
-                </Button>
-              )}
-              <Button
-                variant="contained"
-                startIcon={isEditMode ? <VisibilityIcon /> : <EditIcon />}
-                onClick={() => setIsEditMode(!isEditMode)}
-              >
-                {isEditMode ? "Preview Form" : "Edit Form"}
-              </Button>
-            </Stack>
+          <Stack direction="row" justifyContent="flex-end" alignItems="center">
+            <Button
+              variant="contained"
+              startIcon={isEditMode ? <VisibilityIcon /> : <EditIcon />}
+              onClick={() => setIsEditMode(!isEditMode)}
+              sx={{ ml: 2 }}
+            >
+              {isEditMode ? "Preview Form" : "Edit Form"}
+            </Button>
           </Stack>
 
-          {isEditMode ? (
-            <TextField
-              fullWidth
-              multiline
-              rows={3}
-              value={classDescription}
-              onChange={handleDescriptionChange}
-              label="Class Description"
-              placeholder="Enter class description here..."
-              variant="outlined"
-            />
-          ) : classDescription ? (
-            <Typography variant="body1" sx={{ mb: 3 }}>
-              {classDescription}
-            </Typography>
-          ) : null}
+          {renderClassConfig()}
 
           {submitStatus && (
             <Alert
@@ -252,10 +507,24 @@ export default function ClassSignup() {
             <Box component="form" onSubmit={handleSubmit}>
               {isEditMode ? (
                 <>
-                  <StructuralElementAdder
-                    onAddElement={handleAddElement}
-                    existingFields={fieldOrder}
-                  />
+                  <Box sx={{ mb: 3, display: "flex", alignItems: "center" }}>
+                    {isEditMode && (
+                      <Stack direction="row" spacing={2} sx={{ mb: 3, mr: 2 }}>
+                        <Button
+                          variant="outlined"
+                          startIcon={<AddCircleOutlineIcon />}
+                          onClick={() => setIsFieldSelectorOpen(true)}
+                        >
+                          Manage Form Fields
+                        </Button>
+                      </Stack>
+                    )}
+                    <StructuralElementAdder
+                      onAddElement={handleAddElement}
+                      existingFields={fieldOrder}
+                    />
+                  </Box>
+
                   <Droppable droppableId="fields">
                     {(provided) => (
                       <Box {...provided.droppableProps} ref={provided.innerRef}>
@@ -323,4 +592,20 @@ export default function ClassSignup() {
       </Paper>
     </Container>
   );
+}
+
+function formatMeetingDays(days) {
+  if (days.length <= 1) return days.join("");
+  const lastDay = days.pop();
+  return `${days.join(", ")}, and ${lastDay}`;
+}
+
+// Utility function to format time to AM/PM without leading zero
+function formatTime(timeStr) {
+  const [hour, minute] = timeStr.split(":");
+  const date = new Date(1970, 0, 1, hour, minute);
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
