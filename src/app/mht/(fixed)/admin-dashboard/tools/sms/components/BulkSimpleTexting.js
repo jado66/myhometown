@@ -463,6 +463,29 @@ export default function BulkMMSMessaging() {
     </Alert>;
   }
 
+  const uniqueGroups = new Set(groups.map((g) => g.value));
+  const uniqueGroupOptions = Array.from(uniqueGroups).map((value) => {
+    const group = groups.find((g) => g.value === value);
+    return {
+      value: `group:${group.value}`,
+      label: (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span>{`Group: ${group.label}`}</span>
+          <Info
+            style={{ cursor: "pointer", marginLeft: "8px" }}
+            onClick={(e) => handleGroupInfoClick(e, group)}
+          />
+        </div>
+      ),
+    };
+  });
+
   return (
     <>
       <BackButton
@@ -502,28 +525,11 @@ export default function BulkMMSMessaging() {
                 <Select
                   isMulti
                   options={[
-                    ...groups.map((g) => ({
-                      value: `group:${g.value}`,
-                      label: (
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <span>{`Group: ${g.label}`}</span>
-                          <Info
-                            style={{ cursor: "pointer", marginLeft: "8px" }}
-                            onClick={(e) => handleGroupInfoClick(e, g)}
-                          />
-                        </div>
-                      ),
-                    })),
                     ...contacts.map((c) => ({
-                      value: c.phone,
-                      label: `${c.firstName} ${c.lastName} - ${c.phone}`,
+                      value: c.id,
+                      label: `${c.name} (${c.phone})`,
                     })),
+                    ...uniqueGroupOptions,
                   ]}
                   value={selectedRecipients}
                   onChange={handleRecipientSelection}
