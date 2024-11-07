@@ -31,27 +31,35 @@ export const pages = () => {
         //   title: 'Email Communications',
         //   href:  rootUrl+'/tools/email',
         // },
-        // {
-        //   title: "Texting",
-        //   href: rootUrl + "/admin-dashboard/tools/sms",
-        // },
-        // {
-        //   title: "Contact Directory",
-        //   href: rootUrl + "/admin-dashboard/tools/directory",
-        // },
+        {
+          title: "Texting",
+          href: rootUrl + "/admin-dashboard/tools/sms",
+        },
+        {
+          title: "Contact Directory",
+          href: rootUrl + "/admin-dashboard/tools/directory",
+        },
+        {
+          title: "User Guide",
+          href: rootUrl + "/admin-dashboard/tools/user-guide",
+        },
+        {
+          title: "Video Tutorials",
+          href: rootUrl + "/admin-dashboard/tools/video-tutorials",
+        },
       ],
     },
     {
-      title: "Your Profile",
+      title: "Upcoming Features",
       id: "auth-pages",
       pages: [
         {
-          title: "Manage Profile",
-          href: rootUrl + "/maintenance",
+          title: "Class Signup Creation",
+          href: rootUrl + "/admin-dashboard/upcoming/create-class-signups",
         },
         {
-          title: "Settings",
-          href: rootUrl + "/maintenance",
+          title: "Automatic Role Creation",
+          href: rootUrl + "/admin-dashboard/upcoming/automatic-role-creation",
         },
       ],
     },
