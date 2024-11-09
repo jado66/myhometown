@@ -36,7 +36,7 @@ const BugReportPage = () => {
           <span style={{ fontWeight: "bold" }}>JD@PlatinumProgramming.com</span>
           <IconButton
             sx={{ p: 0.5 }}
-            onClick={() => copyToClipboard("KathyCraven@gmail.com")}
+            onClick={() => copyToClipboard("JD@PlatinumProgramming.com")}
           >
             <ContentCopyIcon fontSize="small" />
           </IconButton>{" "}

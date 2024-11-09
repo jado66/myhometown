@@ -32,9 +32,9 @@ const FeatureRequestPage = () => {
         </Typography>
         <Typography variant="subtitle1">
           Please send an email to{" "}
-          <span style={{ fontWeight: "bold" }}>KathyCraven@gmail.com</span>
+          <span style={{ fontWeight: "bold" }}>KathyCraven10@gmail.com</span>
           <IconButton
-            onClick={() => copyToClipboard("KathyCraven@gmail.com")}
+            onClick={() => copyToClipboard("KathyCraven10@gmail.com")}
             sx={{ p: 0.5 }}
           >
             <ContentCopyIcon fontSize="small" />
@@ -51,7 +51,7 @@ const FeatureRequestPage = () => {
         <Button
           variant="contained"
           color="primary"
-          href="mailto:kathycraven@gmail.com?subject=Website%20Feature%20Request&body=Hi%20Development%20team,%0A%0AI%20would%20like%20to%20request%20a%20feature%20on%20the%20myhometownut.com%20website....%0A%0A(Please%20describe%20the%20feature%20you%20would%20like%20to%20see.)"
+          href="mailto:kathycraven10@gmail.com?subject=Website%20Feature%20Request&body=Hi%20Development%20team,%0A%0AI%20would%20like%20to%20request%20a%20feature%20on%20the%20myhometownut.com%20website....%0A%0A(Please%20describe%20the%20feature%20you%20would%20like%20to%20see.)"
           sx={{ mt: 3 }}
         >
           Click Here
