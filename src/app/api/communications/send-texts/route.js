@@ -32,7 +32,8 @@ export async function POST(req) {
         message: `Processing message ${index + 1} of ${recipients.length}`,
       });
 
-      const phoneNumber = recipient.value;
+      // Convert phoneNumber to a string for replace to work
+      const phoneNumber = recipient.label.toString();
       const formattedPhone = phoneNumber.replace(/\D/g, "");
 
       messageOptions = {

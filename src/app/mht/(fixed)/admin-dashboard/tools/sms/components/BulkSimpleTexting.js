@@ -527,7 +527,7 @@ export default function BulkMMSMessaging() {
                   options={[
                     ...contacts.map((c) => ({
                       value: c.id,
-                      label: `${c.name} (${c.phone})`,
+                      label: `${c.firstName} ${c.lastName} (${c.phone})`,
                     })),
                     ...uniqueGroupOptions,
                   ]}
@@ -704,46 +704,69 @@ export default function BulkMMSMessaging() {
 }
 
 const RecipientsList = ({ selectedRecipients, contacts }) => {
+  // Safe check for group membership
+  const isGroupRecipient = (recipient) => {
+    return (
+      recipient &&
+      typeof recipient.value === "string" &&
+      recipient.value.startsWith("group:")
+    );
+  };
+
   // Function to get all contacts from a group
   const getGroupContacts = (groupName) => {
+    if (!groupName || !contacts) return [];
+
     return contacts
-      .filter((contact) => contact.groups.some((g) => g.value === groupName))
+      .filter(
+        (contact) =>
+          contact.groups &&
+          Array.isArray(contact.groups) &&
+          contact.groups.some((g) => g && g.value === groupName)
+      )
       .map((contact) => ({
-        value: contact.phone,
-        label: `${contact.name} (${contact.phone})`,
+        value: contact.phone || "",
+        label: `${contact.name || "Unknown"} (${contact.phone || "No Phone"})`,
         fromGroup: groupName,
       }));
   };
 
   // Process recipients and track duplicates with their order of appearance
   const processRecipients = () => {
-    const phoneNumberMap = new Map(); // Maps phone numbers to their first occurrence info
-    const duplicatesInfo = new Map(); // Maps phone numbers to their duplicate status and source
-    const groupedRecipients = [];
+    if (!Array.isArray(selectedRecipients))
+      return { groupRecipients: [], individualRecipients: [] };
+
+    const phoneNumberMap = new Map();
+    const duplicatesInfo = new Map();
 
     // First, process group recipients
     const groupRecipients = selectedRecipients
-      .filter(
-        (r) => typeof r.value === "string" && r.value.startsWith("group:")
-      )
+      .filter(isGroupRecipient)
       .map((recipient) => {
+        if (
+          !recipient.value ||
+          !recipient.label?.props?.children?.[0]?.props?.children
+        ) {
+          return null;
+        }
+
         const groupName = recipient.value.replace("group:", "");
         const groupContacts = getGroupContacts(groupName);
 
         // Track all phone numbers from groups
         groupContacts.forEach((contact) => {
-          if (!phoneNumberMap.has(contact.value)) {
-            // First occurrence
-            phoneNumberMap.set(contact.value, {
-              source: groupName,
-              type: "group",
-            });
-          } else {
-            // Duplicate occurrence
-            duplicatesInfo.set(contact.value, {
-              originalSource: phoneNumberMap.get(contact.value).source,
-              type: phoneNumberMap.get(contact.value).type,
-            });
+          if (contact && contact.value) {
+            if (!phoneNumberMap.has(contact.value)) {
+              phoneNumberMap.set(contact.value, {
+                source: groupName,
+                type: "group",
+              });
+            } else {
+              duplicatesInfo.set(contact.value, {
+                originalSource: phoneNumberMap.get(contact.value).source,
+                type: phoneNumberMap.get(contact.value).type,
+              });
+            }
           }
         });
 
@@ -755,11 +778,12 @@ const RecipientsList = ({ selectedRecipients, contacts }) => {
             duplicateInfo: duplicatesInfo.get(contact.value),
           })),
         };
-      });
+      })
+      .filter(Boolean); // Remove any null entries
 
     // Then, process individual recipients
     const individualRecipients = selectedRecipients
-      .filter((r) => !r.value.startsWith("group:"))
+      .filter((r) => r && r.value && !isGroupRecipient(r))
       .map((recipient) => {
         const isDuplicate = phoneNumberMap.has(recipient.value);
         if (!isDuplicate) {
@@ -805,8 +829,8 @@ const RecipientsList = ({ selectedRecipients, contacts }) => {
             {group.groupName}
           </Typography>
           <List dense>
-            {group.contacts.map((contact) => (
-              <ListItem key={contact.value}>
+            {group.contacts.map((contact, contactIndex) => (
+              <ListItem key={`${contact.value}-${contactIndex}`}>
                 <ListItemText
                   primary={
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
