@@ -23,7 +23,6 @@ import Loading from "@/components/util/Loading";
 import { faker } from "@faker-js/faker";
 import { useTheme } from "@mui/material/styles";
 import { useUser } from "@/hooks/use-user";
-import RoleGuard from "@/guards/role-guard";
 import { NotResponsiveAlert } from "@/util/NotResponsiveAlert";
 import { useRouter } from "next/navigation";
 
@@ -330,21 +329,6 @@ export default function Management() {
             hiddenColumns={["_id", "country", "state"]}
           />
         )}
-
-        {/* <RoleGuard requiredRole="admin" user={user}>
-          <Grid sx={{ mt: 3 }}>
-            <Box display="flex" justifyContent="center" width="100%">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => setShowAddCommunityForm(true)}
-                disabled
-              >
-                Add a Community
-              </Button>
-            </Box>
-          </Grid>
-        </RoleGuard> */}
       </Card>
     </Grid>
   );

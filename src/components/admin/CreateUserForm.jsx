@@ -6,15 +6,25 @@ import {
   DialogActions,
   Button,
   TextField,
-  MenuItem,
+  FormControl,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
   Alert as MuiAlert,
 } from "@mui/material";
 
 const CreateUserForm = ({ show, onClose }) => {
   const [formData, setFormData] = useState({
     email: "",
-    name: "",
-    role: "None",
+    firstName: "",
+    lastName: "",
+    permissions: {
+      administrator: false,
+      cityManagement: false,
+      communityManagement: false,
+      texting: false,
+      classManagement: false,
+    },
     contactNumber: "",
     cities: [],
     communities: [],
@@ -23,11 +33,46 @@ const CreateUserForm = ({ show, onClose }) => {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  const [emailValid, setEmailValid] = useState(true);
   const [previousFormData, setPreviousFormData] = useState(null);
+
+  const handlePermissionChange = (permission) => {
+    let updatedPermissions = {
+      ...formData.permissions,
+      [permission]: !formData.permissions[permission],
+    };
+
+    if (permission === "administrator" && updatedPermissions[permission]) {
+      Object.keys(updatedPermissions).forEach((key) => {
+        if (key !== "administrator") {
+          updatedPermissions[key] = false;
+        }
+      });
+    }
+
+    if (permission !== "administrator" && updatedPermissions[permission]) {
+      updatedPermissions["administrator"] = false;
+    }
+
+    setFormData({
+      ...formData,
+      permissions: updatedPermissions,
+    });
+  };
+
+  const validateEmail = (email) => {
+    // Regular expression for validating an Email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateEmail(formData.email)) {
+      setEmailValid(false);
+      return;
+    }
+    setEmailValid(true);
     setLoading(true);
     setError(null);
     setResult(null);
@@ -48,13 +93,19 @@ const CreateUserForm = ({ show, onClose }) => {
       }
 
       setResult(data);
-
       setPreviousFormData(formData);
 
       setFormData({
         email: "",
-        name: "",
-        role: "None",
+        firstName: "",
+        lastName: "",
+        permissions: {
+          administrator: false,
+          cityManagement: false,
+          communityManagement: false,
+          texting: false,
+          classManagement: false,
+        },
         contactNumber: "",
         cities: [],
         communities: [],
@@ -79,32 +130,92 @@ const CreateUserForm = ({ show, onClose }) => {
             variant="outlined"
             margin="dense"
             value={formData.email}
+            error={!emailValid}
+            helperText={!emailValid ? "Please enter a valid email address" : ""}
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
             }
           />
           <TextField
             fullWidth
-            label="Name"
+            required
+            label="First Name"
             type="text"
             variant="outlined"
             margin="dense"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            value={formData.firstName}
+            onChange={(e) =>
+              setFormData({ ...formData, firstName: e.target.value })
+            }
           />
           <TextField
-            select
             fullWidth
-            label="Role"
+            required
+            label="Last Name"
+            type="text"
             variant="outlined"
             margin="dense"
-            value={formData.role}
-            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-          >
-            <MenuItem value="None">None</MenuItem>
-            <MenuItem value="Admin">Admin</MenuItem>
-            <MenuItem value="User">User</MenuItem>
-          </TextField>
+            value={formData.lastName}
+            onChange={(e) =>
+              setFormData({ ...formData, lastName: e.target.value })
+            }
+          />
+
+          <FormControl component="fieldset" sx={{ mt: 2 }} fullWidth>
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={formData.permissions.administrator}
+                    onChange={() => handlePermissionChange("administrator")}
+                  />
+                }
+                label="Administrator"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={formData.permissions.cityManagement}
+                    disabled={formData.permissions.administrator}
+                    onChange={() => handlePermissionChange("cityManagement")}
+                  />
+                }
+                label="City Management"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    disabled={formData.permissions.administrator}
+                    checked={formData.permissions.communityManagement}
+                    onChange={() =>
+                      handlePermissionChange("communityManagement")
+                    }
+                  />
+                }
+                label="Community Management"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    disabled={formData.permissions.administrator}
+                    checked={formData.permissions.texting}
+                    onChange={() => handlePermissionChange("texting")}
+                  />
+                }
+                label="Texting"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    disabled={formData.permissions.administrator}
+                    checked={formData.permissions.classManagement}
+                    onChange={() => handlePermissionChange("classManagement")}
+                  />
+                }
+                label="Class Management"
+              />
+            </FormGroup>
+          </FormControl>
         </form>
 
         {error && (
@@ -124,7 +235,16 @@ const CreateUserForm = ({ show, onClose }) => {
         <Button onClick={onClose} color="secondary" disabled={loading}>
           Cancel
         </Button>
-        <Button onClick={handleSubmit} color="primary" disabled={loading}>
+        <Button
+          onClick={handleSubmit}
+          color="primary"
+          disabled={
+            loading ||
+            !formData.email ||
+            !formData.firstName ||
+            !formData.lastName
+          }
+        >
           {loading ? "Creating User..." : "Create User"}
         </Button>
       </DialogActions>

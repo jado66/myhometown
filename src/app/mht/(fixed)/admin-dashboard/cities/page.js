@@ -20,7 +20,6 @@ import BackButton from "@/components/BackButton";
 import Loading from "@/components/util/Loading";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import AddEditCityDialog from "@/components/data-tables/AddEditCityDialog";
-import RoleGuard from "@/guards/role-guard";
 import { useRouter } from "next/navigation";
 import useManageCities from "@/hooks/use-manage-cities";
 import { useUser } from "@/hooks/use-user";
@@ -201,18 +200,6 @@ export default function Management() {
             />
           </Box>
         )}
-
-        {/* <RoleGuard requiredRole="admin" user={user}>
-          <Box display="flex" justifyContent="center" width="100%" m={3}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setShowAddCityForm(true)}
-            >
-              Add a City
-            </Button>
-          </Box>
-        </RoleGuard> */}
       </Grid>
     </>
   );

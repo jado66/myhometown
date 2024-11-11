@@ -26,7 +26,6 @@ import { useEdit } from "@/hooks/use-edit";
 import { useHandleEvents } from "@/hooks/use-handle-events";
 import { communityTemplate } from "@/constants/templates/communityTemplate";
 import PhotoGallery from "@/components/PhotoGallery";
-import RoleGuard from "@/guards/role-guard";
 import { useUser } from "@/hooks/use-user";
 import { Info } from "@mui/icons-material";
 import UploadImage from "@/components/util/UploadImage";

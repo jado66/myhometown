@@ -11,6 +11,7 @@ import BackButton from "@/components/BackButton";
 import Loading from "@/components/util/Loading";
 import { NotResponsiveAlert } from "@/util/NotResponsiveAlert";
 import CreateUserForm from "@/components/admin/CreateUserForm";
+import UserDataTable from "@/components/data-tables/UserDataTable";
 
 export default function Management() {
   const { users, handleAddUser, handleEditUser, handleDeleteUser, hasLoaded } =
@@ -122,13 +123,12 @@ export default function Management() {
             <Loading size={50} />
           </Box>
         ) : (
-          <DataTable
+          <UserDataTable
             id="user"
-            rows={users}
-            columns={userColumns}
-            hiddenColumns={["_id", "country", "cities", "communities"]}
-            buttonText="Add User"
-            buttonFunction={() => setShowAddUserForm(true)}
+            data={users}
+            // columns={userColumns}
+            onRowClick={(user) => setUserToEdit(user)}
+            onAddClick={() => setShowAddUserForm(true)}
           />
         )}
       </Card>

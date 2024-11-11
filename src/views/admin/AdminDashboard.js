@@ -12,7 +12,7 @@ import CardMedia from "@mui/material/CardMedia";
 import Button from "@mui/material/Button";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { Container } from "@mui/material";
-import RoleGuard from "@/guards/role-guard";
+// import RoleGuard from "@/guards/role-guard";
 import { useUser } from "@/hooks/use-user";
 import Loading from "@/components/util/Loading";
 import NextLink from "next/link";
@@ -131,9 +131,9 @@ const AdminDashboardPages = () => {
                 //   href: '/maintenance'
                 // },
               ].map((item, i) => (
-                <RoleGuard requiredRole={item.requiredRole} user={user}>
-                  <AdminDashboardCard item={item} i={i} />
-                </RoleGuard>
+                // <RoleGuard requiredRole={item.requiredRole} user={user}>
+                <AdminDashboardCard item={item} i={i} />
+                // </RoleGuard>
               ))}
             </Grid>
           </Box>
