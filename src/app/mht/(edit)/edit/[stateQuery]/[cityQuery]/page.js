@@ -329,7 +329,9 @@ const Page = ({ params }) => {
               color: "black",
             }}
           >
-            {cityQuery.replaceAll("-", " ")} City
+            {cityQuery.toLowerCase().endsWith("city")
+              ? cityQuery.replaceAll("-", " ")
+              : `${cityQuery.replaceAll("-", " ")} City`}
           </Typography>
         </Breadcrumbs>
         <Divider sx={{ my: 2 }} />

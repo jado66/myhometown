@@ -135,7 +135,9 @@ const Page = ({ params }) => {
               textTransform: "capitalize",
             }}
           >
-            {cityQuery.replaceAll("-", " ")}
+            {cityQuery.toLowerCase().endsWith("city")
+              ? cityQuery.replaceAll("-", " ")
+              : `${cityQuery.replaceAll("-", " ")} City`}
           </Link>
 
           <Typography

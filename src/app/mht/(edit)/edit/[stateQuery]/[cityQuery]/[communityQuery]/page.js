@@ -566,7 +566,9 @@ const Page = ({ params }) => {
             }}
             href={rootUrl + `/edit/utah/${cityQuery}`}
           >
-            {community.city.replaceAll("-", " ")} City
+            {cityQuery.toLowerCase().endsWith("city")
+              ? cityQuery.replaceAll("-", " ")
+              : `${cityQuery.replaceAll("-", " ")} City`}
           </Link>
 
           <Typography
