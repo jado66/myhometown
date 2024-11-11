@@ -75,51 +75,48 @@ export async function POST(req) {
       });
     }
 
-    const { userId } = await req.json();
-    const token = await getManagementToken();
-    if (!token) {
-      throw new Error("Failed to obtain Auth0 management token");
-    }
-
+    const { email } = await req.json(); // Expect email in the request body
     const auth0Domain =
       process.env.AUTH0_ISSUER_BASE_URL?.replace("https://", "") ||
       "myhometown.us.auth0.com";
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const clientId = process.env.AUTH0_CLIENT_ID; // Ensure you set this in your environment
 
+    // Call the Auth0 endpoint to trigger password reset email
     const resetResponse = await fetch(
-      `https://${auth0Domain}/api/v2/tickets/password-change`,
+      `https://${auth0Domain}/dbconnections/change_password`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          user_id: userId,
-          ttl_sec: 604800,
-          mark_email_as_verified: true,
-          result_url: `${appUrl}/api/auth/callback`,
-          client_id: process.env.AUTH0_CLIENT_ID,
+          client_id: clientId,
+          email: email,
+          connection: "Username-Password-Authentication", // Use your connection name
         }),
       }
     );
 
     if (!resetResponse.ok) {
       const error = await resetResponse.json();
+      console.error("Auth0 password reset error:", error);
       throw new Error(
-        `Failed to create password reset ticket: ${
-          error.message || error.error_description
+        `Failed to send password reset email: ${
+          error.message || error.error_description || "Unknown error"
         }`
       );
     }
 
-    const resetData = await resetResponse.json();
     return new Response(
       JSON.stringify({
         message: "Password reset email sent successfully",
-        resetTicket: resetData.ticket,
       }),
-      { status: 200 }
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
   } catch (error) {
     console.error("Password reset failed:", error);
@@ -129,7 +126,12 @@ export async function POST(req) {
         details:
           process.env.NODE_ENV === "development" ? error.stack : undefined,
       }),
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
   }
 }

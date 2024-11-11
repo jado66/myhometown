@@ -69,7 +69,7 @@ const AddEditUserDialog = ({
   };
 
   const handlePasswordReset = async () => {
-    if (!user._id) return;
+    if (!user.email) return;
 
     try {
       setIsSendingReset(true);
@@ -78,7 +78,7 @@ const AddEditUserDialog = ({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId: user._id }),
+        body: JSON.stringify({ email: user.email }),
       });
 
       if (!response.ok) {

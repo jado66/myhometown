@@ -1,78 +1,81 @@
 "use client";
-import { useEffect, useState, Fragment } from "react";
-import Card from "@mui/material/Card";
+import React, { useState } from "react";
+import { Grid, Box, Typography, Card } from "@mui/material";
 import useUsers from "@/hooks/use-users";
-import AskYesNoDialog from "@/components/util/AskYesNoDialog";
-import AddEditUserDialog from "@/components/data-tables/AddEditUserDialog";
-import { DataTable } from "@/components/data-tables/DataTable";
-import { createUserColumns } from "@/constants/columns";
-import { Grid, Box, Typography, Button } from "@mui/material";
-import BackButton from "@/components/BackButton";
-import Loading from "@/components/util/Loading";
-import { NotResponsiveAlert } from "@/util/NotResponsiveAlert";
-import CreateUserForm from "@/components/admin/CreateUserForm";
+import { UserFormDialog } from "@/components/data-tables/UserFormDialog";
 import UserDataTable from "@/components/data-tables/UserDataTable";
+import Loading from "@/components/util/Loading";
+import BackButton from "@/components/BackButton";
+import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 
 export default function Management() {
-  const { users, handleAddUser, handleEditUser, handleDeleteUser, hasLoaded } =
-    useUsers();
+  const {
+    users,
+    hasLoaded,
+    loading,
+    handleAddUser,
+    handleEditUser,
+    handleDeleteUser,
+    handlePasswordReset,
+    initialUserState,
+  } = useUsers();
 
+  const [showUserForm, setShowUserForm] = useState(false);
   const [userToEdit, setUserToEdit] = useState(null);
-  const [showAddUserForm, setShowAddUserForm] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
 
-  const [showEditUserForm, setShowEditUserForm] = useState(false);
-  const [showConfirmDeleteUser, setShowConfirmDeleteUser] = useState(false);
-  const [confirmDeleteUserProps, setConfirmDeleteUserProps] = useState({});
-
-  const handleAskDeleteUser = (userId) => {
-    const user = users.find((c) => c.id === userId);
-
-    setConfirmDeleteUserProps({
-      title: "Delete User",
-      description: `Are you sure you want to delete ${user.name}?`,
-      onConfirm: () => {
-        handleDeleteUser(userId);
-        setShowConfirmDeleteUser(false);
-      },
-      onCancel: () => setShowConfirmDeleteUser(false),
-      onClose: () => setShowConfirmDeleteUser(false),
-    });
-    setShowConfirmDeleteUser(true);
-  };
-
-  const handleCloseUserEditForm = () => {
-    setShowEditUserForm(false);
+  const handleCloseUserForm = () => {
+    setShowUserForm(false);
     setUserToEdit(null);
   };
 
-  const handleCloseUserAddForm = () => {
-    setShowAddUserForm(false);
+  const handleSubmitUser = async (userData) => {
+    const result = await (userToEdit
+      ? handleEditUser(userData)
+      : handleAddUser(userData));
+
+    if (result.success) {
+      handleCloseUserForm();
+    }
   };
 
-  useEffect(() => {
-    if (userToEdit) {
-      setShowEditUserForm(true);
-    }
-  }, [userToEdit]);
+  const handleAskDeleteUser = (user) => {
+    setUserToDelete(user);
+    setShowConfirmDelete(true);
+  };
 
-  const userColumns = createUserColumns(handleAskDeleteUser, setUserToEdit);
+  const handleConfirmDelete = async () => {
+    const result = await handleDeleteUser(userToDelete._id);
+    if (result.success) {
+      setShowConfirmDelete(false);
+      setUserToDelete(null);
+      handleCloseUserForm();
+    }
+  };
 
   return (
     <Grid container item sm={12} display="flex" sx={{ position: "relative" }}>
       <BackButton />
-      <NotResponsiveAlert sx={{ mt: 8 }} />
+      {/* <NotResponsiveAlert sx={{ mt: 8 }} /> */}
 
-      <CreateUserForm show={showAddUserForm} onClose={handleCloseUserAddForm} />
+      <UserFormDialog
+        open={showUserForm}
+        onClose={handleCloseUserForm}
+        onSubmit={handleSubmitUser}
+        initialData={userToEdit || initialUserState}
+        onDelete={handleAskDeleteUser}
+        onPasswordReset={handlePasswordReset}
+        loading={loading}
+      />
 
       <AskYesNoDialog
-        {...confirmDeleteUserProps}
-        open={showConfirmDeleteUser}
-      />
-      <AddEditUserDialog
-        open={showEditUserForm}
-        handleClose={handleCloseUserEditForm}
-        onSubmitForm={handleEditUser}
-        initialUserState={userToEdit}
+        open={showConfirmDelete}
+        title="Delete User"
+        description={`Are you sure you want to delete ${userToDelete?.name}?`}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setShowConfirmDelete(false)}
+        onClose={() => setShowConfirmDelete(false)}
       />
 
       <Card
@@ -94,25 +97,25 @@ export default function Management() {
               fontWeight: "medium",
             }}
             gutterBottom
-            color={"primary"}
-            align={"center"}
+            color="primary"
+            align="center"
           >
             Admin User Management
           </Typography>
           <Box
             component={Typography}
             fontWeight={700}
-            variant={"h3"}
-            align={"center"}
+            variant="h3"
+            align="center"
             gutterBottom
           >
             Manage users and their roles
           </Box>
           <Typography
-            variant={"h6"}
-            component={"p"}
-            color={"textSecondary"}
-            align={"center"}
+            variant="h6"
+            component="p"
+            color="textSecondary"
+            align="center"
           >
             Here you can add, remove, or edit users and their roles.
           </Typography>
@@ -126,9 +129,14 @@ export default function Management() {
           <UserDataTable
             id="user"
             data={users}
-            // columns={userColumns}
-            onRowClick={(user) => setUserToEdit(user)}
-            onAddClick={() => setShowAddUserForm(true)}
+            onRowClick={(user) => {
+              setUserToEdit(user);
+              setShowUserForm(true);
+            }}
+            onAddClick={() => {
+              setUserToEdit(null);
+              setShowUserForm(true);
+            }}
           />
         )}
       </Card>

@@ -20,7 +20,7 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
 
   const [columnSizing, setColumnSizing] = useState(
     getStoredState("tableColumnSizes", {
-      name: 160,
+      name: 200, // Increased size for combined name
       email: 250,
       role: 140,
       contactNumber: 150,
@@ -53,12 +53,24 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
     getStoredState("tableDensity", "comfortable")
   );
 
+  // Transform the data to combine first and last names
+  const processedData = useMemo(() => {
+    return data.map((row) => ({
+      ...row,
+      name: `${row.firstName || ""} ${row.lastName || ""}`.trim(),
+    }));
+  }, [data]);
+
   const columns = useMemo(
     () => [
       {
         accessorKey: "name",
         header: "Name",
         size: columnSizing.name,
+        // Optional: Add a custom cell renderer if you want to style the name
+        Cell: ({ row }) => (
+          <Typography variant="body2">{row.original.name}</Typography>
+        ),
       },
       {
         accessorKey: "email",
@@ -192,7 +204,7 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
 
   const table = useMaterialReactTable({
     columns,
-    data,
+    data: processedData, // Use the processed data instead of raw data
     defaultColumn: {
       maxSize: 400,
       minSize: 80,
@@ -223,7 +235,7 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
           Add User
         </Button>
         <Typography variant="body2" color="text.secondary">
-          Total Users: {data.length}
+          Total Users: {processedData.length}
         </Typography>
       </Box>
     ),
