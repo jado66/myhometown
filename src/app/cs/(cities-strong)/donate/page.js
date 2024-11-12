@@ -21,6 +21,7 @@ import CitiesStrongLogo from "@/assets/svg/logos/CitiesStrong";
 import CitiesStrongShieldIcon from "@/assets/svg/logos/CitiesStrongShieldIcon";
 import Link from "next/link";
 import { Faq } from "@/views/supportingPages/CitiesStrongContact/components";
+import LoadingImage from "@/components/util/LoadingImage";
 
 const items = [
   "Complete Transparency",
@@ -106,26 +107,17 @@ const Donate = () => {
             <Box
               sx={{
                 height: "350px",
-                overflow: "hidden",
-                position: "relative",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
                 my: { md: 0, xs: 5 },
               }}
             >
-              <Box
-                component="img"
+              <LoadingImage
                 src="/cities-strong/homepage/thank-you-girl.webp"
                 alt="Thank you"
-                sx={{
-                  width: "auto",
-                  height: "100%",
-                  boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
-
-                  objectFit: "cover",
-                  objectPosition: isMd ? "right center" : "center",
-                }}
+                height="350px"
+                objectPosition={isMd ? "right center" : "center"}
               />
             </Box>
           </Grid>

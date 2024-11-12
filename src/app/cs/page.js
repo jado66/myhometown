@@ -19,6 +19,7 @@ import { CitiesStrongLayout } from "@/layout";
 import { ImageAccordion } from "@/components/ImageAccordion";
 import { default as VisibilitySensor } from "react-visibility-sensor";
 import { ResponsiveVideoBanner } from "@/components/util/ResponsiveVideoBanner";
+import LoadingImage from "@/components/util/LoadingImage";
 
 const Page = () => {
   const [showInfoAlert, setShowInfoAlert] = useState(true);
@@ -60,32 +61,10 @@ const Page = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} sx={{ padding: 4, pt: { xs: 0, sm: 4 } }}>
-            <Grid
-              item
-              xs={12}
-              sx={{
-                backgroundColor: "grey",
-                height: "350px",
-                overflow: "hidden",
-                position: "relative",
-                boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
-              }}
-            >
-              <img
-                src="/cities-strong/homepage/mother-daughter.webp"
-                alt="Mental Health"
-                // Lazy load the image
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover", // Ensures the image covers the entire area
-                  position: "absolute",
-                  objectPosition: "right", // Shifts the image to the left
-                  top: "0",
-                  left: "0px",
-                }}
-              />
-            </Grid>
+            <LoadingImage
+              src="/cities-strong/homepage/mother-daughter.webp"
+              alt="A Mother and Daughter"
+            />
 
             <Divider
               sx={{
@@ -434,7 +413,6 @@ const CityImage = ({ src, title, sx }) => {
       >
         {title}
       </Typography>
-
       <Box
         sx={{
           width: "100%",
@@ -444,11 +422,16 @@ const CityImage = ({ src, title, sx }) => {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.15)",
         }}
       >
-        <Box
-          component="img"
+        <LoadingImage
           src={src}
           alt={title}
-          loading="lazy"
+          boxSx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%", // This will now work because it's absolutely positioned
+          }}
           sx={{
             position: "absolute",
             top: 0,
