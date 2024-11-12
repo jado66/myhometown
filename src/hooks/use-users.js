@@ -37,7 +37,7 @@ const useUsers = () => {
 
       const selectOptions = data.map((user) => ({
         value: user._id,
-        label: user.name,
+        label: `${user.firstName} ${user.lastName}`,
         data: user,
       }));
       setUserSelectOptions(selectOptions);

@@ -41,6 +41,7 @@ export default function Management() {
   };
 
   const handleAskDeleteUser = (user) => {
+    alert(JSON.stringify(user));
     setUserToDelete(user);
     setShowConfirmDelete(true);
   };
@@ -72,7 +73,7 @@ export default function Management() {
       <AskYesNoDialog
         open={showConfirmDelete}
         title="Delete User"
-        description={`Are you sure you want to delete ${userToDelete?.name}?`}
+        description={`Are you sure you want to delete ${userToDelete?.email}?`}
         onConfirm={handleConfirmDelete}
         onCancel={() => setShowConfirmDelete(false)}
         onClose={() => setShowConfirmDelete(false)}

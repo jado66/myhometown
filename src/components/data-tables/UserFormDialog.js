@@ -187,7 +187,7 @@ export const UserFormDialog = ({
           {isEditMode && (
             <Box>
               <Button
-                onClick={() => onDelete(formData._id)}
+                onClick={() => onDelete(formData)}
                 color="error"
                 disabled={loading}
                 startIcon={<Delete />}

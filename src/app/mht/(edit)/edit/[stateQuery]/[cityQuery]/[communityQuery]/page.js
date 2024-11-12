@@ -751,7 +751,7 @@ const Page = ({ params }) => {
           <Divider sx={{ my: 5 }} />
 
           <Grid container item xs={12} display="flex" justifyContent="center">
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={6} display="flex" flexDirection="column">
               <TextField
                 variant="standard"
                 value={content?.marketingHeader || "Your Flyer Title"}
@@ -796,9 +796,9 @@ const Page = ({ params }) => {
               <Box
                 display="flex"
                 justifyContent="center"
-                // alignItems="center"
                 position="relative"
                 sx={{
+                  display: "flex",
                   px: 1,
                   width: "100%",
                   backgroundColor: "transparent",
@@ -814,9 +814,11 @@ const Page = ({ params }) => {
                     sx={{
                       width: "100%",
                       height: "auto",
+                      flexGrow: 1,
                       objectFit: "cover",
                       boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
                       borderRadius: 4,
+                      aspectRatio: "8 / 11", // Ensures the image maintains an 8/11 aspect ratio
                     }}
                     onClick={() =>
                       openImageDialog(communityData.content.marketingImage1)
@@ -830,7 +832,7 @@ const Page = ({ params }) => {
               </Box>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={6} display="flex" flexDirection="column">
               <TextField
                 variant="standard"
                 value={content?.marketingHeader2 || "Your Flyer Title"}
@@ -876,10 +878,11 @@ const Page = ({ params }) => {
               <Box
                 display="flex"
                 justifyContent="center"
-                // alignItems="center"
                 position="relative"
                 sx={{
                   px: 1,
+                  display: "flex",
+                  flexGrow: 1,
                   width: "100%",
                   minHeight: "100px",
                   backgroundColor: "transparent",
@@ -895,9 +898,11 @@ const Page = ({ params }) => {
                     sx={{
                       width: "100%",
                       borderRadius: 4,
+                      flexGrow: 1,
                       height: "auto",
                       boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
                       objectFit: "cover",
+                      aspectRatio: "8 / 11", // Ensures the image maintains an 8/11 aspect ratio
                     }}
                     onClick={() =>
                       openImageDialog(communityData.content.marketingImage2)

@@ -45,8 +45,6 @@ const ImpersonateUser = () => {
               Current user
             </Typography>
 
-            <pre>{JSON.stringify(user, null, 2)}</pre>
-
             <Typography
               variant="h5"
               component="div"
