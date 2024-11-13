@@ -19,40 +19,63 @@ import { CommunityCard } from "@/components/MyHometown/PageComponents/CommunityC
 import { useEffect } from "react";
 import { useCommunityList } from "@/hooks/useCommunityList";
 import Link from "next/link";
+import { MaintenanceMode } from "@/views/supportingPages";
 
 const Page = ({ params }) => {
   const { stateQuery, cityQuery } = params;
-
-  const { city, hasLoaded } = useCity(cityQuery, stateQuery, cityTemplate);
-
+  const { city, hasLoaded, handleSaveCity, error } = useCity(
+    cityQuery,
+    stateQuery,
+    cityTemplate
+  );
   const { setCommunities } = useCommunityList();
 
   useEffect(() => {
     if (city?.communities) {
-      // alert("city.communities: " + JSON.stringify(city.communities));
       setCommunities(city.communities);
     }
-  }, [city]);
+  }, [city, setCommunities]);
 
   if (!hasLoaded) {
     return (
-      <>
+      <div
+        style={{
+          height: "100vh",
+          width: "100vw",
+          padding: "5em",
+          justifyContent: "center",
+          display: "flex",
+        }}
+      >
+        <Loading size={100} />
+      </div>
+    );
+  }
+
+  // Handle specific error states
+  if (error) {
+    if (error.status === 404) {
+      return (
         <div
           style={{
-            height: "100vh",
-            width: "100vw",
+            height: "calc(100%-200px)",
             padding: "5em",
             justifyContent: "center",
             display: "flex",
           }}
         >
-          <Loading size={100} />
+          <Typography variant="h2" align="center" sx={{ my: 3 }}>
+            City not found
+          </Typography>
         </div>
-      </>
-    );
-  }
+      );
+    }
 
-  if (hasLoaded && !city) {
+    if (error.status === 403) {
+      return <MaintenanceMode />;
+    }
+
+    // Handle other errors
     return (
       <div
         style={{
@@ -60,10 +83,15 @@ const Page = ({ params }) => {
           padding: "5em",
           justifyContent: "center",
           display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}
       >
         <Typography variant="h2" align="center" sx={{ my: 3 }}>
-          City not found
+          Something went wrong
+        </Typography>
+        <Typography variant="body1" align="center">
+          Please try again later
         </Typography>
       </div>
     );

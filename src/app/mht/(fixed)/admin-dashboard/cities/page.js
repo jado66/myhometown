@@ -491,10 +491,11 @@ export function SingleCity({ city, goToEditCity, handleEditCity }) {
 }
 
 import { createCityColumns } from "@/constants/columns";
-import { DataTable } from "@/components/data-tables/DataTable";
+// import { DataTable } from "@/components/data-tables/DataTable";
 import { EventsCalendar } from "@/components/events/EventsCalendar";
 import { CommunityCard } from "@/components/CommunityCard";
 import { NotResponsiveAlert } from "@/util/NotResponsiveAlert";
+import CityDataTable from "@/components/data-tables/CityDataTable";
 
 export function MultipleCities({
   cities,
@@ -504,11 +505,10 @@ export function MultipleCities({
   toggleVisibility,
 }) {
   return (
-    <DataTable
+    <CityDataTable
       id="city"
-      rows={cities}
-      columns={cityColumns}
-      hiddenColumns={["_id", "country", "state"]}
+      data={cities}
+      onRowClick={(row) => setCityToEdit(row)}
     />
   );
 }

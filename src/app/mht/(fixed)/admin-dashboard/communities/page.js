@@ -25,6 +25,7 @@ import { useTheme } from "@mui/material/styles";
 import { useUser } from "@/hooks/use-user";
 import { NotResponsiveAlert } from "@/util/NotResponsiveAlert";
 import { useRouter } from "next/navigation";
+import CommunityDataTable from "@/components/data-tables/CommunityDataTable";
 
 export default function Management() {
   const theme = useTheme();
@@ -322,11 +323,9 @@ export default function Management() {
           )}
 
         {hasLoaded && (communities.length >= 3 || user.role === "Admin") && (
-          <DataTable
-            id="community"
-            rows={communities}
-            columns={communityTableColumns}
-            hiddenColumns={["_id", "country", "state"]}
+          <CommunityDataTable
+            data={communities}
+            onRowClick={(row) => setCommunityToEdit(row)}
           />
         )}
       </Card>
