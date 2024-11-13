@@ -9,6 +9,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useUser } from "@/hooks/use-user";
 import Loading from "@/components/util/Loading";
 import PermissionGuard from "@/guards/permission-guard";
+import { Divider } from "@mui/material";
 
 const SidebarNav = ({ pages, onClose }) => {
   const { user, isLoading } = useUser();
@@ -37,6 +38,26 @@ const SidebarNav = ({ pages, onClose }) => {
       </Box>
 
       <Box>
+        <Box marginBottom={1 / 2}>
+          <Button
+            component={"a"}
+            href="Admin Dashboard"
+            fullWidth
+            sx={{
+              justifyContent: "flex-start",
+              color: theme.palette.text.primary,
+              backgroundColor: "transparent",
+              textTransform: "uppercase",
+              fontSize: 12,
+              fontWeight: 700,
+            }}
+            onClick={() => onClose()}
+            style={{ paddingLeft: 0 }}
+          >
+            Admin Dashboard
+          </Button>
+        </Box>
+        <Divider sx={{ mb: 2 }} />
         {pages().map((item, i) => (
           <Box key={i} marginBottom={3}>
             <Typography
