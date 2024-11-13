@@ -2,10 +2,16 @@ import { useState, useEffect } from "react";
 import { mergeObjectTemplate } from "@/util/mergeObjectTemplate";
 import { toast } from "react-toastify";
 
-export default function useCity(cityQuery, stateQuery, template = {}) {
+export default function useCity(
+  cityQuery,
+  stateQuery,
+  template = {},
+  isEditing = false
+) {
   const [city, setCity] = useState({});
   const [hasLoaded, setHasLoaded] = useState(false);
   const [error, setError] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(isEditing);
 
   const handleSaveCity = async (city) => {
     try {
@@ -30,7 +36,7 @@ export default function useCity(cityQuery, stateQuery, template = {}) {
     const fetchCity = async () => {
       try {
         const res = await fetch(
-          `/api/database/cities/${stateQuery}/${cityQuery}`
+          `/api/database/cities/${stateQuery}/${cityQuery}?isEditMode=${isEditMode}`
         );
 
         // Handle specific error status codes

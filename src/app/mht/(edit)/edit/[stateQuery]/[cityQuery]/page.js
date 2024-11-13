@@ -38,7 +38,12 @@ const Page = ({ params }) => {
 
   const theme = useTheme();
 
-  const { city, hasLoaded } = useCity(cityQuery, stateQuery, cityTemplate);
+  const { city, hasLoaded } = useCity(
+    cityQuery,
+    stateQuery,
+    cityTemplate,
+    true
+  );
   const { data: cityData, setData: setCityData, setEntityType } = useEdit();
 
   const editTextByKey = (key, newText) => {
