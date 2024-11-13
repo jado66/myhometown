@@ -20,6 +20,8 @@ import RecreationIcon from "@/assets/svg/icons/RecreationIcon";
 import HulaIcon from "@/assets/svg/icons/HulaIcon";
 import EmergencyPrepIcon from "@/assets/svg/icons/EmergencyPrep";
 import HomeworkIcon from "@/assets/svg/icons/HomeworkIcon";
+import YogaIcon from "@/assets/svg/icons/YogaIcon";
+import YouthInActionIcon from "@/assets/svg/icons/YouthInActionIcon";
 
 export const ExampleIcons = {
   None: <div style={{ height: "30px", width: "35px" }}> </div>,
@@ -38,6 +40,8 @@ export const ExampleIcons = {
   Community1: <CommunityService1Icon />,
   Community2: <CommunityService2Icon />,
   LifeSkills: <LifeSkillsIcon />,
+  YogaIcon: <YogaIcon />,
+  YouthInIcon: <YouthInActionIcon />,
   // Tutoring: <TutoringIcon />,
   // Music: <MusicIcon />,
   Guitar: <GuitarIcon />,
