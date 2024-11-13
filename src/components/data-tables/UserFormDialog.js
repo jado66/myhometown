@@ -16,7 +16,7 @@ import {
 import { Delete, Key } from "@mui/icons-material";
 import { CityOrCommunityCell } from "./CityOrCommunityCell";
 
-const permissions = {
+const initialPermissions = {
   administrator: false,
   cityManagement: false,
   communityManagement: false,
@@ -54,11 +54,15 @@ export const UserFormDialog = ({
   }, [open, initialData]);
 
   const handlePermissionChange = (permission) => {
+    // Ensure we're working with valid permissions object
+    const currentPermissions = formData.permissions || initialPermissions;
+
     let updatedPermissions = {
-      ...formData.permissions,
-      [permission]: !formData.permissions[permission],
+      ...currentPermissions,
+      [permission]: !currentPermissions[permission],
     };
 
+    // Handle administrator special case
     if (permission === "administrator" && updatedPermissions[permission]) {
       Object.keys(updatedPermissions).forEach((key) => {
         if (key !== "administrator") {
@@ -67,14 +71,15 @@ export const UserFormDialog = ({
       });
     }
 
+    // Handle non-administrator permissions
     if (permission !== "administrator" && updatedPermissions[permission]) {
-      updatedPermissions["administrator"] = false;
+      updatedPermissions.administrator = false;
     }
 
-    setFormData({
-      ...formData,
+    setFormData((prevData) => ({
+      ...prevData,
       permissions: updatedPermissions,
-    });
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -137,27 +142,28 @@ export const UserFormDialog = ({
           <FormControl component="fieldset" sx={{ mt: 2 }} fullWidth>
             <FormLabel component="legend">User Permissions</FormLabel>
             <FormGroup>
-              {Object.entries({ ...permissions, ...formData?.permissions }).map(
-                ([key, value]) => (
-                  <FormControlLabel
-                    key={key}
-                    control={
-                      <Checkbox
-                        checked={value}
-                        disabled={
-                          key !== "administrator" &&
-                          formData?.permissions?.administrator
-                        }
-                        onChange={() => handlePermissionChange(key)}
-                      />
-                    }
-                    label={
-                      key.charAt(0).toUpperCase() +
-                      key.slice(1).replace(/([A-Z])/g, " $1")
-                    }
-                  />
-                )
-              )}
+              {Object.entries({
+                ...initialPermissions,
+                ...formData?.permissions,
+              }).map(([key, value]) => (
+                <FormControlLabel
+                  key={key}
+                  control={
+                    <Checkbox
+                      checked={value}
+                      disabled={
+                        key !== "administrator" &&
+                        formData?.permissions?.administrator
+                      }
+                      onChange={() => handlePermissionChange(key)}
+                    />
+                  }
+                  label={
+                    key.charAt(0).toUpperCase() +
+                    key.slice(1).replace(/([A-Z])/g, " $1")
+                  }
+                />
+              ))}
             </FormGroup>
           </FormControl>
 

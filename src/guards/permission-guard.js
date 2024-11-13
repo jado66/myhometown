@@ -14,7 +14,10 @@ const PermissionGuard = ({
   }
 
   // Check if user has the required permission
-  if (user.permissions && user.permissions[requiredPermission]) {
+  if (
+    user.permissions &&
+    (user.permissions[requiredPermission] || user.permissions["administrator"])
+  ) {
     return children;
   } else if (alternateContent) {
     return alternateContent;

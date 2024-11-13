@@ -8,6 +8,7 @@ import CloseIcon from "@mui/icons-material/Close";
 // import RoleGuard from '@/guards/role-guard';
 import { useUser } from "@/hooks/use-user";
 import Loading from "@/components/util/Loading";
+import PermissionGuard from "@/guards/permission-guard";
 
 const SidebarNav = ({ pages, onClose }) => {
   const { user, isLoading } = useUser();
@@ -51,31 +52,35 @@ const SidebarNav = ({ pages, onClose }) => {
             </Typography>
             <Box>
               {item.pages.map((p, i) => (
-                // <RoleGuard requiredRole={p.requiredRole} key={i} user = {user}>
-                <Box marginBottom={1 / 2} key={i}>
-                  <Button
-                    component={"a"}
-                    href={p.href}
-                    target={p.target}
-                    fullWidth
-                    sx={{
-                      justifyContent: "flex-start",
-                      color:
-                        activeLink === p.href
-                          ? theme.palette.primary.main
-                          : theme.palette.text.primary,
-                      backgroundColor:
-                        activeLink === p.href
-                          ? alpha(theme.palette.primary.main, 0.1)
-                          : "transparent",
-                      fontWeight: activeLink === p.href ? 600 : 400,
-                    }}
-                    onClick={() => onClose()}
-                  >
-                    {p.title}
-                  </Button>
-                </Box>
-                // </RoleGuard>
+                <PermissionGuard
+                  requiredPermission={p.requiredPermission}
+                  key={i}
+                  user={user}
+                >
+                  <Box marginBottom={1 / 2} key={i}>
+                    <Button
+                      component={"a"}
+                      href={p.href}
+                      target={p.target}
+                      fullWidth
+                      sx={{
+                        justifyContent: "flex-start",
+                        color:
+                          activeLink === p.href
+                            ? theme.palette.primary.main
+                            : theme.palette.text.primary,
+                        backgroundColor:
+                          activeLink === p.href
+                            ? alpha(theme.palette.primary.main, 0.1)
+                            : "transparent",
+                        fontWeight: activeLink === p.href ? 600 : 400,
+                      }}
+                      onClick={() => onClose()}
+                    >
+                      {p.title}
+                    </Button>
+                  </Box>
+                </PermissionGuard>
               ))}
             </Box>
           </Box>

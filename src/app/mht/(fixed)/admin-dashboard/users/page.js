@@ -41,7 +41,7 @@ export default function Management() {
   };
 
   const handleAskDeleteUser = (user) => {
-    alert(JSON.stringify(user));
+    // alert(JSON.stringify(user));
     setUserToDelete(user);
     setShowConfirmDelete(true);
   };

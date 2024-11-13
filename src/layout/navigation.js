@@ -9,17 +9,17 @@ export const pages = () => {
         {
           title: "User Management",
           href: rootUrl + "/admin-dashboard/users",
-          requiredRole: "admin",
+          requiredPermission: "administrator",
         },
         {
           title: "City Management",
           href: rootUrl + "/admin-dashboard/cities",
-          requiredRole: "city-admin",
+          requiredPermission: "cityManagement",
         },
         {
           title: "Community Management",
           href: rootUrl + "/admin-dashboard/communities",
-          requiredRole: "community-admin",
+          requiredPermission: "communityManagement",
         },
       ],
     },
@@ -34,19 +34,29 @@ export const pages = () => {
         {
           title: "Texting",
           href: rootUrl + "/admin-dashboard/tools/sms",
+          requiredPermission: "texting",
         },
         {
           title: "Contact Directory",
           href: rootUrl + "/admin-dashboard/tools/directory",
+          requiredPermission: "texting",
         },
         {
-          title: "User Guide",
-          href: rootUrl + "/admin-dashboard/tools/user-guide",
+          title: "Bug Report",
+          href: rootUrl + "/bug-report",
         },
         {
-          title: "Video Tutorials",
-          href: rootUrl + "/admin-dashboard/tools/video-tutorials",
+          title: "Request a Feature",
+          href: rootUrl + "/feature-request",
         },
+        // {
+        //   title: "User Guide",
+        //   href: rootUrl + "/admin-dashboard/tools/user-guide",
+        // },
+        // {
+        //   title: "Video Tutorials",
+        //   href: rootUrl + "/admin-dashboard/tools/video-tutorials",
+        // },
       ],
     },
     {
@@ -60,20 +70,6 @@ export const pages = () => {
         {
           title: "Automatic Role Creation",
           href: rootUrl + "/admin-dashboard/upcoming/automatic-role-creation",
-        },
-      ],
-    },
-    {
-      title: "Need Help",
-      id: "debug",
-      pages: [
-        {
-          title: "Bug Report",
-          href: rootUrl + "/bug-report",
-        },
-        {
-          title: "Request a Feature",
-          href: rootUrl + "/feature-request",
         },
       ],
     },

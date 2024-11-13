@@ -109,7 +109,7 @@ export default function RoleCreator() {
       currentDate = currentDate.clone().add(1, "days");
     }
 
-    alert("Generated dates: " + dates.join(", "));
+    // alert("Generated dates: " + dates.join(", "));
     setGeneratedDates(dates);
   };
 

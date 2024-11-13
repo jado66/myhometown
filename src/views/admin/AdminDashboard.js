@@ -12,10 +12,10 @@ import CardMedia from "@mui/material/CardMedia";
 import Button from "@mui/material/Button";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { Container } from "@mui/material";
-// import RoleGuard from "@/guards/role-guard";
 import { useUser } from "@/hooks/use-user";
 import Loading from "@/components/util/Loading";
 import NextLink from "next/link";
+import PermissionGuard from "@/guards/permission-guard";
 
 const AdminDashboardPages = () => {
   const theme = useTheme();
@@ -92,7 +92,7 @@ const AdminDashboardPages = () => {
                     "Add, remove, or edit users and their roles to manage who can access your city or community.",
                   media: "/users.png",
                   href: rootUrl + "/admin-dashboard/users",
-                  requiredRole: "admin",
+                  requiredPermission: "admin",
                 },
                 {
                   title: "City Management",
@@ -100,7 +100,7 @@ const AdminDashboardPages = () => {
                     "Manage your cities. Add, remove, or edit city information.",
                   media: "/cities.png",
                   href: rootUrl + "/admin-dashboard/cities",
-                  requiredRole: "city-admin",
+                  requiredPermission: "cityManagement",
                 },
                 {
                   title: "Community Management",
@@ -108,7 +108,7 @@ const AdminDashboardPages = () => {
                     "Manage your communities. Add, remove, or edit community information.",
                   media: "/community.png",
                   href: rootUrl + "/admin-dashboard/communities",
-                  requiredRole: "community-admin",
+                  requiredPermission: "communityManagement",
                 },
                 // {
                 //   title: "Email Communications",
@@ -116,13 +116,14 @@ const AdminDashboardPages = () => {
                 //   media: "/message.png",
                 //   href: rootUrl + "/maintenance",
                 // },
-                // {
-                //   title: "Text (SMS) Communications",
-                //   subtitle:
-                //     "Send text notifications to your city or community members. ",
-                //   media: "/text.png",
-                //   href: rootUrl + "/maintenance",
-                // },
+                {
+                  title: "Text (SMS) Communications",
+                  subtitle:
+                    "Send text notifications to your city or community members. ",
+                  media: "/text.png",
+                  href: rootUrl + "/admin-dashboard/tools/sms",
+                  requiredPermission: "texting",
+                },
                 // // {
                 //   title: 'Give Butter Campaigns',
                 //   subtitle:
@@ -131,9 +132,12 @@ const AdminDashboardPages = () => {
                 //   href: '/maintenance'
                 // },
               ].map((item, i) => (
-                // <RoleGuard requiredRole={item.requiredRole} user={user}>
-                <AdminDashboardCard item={item} i={i} />
-                // </RoleGuard>
+                <PermissionGuard
+                  requiredPermission={item.requiredPermission}
+                  user={user}
+                >
+                  <AdminDashboardCard item={item} i={i} />
+                </PermissionGuard>
               ))}
             </Grid>
           </Box>
