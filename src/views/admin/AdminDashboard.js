@@ -33,6 +33,7 @@ const AdminDashboardPages = () => {
         }}
       >
         <Container>
+          {<pre>{JSON.stringify(user, null, 2)}</pre>}
           <Box padding={5}>
             <Box marginBottom={4}>
               <Typography

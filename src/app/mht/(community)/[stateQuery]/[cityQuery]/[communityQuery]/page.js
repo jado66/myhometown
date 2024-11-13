@@ -129,7 +129,7 @@ const Page = ({ params }) => {
           <Link
             color="inherit"
             href={`../${cityQuery}`}
-            sx={{
+            style={{
               display: "flex",
               alignItems: "center",
               textTransform: "capitalize",

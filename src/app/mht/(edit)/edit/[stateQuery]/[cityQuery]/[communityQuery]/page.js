@@ -558,7 +558,7 @@ const Page = ({ params }) => {
 
           <Link
             variant="body1"
-            sx={{
+            style={{
               display: "flex",
               alignItems: "center",
               textTransform: "capitalize",

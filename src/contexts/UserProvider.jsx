@@ -1,10 +1,8 @@
 import { createContext, useState, useEffect } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 
-// Create a new context for the user
 export const UserContext = createContext();
 
-// Create a UserProvider component
 export const UserProvider = ({ children }) => {
   const {
     user: authUser,
@@ -13,6 +11,13 @@ export const UserProvider = ({ children }) => {
   } = useUser();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isImpersonating, setIsImpersonating] = useState(false);
+
+  const getImpersonatedUser = () => {
+    if (typeof window === "undefined") return null;
+    const stored = window.localStorage.getItem("impersonatedUser");
+    return stored ? JSON.parse(stored) : null;
+  };
 
   const fetchUser = async (sub, email) => {
     try {
@@ -29,31 +34,73 @@ export const UserProvider = ({ children }) => {
       }
 
       const data = await response.json();
-
-      // Set the user data
       setUser(data);
       setIsLoading(false);
+      return data;
     } catch (error) {
       console.error("Could not fetch user", error);
       setIsLoading(false);
+      return null;
     }
   };
 
   useEffect(() => {
-    if (authUser) {
-      const { sub, email } = authUser;
-      fetchUser(sub, email);
-    }
+    const initializeUser = async () => {
+      // Check for impersonated user first
+      const impersonatedUser = getImpersonatedUser();
+
+      if (impersonatedUser) {
+        setIsImpersonating(true);
+        const { sub, email } = impersonatedUser;
+        await fetchUser(sub, email);
+      } else if (authUser) {
+        setIsImpersonating(false);
+        const { sub, email } = authUser;
+        await fetchUser(sub, email);
+      }
+    };
+
+    initializeUser();
   }, [authUser]);
 
   const impersonateUser = async (newSub, newEmail) => {
     setIsLoading(true);
-    await fetchUser(newSub, newEmail);
+    const userData = await fetchUser(newSub, newEmail);
+
+    if (userData) {
+      // Store impersonation data
+      window.localStorage.setItem(
+        "impersonatedUser",
+        JSON.stringify({
+          sub: newSub,
+          email: newEmail,
+        })
+      );
+      setIsImpersonating(true);
+    }
+  };
+
+  const stopImpersonation = async () => {
+    setIsLoading(true);
+    window.localStorage.removeItem("impersonatedUser");
+    setIsImpersonating(false);
+
+    if (authUser) {
+      const { sub, email } = authUser;
+      await fetchUser(sub, email);
+    }
   };
 
   return (
-    // Provide the user data and update function to the children components
-    <UserContext.Provider value={{ user, isLoading, impersonateUser }}>
+    <UserContext.Provider
+      value={{
+        user,
+        isLoading,
+        impersonateUser,
+        stopImpersonation,
+        isImpersonating,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );

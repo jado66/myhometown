@@ -1,24 +1,24 @@
 "use client";
 import React, { useState } from "react";
-import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import { useUser } from "@/hooks/use-user";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import UserSelect from "@/components/data-tables/selects/UserSelect";
+import { Divider } from "@mui/material";
 
 const ImpersonateUser = () => {
   const [newUser, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const { impersonateUser, user } = useUser();
+  const { impersonateUser, user, isImpersonating, stopImpersonation } =
+    useUser();
 
   const handleSubmit = async (e) => {
+    e.preventDefault();
     setLoading(true);
 
     if (!newUser) {
@@ -26,8 +26,17 @@ const ImpersonateUser = () => {
       setLoading(false);
       return;
     }
+
     await impersonateUser(newUser?.value, newUser?.sub);
-    e.preventDefault();
+    toast.success("Successfully impersonating user");
+    setLoading(false);
+  };
+
+  const handleStopImpersonation = async () => {
+    setLoading(true);
+    await stopImpersonation();
+    setUser(null);
+    toast.success("Stopped impersonating user");
     setLoading(false);
   };
 
@@ -42,7 +51,7 @@ const ImpersonateUser = () => {
               gutterBottom
               textAlign="center"
             >
-              Current user
+              Current user: {user?.email}
             </Typography>
 
             <Typography
@@ -66,11 +75,25 @@ const ImpersonateUser = () => {
               color="primary"
               fullWidth
               onClick={handleSubmit}
-              loading={loading}
+              disabled={loading || !newUser}
               sx={{ mt: 3 }}
             >
-              Submit
+              {isImpersonating ? "Impersonate " : "Start Impersonating"}{" "}
+              {newUser?.label}
             </Button>
+
+            <Divider sx={{ my: 3 }} />
+
+            {isImpersonating && (
+              <Button
+                variant="outlined"
+                color="primary"
+                fullWidth
+                onClick={handleStopImpersonation}
+              >
+                Stop Impersonating User
+              </Button>
+            )}
           </CardContent>
         </Card>
       </Grid>
