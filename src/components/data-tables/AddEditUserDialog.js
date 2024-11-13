@@ -173,7 +173,7 @@ const AddEditUserDialog = ({
             label="Name"
             type="text"
             fullWidth
-            value={user.name}
+            value={`${user.firstName} ${user.lastName}`}
             onChange={(e) => setUser({ ...user, name: e.target.value })}
           />
 

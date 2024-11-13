@@ -524,6 +524,7 @@ export default function BulkMMSMessaging() {
                 </Typography>
                 <Select
                   isMulti
+                  closeMenuOnSelect={false}
                   options={[
                     ...contacts.map((c) => ({
                       value: c.id,

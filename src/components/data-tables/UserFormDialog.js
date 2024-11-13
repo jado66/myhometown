@@ -16,6 +16,14 @@ import {
 import { Delete, Key } from "@mui/icons-material";
 import { CityOrCommunityCell } from "./CityOrCommunityCell";
 
+const permissions = {
+  administrator: false,
+  cityManagement: false,
+  communityManagement: false,
+  texting: false,
+  classManagement: false,
+};
+
 export const UserFormDialog = ({
   open,
   onClose,
@@ -129,7 +137,7 @@ export const UserFormDialog = ({
           <FormControl component="fieldset" sx={{ mt: 2 }} fullWidth>
             <FormLabel component="legend">User Permissions</FormLabel>
             <FormGroup>
-              {Object.entries(formData?.permissions || {}).map(
+              {Object.entries({ ...permissions, ...formData?.permissions }).map(
                 ([key, value]) => (
                   <FormControlLabel
                     key={key}

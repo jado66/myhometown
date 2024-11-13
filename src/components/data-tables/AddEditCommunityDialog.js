@@ -182,7 +182,7 @@ const AddEditCommunityDialog = ({
                 community.communityOwners.length > 0
                   ? community.communityOwners.map((user) => ({
                       value: user._id,
-                      label: user.name,
+                      label: `${user.firstName} ${user.lastName}`,
                       data: user,
                     }))
                   : []

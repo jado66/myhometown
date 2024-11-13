@@ -5,7 +5,7 @@ import {
 } from "material-react-table";
 
 import { Typography, Chip, Box, Button } from "@mui/material";
-import { Add as AddIcon } from "@mui/icons-material";
+import { Add as AddIcon, ImportExport } from "@mui/icons-material";
 
 const UserDataTable = ({ data, onAddClick, onRowClick }) => {
   const getStoredState = (key, defaultValue) => {
@@ -16,6 +16,51 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
       console.error(`Error loading ${key} from localStorage:`, error);
       return defaultValue;
     }
+  };
+
+  const exportToCSV = () => {
+    const headers = columns.map((col) => col.header).join(",") + "\n";
+
+    const rows = processedData
+      .map((row) =>
+        columns
+          .map((col) => {
+            const cellValue = row[col.accessorKey];
+
+            if (
+              col.accessorKey === "permissions" &&
+              typeof cellValue === "object"
+            ) {
+              // Filter by true values and join keys for permissions
+              return `"${Object.keys(cellValue)
+                .filter((key) => cellValue[key])
+                .join(",")}"`;
+            } else if (
+              (col.accessorKey === "communities" ||
+                col.accessorKey === "cities") &&
+              Array.isArray(cellValue)
+            ) {
+              // Join names for communities and cities
+              return `"${cellValue.map((item) => item.name).join(",")}"`;
+            } else {
+              // Default case for other fields
+              return `"${cellValue !== undefined ? cellValue : ""}"`;
+            }
+          })
+          .join(",")
+      )
+      .join("\n");
+
+    const csvContent = headers + rows;
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "user_data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const [columnSizing, setColumnSizing] = useState(
@@ -233,6 +278,14 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
           startIcon={<AddIcon />}
         >
           Add User
+        </Button>
+        <Button
+          color="primary"
+          onClick={exportToCSV}
+          variant="outlined"
+          startIcon={<ImportExport />}
+        >
+          Export Table
         </Button>
         <Typography variant="body2" color="text.secondary">
           Total Users: {processedData.length}

@@ -155,7 +155,7 @@ const AddEditCityDialog = ({
                 city.cityOwners.length > 0
                   ? city.cityOwners.map((user) => ({
                       value: user._id,
-                      label: user.name,
+                      label: `${user.firstName} ${user.lastName}`,
                       data: user,
                     }))
                   : []
