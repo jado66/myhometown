@@ -41,7 +41,7 @@ const SidebarNav = ({ pages, onClose }) => {
         <Box marginBottom={1 / 2}>
           <Button
             component={"a"}
-            href="Admin Dashboard"
+            href="/admin-dashboard"
             fullWidth
             sx={{
               justifyContent: "flex-start",

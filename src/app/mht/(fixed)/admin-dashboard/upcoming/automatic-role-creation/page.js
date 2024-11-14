@@ -39,7 +39,7 @@ const daysOfWeek = [
   "Sunday",
 ];
 
-export default function RoleCreator() {
+export default function RollCreator() {
   const [className, setClassName] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -117,11 +117,11 @@ export default function RoleCreator() {
     <LocalizationProvider dateAdapter={AdapterMoment}>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Class Role Creator
+          Class Roll Creator
         </Typography>
         <Typography variant="subtitle1" gutterBottom sx={{ mb: 3 }}>
           When this tool is fully implemented, the class information will be
-          pulled from the database and the role will be generated automatically.
+          pulled from the database and the roll will be generated automatically.
         </Typography>
 
         <Stack spacing={4}>
@@ -243,7 +243,7 @@ export default function RoleCreator() {
           </Box>
 
           <Button variant="contained" onClick={generateDates} fullWidth>
-            Generate Role
+            Generate Roll
           </Button>
         </Stack>
 
