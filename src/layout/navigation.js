@@ -73,8 +73,8 @@ export const pages = () => {
           href: rootUrl + "/admin-dashboard/upcoming/create-class-signups",
         },
         {
-          title: "Automatic Role Creation",
-          href: rootUrl + "/admin-dashboard/upcoming/automatic-role-creation",
+          title: "Automatic Roll Creation",
+          href: rootUrl + "/admin-dashboard/upcoming/automatic-roll-creation",
         },
       ],
     },
