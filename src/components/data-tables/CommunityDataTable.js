@@ -64,15 +64,15 @@ const CommunityDataTable = ({ data, onAddClick, onRowClick }) => {
           <Typography variant="body2">{row.original.name}</Typography>
         ),
       },
-      // {
-      //   accessorKey: "visibility",
-      //   header: "Status",
-      //   size: columnSizing.status,
-      //   Cell: ({ row }) => {
-      //     const status = row.original.visibility ? "Public Facing" : "Unlisted";
-      //     return <Typography variant="body2">{status}</Typography>;
-      //   },
-      // },
+      {
+        accessorKey: "visibility",
+        header: "Status",
+        size: columnSizing.status,
+        Cell: ({ row }) => {
+          const status = row.original.visibility ? "Public Facing" : "Unlisted";
+          return <Typography variant="body2">{status}</Typography>;
+        },
+      },
       {
         accessorKey: "city",
         header: "City",

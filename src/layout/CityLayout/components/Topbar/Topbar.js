@@ -171,9 +171,7 @@ const Topbar = ({ onSidebarOpen }) => {
                     },
                   }}
                   href={
-                    community.visibility === "true"
-                      ? rootUrl + "/utah/" + community.href.replace(/^\.\//, "")
-                      : rootUrl + "/maintenance"
+                    rootUrl + "/utah/" + community.href.replace(/^\.\//, "")
                   }
                 >
                   {community.title} Community

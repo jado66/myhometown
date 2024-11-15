@@ -52,7 +52,8 @@ const Page = ({ params }) => {
     communityQuery,
     cityQuery,
     stateQuery,
-    communityTemplate
+    communityTemplate,
+    true
   );
 
   const {

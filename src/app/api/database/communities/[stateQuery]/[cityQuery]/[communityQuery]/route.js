@@ -1,10 +1,10 @@
 import { connectToMongoDatabase } from "@/util/db/mongodb";
 
 export async function GET(req, { params }) {
-  // Extract the community and state from query parameters
   const { cityQuery, stateQuery, communityQuery } = params;
+  const { searchParams } = new URL(req.url);
+  const isEditMode = searchParams.get("isEditMode") === "true";
 
-  // Prepare the query using community city and state:
   let query = {
     name: communityQuery
       .split("-")
@@ -20,7 +20,6 @@ export async function GET(req, { params }) {
       .join(" "),
   };
 
-  // Connect to mongodb and fetch communities
   let db, communities;
   try {
     ({ db } = await connectToMongoDatabase());
@@ -32,10 +31,6 @@ export async function GET(req, { params }) {
       { status: 500 }
     );
   }
-
-  console.log(
-    `Looking for ${communityQuery}, ${stateQuery} with ` + JSON.stringify(query)
-  );
 
   let results;
   try {
@@ -52,7 +47,7 @@ export async function GET(req, { params }) {
     return new Response(JSON.stringify({ error: "Not Found" }), {
       status: 404,
     });
-  } else if (!results[0].visibility) {
+  } else if (!results[0].visibility && !isEditMode) {
     return new Response(
       JSON.stringify({ error: "The requested data is private" }),
       { status: 403 }
@@ -63,21 +58,18 @@ export async function GET(req, { params }) {
 }
 
 export async function PUT(req, { params }) {
-  // Extract the cityQuery, stateQuery, communityQuery from query parameters
   const { cityQuery, stateQuery, communityQuery } = params;
 
-  // Prepare the update using city name and new state:
   let query = {
     name: communityQuery
       .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" "),
-    // TODO
-    // state: stateQuery
+    // city: cityQuery
     //   .split("-")
     //   .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     //   .join(" "),
-    // city: cityQuery
+    // state: stateQuery
     //   .split("-")
     //   .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     //   .join(" "),
@@ -85,9 +77,6 @@ export async function PUT(req, { params }) {
 
   const { community } = await req.json();
 
-  console.log(JSON.stringify({ query, community }, null, 4));
-
-  // Connect to mongodb and fetch communities
   let db, communities;
   try {
     ({ db } = await connectToMongoDatabase());
@@ -107,7 +96,6 @@ export async function PUT(req, { params }) {
     const result = await communities.updateOne(query, {
       $set: communityWithoutId,
     });
-
     modifiedCount = result.modifiedCount;
   } catch (e) {
     console.error("Error occurred while updating community", e);
@@ -116,5 +104,6 @@ export async function PUT(req, { params }) {
       { status: 500 }
     );
   }
+
   return new Response(JSON.stringify({ modifiedCount }), { status: 200 });
 }

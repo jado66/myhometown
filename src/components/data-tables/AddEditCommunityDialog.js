@@ -10,6 +10,7 @@ import {
   InputLabel,
   Tooltip,
   Box,
+  Switch,
 } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import UserSelect from "./selects/UserSelect";
@@ -190,6 +191,23 @@ const AddEditCommunityDialog = ({
               onChange={handleUserSelectChange}
             />
           </FormControl>
+          <Grid fullWidth sx={{ mt: 2 }}>
+            <InputLabel sx={{ color: "grey" }}>
+              Page is {community.visibility ? "Public Facing" : "Unlisted"}
+            </InputLabel>
+          </Grid>
+          <Grid sx={{ mt: 0.5, display: "flex", alignItems: "center" }}>
+            <InputLabel>Toggle Visibility</InputLabel>
+            <Grid item xs={6}>
+              <Switch
+                checked={community.visibility}
+                onChange={(e) =>
+                  setCommunity({ ...community, visibility: e.target.checked })
+                }
+                color="primary"
+              />
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions
           sx={{

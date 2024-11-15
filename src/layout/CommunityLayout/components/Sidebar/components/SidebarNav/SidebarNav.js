@@ -161,7 +161,7 @@ const SidebarNav = ({ onClose }) => {
                   </NextLink>
 
                   <NextLink
-                    href={rootUrl + `/maintenance`}
+                    href={rootUrl + `/utah/salt-lake-city`}
                     style={{ textDecoration: "none", color: "#686868" }}
                   >
                     <Typography

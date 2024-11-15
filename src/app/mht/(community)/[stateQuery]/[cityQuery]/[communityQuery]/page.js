@@ -37,12 +37,11 @@ const Page = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params; //TODO change me to stateQuery... VsCode hates renaming folders
   const [selectedImage, setSelectedImage] = useState();
 
-  const { community, hasLoaded } = useCommunity(
-    communityQuery,
-    cityQuery,
-    stateQuery,
-    communityTemplate
-  );
+  const {
+    community,
+    hasLoaded,
+    error: communityError,
+  } = useCommunity(communityQuery, cityQuery, stateQuery, communityTemplate);
 
   const [showSignUp, setShowSignup] = useState(false);
 
@@ -77,6 +76,51 @@ const Page = ({ params }) => {
     setSelectedImage(null);
   };
 
+  const BreadcrumbSection = () => {
+    return (
+      <Breadcrumbs
+        separator="-"
+        aria-label="breadcrumb"
+        sx={{ mx: "auto", width: "fit-content" }}
+      >
+        <Link
+          color="inherit"
+          href="/"
+          sx={{ display: "flex", alignItems: "center" }}
+        >
+          Home
+        </Link>
+
+        <Link
+          color="inherit"
+          href={`../${cityQuery}`}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            textTransform: "capitalize",
+          }}
+        >
+          {cityQuery.toLowerCase().endsWith("city")
+            ? cityQuery.replaceAll("-", " ")
+            : `${cityQuery.replaceAll("-", " ")} City`}
+        </Link>
+
+        <Typography
+          variant="body1"
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            textTransform: "capitalize",
+            fontWeight: "bold",
+            color: "black",
+          }}
+        >
+          {communityQuery.replaceAll("-", " ")} Community
+        </Typography>
+      </Breadcrumbs>
+    );
+  };
+
   if (!hasLoaded) {
     return (
       <div
@@ -93,8 +137,44 @@ const Page = ({ params }) => {
     );
   }
 
-  if (hasLoaded && !community) {
-    return <MaintenanceMode />;
+  // Handle specific error states
+  if (communityError) {
+    if (communityError.status === 404) {
+      return (
+        <div
+          style={{
+            height: "calc(100%-200px)",
+            padding: "5em",
+            justifyContent: "center",
+            display: "flex",
+          }}
+        >
+          <Typography variant="h2" align="center" sx={{ my: 3 }}>
+            City not found
+          </Typography>
+        </div>
+      );
+    }
+
+    if (communityError.status === 403) {
+      return (
+        <>
+          <Box
+            sx={{
+              mt: 3,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              width: "100%",
+            }}
+          >
+            <BreadcrumbSection />
+            <Divider sx={{ my: 2, width: "100%" }} />
+          </Box>
+          <MaintenanceMode />
+        </>
+      );
+    }
   }
 
   return (
@@ -112,50 +192,9 @@ const Page = ({ params }) => {
           text={`Back to ${cityQuery.replaceAll("-", " ")}`}
           href={`../../../${stateQuery}/${cityQuery}`}
         /> */}
-
-        <Breadcrumbs
-          separator="-"
-          aria-label="breadcrumb"
-          sx={{ mx: "auto", width: "fit-content" }}
-        >
-          <Link
-            color="inherit"
-            href="/"
-            sx={{ display: "flex", alignItems: "center" }}
-          >
-            Home
-          </Link>
-
-          <Link
-            color="inherit"
-            href={`../${cityQuery}`}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              textTransform: "capitalize",
-            }}
-          >
-            {cityQuery.toLowerCase().endsWith("city")
-              ? cityQuery.replaceAll("-", " ")
-              : `${cityQuery.replaceAll("-", " ")} City`}
-          </Link>
-
-          <Typography
-            variant="body1"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              textTransform: "capitalize",
-              fontWeight: "bold",
-              color: "black",
-            }}
-          >
-            {communityQuery.replaceAll("-", " ")} Community
-          </Typography>
-        </Breadcrumbs>
+        <BreadcrumbSection />
 
         <Divider sx={{ my: 2 }} />
-
         <Typography
           variant="h2"
           align="center"
@@ -163,12 +202,10 @@ const Page = ({ params }) => {
         >
           {communityQuery.replaceAll("-", " ")} Community
         </Typography>
-
         <PhotoGallery
           photos={community.content.galleryPhotos}
           variant="variant2"
         />
-
         <Grid container spacing={2} paddingY={3}>
           <Grid item xs={12}>
             <Typography
@@ -215,11 +252,9 @@ const Page = ({ params }) => {
             </Box>
           </Grid>
         </Grid>
-
         <Grid item xs={12} display="flex" justifyContent="center">
           <Divider sx={{ my: 5 }} />
         </Grid>
-
         <Grid
           item
           xs={12}
@@ -328,17 +363,13 @@ const Page = ({ params }) => {
           maxEvents={5}
           isLoading={isLoading}
         />
-
         <Divider sx={{ my: 5 }} />
-
         <EventsCalendar
           events={community.events}
           onSelectEvent={onSelectEvent}
           isLoading={isLoading}
         />
-
         <Divider sx={{ my: 5 }} />
-
         <ClassesTreeView
           classes={community.classes}
           onCreateClassCategory={alertNotEdit}
@@ -351,7 +382,6 @@ const Page = ({ params }) => {
           shiftDownSubclass={alertNotEdit}
         />
         <Divider sx={{ my: 5 }} />
-
         {!showSignUp ? (
           <Grid
             item
@@ -397,8 +427,6 @@ const Page = ({ params }) => {
     </>
   );
 };
-
-export default Page;
 
 const ImageDescriptionBlock = () => {
   return (
@@ -456,3 +484,5 @@ const ImageDescriptionBlock = () => {
     </>
   );
 };
+
+export default Page;

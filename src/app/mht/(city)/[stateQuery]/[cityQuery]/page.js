@@ -36,6 +36,39 @@ const Page = ({ params }) => {
     }
   }, [city, setCommunities]);
 
+  const BreadcrumbSection = () => {
+    return (
+      <Breadcrumbs
+        separator="-"
+        aria-label="breadcrumb"
+        sx={{ mx: "auto", width: "fit-content" }}
+      >
+        <Link
+          color="inherit"
+          href="/"
+          sx={{ display: "flex", alignItems: "center" }}
+        >
+          Home
+        </Link>
+
+        <Typography
+          variant="body1"
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            textTransform: "capitalize",
+            fontWeight: "bold",
+            color: "black",
+          }}
+        >
+          {cityQuery.toLowerCase().endsWith("city")
+            ? cityQuery.replaceAll("-", " ")
+            : `${cityQuery.replaceAll("-", " ")} City`}
+        </Typography>
+      </Breadcrumbs>
+    );
+  };
+
   if (!hasLoaded) {
     return (
       <div
@@ -72,7 +105,23 @@ const Page = ({ params }) => {
     }
 
     if (error.status === 403) {
-      return <MaintenanceMode />;
+      return (
+        <>
+          <Box
+            sx={{
+              mt: 3,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              width: "100%",
+            }}
+          >
+            <BreadcrumbSection />
+            <Divider sx={{ my: 2, width: "100%" }} />
+          </Box>
+          <MaintenanceMode />
+        </>
+      );
     }
 
     // Handle other errors
@@ -108,35 +157,7 @@ const Page = ({ params }) => {
   return (
     <>
       <Container sx={{ paddingTop: 3, marginBottom: 2 }}>
-        <Breadcrumbs
-          separator="-"
-          aria-label="breadcrumb"
-          sx={{ mx: "auto", width: "fit-content" }}
-        >
-          <Link
-            color="inherit"
-            href="/"
-            sx={{ display: "flex", alignItems: "center" }}
-          >
-            Home
-          </Link>
-
-          <Typography
-            variant="body1"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              textTransform: "capitalize",
-              fontWeight: "bold",
-              color: "black",
-            }}
-          >
-            {cityQuery.toLowerCase().endsWith("city")
-              ? cityQuery.replaceAll("-", " ")
-              : `${cityQuery.replaceAll("-", " ")} City`}
-          </Typography>
-        </Breadcrumbs>
-
+        <BreadcrumbSection />
         <Divider sx={{ my: 2 }} />
 
         <Typography variant="h2" align="center" sx={{ color: "black" }}>
@@ -236,11 +257,7 @@ const Page = ({ params }) => {
                 community.imageSrc ||
                 "/myhometown/city-page/city-placeholder.jpg"
               }
-              href={
-                community.visibility === "true"
-                  ? community.href
-                  : `../maintenance`
-              }
+              href={community.href}
               index={index}
             />
           ))}
