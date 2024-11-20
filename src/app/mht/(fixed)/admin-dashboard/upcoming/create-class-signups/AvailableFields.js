@@ -228,4 +228,14 @@ export const STRUCTURAL_ELEMENTS = {
     originalLabel: "Divider",
     category: "Layout Elements",
   },
+  bannerImage: {
+    label: "Banner Image",
+    type: FIELD_TYPES.bannerImage,
+    visible: true,
+    required: false,
+    originalLabel: "Banner Image",
+    url: "",
+    helpText: "Upload an image to display at the top of your form",
+    category: "Layout Elements",
+  },
 };

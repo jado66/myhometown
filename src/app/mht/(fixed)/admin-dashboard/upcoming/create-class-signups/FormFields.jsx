@@ -11,9 +11,12 @@ import {
   IconButton,
   Typography,
   Tooltip,
+  Stack,
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { FIELD_TYPES } from "./FieldTypes";
+import { Upload } from "@mui/icons-material";
+import { useImageUpload } from "@/hooks/use-upload-image";
 
 // Form Field Component
 export const FormField = ({
@@ -43,6 +46,24 @@ export const FormField = ({
 
     if (config.type === FIELD_TYPES.divider) {
       return <Divider sx={{ mt: 2, mb: 4 }} />;
+    }
+
+    if (config.type === FIELD_TYPES.bannerImage && !isEditMode) {
+      return config.url ? (
+        <Box
+          component="img"
+          src={config.url}
+          alt="Banner"
+          sx={{
+            width: "100%",
+            height: "auto",
+            maxHeight: 200,
+            objectFit: "cover",
+            borderRadius: 1,
+            mb: 2,
+          }}
+        />
+      ) : null;
     }
 
     const commonProps = {
@@ -92,6 +113,7 @@ export const FormField = ({
             }}
           />
         );
+
       default:
         return (
           <TextField {...commonProps} type={config.type} label={config.label} />
@@ -99,19 +121,5 @@ export const FormField = ({
     }
   };
 
-  return (
-    <Box sx={{ mb: 3, position: "relative" }}>
-      {config.helpText && (
-        <Tooltip title={config.helpText} placement="top">
-          <IconButton
-            size="small"
-            sx={{ position: "absolute", right: -30, top: 10 }}
-          >
-            <HelpOutlineIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      )}
-      {renderField()}
-    </Box>
-  );
+  return <Box sx={{ mb: 3, position: "relative" }}>{renderField()}</Box>;
 };

@@ -11,25 +11,19 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-
+import { useClassSignup } from "./ClassSignupContext";
 import { AVAILABLE_FIELDS } from "./AvailableFields";
-// Field Selector Dialog Component
-export const FieldSelectorDialog = ({
-  open,
-  onClose,
-  onAddFields,
-  onRemoveFields,
-  existingFields,
-}) => {
+
+export const FieldSelectorDialog = ({ isOpen, handleClose }) => {
+  const { fieldOrder, handleAddFields, handleRemoveField } = useClassSignup();
+
   // Track all selected fields, including existing ones
   const [selectedFields, setSelectedFields] = useState([]);
 
   // Initialize selected fields with existing fields when dialog opens
   useEffect(() => {
-    if (open) {
-      setSelectedFields([...existingFields]);
-    }
-  }, [open, existingFields]);
+    setSelectedFields([...fieldOrder]);
+  }, [fieldOrder]);
 
   // Group all available fields by category
   const allFieldsByCategory = Object.entries(AVAILABLE_FIELDS).reduce(
@@ -45,24 +39,37 @@ export const FieldSelectorDialog = ({
 
   const handleSave = () => {
     const fieldsToAdd = selectedFields.filter(
-      (field) => !existingFields.includes(field)
+      (field) => !fieldOrder.includes(field)
     );
-    const fieldsToRemove = existingFields.filter(
+    const fieldsToRemove = fieldOrder.filter(
       (field) => !selectedFields.includes(field)
     );
 
     if (fieldsToAdd.length > 0) {
-      onAddFields(fieldsToAdd);
+      handleAddFields(fieldsToAdd);
     }
     if (fieldsToRemove.length > 0) {
-      onRemoveFields(fieldsToRemove);
+      fieldsToRemove.forEach((field) => handleRemoveField(field));
     }
 
-    onClose();
+    handleClose();
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={isOpen}
+      onClose={handleClose}
+      maxWidth="md"
+      fullWidth
+      sx={{
+        "& .MuiDialog-paper": {
+          margin: 0,
+          position: "absolute",
+          top: "50%",
+          transform: "translateY(-50%)",
+        },
+      }}
+    >
       <DialogTitle>Manage Form Fields</DialogTitle>
       <DialogContent>
         <Box sx={{ mt: 2 }}>
@@ -111,7 +118,7 @@ export const FieldSelectorDialog = ({
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={handleClose}>Cancel</Button>
         <Button
           onClick={handleSave}
           variant="contained"

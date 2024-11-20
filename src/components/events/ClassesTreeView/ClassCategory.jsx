@@ -26,6 +26,8 @@ import { ExampleIcons, IconSelect } from "./IconSelect";
 import { StyledTreeItem } from "./StyledTreeItem";
 import { CategoryDropdownActions } from "./CategoryDropdownActions";
 import { ClassSignup } from "./ClassSignup";
+import CustomClassSignup from "@/app/mht/(fixed)/admin-dashboard/upcoming/create-class-signups";
+import ClassPreview from "@/app/mht/(fixed)/admin-dashboard/upcoming/create-class-signups/ClassPreview";
 
 export const ClassCategory = ({
   category,
@@ -78,6 +80,32 @@ export const ClassCategory = ({
 
   const forceExpandCategory = () => {
     onToggleExpand(null, category.id.toString(), true);
+  };
+
+  // In ClassCategory.js, update the handleCreateSubclass function:
+  const handleCreateSubclass = async (basicClassInfo, classData) => {
+    try {
+      // Ensure we have the category ID and properly formatted data
+      if (!category.id) {
+        throw new Error("Category ID is required");
+      }
+
+      // Create the subclass with the category ID and formatted data
+      const createdClass = await onCreateSubclass(category.id, {
+        ...basicClassInfo,
+      });
+
+      alert("Class created successfully" + JSON.stringify(classData));
+
+      if (createdClass) {
+        setAddNewClass(false);
+      }
+
+      return createdClass;
+    } catch (error) {
+      console.error("Failed to create class:", error);
+      throw error;
+    }
   };
 
   return (
@@ -160,32 +188,40 @@ export const ClassCategory = ({
       >
         {Array.isArray(category.classes) &&
           category.classes.length > 0 &&
-          category.classes.map((classObj, index) => (
-            <ClassSignup
-              key={`classname-${classObj.id}`}
-              classObj={classObj}
-              category={category}
-              editingClassId={editingClassId}
-              onUpdateSubclass={onUpdateSubclass}
-              onDeleteSubclass={onDeleteSubclass}
-              shiftUpClass={shiftUpSubclass}
-              shiftDownClass={shiftDownSubclass}
-              showIframeHelpDialog={showIframeHelpDialog}
-              isFirstClass={index === 0}
-              isLastClass={index === category.classes.length - 1}
-              isEdit={isEdit}
-            />
-          ))}
+          category.classes.map((classObj, index) => {
+            if (
+              classObj.contentType === "form" ||
+              classObj.contentType === "iframe"
+            ) {
+              return null;
+            } else {
+              return <ClassPreview key={classObj.id} classData={classObj} />;
+              // return (
+              //   <CustomClassSignup
+              //     handleCreateSubclass={handleCreateSubclass}
+              //   />
+              // );
+            }
+            //
+          })}
+
+        {/* {/* {isAddNewClass && ( */}
+        {/* <CreateClassForm
+          category={category}
+          onClose={() => setAddNewClass(false)}
+          onCreateSubclass={onCreateSubclass}
+          showIframeHelpDialog={showIframeHelpDialog}
+        /> */}
+        {/* )} */}
 
         {isAddNewClass && (
-          <CreateClassForm
-            category={category}
-            onClose={() => setAddNewClass(false)}
-            onCreateSubclass={onCreateSubclass}
-            showIframeHelpDialog={showIframeHelpDialog}
+          <CustomClassSignup
+            isEdit
+            handleCreateSubclass={handleCreateSubclass}
           />
         )}
-        {isEdit && !isAddNewClass && (
+
+        {isEdit && (
           <>
             <Grid display="flex" justifyContent="center" flexDirection="column">
               <Button

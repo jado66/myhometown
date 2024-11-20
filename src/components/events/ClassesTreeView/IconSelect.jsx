@@ -22,15 +22,15 @@ import EmergencyPrepIcon from "@/assets/svg/icons/EmergencyPrep";
 import HomeworkIcon from "@/assets/svg/icons/HomeworkIcon";
 import YogaIcon from "@/assets/svg/icons/YogaIcon";
 import YouthInActionIcon from "@/assets/svg/icons/YouthInActionIcon";
+import CraftsIcon from "@/assets/svg/icons/CraftsIcon";
 import BeeIcon from "@/assets/svg/icons/BeeIcon";
 import SingleClassIcon from "@/assets/svg/icons/SingleClassIcon";
-import CraftsIcon from "@/assets/svg/icons/CraftsIcon";
 
 export const ExampleIcons = {
   None: <div style={{ height: "30px", width: "35px" }}> </div>,
+  Crafts: <CraftsIcon />,
   Bee: <BeeIcon />,
   SingleClass: <SingleClassIcon />,
-  CraftsIcon: <CraftsIcon />,
   Finance: <FinanceIcon />,
   Recreation: <RecreationIcon />,
   EmergencyPrep: <EmergencyPrepIcon />,
@@ -50,6 +50,7 @@ export const ExampleIcons = {
   YouthInIcon: <YouthInActionIcon />,
   // Tutoring: <TutoringIcon />,
   // Music: <MusicIcon />,
+
   Guitar: <GuitarIcon />,
   Uke: <UkeIcon />,
   Legal: <LegalIcon />,
@@ -58,10 +59,14 @@ export const ExampleIcons = {
   // Add other icons here...
 };
 
-export const IconSelect = ({ icon, onSelect, disabled }) => (
+export const IconSelect = ({ icon, onSelect, disabled, height }) => (
   <FormControl
     fullWidth
-    sx={{ my: "auto", height: "40px !important" }}
+    sx={{
+      my: "auto",
+      height: `${height || "40px"} !important`,
+      display: "flex",
+    }}
     variant="outlined"
     size="small"
   >
@@ -71,6 +76,17 @@ export const IconSelect = ({ icon, onSelect, disabled }) => (
       label="Icon"
       onChange={onSelect}
       value={icon}
+      inputProps={{
+        sx: {
+          flex: 1,
+        },
+      }}
+      sx={{
+        height: "100%", // Set the select's height to fill the parent
+        "& .MuiInputBase-root": {
+          height: "100%", // Ensures the inner input area fills the space
+        },
+      }}
       MenuProps={{
         PaperProps: {
           style: {

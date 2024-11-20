@@ -1,4 +1,4 @@
-import { citiesStrongTransporter } from "@/util/email/nodemailer-transporter";
+import { myHometownTransporter } from "@/util/email/nodemailer-transporter";
 
 const formattedHtml = (html) => {
   return `
@@ -106,7 +106,7 @@ export async function POST(request, res) {
 
   try {
     // Send mail with defined transport object
-    let info = await citiesStrongTransporter.sendMail({
+    let info = await myHometownTransporter.sendMail({
       to: "info@citiesstrong.org", // list of receivers
       subject, // Subject line
       html: formattedHtml(html), // html body

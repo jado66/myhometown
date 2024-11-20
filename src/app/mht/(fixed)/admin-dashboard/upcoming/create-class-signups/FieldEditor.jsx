@@ -7,14 +7,21 @@ import {
   FormControlLabel,
   Typography,
   Paper,
+  Box,
   Stack,
   IconButton,
 } from "@mui/material";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { useImageUpload } from "@/hooks/use-upload-image";
+import { FIELD_TYPES } from "./FieldTypes";
+import { Upload } from "@mui/icons-material";
 
 export const FieldEditor = ({ field, config, onUpdate, onRemove }) => {
   const [isHelpTextExpanded, setIsHelpTextExpanded] = useState(false);
+  const { handleFileUpload, loading } = useImageUpload((url) => {
+    onUpdate(field, { ...config, url });
+  });
 
   const renderFieldControls = () => {
     // Handle structural elements (header, text block, divider)
@@ -41,6 +48,57 @@ export const FieldEditor = ({ field, config, onUpdate, onRemove }) => {
         <Typography variant="body2" color="textSecondary" sx={{ flexGrow: 1 }}>
           Divider Line
         </Typography>
+      );
+    }
+
+    // Banner image controls
+    if (config.type === FIELD_TYPES.bannerImage) {
+      return (
+        <Stack spacing={2} sx={{ width: "100%" }}>
+          {config.url && (
+            <Box
+              component="img"
+              src={config.url}
+              alt="Banner"
+              sx={{
+                width: "100%",
+                height: "auto",
+                maxHeight: 200,
+                objectFit: "cover",
+                borderRadius: 1,
+              }}
+            />
+          )}
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Button
+              component="label"
+              variant="outlined"
+              startIcon={<Upload />}
+              disabled={loading}
+            >
+              {loading
+                ? "Uploading..."
+                : config.url
+                ? "Change Image"
+                : "Upload Image"}
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={handleFileUpload}
+              />
+            </Button>
+            {config.url && (
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => onUpdate(field, { ...config, url: "" })}
+              >
+                Remove Image
+              </Button>
+            )}
+          </Stack>
+        </Stack>
       );
     }
 

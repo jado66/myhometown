@@ -4,6 +4,7 @@ import TitleIcon from "@mui/icons-material/Title";
 import TextFieldsIcon from "@mui/icons-material/TextFields";
 import HorizontalRuleIcon from "@mui/icons-material/HorizontalRule";
 import { STRUCTURAL_ELEMENTS } from "./AvailableFields";
+import ImageIcon from "@mui/icons-material/Image";
 
 export const StructuralElementAdder = ({ onAddElement, existingFields }) => {
   const handleAdd = (type) => {
@@ -26,6 +27,9 @@ export const StructuralElementAdder = ({ onAddElement, existingFields }) => {
       case "divider":
         newElement = { ...STRUCTURAL_ELEMENTS.divider1 };
         break;
+      case "bannerImage":
+        newElement = { ...STRUCTURAL_ELEMENTS.bannerImage };
+        break;
     }
 
     onAddElement(newId, newElement);
@@ -33,7 +37,10 @@ export const StructuralElementAdder = ({ onAddElement, existingFields }) => {
 
   return (
     <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-      <Typography variant="subtitle2" sx={{ mr: 2, alignSelf: "center" }}>
+      <Typography
+        variant="subtitle2"
+        sx={{ mr: 2, alignSelf: "center", fontWeight: "bold" }}
+      >
         Add Element:
       </Typography>
 
@@ -42,6 +49,7 @@ export const StructuralElementAdder = ({ onAddElement, existingFields }) => {
         variant="outlined"
         size="small"
         onClick={() => handleAdd("header")}
+        sx={{ backgroundColor: "white" }}
       >
         Header
       </Button>
@@ -51,8 +59,19 @@ export const StructuralElementAdder = ({ onAddElement, existingFields }) => {
         variant="outlined"
         size="small"
         onClick={() => handleAdd("text")}
+        sx={{ backgroundColor: "white" }}
       >
         Text Block
+      </Button>
+
+      <Button
+        startIcon={<ImageIcon />}
+        variant="outlined"
+        size="small"
+        onClick={() => handleAdd("bannerImage")}
+        sx={{ backgroundColor: "white" }}
+      >
+        Banner Image
       </Button>
 
       <Button
@@ -60,6 +79,7 @@ export const StructuralElementAdder = ({ onAddElement, existingFields }) => {
         variant="outlined"
         size="small"
         onClick={() => handleAdd("divider")}
+        sx={{ backgroundColor: "white" }}
       >
         Divider
       </Button>

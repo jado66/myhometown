@@ -1,7 +1,9 @@
 "use client";
 import {
+  Accordion,
   Box,
   Breadcrumbs,
+  Button,
   Card,
   Container,
   Divider,
@@ -36,6 +38,10 @@ import { LightBox } from "@/components/LightBox";
 import { ClassesTreeView } from "@/components/events/ClassesTreeView";
 import Link from "next/link";
 import UnsavedChangesAlert from "@/components/util/UnsavedChangesAlert";
+import { toast } from "react-toastify";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const communityDataContentTemplate = {
   paragraph1Text: faker.lorem.paragraph(),
@@ -45,6 +51,9 @@ const communityDataContentTemplate = {
 const Page = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params;
   const { user } = useUser();
+
+  const [stagedClassRequests, setStagedClassRequests] = useState({});
+  const [loadedClassSignups, setLoadedClassSignups] = useState([]);
 
   const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
 
@@ -250,31 +259,101 @@ const Page = ({ params }) => {
     });
   };
 
-  const onCreateSubclass = (classCategoryId, data) => {
-    const id = uuidv4();
+  const handleStagedClassRequest = (classId, type, data) => {
+    setStagedClassRequests((prev) => {
+      const currentEntry = prev[classId];
 
-    const newSubclass = {
-      id,
-      ...data,
-    };
+      if (currentEntry) {
+        // Handle case when there's an existing entry for the given classId
+        switch (currentEntry.type) {
+          case "add":
+            if (type === "edit") {
+              // Transform "edit" on top of "add" to be a new "add"
+              return {
+                ...prev,
+                [classId]: {
+                  type: "add",
+                  data,
+                },
+              };
+            } else if (type === "delete") {
+              // Remove the entry if "delete" comes after "add"
+              const { [classId]: _, ...rest } = prev;
+              return rest;
+            }
+            break;
 
-    setCommunityData((prevState) => {
-      // Find the index of the class category where the new subclass should be added
-      const updatedClasses = prevState.classes.map((classCategory) => {
-        if (classCategory.id === classCategoryId) {
-          return {
-            ...classCategory,
-            classes: [...classCategory.classes, newSubclass],
-          };
+          case "edit":
+            if (type === "delete") {
+              // Keep only the "delete"
+              const { [classId]: _, ...rest } = prev;
+              return {
+                ...rest,
+                [classId]: {
+                  type: "delete",
+                  data: null, // Assuming no data needed for delete
+                },
+              };
+            }
+            break;
+
+          default:
+            break;
         }
-        return classCategory;
-      });
+      }
 
+      // No existing entry or other combinations
       return {
-        ...prevState,
-        classes: updatedClasses,
+        ...prev,
+        [classId]: {
+          type,
+          data,
+        },
       };
     });
+  };
+
+  const onCreateSubclass = async (classCategoryId, classBasicInfo) => {
+    try {
+      if (!classCategoryId || !classBasicInfo) {
+        throw new Error("Missing required class information");
+      }
+
+      // Create new subclass with consistent format
+      const newSubclass = {
+        ...classBasicInfo,
+        id: uuidv4(),
+        categoryId: classCategoryId,
+        createdAt: new Date().toISOString(),
+      };
+
+      handleStagedClassRequest(newSubclass.id, "add", newSubclass);
+
+      // Update state with new subclass
+      setCommunityData((prevState) => {
+        const updatedClasses = prevState.classes.map((classCategory) => {
+          if (classCategory.id === classCategoryId) {
+            return {
+              ...classCategory,
+              classes: [...(classCategory.classes || []), newSubclass],
+            };
+          }
+          return classCategory;
+        });
+
+        return {
+          ...prevState,
+          classes: updatedClasses,
+        };
+      });
+
+      toast.success("Class created successfully!");
+      return newSubclass;
+    } catch (error) {
+      console.error("Error creating subclass:", error);
+      toast.error("Failed to create class: " + error.message);
+      throw error;
+    }
   };
 
   const onDeleteSubclass = (classCategoryId, subclassId) => {
@@ -968,8 +1047,75 @@ const Page = ({ params }) => {
         />
         <Divider sx={{ my: 5 }} />
 
-        {/* <pre>{JSON.stringify(communityData.classes, null, 4)}</pre> */}
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel1a-content"
+            id="panel1a-header"
+          >
+            <Typography>Community Data</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <pre>Community Data {JSON.stringify(communityData, null, 4)}</pre>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel1a-content"
+            id="panel1a-header"
+          >
+            <Typography>Staged Requests</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <pre>
+              Staged Requests{JSON.stringify(stagedClassRequests, null, 4)}
+            </pre>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel1a-content"
+            id="panel1a-header"
+          >
+            <Typography>Classes</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <pre>Classes {JSON.stringify(communityData.classes, null, 4)}</pre>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel1a-content"
+            id="panel1a-header"
+          >
+            <Typography>Loaded Class Signups</Typography>
+          </AccordionSummary>
 
+          <AccordionDetails>
+            <pre>
+              Loaded Class Signups {JSON.stringify(loadedClassSignups, null, 4)}
+            </pre>
+          </AccordionDetails>
+        </Accordion>
+
+        <Button
+          variant="contained"
+          fullWidth
+          sx={{ my: 3 }}
+          onClick={() => {
+            setCommunityData((prevState) => {
+              return {
+                ...prevState,
+                classes: [],
+              };
+            });
+          }}
+        >
+          Delete Classes
+        </Button>
         <ClassesTreeView
           isEdit
           classes={communityData.classes}

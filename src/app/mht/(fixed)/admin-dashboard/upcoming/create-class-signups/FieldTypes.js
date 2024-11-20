@@ -8,4 +8,5 @@ export const FIELD_TYPES = {
   divider: "divider",
   header: "header",
   staticText: "staticText",
+  bannerImage: "bannerImage",
 };
