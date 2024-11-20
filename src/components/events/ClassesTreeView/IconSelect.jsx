@@ -22,9 +22,15 @@ import EmergencyPrepIcon from "@/assets/svg/icons/EmergencyPrep";
 import HomeworkIcon from "@/assets/svg/icons/HomeworkIcon";
 import YogaIcon from "@/assets/svg/icons/YogaIcon";
 import YouthInActionIcon from "@/assets/svg/icons/YouthInActionIcon";
+import BeeIcon from "@/assets/svg/icons/BeeIcon";
+import SingleClassIcon from "@/assets/svg/icons/SingleClassIcon";
+import CraftsIcon from "@/assets/svg/icons/CraftsIcon";
 
 export const ExampleIcons = {
   None: <div style={{ height: "30px", width: "35px" }}> </div>,
+  Bee: <BeeIcon />,
+  SingleClass: <SingleClassIcon />,
+  CraftsIcon: <CraftsIcon />,
   Finance: <FinanceIcon />,
   Recreation: <RecreationIcon />,
   EmergencyPrep: <EmergencyPrepIcon />,
