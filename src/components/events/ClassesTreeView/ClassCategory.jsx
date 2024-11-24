@@ -26,8 +26,8 @@ import { ExampleIcons, IconSelect } from "./IconSelect";
 import { StyledTreeItem } from "./StyledTreeItem";
 import { CategoryDropdownActions } from "./CategoryDropdownActions";
 import { ClassSignup } from "./ClassSignup";
-import CustomClassSignup from "@/app/mht/(fixed)/admin-dashboard/upcoming/create-class-signups";
-import ClassPreview from "@/app/mht/(fixed)/admin-dashboard/upcoming/create-class-signups/ClassPreview";
+import ClassPreview from "@/components/class-signups/ClassPreview";
+import CustomClassSignup from "@/components/class-signups";
 
 export const ClassCategory = ({
   category,
