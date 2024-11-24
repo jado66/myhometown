@@ -1,4 +1,5 @@
 import { LoadedClassesProvider } from "@/contexts/LoadedClassesProvider";
+import { useContext } from "react";
 
 // Custom hook to use the classes context
 export const useLoadedClassesContext = () => {

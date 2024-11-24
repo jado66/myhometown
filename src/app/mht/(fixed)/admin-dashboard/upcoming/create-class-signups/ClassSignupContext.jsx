@@ -1,5 +1,11 @@
 "use client";
-import { createContext, useContext, useState, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import { AVAILABLE_FIELDS } from "./AvailableFields";
 import { FIELD_TYPES } from "./FieldTypes";
 import { useLoadedClassesContext } from "@/hooks/use-loaded-classes-context";
@@ -64,7 +70,8 @@ export function ClassSignupProvider({
   onCreateSubclass,
   onEditSubclass,
 }) {
-  const { loadClass, loadedClasses } = useLoadedClassesContext();
+  const loadClass = () => {};
+  // const { loadClass, loadedClasses } = useLoadedClassesContext();
   const [isLoading, setIsLoading] = useState(classObj?.id ? true : false);
   const [loadError, setLoadError] = useState(null);
 
@@ -271,55 +278,56 @@ export function ClassSignupProvider({
     setFieldOrder(items);
   };
 
-  useEffect(() => {
-    async function fetchClassData() {
-      if (!classObj?.id) return;
+  // todo
+  // useEffect(() => {
+  //   async function fetchClassData() {
+  //     if (!classObj?.id) return;
 
-      try {
-        setIsLoading(true);
-        setLoadError(null);
+  //     try {
+  //       setIsLoading(true);
+  //       setLoadError(null);
 
-        const loadedClass = await loadClass(classObj.id);
+  //       const loadedClass = await loadClass(classObj.id);
 
-        if (!loadedClass) {
-          throw new Error(`Could not find class with ID ${classObj.id}`);
-        }
+  //       if (!loadedClass) {
+  //         throw new Error(`Could not find class with ID ${classObj.id}`);
+  //       }
 
-        // Update form configuration from loaded class
-        if (loadedClass.signupForm) {
-          setFormConfig(loadedClass.signupForm);
-        }
+  //       // Update form configuration from loaded class
+  //       if (loadedClass.signupForm) {
+  //         setFormConfig(loadedClass.signupForm);
+  //       }
 
-        // Update class configuration from loaded class
-        setClassConfig({
-          ...DEFAULT_CLASS_CONFIG,
-          className: loadedClass.title || "",
-          icon: loadedClass.icon || "default",
-          startDate: loadedClass.startDate || "",
-          endDate: loadedClass.endDate || "",
-          location: loadedClass.location || "",
-          capacity: loadedClass.capacity || "",
-          showCapacity: loadedClass.showCapacity || false,
-          meetingDays: loadedClass.meetingDays || [],
-          startTime: loadedClass.startTime || "",
-          endTime: loadedClass.endTime || "",
-          _id: loadedClass.id, // Keep track of the original ID
-        });
+  //       // Update class configuration from loaded class
+  //       setClassConfig({
+  //         ...DEFAULT_CLASS_CONFIG,
+  //         className: loadedClass.title || "",
+  //         icon: loadedClass.icon || "default",
+  //         startDate: loadedClass.startDate || "",
+  //         endDate: loadedClass.endDate || "",
+  //         location: loadedClass.location || "",
+  //         capacity: loadedClass.capacity || "",
+  //         showCapacity: loadedClass.showCapacity || false,
+  //         meetingDays: loadedClass.meetingDays || [],
+  //         startTime: loadedClass.startTime || "",
+  //         endTime: loadedClass.endTime || "",
+  //         _id: loadedClass.id, // Keep track of the original ID
+  //       });
 
-        // Update field order if available
-        if (loadedClass.fieldOrder) {
-          setFieldOrder(loadedClass.fieldOrder);
-        }
-      } catch (error) {
-        console.error("Error loading class:", error);
-        setLoadError(error.message);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+  //       // Update field order if available
+  //       if (loadedClass.fieldOrder) {
+  //         setFieldOrder(loadedClass.fieldOrder);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error loading class:", error);
+  //       setLoadError(error.message);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   }
 
-    fetchClassData();
-  }, [classObj?.id, loadClass]);
+  //   fetchClassData();
+  // }, [classObj?.id, loadClass]);
 
   if (isLoading) {
     return <Loading />;
