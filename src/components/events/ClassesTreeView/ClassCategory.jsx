@@ -54,6 +54,8 @@ export const ClassCategory = ({
   const [editTitle, setEditTitle] = useState(category.title);
   const [editIcon, setEditIcon] = useState(category.icon);
 
+  const [openClassSignup, setOpenClassSignup] = useState(null);
+
   const [showOptions, setShowOptions] = useState(false);
 
   const IconWithProps = React.cloneElement(ExampleIcons[category.icon], {
@@ -91,9 +93,13 @@ export const ClassCategory = ({
       }
 
       // Create the subclass with the category ID and formatted data
-      const createdClass = await onCreateSubclass(category.id, {
-        ...basicClassInfo,
-      });
+      const createdClass = await onCreateSubclass(
+        category.id,
+        {
+          ...basicClassInfo,
+        },
+        classData
+      );
 
       alert("Class created successfully" + JSON.stringify(classData));
 
@@ -195,7 +201,25 @@ export const ClassCategory = ({
             ) {
               return null;
             } else {
-              return <ClassPreview key={classObj.id} classData={classObj} />;
+              if (openClassSignup === classObj.id) {
+                return (
+                  <CustomClassSignup
+                    key={classObj.id}
+                    classObj={classObj}
+                    category={category}
+                    handleCreateSubclass={handleCreateSubclass}
+                  />
+                );
+              } else {
+                return (
+                  <ClassPreview
+                    key={classObj.id}
+                    classData={classObj}
+                    isEdit
+                    onSignupClick={() => setOpenClassSignup(classObj.id)}
+                  />
+                );
+              }
               // return (
               //   <CustomClassSignup
               //     handleCreateSubclass={handleCreateSubclass}
@@ -216,7 +240,9 @@ export const ClassCategory = ({
 
         {isAddNewClass && (
           <CustomClassSignup
+            category={category}
             isEdit
+            isNew
             handleCreateSubclass={handleCreateSubclass}
           />
         )}

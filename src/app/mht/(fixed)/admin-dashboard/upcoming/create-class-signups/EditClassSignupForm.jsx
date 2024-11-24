@@ -64,18 +64,18 @@ export function EditClassSignupForm({
           spacing={2}
           sx={{ position: "absolute", right: 16, top: 16 }}
         >
+          <Button aria-label="close" onClick={handleClose} variant="outlined">
+            Preview Form
+          </Button>
           <Button
             aria-label="close"
             onClick={() => {
               handleSaveClass();
               handleClose();
             }}
-            variant="outlined"
+            variant="contained"
           >
             Save
-          </Button>
-          <Button aria-label="close" onClick={handleClose}>
-            Cancel
           </Button>
         </Stack>
       </DialogTitle>

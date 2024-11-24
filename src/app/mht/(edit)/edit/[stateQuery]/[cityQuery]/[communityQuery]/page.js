@@ -42,6 +42,7 @@ import { toast } from "react-toastify";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { LoadedClassesProvider } from "@/contexts/LoadedClassesProvider";
 
 const communityDataContentTemplate = {
   paragraph1Text: faker.lorem.paragraph(),
@@ -313,16 +314,30 @@ const Page = ({ params }) => {
     });
   };
 
-  const onCreateSubclass = async (classCategoryId, classBasicInfo) => {
+  const onCreateSubclass = async (
+    classCategoryId,
+    classBasicInfo,
+    signupForm
+  ) => {
     try {
-      if (!classCategoryId || !classBasicInfo) {
+      if (!classCategoryId || !signupForm) {
         throw new Error("Missing required class information");
       }
 
+      const id = uuidv4();
       // Create new subclass with consistent format
       const newSubclass = {
         ...classBasicInfo,
-        id: uuidv4(),
+        signupForm: signupForm,
+        id: id,
+        categoryId: classCategoryId,
+        createdAt: new Date().toISOString(),
+        signups: [],
+      };
+
+      const newSubclassPreview = {
+        ...classBasicInfo,
+        id: id,
         categoryId: classCategoryId,
         createdAt: new Date().toISOString(),
       };
@@ -335,7 +350,7 @@ const Page = ({ params }) => {
           if (classCategory.id === classCategoryId) {
             return {
               ...classCategory,
-              classes: [...(classCategory.classes || []), newSubclass],
+              classes: [...(classCategory.classes || []), newSubclassPreview],
             };
           }
           return classCategory;
@@ -1047,7 +1062,7 @@ const Page = ({ params }) => {
         />
         <Divider sx={{ my: 5 }} />
 
-        <Accordion>
+        {/* <Accordion>
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
             aria-controls="panel1a-content"
@@ -1115,21 +1130,23 @@ const Page = ({ params }) => {
           }}
         >
           Delete Classes
-        </Button>
-        <ClassesTreeView
-          isEdit
-          classes={communityData.classes}
-          onCreateClassCategory={onCreateClassCategory}
-          onCreateSubclass={onCreateSubclass}
-          onDeleteClassCategory={onDeleteClassCategory}
-          onDeleteSubclass={onDeleteSubclass}
-          shiftDownClassCategory={shiftDownClassCategory}
-          shiftUpClassCategory={shiftUpClassCategory}
-          shiftUpSubclass={shiftUpSubclass}
-          shiftDownSubclass={shiftDownSubclass}
-          onUpdateClassCategory={onUpdateClassCategory}
-          onUpdateSubclass={onUpdateSubclass}
-        />
+        </Button> */}
+        <LoadedClassesProvider isEdit stagedRequests={stagedClassRequests}>
+          <ClassesTreeView
+            isEdit
+            classes={communityData.classes}
+            onCreateClassCategory={onCreateClassCategory}
+            onCreateSubclass={onCreateSubclass}
+            onDeleteClassCategory={onDeleteClassCategory}
+            onDeleteSubclass={onDeleteSubclass}
+            shiftDownClassCategory={shiftDownClassCategory}
+            shiftUpClassCategory={shiftUpClassCategory}
+            shiftUpSubclass={shiftUpSubclass}
+            shiftDownSubclass={shiftDownSubclass}
+            onUpdateClassCategory={onUpdateClassCategory}
+            onUpdateSubclass={onUpdateSubclass}
+          />
+        </LoadedClassesProvider>
         <Divider sx={{ my: 5 }} />
 
         <VolunteerSignUps
