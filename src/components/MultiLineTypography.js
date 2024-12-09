@@ -1,4 +1,4 @@
-const { Typography } = require("@mui/material");
+import { Box, Typography } from "@mui/material";
 
 const createLinkifiedText = (text) => {
   const urlPattern = /(\bhttps?:\/\/[^\s]+[^\s.,;!?"')])/g; // Regular expression for URLs
@@ -20,11 +20,11 @@ const createLinkifiedText = (text) => {
   );
 };
 
-export const MultiLineTypography = ({ text }) => {
+export const MultiLineTypography = ({ text, sx }) => {
   const paragraphs = text.split("\n");
 
   return (
-    <div style={{ padding: "10px 16px" }}>
+    <Box sx={{ padding: "10px 16px", ...sx }}>
       {paragraphs.map((text, index) => (
         <Typography
           key={index}
@@ -40,6 +40,6 @@ export const MultiLineTypography = ({ text }) => {
           {createLinkifiedText(text)}
         </Typography>
       ))}
-    </div>
+    </Box>
   );
 };

@@ -102,7 +102,12 @@ export const ClassSignup = ({
         />
       );
     } else if (localClassObj.contentType === "information") {
-      return <MultiLineTypography text={localClassObj.information} />;
+      return (
+        <MultiLineTypography
+          text={localClassObj.information}
+          sx={{ width: "100%" }}
+        />
+      );
     } else {
       return (
         <>
