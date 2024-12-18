@@ -2,7 +2,7 @@ import { useClasses } from "@/hooks/use-classes";
 import React, { createContext, useState, useCallback } from "react";
 
 // Create context
-const LoadedClassesContext = createContext(null);
+export const LoadedClassesContext = createContext(null);
 
 // Context provider component
 export const LoadedClassesProvider = ({
@@ -16,6 +16,8 @@ export const LoadedClassesProvider = ({
   // Load a class, checking staged requests first if in edit mode
   const loadClass = useCallback(
     async (classId) => {
+      console.log("stagedRequests: ", stagedRequests);
+      alert(JSON.stringify(stagedRequests));
       // Return cached class if available
       if (loadedClasses[classId]) {
         return loadedClasses[classId];
@@ -26,12 +28,12 @@ export const LoadedClassesProvider = ({
         const stagedClass = stagedRequests[classId];
 
         // If it's a delete request, return null
-        if (stagedClass.type === "delete") {
+        if (stagedClass.callVerb === "delete") {
           return null;
         }
 
         // For add or edit requests, cache and return the staged data
-        if (stagedClass.type === "add" || stagedClass.type === "edit") {
+        if (stagedClass.callVerb === "add" || stagedClass.callVerb === "edit") {
           const newLoadedClasses = {
             ...loadedClasses,
             [classId]: stagedClass.data,
@@ -55,6 +57,7 @@ export const LoadedClassesProvider = ({
         return null;
       } catch (error) {
         console.error("Error loading class:", error);
+
         return null;
       }
     },
@@ -85,6 +88,7 @@ export const LoadedClassesProvider = ({
 
   return (
     <LoadedClassesContext.Provider value={value}>
+      {JSON.stringify(stagedRequests)}
       {children}
     </LoadedClassesContext.Provider>
   );

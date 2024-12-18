@@ -1,3 +1,6 @@
+import { connectToMongoDatabase } from "@/util/db/mongodb";
+import { v4 as uuidv4 } from "uuid";
+
 // Signup for a class
 export async function POST(req, { params }) {
   const { id } = params;
@@ -25,12 +28,27 @@ export async function POST(req, { params }) {
       });
     }
 
+    // Generate a unique ID for the signup
+    const signupId = uuidv4();
+
+    const signupWithId = {
+      ...signupData,
+      id: signupId,
+      createdAt: new Date().toISOString(),
+    };
+
     const result = await classes.updateOne(
       { id },
-      { $push: { signups: signupData } }
+      { $push: { signups: signupWithId } }
     );
 
-    return new Response(JSON.stringify(result), { status: 201 });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        signup: signupWithId,
+      }),
+      { status: 201 }
+    );
   } catch (e) {
     console.error("Error occurred while processing signup", e);
     return new Response(

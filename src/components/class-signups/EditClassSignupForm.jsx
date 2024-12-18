@@ -30,6 +30,7 @@ import { useImageUpload } from "@/hooks/use-upload-image";
 
 export function EditClassSignupForm({
   isOpen,
+  isNew,
   handleClose,
   showFieldSelector,
 }) {
@@ -67,21 +68,23 @@ export function EditClassSignupForm({
           <Button aria-label="close" onClick={handleClose} variant="outlined">
             Preview Form
           </Button>
-          <Button
-            aria-label="close"
-            onClick={() => {
-              handleSaveClass();
-              handleClose();
-            }}
-            variant="contained"
-          >
-            Save
-          </Button>
+          {isNew && (
+            <Button
+              aria-label="close"
+              onClick={() => {
+                handleSaveClass();
+                handleClose();
+              }}
+              variant="contained"
+            >
+              Create Class
+            </Button>
+          )}
         </Stack>
       </DialogTitle>
       <DialogContent>
         <Stack spacing={3} sx={{ py: 2 }}>
-          <Typography variant="h6">Class Configuration</Typography>
+          <Typography variant="h6">Class Description</Typography>
 
           <Grid container>
             <Grid item xs={3} sx={{ pr: 1 }}>
@@ -107,18 +110,6 @@ export function EditClassSignupForm({
             </Grid>
           </Grid>
 
-          <TextField
-            fullWidth
-            multiline
-            rows={3}
-            label="Class Description"
-            value={classConfig.description}
-            onChange={(e) =>
-              handleClassConfigChange("description", e.target.value)
-            }
-            placeholder="Enter class description here..."
-          />
-
           <Stack direction="row" spacing={2} alignItems="center">
             <Button
               component="label"
@@ -130,7 +121,7 @@ export function EditClassSignupForm({
                 ? "Uploading..."
                 : classConfig.classBannerUrl
                 ? "Change Image"
-                : "Upload Image"}
+                : "Upload Banner Image"}
               <input
                 type="file"
                 hidden
@@ -148,6 +139,23 @@ export function EditClassSignupForm({
               </Button>
             )}
           </Stack>
+          {/* Helper text for the image saying it should be a banner image with a wide aspect ratio */}
+          <Typography variant="subtitle2" color="text.secondary">
+            Banner images should have a wide aspect ratio.
+          </Typography>
+
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            label="Class Introduction"
+            value={classConfig.description}
+            onChange={(e) =>
+              handleClassConfigChange("description", e.target.value)
+            }
+            placeholder="Enter class description here..."
+          />
+
           <Grid container>
             <Grid item xs={6} sx={{ pr: 1 }}>
               <TextField
@@ -282,6 +290,20 @@ export function EditClassSignupForm({
               </Droppable>
             </Stack>
           </DragDropContext>
+        </Stack>
+        <Stack direction="row" justifyContent="flex-end" sx={{ mt: 3 }}>
+          {!isNew && (
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => {
+                // Add your delete logic here
+                handleClose();
+              }}
+            >
+              Delete Class
+            </Button>
+          )}
         </Stack>
       </DialogContent>
     </Dialog>

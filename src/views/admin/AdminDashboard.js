@@ -111,6 +111,13 @@ const AdminDashboardPages = () => {
                   href: rootUrl + "/admin-dashboard/communities",
                   requiredPermission: "communityManagement",
                 },
+                {
+                  title: "Classes and Rolls",
+                  subtitle:
+                    "View your classes and rolls. Take attendance and manage your classes.",
+                  media: "/school.png",
+                  href: rootUrl + "/admin-dashboard/classes",
+                },
                 // {
                 //   title: "Email Communications",
                 //   subtitle: "Send emails to your city or community members. ",

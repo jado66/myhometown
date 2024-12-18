@@ -1,4 +1,6 @@
-// Get the class with the given ID
+import { connectToMongoDatabase } from "@/util/db/mongodb";
+
+//\src\app\api\database\classes\[id]\route.js
 export async function GET(req, { params }) {
   const { id } = params;
 

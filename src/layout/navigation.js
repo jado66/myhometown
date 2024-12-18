@@ -5,6 +5,8 @@ export const pages = () => {
     {
       title: "Management",
       id: "landing-pages",
+      requiredPermission:
+        "administrator || cityManagement || communityManagement",
       pages: [
         {
           title: "User Management",
@@ -24,7 +26,7 @@ export const pages = () => {
       ],
     },
     {
-      title: "Tools & Support",
+      title: "Tools",
       id: "supporting-pages",
       pages: [
         // {
@@ -42,17 +44,8 @@ export const pages = () => {
           requiredPermission: "texting",
         },
         {
-          title: "Bug Report",
-          href: rootUrl + "/bug-report",
-        },
-        {
-          title: "Request a Feature",
-          href: rootUrl + "/feature-request",
-        },
-        {
-          title: "Impersonate User",
-          href: rootUrl + "/admin-dashboard/impersonate",
-          requiredPermission: "administrator",
+          title: "Classes and Rolls",
+          href: rootUrl + "/admin-dashboard/classes",
         },
         // {
         //   title: "User Guide",
@@ -65,18 +58,37 @@ export const pages = () => {
       ],
     },
     {
-      title: "Upcoming Features",
-      id: "auth-pages",
+      title: "Support",
+      id: "support-pages",
       pages: [
         {
-          title: "Class Signup Creation",
-          href: rootUrl + "/admin-dashboard/upcoming/create-class-signups",
+          title: "Bug Report",
+          href: rootUrl + "/bug-report",
         },
         {
-          title: "Automatic Roll Creation",
-          href: rootUrl + "/admin-dashboard/upcoming/automatic-roll-creation",
+          title: "Request a Feature",
+          href: rootUrl + "/feature-request",
+        },
+        {
+          title: "Impersonate User",
+          href: rootUrl + "/admin-dashboard/impersonate",
+          requiredPermission: "administrator",
         },
       ],
     },
+    // {
+    //   title: "Upcoming Features",
+    //   id: "auth-pages",
+    //   pages: [
+    //     {
+    //       title: "Class Signup Creation",
+    //       href: rootUrl + "/admin-dashboard/upcoming/create-class-signups",
+    //     },
+    //     {
+    //       title: "Automatic Roll Creation",
+    //       href: rootUrl + "/admin-dashboard/upcoming/automatic-roll-creation",
+    //     },
+    //   ],
+    // },
   ];
 };

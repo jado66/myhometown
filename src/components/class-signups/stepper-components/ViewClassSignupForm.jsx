@@ -1,7 +1,7 @@
 import { Typography, Stack, Button, Alert, Box } from "@mui/material";
-import { useClassSignup } from "./ClassSignupContext";
-import { FormField } from "./FormFields";
-import { FIELD_TYPES } from "./FieldTypes";
+import { useClassSignup } from "../ClassSignupContext";
+import { FormField } from "../FormFields";
+import { FIELD_TYPES } from "../FieldTypes";
 
 function formatMeetingDays(days) {
   if (days.length <= 1) return days.join("");
@@ -31,7 +31,7 @@ export function ViewClassSignupForm() {
   } = useClassSignup();
 
   return (
-    <Stack spacing={3} component="form" onSubmit={handleSubmit}>
+    <Stack spacing={3} component="form">
       <Typography variant="h4" component="h1">
         {classConfig.className} Signup
       </Typography>
@@ -105,7 +105,10 @@ export function ViewClassSignupForm() {
 
       {fieldOrder.map((field) => {
         const config = formConfig[field];
-        if (config.type === FIELD_TYPES.bannerImage && config.url) {
+
+        if (!config) return null;
+
+        if (config?.type === FIELD_TYPES.bannerImage && config.url) {
           return (
             <Box
               key={field}
@@ -135,14 +138,26 @@ export function ViewClassSignupForm() {
       })}
 
       <Button
-        type="submit"
+        type="button"
         variant="contained"
         fullWidth
         size="large"
         sx={{ mt: 3 }}
+        onClick={handleSubmit}
       >
-        Submit
+        {submitStatus === "submitting" ? "Submitting..." : "Submit"}
       </Button>
+      {submitStatus === "success" && (
+        <Typography variant="body1" color="success" sx={{ mt: 2 }}>
+          Successfully signed up for the class!
+        </Typography>
+      )}
+
+      {submitStatus === "error" && (
+        <Typography variant="body1" color="error" sx={{ mt: 2 }}>
+          There was an error submitting the form. Please try again.
+        </Typography>
+      )}
     </Stack>
   );
 }

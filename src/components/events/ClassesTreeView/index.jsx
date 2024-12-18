@@ -6,6 +6,7 @@ import { Add } from "@mui/icons-material";
 import { IframeHelpDialog } from "../IframeHelpDialog";
 import { ClassCategory } from "./ClassCategory";
 import { CreateCategoryForm } from "./CreateCategoryForm";
+import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 
 export const ClassesTreeView = ({
   classes,
@@ -43,17 +44,6 @@ export const ClassesTreeView = ({
     setEditingCategoryId(null);
   };
 
-  const handleUpdateClass = (
-    categoryId,
-    classId,
-    newTitle,
-    newIcon,
-    newGoogleFormId
-  ) => {
-    onUpdateSubclass(categoryId, classId, newTitle, newIcon, newGoogleFormId);
-    setEditingClassId(null);
-  };
-
   const toggleExpandCategory = (e, categoryId, forceOpen = false) => {
     if (expandedItems === categoryId && !forceOpen) {
       setExpandedItems(null); // Collapse if already expanded
@@ -77,7 +67,7 @@ export const ClassesTreeView = ({
         onDeleteSubclass={onDeleteSubclass}
         onDeleteClassCategory={onDeleteClassCategory}
         onCreateSubclass={onCreateSubclass}
-        onUpdateSubclass={handleUpdateClass}
+        onUpdateSubclass={onUpdateSubclass}
         category={category}
         showIframeHelpDialog={showIframeHelpDialog}
         editingCategoryId={editingCategoryId}

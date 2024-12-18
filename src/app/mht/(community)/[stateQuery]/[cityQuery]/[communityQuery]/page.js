@@ -32,6 +32,7 @@ import { MultiLineTypography } from "@/components/MultiLineTypography";
 import { VolunteerSignUps } from "@/components/VolunteerSignUps";
 import { LightBox } from "@/components/LightBox";
 import { MaintenanceMode } from "@/views/supportingPages";
+import { LoadedClassesProvider } from "@/contexts/LoadedClassesProvider";
 
 const Page = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params; //TODO change me to stateQuery... VsCode hates renaming folders
@@ -370,17 +371,20 @@ const Page = ({ params }) => {
           isLoading={isLoading}
         />
         <Divider sx={{ my: 5 }} />
-        <ClassesTreeView
-          classes={community.classes}
-          onCreateClassCategory={alertNotEdit}
-          onCreateSubclass={alertNotEdit}
-          onDeleteClassCategory={alertNotEdit}
-          onDeleteSubclass={alertNotEdit}
-          shiftDownClassCategory={alertNotEdit}
-          shiftUpClassCategory={alertNotEdit}
-          shiftUpSubclass={alertNotEdit}
-          shiftDownSubclass={alertNotEdit}
-        />
+
+        <LoadedClassesProvider>
+          <ClassesTreeView
+            classes={community.classes}
+            onCreateClassCategory={alertNotEdit}
+            onCreateSubclass={alertNotEdit}
+            onDeleteClassCategory={alertNotEdit}
+            onDeleteSubclass={alertNotEdit}
+            shiftDownClassCategory={alertNotEdit}
+            shiftUpClassCategory={alertNotEdit}
+            shiftUpSubclass={alertNotEdit}
+            shiftDownSubclass={alertNotEdit}
+          />
+        </LoadedClassesProvider>
         <Divider sx={{ my: 5 }} />
         {!showSignUp ? (
           <Grid

@@ -59,52 +59,58 @@ const SidebarNav = ({ pages, onClose }) => {
         </Box>
         <Divider sx={{ mb: 2 }} />
         {pages().map((item, i) => (
-          <Box key={i} marginBottom={3}>
-            <Typography
-              variant="caption"
-              sx={{
-                fontWeight: 700,
-                textTransform: "uppercase",
-                marginBottom: 1,
-                display: "block",
-              }}
-            >
-              {item.title}
-            </Typography>
-            <Box>
-              {item.pages.map((p, i) => (
-                <PermissionGuard
-                  requiredPermission={p.requiredPermission}
-                  key={i}
-                  user={user}
-                >
-                  <Box marginBottom={1 / 2} key={i}>
-                    <Button
-                      component={"a"}
-                      href={p.href}
-                      target={p.target}
-                      fullWidth
-                      sx={{
-                        justifyContent: "flex-start",
-                        color:
-                          activeLink === p.href
-                            ? theme.palette.primary.main
-                            : theme.palette.text.primary,
-                        backgroundColor:
-                          activeLink === p.href
-                            ? alpha(theme.palette.primary.main, 0.1)
-                            : "transparent",
-                        fontWeight: activeLink === p.href ? 600 : 400,
-                      }}
-                      onClick={() => onClose()}
-                    >
-                      {p.title}
-                    </Button>
-                  </Box>
-                </PermissionGuard>
-              ))}
+          <PermissionGuard
+            key={i}
+            requiredPermission={item.requiredPermission}
+            user={user}
+          >
+            <Box marginBottom={3}>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  marginBottom: 1,
+                  display: "block",
+                }}
+              >
+                {item.title}
+              </Typography>
+              <Box>
+                {item.pages.map((p, i) => (
+                  <PermissionGuard
+                    requiredPermission={p.requiredPermission}
+                    key={i}
+                    user={user}
+                  >
+                    <Box marginBottom={1 / 2} key={i}>
+                      <Button
+                        component={"a"}
+                        href={p.href}
+                        target={p.target}
+                        fullWidth
+                        sx={{
+                          justifyContent: "flex-start",
+                          color:
+                            activeLink === p.href
+                              ? theme.palette.primary.main
+                              : theme.palette.text.primary,
+                          backgroundColor:
+                            activeLink === p.href
+                              ? alpha(theme.palette.primary.main, 0.1)
+                              : "transparent",
+                          fontWeight: activeLink === p.href ? 600 : 400,
+                        }}
+                        onClick={() => onClose()}
+                      >
+                        {p.title}
+                      </Button>
+                    </Box>
+                  </PermissionGuard>
+                ))}
+              </Box>
             </Box>
-          </Box>
+          </PermissionGuard>
         ))}
       </Box>
 

@@ -8,7 +8,7 @@ export const UserProvider = ({ children }) => {
   const {
     user: authUser,
     error: authError,
-    isLoading: isAuthError,
+    isLoading: isAuthLoading,
   } = useUser();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,6 +47,9 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     const initializeUser = async () => {
+      // Wait for auth loading to complete
+      if (isAuthLoading) return;
+
       // Check for impersonated user first
       const impersonatedUser = getImpersonatedUser();
 
@@ -58,11 +61,15 @@ export const UserProvider = ({ children }) => {
         setIsImpersonating(false);
         const { sub, email } = authUser;
         await fetchUser(sub, email);
+      } else {
+        // No authenticated or impersonated user
+        setUser(null);
+        setIsLoading(false);
       }
     };
 
     initializeUser();
-  }, [authUser]);
+  }, [authUser, isAuthLoading]);
 
   const impersonateUser = async (newSub, newEmail) => {
     setIsLoading(true);
@@ -89,6 +96,9 @@ export const UserProvider = ({ children }) => {
     if (authUser) {
       const { sub, email } = authUser;
       await fetchUser(sub, email);
+    } else {
+      setUser(null);
+      setIsLoading(false);
     }
   };
 

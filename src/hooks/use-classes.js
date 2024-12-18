@@ -10,7 +10,10 @@ export const useClasses = () => {
     setError(null);
     try {
       const response = await fetch("/api/database/classes");
-      if (!response.ok) throw new Error("Failed to fetch classes");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch classes");
+      }
       const data = await response.json();
       setLoading(false);
       return data;
@@ -26,7 +29,10 @@ export const useClasses = () => {
     setError(null);
     try {
       const response = await fetch(`/api/database/classes/${id}`);
-      if (!response.ok) throw new Error("Failed to fetch class");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch class");
+      }
       const data = await response.json();
       setLoading(false);
       return data;
@@ -48,7 +54,12 @@ export const useClasses = () => {
         },
         body: JSON.stringify(classData),
       });
-      if (!response.ok) throw new Error("Failed to create class");
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create class");
+      }
+
       const data = await response.json();
       setLoading(false);
       return data;
@@ -70,7 +81,12 @@ export const useClasses = () => {
         },
         body: JSON.stringify(updateData),
       });
-      if (!response.ok) throw new Error("Failed to update class");
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update class");
+      }
+
       const data = await response.json();
       setLoading(false);
       return data;
@@ -88,7 +104,12 @@ export const useClasses = () => {
       const response = await fetch(`/api/database/classes/${id}`, {
         method: "DELETE",
       });
-      if (!response.ok) throw new Error("Failed to delete class");
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete class");
+      }
+
       const data = await response.json();
       setLoading(false);
       return data;
@@ -110,10 +131,38 @@ export const useClasses = () => {
         },
         body: JSON.stringify(signupData),
       });
-      if (!response.ok) throw new Error("Failed to process signup");
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to process signup");
+      }
+
       const data = await response.json();
       setLoading(false);
       return data;
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+      return null;
+    }
+  };
+
+  const getClassesByCommunity = async (communityId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/database/classes/by-community/${communityId}`
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || "Failed to fetch classes for community"
+        );
+      }
+      const data = await response.json();
+      setLoading(false);
+      return data.results;
     } catch (err) {
       setError(err.message);
       setLoading(false);
@@ -129,6 +178,7 @@ export const useClasses = () => {
     createClass,
     updateClass,
     deleteClass,
+    getClassesByCommunity,
     signupForClass,
   };
 };

@@ -4,12 +4,15 @@ import {
   useContext,
   useState,
   useCallback,
+  useRef,
   useEffect,
 } from "react";
 import { AVAILABLE_FIELDS } from "./AvailableFields";
 import { FIELD_TYPES } from "./FieldTypes";
 import { useLoadedClassesContext } from "@/hooks/use-loaded-classes-context";
 import Loading from "@/components/util/Loading";
+import { useClasses } from "@/hooks/use-classes";
+import { toast } from "react-toastify";
 
 const ClassSignupContext = createContext(null);
 
@@ -35,7 +38,6 @@ const DEFAULT_VISIBLE_FIELDS = [
   "gender",
 ];
 
-// Define default configurations for banner and description
 const DEFAULT_STRUCTURAL_FIELDS = {
   [DEFAULT_DESCRIPTION_ID]: {
     type: FIELD_TYPES.staticText,
@@ -65,15 +67,22 @@ export function ClassSignupProvider({
   children,
   initialClassConfig,
   onClassConfigChange,
-  onSubmitSignup,
   isEditMode,
+  isNew,
   onCreateSubclass,
   onEditSubclass,
+  onDeleteSubclass,
 }) {
-  const loadClass = () => {};
-  // const { loadClass, loadedClasses } = useLoadedClassesContext();
+  const loadedClassesContext = !isNew ? useLoadedClassesContext() : null;
+
+  const { signupForClass } = useClasses();
+
   const [isLoading, setIsLoading] = useState(classObj?.id ? true : false);
   const [loadError, setLoadError] = useState(null);
+  const hasLoadedRef = useRef(false);
+
+  const initialFormConfigRef = useRef(null);
+  const initialClassConfigRef = useRef(null);
 
   // Form configuration state
   const [formConfig, setFormConfig] = useState(() => {
@@ -88,19 +97,99 @@ export function ClassSignupProvider({
         return acc;
       }, {}),
     };
+    initialFormConfigRef.current = initialConfig;
     return initialConfig;
   });
 
   // Class configuration state
-  const [classConfig, setClassConfig] = useState({
-    ...DEFAULT_CLASS_CONFIG,
-    ...initialClassConfig,
+  const [classConfig, setClassConfig] = useState(() => {
+    const config = {
+      ...DEFAULT_CLASS_CONFIG,
+      ...initialClassConfig,
+    };
+    initialClassConfigRef.current = config;
+    return config;
   });
 
   const [fieldOrder, setFieldOrder] = useState(DEFAULT_VISIBLE_FIELDS);
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
   const [submitStatus, setSubmitStatus] = useState(null);
+  const [isConfigDirty, setIsConfigDirty] = useState(false);
+
+  const checkConfigDirty = useCallback(() => {
+    const isFormConfigDirty =
+      JSON.stringify(formConfig) !==
+      JSON.stringify(initialFormConfigRef.current);
+    const isClassConfigDirty =
+      JSON.stringify(classConfig) !==
+      JSON.stringify(initialClassConfigRef.current);
+
+    setIsConfigDirty(isFormConfigDirty || isClassConfigDirty);
+  }, [formConfig, classConfig]);
+
+  useEffect(() => {
+    checkConfigDirty();
+  }, [formConfig, classConfig, checkConfigDirty]);
+
+  useEffect(() => {
+    async function loadClassData() {
+      if (!classObj?.id || isNew || hasLoadedRef.current) return;
+
+      try {
+        setIsLoading(true);
+        setLoadError(null);
+
+        // Use loadedClassesContext to load the class data
+        const loadedClass = await loadedClassesContext.loadClass(classObj.id);
+
+        if (!loadedClass) {
+          throw new Error(`Could not find class with ID ${classObj.id}`);
+        }
+
+        // Update form configuration
+        if (loadedClass.signupForm) {
+          const newFormConfig = loadedClass.signupForm;
+          setFormConfig(newFormConfig);
+          initialFormConfigRef.current = newFormConfig;
+        }
+
+        // Update class configuration
+        const newClassConfig = {
+          ...DEFAULT_CLASS_CONFIG,
+          className: loadedClass.title || "",
+          icon: loadedClass.icon || "default",
+          startDate: loadedClass.startDate || "",
+          endDate: loadedClass.endDate || "",
+          location: loadedClass.location || "",
+          capacity: loadedClass.capacity || "",
+          showCapacity: loadedClass.showCapacity || false,
+          meetingDays: loadedClass.meetings?.map((m) => m.day) || [],
+          startTime: loadedClass.meetings?.[0]?.startTime || "",
+          endTime: loadedClass.meetings?.[0]?.endTime || "",
+          _id: loadedClass.id,
+        };
+
+        setClassConfig(newClassConfig);
+        initialClassConfigRef.current = newClassConfig;
+
+        // Update field order
+        if (loadedClass.fieldOrder) {
+          setFieldOrder(loadedClass.fieldOrder);
+        }
+
+        setIsConfigDirty(false);
+        hasLoadedRef.current = true;
+      } catch (error) {
+        console.error("Error loading class:", error);
+        setLoadError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadClassData();
+  }, [classObj?.id, isNew, loadedClassesContext]);
 
   const handleClassConfigChange = useCallback(
     (field, value) => {
@@ -110,7 +199,6 @@ export function ClassSignupProvider({
           [field]: value,
         };
 
-        // Notify parent component if provided
         if (onClassConfigChange) {
           onClassConfigChange(newConfig);
         }
@@ -175,28 +263,28 @@ export function ClassSignupProvider({
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleDeleteClass = async () => {
+    try {
+      await onDeleteSubclass(classConfig._id);
+    } catch (error) {
+      console.error("Failed to delete class", error);
+      setErrors((prev) => ({
+        ...prev,
+        submit: error.message,
+      }));
+      throw error;
+    }
+  };
+
   const handleSaveClass = async () => {
     try {
       // if (!validateClassConfig()) {
       //   throw new Error("Please correct the errors in the form");
       // }
 
-      const classData = {
-        title: classConfig.className || "Untitled Class",
-        icon: classConfig.icon || "default",
-
-        config: {
-          formConfig,
-          fieldOrder,
-          ...classConfig,
-        },
-      };
-
       if (classConfig._id) {
-        await onEditSubclass(classConfig._id, classData, formConfig);
+        await onEditSubclass(classConfig, formConfig);
       } else {
-        alert(JSON.stringify({ classData, formConfig }));
-
         const result = await onCreateSubclass(classConfig, formConfig);
         if (result) {
           // Reset form after successful creation
@@ -217,7 +305,6 @@ export function ClassSignupProvider({
     }
   };
 
-  // Rest of your existing functions
   const handleFieldUpdate = (field, newConfig) => {
     setFormConfig((prev) => ({
       ...prev,
@@ -249,6 +336,67 @@ export function ClassSignupProvider({
     setFieldOrder(newOrder);
   };
 
+  const validateForm = (formData) => {
+    const newErrors = {};
+
+    // Validate required fields
+    Object.entries(formConfig).forEach(([fieldId, config]) => {
+      if (
+        config.required &&
+        (!formData[fieldId] || formData[fieldId].trim() === "")
+      ) {
+        newErrors[fieldId] = `${config.label} is required`;
+      }
+    });
+
+    // Validate email format if email field exists and has value
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    // Validate phone format if phone field exists and has value
+    if (formData.phone && !/^\+?[\d\s-()]{10,}$/.test(formData.phone)) {
+      newErrors.phone = "Please enter a valid phone number";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setSubmitStatus("submitting");
+
+      // Validate form
+      if (!validateForm(formData)) {
+        setSubmitStatus("error");
+        return;
+      }
+
+      // Use the useClasses hook for submission
+      const result = await signupForClass(classObj.id, formData);
+
+      if (!result) {
+        throw new Error("Signup failed");
+      }
+
+      // Clear form data and set success status
+      setFormData({});
+      setSubmitStatus("success");
+
+      await signupForClass(classObj.id, formData);
+
+      toast.success("Signup successful!");
+    } catch (error) {
+      console.error("Error submitting signup:", error);
+      setErrors((prev) => ({
+        ...prev,
+        submit: error.message || "Failed to submit signup",
+      }));
+      setSubmitStatus("error");
+    }
+  };
+
   const handleRemoveField = (fieldToRemove) => {
     const newConfig = { ...formConfig };
     delete newConfig[fieldToRemove];
@@ -278,59 +426,13 @@ export function ClassSignupProvider({
     setFieldOrder(items);
   };
 
-  // todo
-  // useEffect(() => {
-  //   async function fetchClassData() {
-  //     if (!classObj?.id) return;
-
-  //     try {
-  //       setIsLoading(true);
-  //       setLoadError(null);
-
-  //       const loadedClass = await loadClass(classObj.id);
-
-  //       if (!loadedClass) {
-  //         throw new Error(`Could not find class with ID ${classObj.id}`);
-  //       }
-
-  //       // Update form configuration from loaded class
-  //       if (loadedClass.signupForm) {
-  //         setFormConfig(loadedClass.signupForm);
-  //       }
-
-  //       // Update class configuration from loaded class
-  //       setClassConfig({
-  //         ...DEFAULT_CLASS_CONFIG,
-  //         className: loadedClass.title || "",
-  //         icon: loadedClass.icon || "default",
-  //         startDate: loadedClass.startDate || "",
-  //         endDate: loadedClass.endDate || "",
-  //         location: loadedClass.location || "",
-  //         capacity: loadedClass.capacity || "",
-  //         showCapacity: loadedClass.showCapacity || false,
-  //         meetingDays: loadedClass.meetingDays || [],
-  //         startTime: loadedClass.startTime || "",
-  //         endTime: loadedClass.endTime || "",
-  //         _id: loadedClass.id, // Keep track of the original ID
-  //       });
-
-  //       // Update field order if available
-  //       if (loadedClass.fieldOrder) {
-  //         setFieldOrder(loadedClass.fieldOrder);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error loading class:", error);
-  //       setLoadError(error.message);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   }
-
-  //   fetchClassData();
-  // }, [classObj?.id, loadClass]);
-
   if (isLoading) {
-    return <Loading />;
+    return (
+      <>
+        Loading
+        <Loading />
+      </>
+    );
   }
 
   if (loadError) {
@@ -349,20 +451,22 @@ export function ClassSignupProvider({
     formData,
     errors,
     submitStatus,
+    isConfigDirty,
     handleClassConfigChange,
     handleSaveClass,
+    handleDeleteClass,
     handleFieldUpdate,
     handleAddElement,
     handleAddFields,
     handleRemoveField,
     handleFormChange,
+    handleSubmit,
     onDragEnd,
     DAYS_OF_WEEK,
   };
 
   return (
     <ClassSignupContext.Provider value={value}>
-      <pre>Class data: {JSON.stringify(classObj, null, 2)}</pre>
       {children}
     </ClassSignupContext.Provider>
   );

@@ -26,8 +26,10 @@ import { ExampleIcons, IconSelect } from "./IconSelect";
 import { StyledTreeItem } from "./StyledTreeItem";
 import { CategoryDropdownActions } from "./CategoryDropdownActions";
 import { ClassSignup } from "./ClassSignup";
-import ClassPreview from "@/components/class-signups/ClassPreview";
+import ClassPreview from "@/components/class-signups/ClassPreviewAccordion";
 import CustomClassSignup from "@/components/class-signups";
+import ClassCreationStepper from "@/components/class-signups/ClassCreationStepper";
+import { ClassSignupProvider } from "@/components/class-signups/ClassSignupContext";
 
 export const ClassCategory = ({
   category,
@@ -84,6 +86,33 @@ export const ClassCategory = ({
     onToggleExpand(null, category.id.toString(), true);
   };
 
+  const handleEditSubclass = async (basicClassInfo, classData) => {
+    try {
+      // Ensure we have the category ID and properly formatted data
+      if (!category.id) {
+        throw new Error("Category ID is required");
+      }
+
+      // Create the subclass with the category ID and formatted data
+      const updatedClass = await onUpdateSubclass(
+        category.id,
+        {
+          ...basicClassInfo,
+        },
+        classData
+      );
+
+      if (updatedClass) {
+        setOpenClassSignup(null);
+      }
+
+      return updatedClass;
+    } catch (error) {
+      console.error("Failed to update class:", error);
+      throw error;
+    }
+  };
+
   // In ClassCategory.js, update the handleCreateSubclass function:
   const handleCreateSubclass = async (basicClassInfo, classData) => {
     try {
@@ -110,6 +139,27 @@ export const ClassCategory = ({
       return createdClass;
     } catch (error) {
       console.error("Failed to create class:", error);
+      throw error;
+    }
+  };
+
+  const handleDeleteSubclass = async (classId) => {
+    try {
+      // Ensure we have the category ID and properly formatted data
+      if (!category.id) {
+        throw new Error("Category ID is required");
+      }
+
+      // Delete the subclass with the category ID and formatted data
+      const deletedClass = await onDeleteSubclass(category.id, classId);
+
+      if (deletedClass) {
+        setOpenClassSignup(null);
+      }
+
+      return deletedClass;
+    } catch (error) {
+      console.error("Failed to delete class:", error);
       throw error;
     }
   };
@@ -208,6 +258,8 @@ export const ClassCategory = ({
                     classObj={classObj}
                     category={category}
                     handleCreateSubclass={handleCreateSubclass}
+                    handleEditSubclass={handleEditSubclass}
+                    handleDeleteSubclass={handleDeleteSubclass}
                   />
                 );
               } else {
@@ -215,7 +267,7 @@ export const ClassCategory = ({
                   <ClassPreview
                     key={classObj.id}
                     classData={classObj}
-                    isEdit
+                    isEdit={isEdit}
                     onSignupClick={() => setOpenClassSignup(classObj.id)}
                   />
                 );
@@ -239,12 +291,18 @@ export const ClassCategory = ({
         {/* )} */}
 
         {isAddNewClass && (
-          <CustomClassSignup
-            category={category}
-            isEdit
+          <ClassSignupProvider
+            onCreateSubclass={handleCreateSubclass}
+            onEditSubclass={handleEditSubclass}
+            onDeleteSubclass={handleDeleteSubclass}
+            isEdit={isEdit}
             isNew
-            handleCreateSubclass={handleCreateSubclass}
-          />
+          >
+            <ClassCreationStepper
+              category={category}
+              onClose={() => setAddNewClass(false)}
+            />
+          </ClassSignupProvider>
         )}
 
         {isEdit && (
