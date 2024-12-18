@@ -155,7 +155,7 @@ const Topbar = ({ onSidebarOpen }) => {
                 },
               }}
             >
-              Classes
+              Community Resource Center Classes
               {/* {
                 !resourcesAnchorEl ?
                 <ExpandMore/>
