@@ -63,3 +63,34 @@ export async function PUT(request, { params }) {
     );
   }
 }
+
+export async function DELETE(request, { params }) {
+  const { id } = params;
+
+  let db, projectForms;
+  try {
+    ({ db } = await connectToMongoDatabase());
+    projectForms = db.collection("ProjectForms");
+
+    const result = await projectForms.deleteOne({ id });
+
+    if (result.deletedCount === 0) {
+      return new Response(JSON.stringify({ error: "Project form not found" }), {
+        status: 404,
+      });
+    }
+
+    return new Response(
+      JSON.stringify({ message: "Project form deleted successfully" }),
+      {
+        status: 200,
+      }
+    );
+  } catch (e) {
+    console.error("Error occurred while deleting project form", e);
+    return new Response(
+      JSON.stringify({ error: "Error occurred while deleting project form" }),
+      { status: 500 }
+    );
+  }
+}

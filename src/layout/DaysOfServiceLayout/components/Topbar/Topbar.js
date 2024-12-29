@@ -2,16 +2,14 @@ import React from "react";
 import PropTypes from "prop-types";
 import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
-import CitiesStrongLogo from "@/assets/svg/logos/CitiesStrong";
-import CitiesStrongShield from "@/assets/svg/logos/CititesStrongShield";
-import CitiesStrongShieldIcon from "@/assets/svg/logos/CitiesStrongShieldIcon";
+
 import { IconButton, Typography, useMediaQuery } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 
 const Topbar = ({ onSidebarOpen, theme }) => {
   const isMediumUp = useMediaQuery(theme.breakpoints.up("md"));
 
-  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/cs" : "";
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
 
   return (
     <Box
@@ -38,7 +36,7 @@ const Topbar = ({ onSidebarOpen, theme }) => {
           <Link
             underline="none"
             component="a"
-            href={rootUrl + "/"}
+            href={rootUrl + "/days-of-service"}
             color={theme.palette.primary.contrastText}
             sx={{ pointerEvents: "auto" }} // Re-enable pointer events for the link itself
           >
@@ -83,36 +81,6 @@ const Topbar = ({ onSidebarOpen, theme }) => {
               color={theme.palette.primary.contrastText}
             >
               Project Forms
-            </Link>
-          </Box>
-          <Box marginX={2}>
-            <Link
-              underline="none"
-              component="a"
-              href={rootUrl + "/my-project-forms"}
-              color={theme.palette.primary.contrastText}
-            >
-              My Project Forms
-            </Link>
-          </Box>
-          <Box marginX={2}>
-            <Link
-              underline="none"
-              component="a"
-              href={rootUrl + "/contact"}
-              color={theme.palette.primary.contrastText}
-            >
-              Contact
-            </Link>
-          </Box>
-          <Box marginX={2}>
-            <Link
-              underline="none"
-              component="a"
-              href={rootUrl + "/donate"}
-              color={theme.palette.primary.contrastText}
-            >
-              Donate
             </Link>
           </Box>
         </Box>

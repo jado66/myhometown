@@ -21,7 +21,7 @@ const SidebarNav = ({ onClose }) => {
     }, 250);
   };
 
-  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/cs" : "";
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
 
   return (
     <Box sx={{ position: "relative", textAlign: "center" }}>
@@ -29,7 +29,7 @@ const SidebarNav = ({ onClose }) => {
         <Box>
           <Box marginBottom={2}>
             <Typography
-              onClick={() => handleLinkClick(rootUrl + "/")}
+              onClick={() => handleLinkClick(rootUrl + "/days-of-service")}
               variant="h4"
               sx={{
                 fontWeight: 700,
@@ -42,13 +42,15 @@ const SidebarNav = ({ onClose }) => {
                 cursor: "pointer",
               }}
             >
-              Cities Strong Foundation
+              Days Of Service
             </Typography>
           </Box>
           <Divider sx={{ backgroundColor: "white", borderWidth: "3px" }} />
           <Box marginBottom={2}>
             <Typography
-              onClick={() => handleLinkClick(rootUrl + "/about")}
+              onClick={() =>
+                handleLinkClick(rootUrl + "/days-of-service/project-forms")
+              }
               variant="h5"
               sx={{
                 fontWeight: 700,
@@ -59,52 +61,7 @@ const SidebarNav = ({ onClose }) => {
                 cursor: "pointer",
               }}
             >
-              About Us
-            </Typography>
-          </Box>
-          <Box marginBottom={2}>
-            <Typography
-              onClick={() => handleLinkClick(rootUrl + "/testimonials")}
-              variant="h5"
-              sx={{
-                fontWeight: 700,
-                display: "block",
-                textDecoration: "none",
-                color: "white",
-                cursor: "pointer",
-              }}
-            >
-              Testimonials
-            </Typography>
-          </Box>
-          <Box marginBottom={2}>
-            <Typography
-              onClick={() => handleLinkClick(rootUrl + "/contact")}
-              variant="h5"
-              sx={{
-                fontWeight: 700,
-                display: "block",
-                textDecoration: "none",
-                color: "white",
-                cursor: "pointer",
-              }}
-            >
-              Contact
-            </Typography>
-          </Box>
-          <Box marginBottom={1}>
-            <Typography
-              onClick={() => handleLinkClick(rootUrl + "/donate")}
-              variant="h5"
-              sx={{
-                fontWeight: 700,
-                display: "block",
-                textDecoration: "none",
-                color: "white",
-                cursor: "pointer",
-              }}
-            >
-              Donate
+              Project Forms
             </Typography>
           </Box>
         </Box>

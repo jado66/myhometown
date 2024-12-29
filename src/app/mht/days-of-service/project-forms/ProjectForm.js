@@ -20,14 +20,18 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { useProjectForm } from "@/contexts/ProjectFormProvider";
 import Loading from "@/components/util/Loading";
-import ValidatedAddressField from "./form-components/AddressFormFields";
 import AddressFormFields from "./form-components/AddressFormFields";
 
 const ProjectForm = () => {
   const [hasLoaded, setHasLoaded] = useState(null);
   // Replace useState with context
-  const { activeStep, setActiveStep, formData, handleInputChange, loading } =
-    useProjectForm();
+  const {
+    activeStep,
+    setActiveStep,
+    formData,
+    handleInputChange,
+    isInitialLoading,
+  } = useProjectForm();
 
   const steps = [
     {
@@ -244,17 +248,7 @@ const ProjectForm = () => {
     }
   };
 
-  useEffect(() => {
-    if (loading) {
-      setHasLoaded(false);
-      return;
-    }
-    if (!loading && hasLoaded !== null) {
-      setHasLoaded(true);
-    }
-  }, [loading]);
-
-  if (!hasLoaded) {
+  if (isInitialLoading) {
     return <Loading />;
   }
 

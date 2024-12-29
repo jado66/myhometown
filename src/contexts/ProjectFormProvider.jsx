@@ -1,4 +1,3 @@
-// contexts/ProjectContext.js
 import {
   createContext,
   useContext,
@@ -7,19 +6,22 @@ import {
   useEffect,
 } from "react";
 import { useRouter } from "next/navigation";
-import { v4 as uuidv4 } from "uuid";
 import { debounce } from "lodash";
+import { useLocalStorageProjectForms } from "@/hooks/use-local-storage-project-forms";
 
 const API_BASE_URL = "/api/database/project-forms";
-
 const ProjectFormContext = createContext();
 
-export function ProjectFormProvider({ children, id: providedId }) {
+export function ProjectFormProvider({ children, id }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const { addProject, updateProject, getProject } =
+    useLocalStorageProjectForms();
+
+  const [isInitialLoading, setIsInitialLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
   const [activeStep, setActiveStep] = useState(0);
-  const [isSaving, setIsSaving] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
   const [addressValidation, setAddressValidation] = useState({
     isValid: false,
     isChecking: false,
@@ -27,7 +29,7 @@ export function ProjectFormProvider({ children, id: providedId }) {
   });
 
   const [formData, setFormData] = useState({
-    id: "",
+    id: id || "",
     addressStreet1: "",
     addressStreet2: "",
     addressCity: "",
@@ -36,6 +38,7 @@ export function ProjectFormProvider({ children, id: providedId }) {
     propertyOwner: "",
     phoneNumber: "",
     area: "",
+    isAddressVerified: false,
     violations: "",
     remedies: "",
     isResolved: null,
@@ -46,29 +49,52 @@ export function ProjectFormProvider({ children, id: providedId }) {
     homeownerAbility: "",
   });
 
-  // API Methods
-  const getProjectForm = async (id) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`${API_BASE_URL}/${id}`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to fetch project form");
-      }
-      const data = await response.json();
-      setLoading(false);
-      return data;
-    } catch (err) {
-      setError(err.message);
-      setLoading(false);
-      return null;
-    }
-  };
+  const getProjectForm = useCallback(
+    async (formId) => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/${formId}`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to fetch project form");
+        }
+        const data = await response.json();
 
-  const createProjectForm = async (projectData) => {
-    setLoading(true);
-    setError(null);
+        // Remove _id and timestamps from the data before setting state
+        const { _id, createdAt, updatedAt, ...formData } = data;
+
+        const address = [
+          formData.addressStreet1,
+          formData.addressStreet2,
+          formData.addressCity,
+          formData.addressState,
+          formData.addressZipCode,
+        ]
+          .filter(Boolean)
+          .join(", ");
+
+        const localStorageDetails = {
+          propertyOwner: formData.propertyOwner,
+          address,
+        };
+
+        if (!getProject(formId)) {
+          addProject(formId, localStorageDetails);
+        } else {
+          updateProject(formId, localStorageDetails);
+        }
+
+        console.log("Retrieved form data:", formData); // Debug log
+        return formData;
+      } catch (err) {
+        console.error("Error fetching project form:", err); // Debug log
+        setError(err.message);
+        return null;
+      }
+    },
+    [addProject, updateProject, getProject]
+  );
+
+  const createProjectForm = useCallback(async (projectData) => {
     try {
       const response = await fetch(API_BASE_URL, {
         method: "POST",
@@ -83,21 +109,16 @@ export function ProjectFormProvider({ children, id: providedId }) {
         throw new Error(errorData.error || "Failed to create project form");
       }
 
-      const data = await response.json();
-      setLoading(false);
-      return data;
+      return await response.json();
     } catch (err) {
       setError(err.message);
-      setLoading(false);
       return null;
     }
-  };
+  }, []);
 
-  const updateProjectForm = async (id, updateData) => {
-    setLoading(true);
-    setError(null);
+  const updateProjectForm = useCallback(async (formId, updateData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/${formId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -110,120 +131,169 @@ export function ProjectFormProvider({ children, id: providedId }) {
         throw new Error(errorData.error || "Failed to update project form");
       }
 
-      const data = await response.json();
-      setLoading(false);
-      return data;
+      return await response.json();
     } catch (err) {
       setError(err.message);
-      setLoading(false);
       return null;
     }
-  };
+  }, []);
 
-  // Debounced save function for text fields
   const debouncedSave = useCallback(
     debounce(async (data) => {
       if (data.id) {
         setIsSaving(true);
-        await updateProjectForm(data.id, data);
-        setIsSaving(false);
+        try {
+          await updateProjectForm(data.id, data);
+        } finally {
+          setIsSaving(false);
+        }
       }
     }, 1000),
-    []
+    [updateProjectForm]
   );
 
-  // Handle immediate save for non-text fields
-  const handleImmediateSave = useCallback(async (data) => {
-    if (data.id) {
-      setIsSaving(true);
-      await updateProjectForm(data.id, data);
-      setIsSaving(false);
-    }
-  }, []);
+  const handleImmediateSave = useCallback(
+    async (data) => {
+      if (data.id) {
+        setIsSaving(true);
+        try {
+          await updateProjectForm(data.id, data);
+        } finally {
+          setIsSaving(false);
+        }
+      }
+    },
+    [updateProjectForm]
+  );
 
-  const handleInputChange = useCallback((field, value) => {
-    setFormData((prev) => {
-      const newData = { ...prev, [field]: value };
+  const handleInputChange = useCallback(
+    (field, value) => {
+      setFormData((prev) => {
+        const newData = { ...prev, [field]: value };
 
-      // If it's an address field, don't save until validation
-      if (field.startsWith("address")) {
+        if (field.startsWith("address")) {
+          const address = [
+            newData.addressStreet1,
+            newData.addressStreet2,
+            newData.addressCity,
+            newData.addressState,
+            newData.addressZipCode,
+          ]
+            .filter(Boolean)
+            .join(", ");
+
+          updateProject(newData.id, {
+            propertyOwner: newData.propertyOwner,
+            address,
+          });
+        }
+
+        if (field === "propertyOwner") {
+          updateProject(newData.id, {
+            propertyOwner: value,
+            address: getProject(newData.id)?.address || "",
+          });
+        }
+
+        if (typeof value === "string") {
+          debouncedSave(newData);
+        } else {
+          handleImmediateSave(newData);
+        }
+
         return newData;
-      }
+      });
+    },
+    [debouncedSave, handleImmediateSave, updateProject, getProject]
+  );
 
-      // For text fields, use debounced save
-      if (typeof value === "string" && value.length > 0) {
-        debouncedSave(newData);
-      } else {
-        // For other fields (like radio buttons), save immediately
-        handleImmediateSave(newData);
-      }
+  const handleAddressValidated = useCallback(
+    (validatedAddress) => {
+      setFormData((prev) => {
+        const newData = { ...prev, ...validatedAddress };
+        if (
+          validatedAddress.addressStreet1 &&
+          validatedAddress.addressCity &&
+          validatedAddress.addressState &&
+          validatedAddress.addressZipCode
+        ) {
+          handleImmediateSave(newData);
+        }
+        return newData;
+      });
+    },
+    [handleImmediateSave]
+  );
 
-      return newData;
-    });
-  }, []);
+  const initializeProjectForm = useCallback(
+    async (formId) => {
+      if (!formId || formId === "new") return false;
 
-  const handleAddressValidated = useCallback((validatedAddress) => {
-    setFormData((prev) => {
-      const newData = { ...prev, ...validatedAddress };
-      // Only save if all required address fields are present
-      if (
-        validatedAddress.addressStreet1 &&
-        validatedAddress.addressCity &&
-        validatedAddress.addressState &&
-        validatedAddress.addressZipCode
-      ) {
-        handleImmediateSave(newData);
+      try {
+        const data = await getProjectForm(formId);
+        console.log("Initializing with data:", data); // Debug log
+        if (data) {
+          setFormData((prev) => {
+            console.log("Previous form data:", prev); // Debug log
+            console.log(
+              "Setting new form data:",
+              JSON.stringify(data, null, 4)
+            ); // Debug log
+            return data;
+          });
+          if (data.homeownerAbility) setActiveStep(4);
+          else if (data.specificTasks) setActiveStep(3);
+          else if (data.canHelp !== null) setActiveStep(2);
+          else if (data.isResolved !== null) setActiveStep(1);
+          else setActiveStep(0);
+          return true;
+        } else {
+          const newProject = {
+            id: formId,
+            addressStreet1: "",
+            addressStreet2: "",
+            addressCity: "",
+            addressState: null,
+            addressZipCode: "",
+            propertyOwner: "",
+            phoneNumber: "",
+            area: "",
+            violations: "",
+            remedies: "",
+            isResolved: null,
+            canHelp: null,
+            preferredRemedies: "",
+            specificTasks: "",
+            budget: "",
+            homeownerAbility: "",
+          };
+          const createdProject = await createProjectForm(newProject);
+          if (createdProject) {
+            setFormData(createdProject);
+            setActiveStep(0);
+            addProject(formId);
+            return true;
+          }
+        }
+      } catch (error) {
+        setError(error.message);
       }
-      return newData;
-    });
-  }, []);
-
-  // Initialize project form
-  const initializeProjectForm = useCallback(async (id) => {
-    if (id) {
-      const data = await getProjectForm(id);
-      if (data) {
-        setFormData(data);
-        // Set appropriate step based on data
-        if (data.homeownerAbility) setActiveStep(4);
-        else if (data.specificTasks) setActiveStep(3);
-        else if (data.canHelp !== null) setActiveStep(2);
-        else if (data.isResolved !== null) setActiveStep(1);
-        else setActiveStep(0);
-      }
-    } else {
-      const newId = uuidv4();
-      const newProject = { ...formData, id: newId };
-      await createProjectForm(newProject);
-      router.replace(`/project-form/${newId}`, undefined, { shallow: true });
-    }
-  }, []);
+      return false;
+    },
+    [getProjectForm, createProjectForm, addProject]
+  );
 
   useEffect(() => {
-    const handleInitialization = async () => {
-      if (!router) return;
+    if (id && id !== "new" && !hasInitialized) {
+      setIsInitialLoading(true);
+      initializeProjectForm(id).then((success) => {
+        setHasInitialized(success);
+        setIsInitialLoading(false);
+      });
+    }
+  }, [id, hasInitialized, initializeProjectForm]);
 
-      // Get ID from searchParams instead of route
-      const searchParams = new URLSearchParams(window.location.search);
-      const currentId = searchParams.get("id");
-
-      if (currentId) {
-        await initializeProjectForm(currentId);
-      } else {
-        const newId = uuidv4();
-        const newProject = { ...formData, id: newId };
-        await createProjectForm(newProject);
-        // Update URL without changing route
-        const newParams = new URLSearchParams({ id: newId });
-        router.push(`?${newParams.toString()}`, undefined, { shallow: true });
-      }
-    };
-
-    handleInitialization();
-  }, [router]);
-
-  // Cancel any pending debounced saves when unmounting
-  useCallback(() => {
+  useEffect(() => {
     return () => {
       debouncedSave.cancel();
     };
@@ -234,9 +304,9 @@ export function ProjectFormProvider({ children, id: providedId }) {
     setActiveStep,
     formData,
     handleInputChange,
-    loading,
-    error,
+    isInitialLoading,
     isSaving,
+    error,
     initializeProjectForm,
     addressValidation,
     setAddressValidation,
@@ -253,11 +323,10 @@ export function ProjectFormProvider({ children, id: providedId }) {
   );
 }
 
-// Custom hook to use the project context
 export const useProjectForm = () => {
   const context = useContext(ProjectFormContext);
   if (!context) {
-    throw new Error("useProject must be used within a ProjectProvider");
+    throw new Error("useProjectForm must be used within a ProjectFormProvider");
   }
   return context;
 };

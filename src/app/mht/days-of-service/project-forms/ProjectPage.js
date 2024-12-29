@@ -9,7 +9,7 @@ import SavingIndicator from "./SavingIndicator";
 
 const ProjectFormPage = () => {
   return (
-    <ProjectFormProvider>
+    <>
       <SavingIndicator />
       <Box
         sx={{
@@ -24,7 +24,7 @@ const ProjectFormPage = () => {
           <ProjectForm />
         </Container>
       </Box>
-    </ProjectFormProvider>
+    </>
   );
 };
 
