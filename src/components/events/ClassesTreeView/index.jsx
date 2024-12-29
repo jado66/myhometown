@@ -35,8 +35,9 @@ export const ClassesTreeView = ({
     setEditingCategoryId(categoryId);
   };
 
-  const handleEditClass = (categoryId, classId) => {
+  const handleEditClass = (classId) => {
     setEditingClassId(classId);
+    // alert("Setting Id to " + classId);
   };
 
   const handleUpdateCategory = (categoryId, newTitle, newIcon) => {
@@ -72,8 +73,9 @@ export const ClassesTreeView = ({
         showIframeHelpDialog={showIframeHelpDialog}
         editingCategoryId={editingCategoryId}
         editingClassId={editingClassId}
+        setEditingClassId={setEditingClassId}
         onEditCategory={handleEditCategory}
-        onEditClass={handleEditClass}
+        onEditSubclass={handleEditClass}
         onUpdateCategory={handleUpdateCategory}
         shiftUpClassCategory={shiftUpClassCategory}
         shiftDownClassCategory={shiftDownClassCategory}

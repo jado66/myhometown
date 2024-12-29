@@ -1,29 +1,47 @@
 import { useClasses } from "@/hooks/use-classes";
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState, useRef } from "react";
 import { toast } from "react-toastify";
 
 export const EditContext = createContext();
 
+const INITIALIZATION_PERIOD = 5000; // 1 second initialization period
+
 const EditProvider = ({ children }) => {
-  const [initialData, setInitialData] = useState({});
+  const [initialData, setInitialData] = useState(null);
   const [entityType, setEntityType] = useState(null);
   const [stagedRequests, setStagedRequests] = useState([]);
   const [data, setData] = useState(null);
-  const [hasLoaded, setHasLoaded] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isInitializationComplete, setIsInitializationComplete] =
+    useState(false);
 
   const { createClass, updateClass, deleteClass } = useClasses();
 
+  // Set up initialization timer when data is first set
   useEffect(() => {
-    if (data) {
-      if (hasLoaded) {
-        setIsDirty(JSON.stringify(data) !== JSON.stringify(initialData));
-      } else {
-        setInitialData(data);
-        setHasLoaded(true);
-      }
+    if (data && !isInitializationComplete) {
+      setInitialData(JSON.parse(JSON.stringify(data)));
+
+      // Start initialization timer
+      const timer = setTimeout(() => {
+        setIsInitializationComplete(true);
+      }, INITIALIZATION_PERIOD);
+
+      return () => clearTimeout(timer);
     }
   }, [data]);
+
+  // Only check for changes after initialization period
+  useEffect(() => {
+    if (!isInitializationComplete || !data || !initialData) {
+      return;
+    }
+
+    const currentDataString = JSON.stringify(data);
+    const initialDataString = JSON.stringify(initialData);
+    setIsDirty(currentDataString !== initialDataString);
+  }, [data, initialData, isInitializationComplete]);
 
   const processStagedRequests = async () => {
     const results = [];
@@ -48,9 +66,6 @@ const EditProvider = ({ children }) => {
 
         if (result) {
           results.push({ id, success: true, data: result });
-          toast.success(
-            `Successfully processed ${request.callVerb} request for ${request.type}`
-          );
         } else {
           results.push({ id, success: false, error: "Operation failed" });
           toast.error(
@@ -69,10 +84,21 @@ const EditProvider = ({ children }) => {
   };
 
   const saveData = async () => {
-    if (entityType === "city") {
-      await saveCityData();
-    } else if (entityType === "community") {
-      await saveCommunityData();
+    if (!isDirty) return;
+
+    setIsSaving(true);
+    try {
+      if (entityType === "city") {
+        await saveCityData();
+      } else if (entityType === "community") {
+        await saveCommunityData();
+      }
+
+      // After successful save, update the initial data
+      setInitialData(JSON.parse(JSON.stringify(data)));
+      setIsDirty(false);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -92,18 +118,17 @@ const EditProvider = ({ children }) => {
       if (response.ok) {
         toast.success("Data saved successfully");
       } else {
-        console.error("Failed to save data");
-        toast.error("Failed to save data");
+        throw new Error("Failed to save data");
       }
     } catch (error) {
       console.error("An error occurred while saving data:", error);
       toast.error("An error occurred while saving data");
+      throw error;
     }
   };
 
   const saveCommunityData = async () => {
     try {
-      // First save the community data
       const communityResponse = await fetch(
         `/api/database/communities/${data.state
           .toLowerCase()
@@ -125,7 +150,6 @@ const EditProvider = ({ children }) => {
         throw new Error("Failed to save community data");
       }
 
-      // Then process any staged requests
       if (Object.keys(stagedRequests).length > 0) {
         const results = await processStagedRequests();
         const failures = results.filter((result) => !result.success);
@@ -137,16 +161,14 @@ const EditProvider = ({ children }) => {
           toast.success("All changes saved successfully");
         }
 
-        // Clear staged requests after processing
         setStagedRequests({});
       } else {
         toast.success("Data saved successfully");
       }
-
-      setIsDirty(false);
     } catch (error) {
       console.error("An error occurred while saving data:", error);
       toast.error("An error occurred while saving data");
+      throw error;
     }
   };
 
@@ -158,6 +180,7 @@ const EditProvider = ({ children }) => {
         setEntityType,
         saveData,
         isDirty,
+        isSaving,
         stagedRequests,
         setStagedRequests,
       }}

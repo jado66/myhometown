@@ -7,6 +7,7 @@ import {
   Checkbox,
   Button,
   Grid,
+  Box,
 } from "@mui/material";
 import { Upload } from "@mui/icons-material";
 import { IconSelect } from "@/components/events/ClassesTreeView/IconSelect";
@@ -23,6 +24,7 @@ export function ClassDescriptionEditor() {
 
   return (
     <Stack spacing={3} sx={{ py: 2 }}>
+      {/* <pre>{JSON.stringify(classConfig, null, 4)}</pre> */}
       <Typography variant="h6">Class Description</Typography>
 
       <Grid container>
@@ -37,15 +39,31 @@ export function ClassDescriptionEditor() {
           <TextField
             fullWidth
             label="Class Name"
-            value={classConfig.className}
-            onChange={(e) =>
-              handleClassConfigChange("className", e.target.value)
-            }
-            error={!!errors.className}
-            helperText={errors.className}
+            value={classConfig.title}
+            onChange={(e) => handleClassConfigChange("title", e.target.value)}
+            error={!!errors.title}
+            helperText={errors.title}
           />
         </Grid>
       </Grid>
+
+      {classConfig.classBannerUrl && (
+        <Box
+          component="img"
+          src={classConfig.classBannerUrl}
+          alt={classConfig.title}
+          sx={{
+            display: "block",
+            maxHeight: "200px",
+            width: "100%",
+            objectFit: "cover",
+            objectPosition: "left center",
+          }}
+          onError={(e) => {
+            e.target.src = "/api/placeholder/800/200";
+          }}
+        />
+      )}
 
       <Stack direction="row" spacing={2} alignItems="center">
         <Button

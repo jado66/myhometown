@@ -10,6 +10,8 @@ import {
   Box,
   Stack,
   IconButton,
+  FormGroup,
+  Switch,
 } from "@mui/material";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
@@ -17,7 +19,7 @@ import { useImageUpload } from "@/hooks/use-upload-image";
 import { FIELD_TYPES } from "./FieldTypes";
 import { Upload } from "@mui/icons-material";
 
-export const FieldEditor = ({ field, config, onUpdate, onRemove }) => {
+export const FieldEditor = ({ field, config = {}, onUpdate, onRemove }) => {
   const [isHelpTextExpanded, setIsHelpTextExpanded] = useState(false);
   const { handleFileUpload, loading } = useImageUpload((url) => {
     onUpdate(field, { ...config, url });
@@ -25,6 +27,13 @@ export const FieldEditor = ({ field, config, onUpdate, onRemove }) => {
 
   const renderFieldControls = () => {
     // Handle structural elements (header, text block, divider)
+    if (!config) {
+      console.log(
+        `Error rendering field ${JSON.stringify({ field, config }, null, 4)}`
+      );
+      return null;
+    }
+
     if (config.type === "header" || config.type === "staticText") {
       return (
         <>
@@ -102,6 +111,59 @@ export const FieldEditor = ({ field, config, onUpdate, onRemove }) => {
       );
     }
 
+    if (config.type === FIELD_TYPES.checkbox) {
+      return (
+        <>
+          <TextField
+            size="small"
+            value={config.label}
+            onChange={(e) =>
+              onUpdate(field, { ...config, label: e.target.value })
+            }
+            label="Label"
+            sx={{ flexGrow: 1 }}
+          />
+
+          <FormGroup row>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={config.required}
+                  onChange={(e) =>
+                    onUpdate(field, { ...config, required: e.target.checked })
+                  }
+                  size="small"
+                />
+              }
+              label="Required"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={config.defaultValue || false}
+                  onChange={(e) =>
+                    onUpdate(field, {
+                      ...config,
+                      defaultValue: e.target.checked,
+                    })
+                  }
+                  size="small"
+                />
+              }
+              label="Default Value"
+            />
+          </FormGroup>
+          <IconButton
+            size="small"
+            onClick={() => setIsHelpTextExpanded(!isHelpTextExpanded)}
+            color={isHelpTextExpanded ? "primary" : "default"}
+          >
+            <HelpOutlineIcon />
+          </IconButton>
+        </>
+      );
+    }
+
     // Default field controls
     return (
       <>
@@ -147,7 +209,7 @@ export const FieldEditor = ({ field, config, onUpdate, onRemove }) => {
           />
 
           <Typography variant="body2" sx={{ width: "20%", fontWeight: 500 }}>
-            {config.originalLabel}
+            {config?.originalLabel}
           </Typography>
 
           {renderFieldControls()}

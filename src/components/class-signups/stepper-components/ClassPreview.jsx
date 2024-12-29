@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardMedia, Typography, Box, Divider } from "@mui/material";
+import { Chip, CardMedia, Typography, Box, Divider } from "@mui/material";
 import {
   CalendarToday,
   AccessTime,
@@ -27,6 +27,7 @@ const ClassPreview = ({ classData, noBanner }) => {
           onError={(e) => {
             e.target.src = "/api/placeholder/800/200";
           }}
+          sx={{ mb: 2 }}
         />
       )}
 
@@ -48,20 +49,39 @@ const ClassPreview = ({ classData, noBanner }) => {
       {classData.meetings && (
         <>
           <Box sx={{ mb: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
               <AccessTime fontSize="small" color="action" />
               <Typography variant="body2" fontWeight="medium">
                 Meeting Schedule:
               </Typography>
             </Box>
 
-            <Box sx={{ pl: 4, display: "flex", flexDirection: "row" }}>
-              {classData.meetings.map((meeting, index) => (
-                <Typography key={meeting.id} variant="body2" sx={{ mb: 0.5 }}>
-                  {meeting.day}: {meeting.startTime} - {meeting.endTime}
-                  {index < classData.meetings.length - 1 && ", "}
-                </Typography>
-              ))}
+            <Box sx={{ pl: 4, display: "flex", flexWrap: "wrap", gap: 1 }}>
+              {classData.meetings.map((meeting) => {
+                // Format start time
+                const [startHour, startMinute] = meeting.startTime.split(":");
+                const startHourNum = parseInt(startHour);
+                const startPeriod = startHourNum >= 12 ? "PM" : "AM";
+                const formattedStartHour = startHourNum % 12 || 12;
+                const formattedStartTime = `${formattedStartHour}:${startMinute} ${startPeriod}`;
+
+                // Format end time
+                const [endHour, endMinute] = meeting.endTime.split(":");
+                const endHourNum = parseInt(endHour);
+                const endPeriod = endHourNum >= 12 ? "PM" : "AM";
+                const formattedEndHour = endHourNum % 12 || 12;
+                const formattedEndTime = `${formattedEndHour}:${endMinute} ${endPeriod}`;
+
+                return (
+                  <Chip
+                    key={meeting.id}
+                    label={`${meeting.day}: ${formattedStartTime} - ${formattedEndTime}`}
+                    size="small"
+                    variant="outlined"
+                    sx={{ borderRadius: 4 }}
+                  />
+                );
+              })}
             </Box>
           </Box>
         </>

@@ -9,7 +9,7 @@ import { useEdit } from "@/hooks/use-edit";
 import { Typography } from "@mui/material";
 
 const Topbar = () => {
-  const { saveData, isDirty } = useEdit();
+  const { saveData, isDirty, isSaving } = useEdit();
   const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
 
   return (
@@ -47,12 +47,12 @@ const Topbar = () => {
           <Box marginX={2}>
             <Button
               variant="contained"
-              component="a"
               color="primary"
               onClick={saveData}
-              disabled={!isDirty}
+              disabled={!isDirty || isSaving}
+              loading={isSaving}
             >
-              Save Changes
+              {isSaving ? "Saving..." : "Save Changes"}
             </Button>
           </Box>
         </Box>

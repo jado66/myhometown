@@ -17,7 +17,6 @@ export const LoadedClassesProvider = ({
   const loadClass = useCallback(
     async (classId) => {
       console.log("stagedRequests: ", stagedRequests);
-      alert(JSON.stringify(stagedRequests));
       // Return cached class if available
       if (loadedClasses[classId]) {
         return loadedClasses[classId];

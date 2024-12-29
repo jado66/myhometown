@@ -15,6 +15,7 @@ import { AddCircleOutline } from "@mui/icons-material";
 import { FieldEditor } from "../FieldEditor";
 import { StructuralElementAdder } from "../StructuralElementAdder";
 import { useImageUpload } from "@/hooks/use-upload-image";
+import { useClassSignup } from "../ClassSignupContext";
 
 export function FormBuilder({ showFieldSelector }) {
   const {

@@ -96,9 +96,9 @@ export const CreateClassForm = ({
     };
 
     if (initialData) {
-      onUpdateSubclass(category.id, initialData.id, data);
+      onUpdateSubclass(initialData.id, data);
     } else {
-      onCreateSubclass(category.id, data);
+      onCreateSubclass(data);
     }
 
     setTitle("");

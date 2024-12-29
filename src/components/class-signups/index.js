@@ -47,11 +47,12 @@ function ClassSignupContent({
           },
         }}
       >
-        {classConfig.icon && ExampleIcons[classConfig.icon]}
-
-        <Typography sx={{ marginLeft: "1em" }}>
-          {classConfig.className}
-        </Typography>
+        {classConfig.icon && (
+          <Typography sx={{ mr: "1em" }}>
+            ExampleIcons[classConfig.icon]
+          </Typography>
+        )}
+        <Typography>{classConfig.title}</Typography>
       </AccordionSummary>
 
       <AccordionDetails>
@@ -114,23 +115,19 @@ export default function CustomClassSignup({
   category,
 }) {
   // Handler for when a class is created
-  const handleCreateClass = async (classData, classSignupForm) => {
+  const handleCreateClass = async (classData) => {
     try {
       // Create the basic class info that will be returned to the parent
-      const basicClassInfo = {
-        id: classData.id,
-        categoryId: category.id,
-        title: classData.className,
-        icon: classData.icon,
-        classBannerUrl: classData.classBannerUrl,
-        description: classData.description,
-        startDate: classData.startDate,
-        endDate: classData.endDate,
-        meetings: classData.meetings,
-        location: classData.location,
-        capacity: classData.capacity,
-        showCapacity: classData.showCapacity,
-      };
+
+      const { classConfig: basicClassInfo, signupForm: classSignupForm } =
+        classData;
+
+      alert(
+        JSON.stringify({
+          basicClassInfo,
+          classSignupForm,
+        })
+      );
 
       // Log the full class data
       console.log("Create class", classData);
@@ -146,25 +143,14 @@ export default function CustomClassSignup({
   };
 
   // Handler for editing an existing class
-  const handleEditClass = async (classData, classSignupForm) => {
+  const handleEditClass = async (classData) => {
+    const { classConfig: basicClassInfo, signupForm: classSignupForm } =
+      classData;
+
     try {
       // Log the full class data
 
       // Call the parent's handler with the updated data
-      const basicClassInfo = {
-        id: classData._id,
-        categoryId: category.id,
-        title: classData.className,
-        icon: classData.icon,
-        classBannerUrl: classData.classBannerUrl,
-        description: classData.description,
-        startDate: classData.startDate,
-        endDate: classData.endDate,
-        meetings: classData.meetings,
-        location: classData.location,
-        capacity: classData.capacity,
-        showCapacity: classData.showCapacity,
-      };
 
       // Log the full class data
       console.log("Create class", classData);
@@ -195,6 +181,7 @@ export default function CustomClassSignup({
   return (
     <ClassSignupProvider
       classObj={classObj}
+      category={category}
       onCreateSubclass={handleCreateClass}
       onEditSubclass={handleEditClass}
       onDeleteSubclass={handleDeleteSubclass}

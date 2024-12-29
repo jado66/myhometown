@@ -58,6 +58,9 @@ const Page = ({ params }) => {
 
   const [deleteDialogConfig, setDeleteDialogConfig] = useState({
     open: false,
+    title: "",
+    description: "",
+    onConfirm: null,
     classCategoryId: null,
     subclassId: null,
   });
@@ -78,6 +81,7 @@ const Page = ({ params }) => {
     stagedRequests: stagedClassRequests,
     setStagedRequests: setStagedClassRequests,
     setEntityType,
+    isDirty,
   } = useEdit();
 
   let events, content;
@@ -327,56 +331,50 @@ const Page = ({ params }) => {
 
   const onCreateSubclass = async (
     classCategoryId,
-    classBasicInfo,
+    basicClassInfo,
     signupForm
   ) => {
     try {
-      if (!classCategoryId || !signupForm) {
-        throw new Error("Missing required class information");
+      console.log(
+        JSON.stringify(
+          {
+            classCategoryId,
+            basicClassInfo,
+            signupForm,
+          },
+          null,
+          4
+        )
+      );
+
+      if (!signupForm || !signupForm.formConfig || !signupForm.fieldOrder) {
+        throw new Error("Missing required signup form configuration");
       }
 
       const id = uuidv4();
-      // Create new subclass with consistent format
-
-      alert(JSON.stringify(community, null, 4));
-
       const newSubclass = {
-        ...classBasicInfo,
-        signupForm: signupForm,
+        ...basicClassInfo,
+        id,
+        categoryId: classCategoryId,
         communityId: community._id,
-
-        id: id,
-        categoryId: classCategoryId,
         createdAt: new Date().toISOString(),
+        signupForm: signupForm,
         signups: [],
-      };
-
-      const newSubclassPreview = {
-        ...classBasicInfo,
-        id: id,
-        categoryId: classCategoryId,
-        createdAt: new Date().toISOString(),
       };
 
       handleStagedClassRequest(newSubclass.id, "add", newSubclass);
 
-      // Update state with new subclass
-      setCommunityData((prevState) => {
-        const updatedClasses = prevState.classes.map((classCategory) => {
-          if (classCategory.id === classCategoryId) {
-            return {
-              ...classCategory,
-              classes: [...(classCategory.classes || []), newSubclassPreview],
-            };
-          }
-          return classCategory;
-        });
-
-        return {
-          ...prevState,
-          classes: updatedClasses,
-        };
-      });
+      setCommunityData((prevState) => ({
+        ...prevState,
+        classes: prevState.classes.map((classCategory) =>
+          classCategory.id === classCategoryId
+            ? {
+                ...classCategory,
+                classes: [...(classCategory.classes || []), newSubclass],
+              }
+            : classCategory
+        ),
+      }));
 
       toast.success("Class created successfully! Remember to save.");
       return newSubclass;
@@ -406,7 +404,7 @@ const Page = ({ params }) => {
       }
 
       // Create the class data merging basic info and form data
-      alert(JSON.stringify(community, null, 4));
+      // alert(JSON.stringify(community, null, 4));
 
       const updatedClass = {
         ...basicClassInfo,
@@ -451,22 +449,55 @@ const Page = ({ params }) => {
   };
 
   const onDeleteClassCategory = (classCategoryId) => {
-    const shouldDelete = window.confirm(
-      "Are you sure you want to delete this class category?"
+    // First, find the category to check if it has any classes
+    const categoryToDelete = communityData.classes.find(
+      (category) => category.id === classCategoryId
     );
 
-    if (shouldDelete) {
-      setCommunityData((prevState) => {
-        const updatedClasses = prevState.classes.filter(
-          (classCategory) => classCategory.id !== classCategoryId
-        );
-
-        return {
-          ...prevState,
-          classes: updatedClasses,
-        };
-      });
+    // If category not found, show error and return
+    if (!categoryToDelete) {
+      toast.error("Category not found");
+      return;
     }
+
+    // Check if the category has any classes
+    if (categoryToDelete.classes && categoryToDelete.classes.length > 0) {
+      toast.error(
+        "Cannot delete category that contains classes. Please delete or move all classes first."
+      );
+      return;
+    }
+
+    // If we reach here, it's safe to delete. Show confirmation dialog
+    setDeleteDialogConfig({
+      open: true,
+      title: "Delete Category",
+      description: `Are you sure you want to delete the category "${categoryToDelete.title}"? This action cannot be undone.`,
+      onConfirm: () => {
+        // Delete the category
+        setCommunityData((prevState) => {
+          const updatedClasses = prevState.classes.filter(
+            (classCategory) => classCategory.id !== classCategoryId
+          );
+
+          return {
+            ...prevState,
+            classes: updatedClasses,
+          };
+        });
+
+        // Show success message
+        toast.success("Category deleted successfully");
+
+        // Close the dialog
+        setDeleteDialogConfig({
+          open: false,
+          title: "",
+          description: "",
+          onConfirm: null,
+        });
+      },
+    });
   };
 
   const handleMarketingHeaderChange = (e, name) => {
@@ -624,64 +655,65 @@ const Page = ({ params }) => {
     });
   };
 
-  const onDeleteSubclass = (classCategoryId, subclassId) => {
+  const onDeleteSubclass = (
+    classCategoryId,
+    subclassId,
+    closeStepperFunction
+  ) => {
     if (!classCategoryId || !subclassId) {
       toast.error("Missing required class information");
       return;
     }
 
+    // Find the class category and subclass to get the title
+    const category = communityData.classes.find(
+      (cat) => cat.id === classCategoryId
+    );
+    const subclass = category?.classes.find((cls) => cls.id === subclassId);
+
+    if (!category || !subclass) {
+      toast.error("Class not found");
+      return;
+    }
+
     setDeleteDialogConfig({
       open: true,
+      title: "Delete Class",
+      description: `Are you sure you want to delete the class "${subclass.title}" from category "${category.title}"? This action cannot be undone.`,
+      onConfirm: () => {
+        // Stage the delete request
+        handleStagedClassRequest(subclassId, "delete", null);
+
+        closeStepperFunction();
+        // Update the UI state
+        setCommunityData((prevState) => ({
+          ...prevState,
+          classes: prevState.classes.map((classCategory) => {
+            if (classCategory.id === classCategoryId) {
+              return {
+                ...classCategory,
+                classes: classCategory.classes.filter(
+                  (cls) => cls.id !== subclassId
+                ),
+              };
+            }
+            return classCategory;
+          }),
+        }));
+
+        // Show success message
+        toast.success("Class deleted successfully! Remember to save.");
+
+        // Close the dialog
+        setDeleteDialogConfig({
+          open: false,
+          title: "",
+          description: "",
+          onConfirm: null,
+        });
+      },
       classCategoryId,
       subclassId,
-    });
-  };
-
-  const handleConfirmDelete = () => {
-    try {
-      const { classCategoryId, subclassId } = deleteDialogConfig;
-
-      // Stage the delete request
-      handleStagedClassRequest(subclassId, "delete", null);
-
-      // Update the UI state
-      setCommunityData((prevState) => {
-        const updatedClasses = prevState.classes.map((classCategory) => {
-          if (classCategory.id === classCategoryId) {
-            return {
-              ...classCategory,
-              classes: classCategory.classes.filter(
-                (subclass) => subclass.id !== subclassId
-              ),
-            };
-          }
-          return classCategory;
-        });
-
-        return {
-          ...prevState,
-          classes: updatedClasses,
-        };
-      });
-
-      toast.success("Class deleted successfully! Remember to save.");
-    } catch (error) {
-      console.error("Error deleting subclass:", error);
-      toast.error("Failed to delete class: " + error.message);
-    } finally {
-      setDeleteDialogConfig({
-        open: false,
-        classCategoryId: null,
-        subclassId: null,
-      });
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setDeleteDialogConfig({
-      open: false,
-      classCategoryId: null,
-      subclassId: null,
     });
   };
 
@@ -719,14 +751,20 @@ const Page = ({ params }) => {
 
   return (
     <>
-      <UnsavedChangesAlert hasUnsavedChanges={false} />
+      <UnsavedChangesAlert hasUnsavedChanges={isDirty} />
       <AskYesNoDialog
         open={deleteDialogConfig.open}
-        onClose={handleCancelDelete}
-        onCancel={handleCancelDelete}
-        onConfirm={handleConfirmDelete}
-        title="Delete Class"
-        description="Are you sure you want to delete this class? This action cannot be undone."
+        title={deleteDialogConfig.title}
+        description={deleteDialogConfig.description}
+        onConfirm={deleteDialogConfig.onConfirm}
+        onClose={() =>
+          setDeleteDialogConfig({
+            open: false,
+            title: "",
+            description: "",
+            onConfirm: null,
+          })
+        }
       />
       <Container sx={{ paddingTop: 3, marginBottom: 2 }}>
         <Breadcrumbs
@@ -1153,75 +1191,6 @@ const Page = ({ params }) => {
         />
         <Divider sx={{ my: 5 }} />
 
-        <Accordion>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="panel1a-content"
-            id="panel1a-header"
-          >
-            <Typography>Community Data</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <pre>Community Data {JSON.stringify(communityData, null, 4)}</pre>
-          </AccordionDetails>
-        </Accordion>
-        <Accordion>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="panel1a-content"
-            id="panel1a-header"
-          >
-            <Typography>Staged Requests</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <pre>
-              Staged Requests{JSON.stringify(stagedClassRequests, null, 4)}
-            </pre>
-          </AccordionDetails>
-        </Accordion>
-        <Accordion>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="panel1a-content"
-            id="panel1a-header"
-          >
-            <Typography>Classes</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <pre>Classes {JSON.stringify(communityData.classes, null, 4)}</pre>
-          </AccordionDetails>
-        </Accordion>
-        <Accordion>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="panel1a-content"
-            id="panel1a-header"
-          >
-            <Typography>Loaded Class Signups</Typography>
-          </AccordionSummary>
-
-          <AccordionDetails>
-            <pre>
-              Loaded Class Signups {JSON.stringify(loadedClassSignups, null, 4)}
-            </pre>
-          </AccordionDetails>
-        </Accordion>
-
-        <Button
-          variant="contained"
-          fullWidth
-          sx={{ my: 3 }}
-          onClick={() => {
-            setCommunityData((prevState) => {
-              return {
-                ...prevState,
-                classes: [],
-              };
-            });
-          }}
-        >
-          Delete Classes
-        </Button>
         <LoadedClassesProvider isEdit stagedRequests={stagedClassRequests}>
           <ClassesTreeView
             isEdit

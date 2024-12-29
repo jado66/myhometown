@@ -100,12 +100,12 @@ export function EditClassSignupForm({
               <TextField
                 fullWidth
                 label="Class Name"
-                value={classConfig.className}
+                value={classConfig.title}
                 onChange={(e) =>
-                  handleClassConfigChange("className", e.target.value)
+                  handleClassConfigChange("title", e.target.value)
                 }
-                error={!!errors.className}
-                helperText={errors.className}
+                error={!!errors.title}
+                helperText={errors.title}
               />
             </Grid>
           </Grid>

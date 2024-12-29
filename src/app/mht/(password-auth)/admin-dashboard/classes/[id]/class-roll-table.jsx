@@ -50,7 +50,7 @@ export default function ClassRollTable({ classData }) {
         field.type !== "staticText" &&
         field.type !== "bannerImage" &&
         (key.toLowerCase().includes("name") ||
-          field.label.toLowerCase().includes("name"))
+          field?.label?.toLowerCase().includes("name"))
     )
     .map(([key, field]) => ({
       key,
@@ -77,6 +77,7 @@ export default function ClassRollTable({ classData }) {
         },
       }}
     >
+      <pre>{JSON.stringify(classData, null, 4)}</pre>
       <Table
         sx={{
           minWidth: 650,

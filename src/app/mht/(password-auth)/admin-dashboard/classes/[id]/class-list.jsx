@@ -28,8 +28,8 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import PersonIcon from "@mui/icons-material/Person";
 import ClassDetailTable from "./class-detail-table";
 import ClassRollTable from "./class-roll-table";
-import ClassPreview from "@/components/class-signups/ClassPreview";
 import Close from "@mui/icons-material/Close";
+import ClassPreview from "@/components/class-signups/stepper-components/ClassPreview";
 
 export default function ClassList({ communityId }) {
   const { getClassesByCommunity, loading, error } = useClasses();

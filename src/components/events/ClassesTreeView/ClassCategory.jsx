@@ -2,32 +2,18 @@ import React, { useState } from "react";
 import {
   Button,
   Grid,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Typography,
   TextField,
   Box,
   ClickAwayListener,
 } from "@mui/material";
 
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import {
-  Add,
-  Delete,
-  Edit,
-  Save,
-  Cancel,
-  ArrowUpward,
-  ArrowDownward,
-} from "@mui/icons-material";
-import { CreateClassForm } from "./CreateClassForm";
+import { Add, Save, Cancel } from "@mui/icons-material";
 import { ExampleIcons, IconSelect } from "./IconSelect";
 import { StyledTreeItem } from "./StyledTreeItem";
 import { CategoryDropdownActions } from "./CategoryDropdownActions";
-import { ClassSignup } from "./ClassSignup";
-import ClassPreview from "@/components/class-signups/ClassPreviewAccordion";
-import CustomClassSignup from "@/components/class-signups";
+import { ViewClassSignupForm } from "@/components/class-signups/stepper-components/ViewClassSignupForm";
+import ClassPreviewAccordion from "@/components/class-signups/ClassPreviewAccordion";
 import ClassCreationStepper from "@/components/class-signups/ClassCreationStepper";
 import { ClassSignupProvider } from "@/components/class-signups/ClassSignupContext";
 
@@ -39,8 +25,9 @@ export const ClassCategory = ({
   showIframeHelpDialog,
   onCreateSubclass,
   onUpdateSubclass,
-
+  onEditSubclass,
   editingCategoryId,
+  setEditingClassId,
   editingClassId,
   onEditCategory,
   onUpdateCategory,
@@ -55,9 +42,8 @@ export const ClassCategory = ({
   const [isAddNewClass, setAddNewClass] = useState(false);
   const [editTitle, setEditTitle] = useState(category.title);
   const [editIcon, setEditIcon] = useState(category.icon);
-
   const [openClassSignup, setOpenClassSignup] = useState(null);
-
+  const [duplicatedClassData, setDuplicatedClassData] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
 
   const IconWithProps = React.cloneElement(ExampleIcons[category.icon], {
@@ -65,6 +51,11 @@ export const ClassCategory = ({
   });
 
   const isEditing = editingCategoryId === category.id;
+
+  const handleDuplicateClass = (classData) => {
+    setDuplicatedClassData(classData);
+    setAddNewClass(true);
+  };
 
   const handleSaveCategory = () => {
     onUpdateCategory(category.id, editTitle, editIcon);
@@ -78,27 +69,52 @@ export const ClassCategory = ({
     setShowOptions(false);
   };
 
-  const onClickAway = () => {
-    handleCancelEdit();
-  };
-
   const forceExpandCategory = () => {
     onToggleExpand(null, category.id.toString(), true);
   };
 
-  const handleEditSubclass = async (basicClassInfo, classData) => {
+  const handleCreateSubclass = async (classConfig, signupForm) => {
+    // alert("Calling function from class category");
+    console.log(
+      JSON.stringify(
+        "Calling function from class category" +
+          JSON.stringify({ classConfig, signupForm }, null, 4)
+      )
+    );
     try {
-      // Ensure we have the category ID and properly formatted data
       if (!category.id) {
         throw new Error("Category ID is required");
       }
 
-      // Create the subclass with the category ID and formatted data
+      // Ensure all required fields are present
+
+      const createdClass = await onCreateSubclass(
+        category.id,
+        classConfig,
+        signupForm
+      );
+
+      if (createdClass) {
+        setAddNewClass(false);
+        setDuplicatedClassData(null);
+      }
+
+      return createdClass;
+    } catch (error) {
+      console.error("Failed to create class:", error);
+      throw error;
+    }
+  };
+
+  const handleEditSubclass = async (basicClassInfo, classData) => {
+    try {
+      if (!category.id) {
+        throw new Error("Category ID is required");
+      }
+
       const updatedClass = await onUpdateSubclass(
         category.id,
-        {
-          ...basicClassInfo,
-        },
+        basicClassInfo,
         classData
       );
 
@@ -109,57 +125,6 @@ export const ClassCategory = ({
       return updatedClass;
     } catch (error) {
       console.error("Failed to update class:", error);
-      throw error;
-    }
-  };
-
-  // In ClassCategory.js, update the handleCreateSubclass function:
-  const handleCreateSubclass = async (basicClassInfo, classData) => {
-    try {
-      // Ensure we have the category ID and properly formatted data
-      if (!category.id) {
-        throw new Error("Category ID is required");
-      }
-
-      // Create the subclass with the category ID and formatted data
-      const createdClass = await onCreateSubclass(
-        category.id,
-        {
-          ...basicClassInfo,
-        },
-        classData
-      );
-
-      alert("Class created successfully" + JSON.stringify(classData));
-
-      if (createdClass) {
-        setAddNewClass(false);
-      }
-
-      return createdClass;
-    } catch (error) {
-      console.error("Failed to create class:", error);
-      throw error;
-    }
-  };
-
-  const handleDeleteSubclass = async (classId) => {
-    try {
-      // Ensure we have the category ID and properly formatted data
-      if (!category.id) {
-        throw new Error("Category ID is required");
-      }
-
-      // Delete the subclass with the category ID and formatted data
-      const deletedClass = await onDeleteSubclass(category.id, classId);
-
-      if (deletedClass) {
-        setOpenClassSignup(null);
-      }
-
-      return deletedClass;
-    } catch (error) {
-      console.error("Failed to delete class:", error);
       throw error;
     }
   };
@@ -193,10 +158,10 @@ export const ClassCategory = ({
                   onClick={(e) => e.stopPropagation()}
                   onChange={(e) => {
                     setEditTitle(e.target.value);
-                    e.stopPropagation(); // Ensure propagation is stopped here
+                    e.stopPropagation();
                   }}
                   onKeyDown={(e) => {
-                    e.stopPropagation(); // Stop the propagation of the space bar key event
+                    e.stopPropagation();
                   }}
                   size="small"
                 />
@@ -253,54 +218,88 @@ export const ClassCategory = ({
             } else {
               if (openClassSignup === classObj.id) {
                 return (
-                  <CustomClassSignup
+                  <ClassSignupProvider
                     key={classObj.id}
-                    classObj={classObj}
                     category={category}
-                    handleCreateSubclass={handleCreateSubclass}
-                    handleEditSubclass={handleEditSubclass}
-                    handleDeleteSubclass={handleDeleteSubclass}
-                  />
+                    classObj={classObj}
+                    onClassConfigChange={() => alert("not in edit mode")}
+                    onCreateSubclass={() => alert("not in edit mode")}
+                    onEditSubclass={() => alert("not in edit mode")}
+                    onDeleteSubclass={() => alert("not in edit mode")}
+                  >
+                    <ViewClassSignupForm />
+                  </ClassSignupProvider>
                 );
               } else {
                 return (
-                  <ClassPreview
+                  <ClassPreviewAccordion
                     key={classObj.id}
                     classData={classObj}
                     isEdit={isEdit}
+                    category={category}
+                    onEditSubclass={onEditSubclass}
+                    onDuplicateClass={handleDuplicateClass}
                     onSignupClick={() => setOpenClassSignup(classObj.id)}
+                    isFirstClass={index === 0}
+                    isLastClass={index === category.classes.length - 1}
+                    shiftUpClass={shiftUpSubclass}
+                    shiftDownClass={shiftDownSubclass}
                   />
                 );
               }
-              // return (
-              //   <CustomClassSignup
-              //     handleCreateSubclass={handleCreateSubclass}
-              //   />
-              // );
             }
-            //
           })}
 
-        {/* {/* {isAddNewClass && ( */}
-        {/* <CreateClassForm
-          category={category}
-          onClose={() => setAddNewClass(false)}
-          onCreateSubclass={onCreateSubclass}
-          showIframeHelpDialog={showIframeHelpDialog}
-        /> */}
-        {/* )} */}
+        {editingClassId && (
+          <ClassSignupProvider
+            classObj={
+              category.classes.find(
+                (classObj) => classObj.id === editingClassId
+              ) || {}
+            }
+            category={category}
+            onCreateSubclass={handleCreateSubclass}
+            onEditSubclass={handleEditSubclass}
+            onDeleteSubclass={() => {
+              onDeleteSubclass(category.id, editingClassId, () => {
+                setEditingClassId(null);
+              });
+            }}
+            isEditMode={true}
+            isNew={false}
+          >
+            <ClassCreationStepper
+              handleClose={() => {
+                setEditingClassId(null);
+              }}
+            />
+          </ClassSignupProvider>
+        )}
 
         {isAddNewClass && (
           <ClassSignupProvider
+            category={category}
             onCreateSubclass={handleCreateSubclass}
             onEditSubclass={handleEditSubclass}
-            onDeleteSubclass={handleDeleteSubclass}
+            classObj={duplicatedClassData || {}}
+            defaultConfig={
+              duplicatedClassData
+                ? {
+                    ...duplicatedClassData,
+                    title: `${duplicatedClassData.title}`,
+                    id: undefined,
+                  }
+                : undefined
+            }
             isEdit={isEdit}
-            isNew
+            isNew={true}
           >
             <ClassCreationStepper
-              category={category}
-              onClose={() => setAddNewClass(false)}
+              isNew={true}
+              handleClose={() => {
+                setAddNewClass(false);
+                setDuplicatedClassData(null);
+              }}
             />
           </ClassSignupProvider>
         )}

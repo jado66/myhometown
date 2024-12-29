@@ -14,6 +14,9 @@ import ClassPreview from "./stepper-components/ClassPreview";
 import { ViewClassSignupForm } from "./stepper-components/ViewClassSignupForm";
 import { useClassSignup } from "./ClassSignupContext";
 import { ClassDescriptionEditor } from "./stepper-components/ClassDescriptionEditor";
+import { FormBuilder } from "./stepper-components/FormBuilder";
+import { ExampleIcons } from "../events/ClassesTreeView/IconSelect";
+import { FieldSelectorDialog } from "./FieldSelectorDialog";
 
 const steps = [
   {
@@ -21,15 +24,15 @@ const steps = [
     optional: false,
   },
   {
-    label: "Form Builder",
+    label: "Review Description",
     optional: false,
   },
   {
-    label: "Preview Class",
+    label: "Class Signup Form",
     optional: false,
   },
   {
-    label: "Preview Form",
+    label: "Review Signup Form",
     optional: false,
   },
 ];
@@ -37,7 +40,13 @@ const steps = [
 export default function ClassCreationStepper({ isNew, handleClose }) {
   const [activeStep, setActiveStep] = useState(0);
   const [isFieldSelectorOpen, setIsFieldSelectorOpen] = useState(false);
-  const { classConfig, handleSaveClass } = useClassSignup();
+  const {
+    classConfig,
+    formConfig,
+    fieldOrder,
+    handleSaveClass,
+    handleDeleteClass,
+  } = useClassSignup();
 
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1);
@@ -63,19 +72,30 @@ export default function ClassCreationStepper({ isNew, handleClose }) {
 
       case 1:
         return (
-          <FormBuilder showFieldSelector={() => setIsFieldSelectorOpen(true)} />
-        );
-
-      case 2:
-        return (
           <Paper sx={{ p: 3 }}>
+            <Typography
+              sx={{ display: "flex", alignItems: "center", mb: 2 }}
+              variant="h4"
+            >
+              {classConfig.icon && (
+                <Typography sx={{ mr: "1em" }}>
+                  {ExampleIcons[classConfig.icon]}
+                </Typography>
+              )}
+              {classConfig.title}
+            </Typography>
             <ClassPreview classData={classConfig} />
           </Paper>
         );
+      case 2:
+        return (
+          <FormBuilder showFieldSelector={() => setIsFieldSelectorOpen(true)} />
+        );
+
       case 3:
         return (
           <Paper sx={{ p: 3 }}>
-            <ViewClassSignupForm />
+            <ViewClassSignupForm testSubmit />
           </Paper>
         );
       default:
@@ -84,20 +104,46 @@ export default function ClassCreationStepper({ isNew, handleClose }) {
   };
 
   return (
-    <Dialog open={true} onClose={handleClose} fullWidth maxWidth="xl">
+    <Dialog
+      open={true}
+      onClose={null}
+      fullWidth
+      maxWidth="xl"
+      disableEscapeKeyDown
+    >
       <Box sx={{ p: 4 }}>
-        <Typography variant="h4" sx={{ mb: 2 }}>
-          {isNew ? "Create New Class" : "Edit Class"}
+        <Typography variant="h4" sx={{ mb: 3 }}>
+          {(isNew ? "Create New Class - " : "Edit Class - ") +
+            steps[activeStep].label}
         </Typography>
+
+        {!isNew && (
+          <Box sx={{ position: "absolute", top: 0, right: 0 }}>
+            <Button
+              color="error"
+              variant="outlined"
+              sx={{ m: 3 }}
+              onClick={handleDeleteClass}
+            >
+              Delete Class
+            </Button>
+          </Box>
+        )}
 
         <Box sx={{ width: "100%" }}>
           <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
             {steps.map((step, index) => (
               <Step key={step.label}>
-                <StepLabel>{step.label}</StepLabel>
+                <StepLabel>
+                  <Typography sx={{ display: { xs: "none", md: "block" } }}>
+                    {step.label}
+                  </Typography>
+                </StepLabel>
               </Step>
             ))}
           </Stepper>
+
+          {/* <pre>{JSON.stringify(formConfig, null, 4)}</pre> */}
 
           <Box sx={{ mt: 4, mb: 4 }}>{renderStepContent(activeStep)}</Box>
 
@@ -126,6 +172,10 @@ export default function ClassCreationStepper({ isNew, handleClose }) {
           </Box>
         </Box>
       </Box>
+      <FieldSelectorDialog
+        isOpen={isFieldSelectorOpen}
+        handleClose={() => setIsFieldSelectorOpen(false)}
+      />
     </Dialog>
   );
 }

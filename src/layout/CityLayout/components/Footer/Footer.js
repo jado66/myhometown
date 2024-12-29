@@ -44,6 +44,14 @@ const Footer = () => {
           sx={{ textTransform: "uppercase", borderRadius: 5 }}
           href={rootUrl + "/admin-dashboard"}
         >
+          Teacher Login
+        </Button>
+        <Button
+          variant="outlined"
+          component="a"
+          sx={{ textTransform: "uppercase", borderRadius: 5 }}
+          href={rootUrl + "/admin-dashboard"}
+        >
           Admin Login
         </Button>
       </Grid>

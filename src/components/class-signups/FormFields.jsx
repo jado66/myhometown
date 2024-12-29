@@ -12,6 +12,8 @@ import {
   Typography,
   Tooltip,
   Stack,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { FIELD_TYPES } from "./FieldTypes";
@@ -33,6 +35,34 @@ export const FormField = ({
         <Typography variant={config.variant || "h5"} sx={{ mt: 2, mb: 1 }}>
           {isEditMode ? config.label : config.content}
         </Typography>
+      );
+    }
+
+    if (config.type === FIELD_TYPES.checkbox) {
+      return (
+        <FormControl error={!!error} required={config.required} fullWidth>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={!!value}
+                onChange={(e) => onChange(field, e.target.checked)}
+                required={config.required}
+              />
+            }
+            label={config.label}
+          />
+          {(error || config.helpText) && (
+            <FormHelperText
+              error={!!error}
+              sx={{
+                ml: 0,
+                mt: 0.5,
+              }}
+            >
+              {error || config.helpText}
+            </FormHelperText>
+          )}
+        </FormControl>
       );
     }
 
@@ -79,7 +109,9 @@ export const FormField = ({
 
     switch (config.type) {
       case FIELD_TYPES.textarea:
-        return <TextField {...commonProps} multiline rows={4} />;
+        return (
+          <TextField {...commonProps} label={config.label} multiline rows={4} />
+        );
       case FIELD_TYPES.select:
         return (
           <FormControl fullWidth error={!!error}>
