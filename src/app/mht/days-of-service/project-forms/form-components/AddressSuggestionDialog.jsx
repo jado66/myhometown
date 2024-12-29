@@ -21,6 +21,69 @@ const AddressSuggestionDialog = ({
     return null;
   }
 
+  const isDifferent = (current, suggested) => {
+    return current?.toLowerCase() !== suggested?.toLowerCase();
+  };
+
+  const HighlightedText = ({ text, isHighlighted }) => (
+    <Typography
+      component="span"
+      sx={{
+        backgroundColor: isHighlighted
+          ? "rgba(255, 255, 0, 0.3)"
+          : "transparent",
+        padding: isHighlighted ? "0 2px" : 0,
+        borderRadius: "2px",
+      }}
+    >
+      {text}
+    </Typography>
+  );
+
+  const RenderAddress = ({ current, suggested }) => (
+    <Typography>
+      <HighlightedText
+        text={current.addressStreet1}
+        isHighlighted={isDifferent(
+          current.addressStreet1,
+          suggested.addressStreet1
+        )}
+      />
+      {current.addressStreet2 && (
+        <>
+          ,{" "}
+          <HighlightedText
+            text={current.addressStreet2}
+            isHighlighted={isDifferent(
+              current.addressStreet2,
+              suggested.addressStreet2
+            )}
+          />
+        </>
+      )}
+      <br />
+      <HighlightedText
+        text={current.addressCity}
+        isHighlighted={isDifferent(current.addressCity, suggested.addressCity)}
+      />
+      ,{" "}
+      <HighlightedText
+        text={current.addressState}
+        isHighlighted={isDifferent(
+          current.addressState,
+          suggested.addressState
+        )}
+      />{" "}
+      <HighlightedText
+        text={current.addressZipCode}
+        isHighlighted={isDifferent(
+          current.addressZipCode,
+          suggested.addressZipCode
+        )}
+      />
+    </Typography>
+  );
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Verify Address</DialogTitle>
@@ -31,39 +94,25 @@ const AddressSuggestionDialog = ({
         </Typography>
 
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {currentAddress && (
-            <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                Current Address:
-              </Typography>
-              <Typography>
-                {currentAddress.addressStreet1}
-                {currentAddress.addressStreet2 && (
-                  <>, {currentAddress.addressStreet2}</>
-                )}
-                <br />
-                {currentAddress.addressCity}, {currentAddress.addressState}{" "}
-                {currentAddress.addressZipCode}
-              </Typography>
-            </Box>
-          )}
+          <Box>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+              Current Address:
+            </Typography>
+            <RenderAddress
+              current={currentAddress}
+              suggested={suggestedAddress}
+            />
+          </Box>
 
-          {suggestedAddress && (
-            <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                Suggested Address:
-              </Typography>
-              <Typography>
-                {suggestedAddress.addressStreet1}
-                {suggestedAddress.addressStreet2 && (
-                  <>, {suggestedAddress.addressStreet2}</>
-                )}
-                <br />
-                {suggestedAddress.addressCity}, {suggestedAddress.addressState}{" "}
-                {suggestedAddress.addressZipCode}
-              </Typography>
-            </Box>
-          )}
+          <Box>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+              Suggested Address:
+            </Typography>
+            <RenderAddress
+              current={suggestedAddress}
+              suggested={currentAddress}
+            />
+          </Box>
         </Box>
       </DialogContent>
       <DialogActions>

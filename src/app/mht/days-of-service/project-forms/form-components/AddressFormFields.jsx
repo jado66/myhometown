@@ -298,7 +298,7 @@ const AddressFormFields = () => {
     }
 
     if (formData.isAddressVerified && addressValidation.isValid) {
-      return <Alert severity="success">Address verified with USPS</Alert>;
+      return <Alert severity="success">This is a verified address</Alert>;
     }
 
     // Show warning for any unverified address (including valid but unconfirmed addresses)
@@ -317,7 +317,7 @@ const AddressFormFields = () => {
             </Button>
           }
         >
-          This address has not been verified with USPS
+          This address has not been verified
         </Alert>
       );
     }
@@ -398,7 +398,7 @@ const AddressFormFields = () => {
               handleInputChange("addressZipCode", e.target.value)
             }
             error={!!addressValidation.errors.zipCode}
-            helperText={addressValidation.errors.zipCode}
+            // helperText={addressValidation.errors.zipCode}
             inputProps={{ maxLength: 10 }}
           />
         </Grid>
