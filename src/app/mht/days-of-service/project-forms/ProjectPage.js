@@ -5,7 +5,7 @@ import { Typography, Paper } from "@mui/material";
 import { Gavel } from "@mui/icons-material";
 import { ProjectFormProvider } from "@/contexts/ProjectFormProvider";
 import ProjectForm from "./ProjectForm";
-import SavingIndicator from "./SavingIndicator";
+import SavingIndicator from "@/components/SavingIndicator";
 
 const ProjectFormPage = () => {
   return (

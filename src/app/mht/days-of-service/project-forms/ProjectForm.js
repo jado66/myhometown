@@ -16,6 +16,9 @@ import {
   Typography,
   Box,
 } from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
+import { toast } from "react-toastify";
+
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { useProjectForm } from "@/contexts/ProjectFormProvider";
@@ -23,7 +26,9 @@ import Loading from "@/components/util/Loading";
 import AddressFormFields from "./form-components/AddressFormFields";
 
 const ProjectForm = () => {
-  const [hasLoaded, setHasLoaded] = useState(null);
+  const [collaboratorEmail, setCollaboratorEmail] = useState("");
+  const [isSending, setIsSending] = useState(false);
+
   // Replace useState with context
   const {
     activeStep,
@@ -77,6 +82,43 @@ const ProjectForm = () => {
   const handleBack = () => {
     if (activeStep > 0) {
       setActiveStep(activeStep - 1);
+    }
+  };
+
+  const handleSendCollaborationEmail = async () => {
+    if (!collaboratorEmail) return;
+
+    setIsSending(true);
+    try {
+      const response = await fetch("/api/send-request-form-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          subject: "Collaboration Request: Project Form",
+          html: {
+            email: collaboratorEmail,
+            message: `You have been invited to collaborate on a project form. Click the link below to access the form:\n\nhttps://myhometown.vercel.app/days-of-service/project-forms/${formData.id}`,
+            firstName: "Collaborator",
+            lastName: "Invitation",
+          },
+        }),
+      });
+
+      if (response.ok) {
+        toast.success(
+          `${collaboratorEmail} has just received an email with a link to this form`
+        );
+        setCollaboratorEmail("");
+      } else {
+        throw new Error("Failed to send email");
+      }
+    } catch (error) {
+      console.error("Error sending collaboration email:", error);
+      toast.error("Failed to send collaboration email. Please try again.");
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -286,6 +328,32 @@ const ProjectForm = () => {
           >
             Next
           </Button>
+        </Box>
+        <Box sx={{ borderTop: 1, borderColor: "divider", mt: 4, pt: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            Share Collaborative Link
+          </Typography>
+          <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+            <TextField
+              label="Collaborator's Email"
+              fullWidth
+              value={collaboratorEmail}
+              onChange={(e) => setCollaboratorEmail(e.target.value)}
+              sx={{ flexGrow: 1 }}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSendCollaborationEmail}
+              disabled={!collaboratorEmail || isSending}
+            >
+              {isSending ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Send Link"
+              )}
+            </Button>
+          </Box>
         </Box>
       </CardContent>
     </Card>

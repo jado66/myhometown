@@ -6,9 +6,12 @@ import {
   TextField,
   Box,
   ClickAwayListener,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 
-import { Add, Save, Cancel } from "@mui/icons-material";
+import { Add, Save, Cancel, ExpandMore } from "@mui/icons-material";
 import { ExampleIcons, IconSelect } from "./IconSelect";
 import { StyledTreeItem } from "./StyledTreeItem";
 import { CategoryDropdownActions } from "./CategoryDropdownActions";
@@ -218,17 +221,43 @@ export const ClassCategory = ({
             } else {
               if (openClassSignup === classObj.id) {
                 return (
-                  <ClassSignupProvider
-                    key={classObj.id}
-                    category={category}
-                    classObj={classObj}
-                    onClassConfigChange={() => alert("not in edit mode")}
-                    onCreateSubclass={() => alert("not in edit mode")}
-                    onEditSubclass={() => alert("not in edit mode")}
-                    onDeleteSubclass={() => alert("not in edit mode")}
-                  >
-                    <ViewClassSignupForm />
-                  </ClassSignupProvider>
+                  <Accordion>
+                    <AccordionSummary
+                      expandIcon={<ExpandMore />}
+                      onMouseEnter={() => setShowOptions(true)}
+                      onMouseLeave={() => setShowOptions(false)}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          width: "100%",
+                        }}
+                      >
+                        {classObj.icon && ExampleIcons[classObj.icon] && (
+                          <Box sx={{ mr: 2 }}>
+                            {React.cloneElement(ExampleIcons[classObj.icon], {
+                              sx: { height: 24, width: 24 },
+                            })}
+                          </Box>
+                        )}
+                        <Typography>{classObj.title}</Typography>
+                      </Box>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <ClassSignupProvider
+                        key={classObj.id}
+                        category={category}
+                        classObj={classObj}
+                        onClassConfigChange={() => alert("not in edit mode")}
+                        onCreateSubclass={() => alert("not in edit mode")}
+                        onEditSubclass={() => alert("not in edit mode")}
+                        onDeleteSubclass={() => alert("not in edit mode")}
+                      >
+                        <ViewClassSignupForm classData={classObj} />
+                      </ClassSignupProvider>
+                    </AccordionDetails>
+                  </Accordion>
                 );
               } else {
                 return (

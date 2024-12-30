@@ -32,7 +32,7 @@ function formatTime(timeStr) {
   });
 }
 
-export function ViewClassSignupForm({ testSubmit }) {
+export function ViewClassSignupForm({ testSubmit, classData }) {
   const {
     classConfig,
     fieldOrder,
@@ -56,7 +56,7 @@ export function ViewClassSignupForm({ testSubmit }) {
         </AccordionDetails>
       </Accordion> */}
 
-      <ClassPreview classData={classConfig} />
+      <ClassPreview classData={classData} />
 
       <Divider sx={{ my: 3 }} />
 

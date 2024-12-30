@@ -87,7 +87,6 @@ export const LoadedClassesProvider = ({
 
   return (
     <LoadedClassesContext.Provider value={value}>
-      {JSON.stringify(stagedRequests)}
       {children}
     </LoadedClassesContext.Provider>
   );

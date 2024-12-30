@@ -5,18 +5,33 @@ export const useAttendance = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const markAttendance = async (classId, attendanceData) => {
+  const markBulkAttendance = async (classId, attendanceData) => {
     setLoading(true);
     setError(null);
     try {
+      // Transform the nested attendance object into an array of records
+      const attendanceRecords = [];
+
+      // attendanceData format: { studentId: { date: boolean } }
+      Object.entries(attendanceData).forEach(([studentId, dates]) => {
+        Object.entries(dates).forEach(([date, present]) => {
+          attendanceRecords.push({
+            studentId,
+            date,
+            present,
+            updatedAt: new Date().toISOString(),
+          });
+        });
+      });
+
       const response = await fetch(
-        `/api/database/classes/${classId}/attendance`,
+        `/api/database/classes/${classId}/attendance/bulk`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(attendanceData),
+          body: JSON.stringify({ records: attendanceRecords }),
         }
       );
 
@@ -35,20 +50,32 @@ export const useAttendance = () => {
     }
   };
 
-  const getAttendanceForDate = async (classId, date) => {
+  const getAttendanceForDateRange = async (classId, startDate, endDate) => {
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(
-        `/api/database/classes/${classId}/attendance/${date}`
+        `/api/database/classes/${classId}/attendance/range?startDate=${startDate}&endDate=${endDate}`
       );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to fetch attendance");
       }
+
       const data = await response.json();
+
+      // Transform the array of records back into the nested object format
+      const formattedData = {};
+      data.forEach(({ studentId, date, present }) => {
+        if (!formattedData[studentId]) {
+          formattedData[studentId] = {};
+        }
+        formattedData[studentId][date] = present;
+      });
+
       setLoading(false);
-      return data;
+      return formattedData;
     } catch (err) {
       setError(err.message);
       setLoading(false);
@@ -59,7 +86,7 @@ export const useAttendance = () => {
   return {
     loading,
     error,
-    markAttendance,
-    getAttendanceForDate,
+    markBulkAttendance,
+    getAttendanceForDateRange,
   };
 };

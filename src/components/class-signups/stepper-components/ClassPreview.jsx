@@ -6,6 +6,7 @@ import {
   LocationOn,
   People,
 } from "@mui/icons-material";
+import { ExampleIcons } from "@/components/events/ClassesTreeView/IconSelect";
 
 const ClassPreview = ({ classData, noBanner }) => {
   const formatDate = (dateString) => {

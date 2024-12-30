@@ -1,14 +1,13 @@
 import ProviderWrapper from "@/contexts/ProviderWrapper";
-import { SessionProvider } from "next-auth/react";
-
+import SimpleAuthProvider from "@/contexts/SimpleAuthProvider";
 import { FixedLayout } from "@/layout";
 
 export default function Layout({ children }) {
   return (
     <ProviderWrapper>
-      <SessionProvider>
+      <SimpleAuthProvider>
         <FixedLayout>{children}</FixedLayout>
-      </SessionProvider>
+      </SimpleAuthProvider>
     </ProviderWrapper>
   );
 }

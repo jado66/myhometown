@@ -30,6 +30,7 @@ import ClassDetailTable from "./class-detail-table";
 import ClassRollTable from "./class-roll-table";
 import Close from "@mui/icons-material/Close";
 import ClassPreview from "@/components/class-signups/stepper-components/ClassPreview";
+import { ExampleIcons } from "@/components/events/ClassesTreeView/IconSelect";
 
 export default function ClassList({ communityId }) {
   const { getClassesByCommunity, loading, error } = useClasses();
@@ -95,12 +96,8 @@ export default function ClassList({ communityId }) {
                 title={
                   <Box display="flex" alignItems="center" gap={1}>
                     <Typography variant="h6">{classItem.title}</Typography>
-                    <Chip
-                      size="small"
-                      label={classItem.icon}
-                      color="primary"
-                      sx={{ ml: 1 }}
-                    />
+
+                    {ExampleIcons[classItem.icon]}
                   </Box>
                 }
               />
@@ -178,36 +175,11 @@ export default function ClassList({ communityId }) {
         ))}
       </Grid>
 
-      <Dialog
-        open={showClassRoll}
+      <ClassRollTable
+        classData={selectedClass}
+        show={showClassRoll}
         onClose={() => setShowClassRoll(false)}
-        maxWidth="xl"
-        fullWidth
-      >
-        <DialogTitle>
-          {selectedClass?.title} Class Roll
-          <IconButton
-            aria-label="close"
-            onClick={() => setShowClassRoll(false)}
-            sx={{
-              position: "absolute",
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
-            }}
-          >
-            <Close />
-          </IconButton>
-        </DialogTitle>
-        <Box p={2}>
-          <ClassPreview classData={selectedClass} noBanner />
-          <Divider sx={{ my: 2 }} />
-          <ClassRollTable
-            classData={selectedClass}
-            onClose={() => setShowClassRoll(false)}
-          />
-        </Box>
-      </Dialog>
+      />
 
       <Dialog
         open={showClassDetails}
