@@ -27,9 +27,7 @@ export default function ClassPage({ params }) {
         {community?.name} Community Classes
       </Typography>
       <Suspense fallback={<div>Loading...</div>}>
-        <AccessCodeDialog>
-          <ClassList communityId={params.id} />
-        </AccessCodeDialog>
+        <ClassList communityId={params.id} />
       </Suspense>
     </Container>
   );
