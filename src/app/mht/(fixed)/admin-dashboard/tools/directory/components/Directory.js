@@ -480,10 +480,15 @@ const Directory = () => {
   };
 
   const selectStyles = {
-    control: (provided) => ({
+    control: (provided, state) => ({
       ...provided,
       minWidth: "200px",
       minHeight: "32px",
+      borderColor: state.isFocused ? "#318D43" : provided.borderColor, // Change the border color when focused
+      boxShadow: state.isFocused ? `0 0 0 1px #318D43` : provided.boxShadow, // Optional: Add a box-shadow for better focus visibility
+      "&:hover": {
+        borderColor: "#318D43", // Change the hover border color
+      },
     }),
     menu: (provided) => ({
       ...provided,
