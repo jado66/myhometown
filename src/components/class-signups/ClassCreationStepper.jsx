@@ -17,6 +17,8 @@ import { ClassDescriptionEditor } from "./stepper-components/ClassDescriptionEdi
 import { FormBuilder } from "./stepper-components/FormBuilder";
 import { ExampleIcons } from "../events/ClassesTreeView/IconSelect";
 import { FieldSelectorDialog } from "./FieldSelectorDialog";
+import Loading from "../util/Loading";
+import { Close } from "@mui/icons-material";
 
 const steps = [
   {
@@ -45,6 +47,7 @@ export default function ClassCreationStepper({ isNew, handleClose }) {
     formConfig,
     fieldOrder,
     handleSaveClass,
+    isLoading,
     handleDeleteClass,
   } = useClassSignup();
 
@@ -103,6 +106,36 @@ export default function ClassCreationStepper({ isNew, handleClose }) {
     }
   };
 
+  if (isLoading) {
+    return (
+      <Dialog
+        open={true}
+        onClose={null}
+        fullWidth
+        PaperProps={{
+          sx: {
+            height: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignContent: "center",
+          },
+        }}
+        maxWidth="xl"
+        disableEscapeKeyDown
+      >
+        <Typography
+          variant="h4"
+          sx={{ mb: 3, display: "flex", justifyContent: "center" }}
+        >
+          Loading Class Data
+        </Typography>
+        <Box sx={{ mx: "auto" }}>
+          <Loading size={80} />
+        </Box>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog
       open={true}
@@ -119,13 +152,8 @@ export default function ClassCreationStepper({ isNew, handleClose }) {
 
         {!isNew && (
           <Box sx={{ position: "absolute", top: 0, right: 0 }}>
-            <Button
-              color="error"
-              variant="outlined"
-              sx={{ m: 3 }}
-              onClick={handleDeleteClass}
-            >
-              Delete Class
+            <Button sx={{ m: 3 }} onClick={handleClose}>
+              <Close />
             </Button>
           </Box>
         )}
@@ -155,6 +183,17 @@ export default function ClassCreationStepper({ isNew, handleClose }) {
             >
               Back
             </Button>
+            {!isNew && (
+              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                <Button
+                  color="error"
+                  variant="outlined"
+                  onClick={handleDeleteClass}
+                >
+                  Delete Class
+                </Button>
+              </Box>
+            )}
             <Stack direction="row" spacing={2}>
               <Button variant="outlined" onClick={handleClose}>
                 Cancel

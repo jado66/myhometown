@@ -482,18 +482,21 @@ export function ClassSignupProvider({
       toast.success("Signup successful!");
     } catch (error) {
       console.error("Error submitting signup:", error);
+
+      // Check if the error is specifically about the class being full
+      const errorMessage =
+        error.message === "Class is full"
+          ? "Sorry! This class is full."
+          : error.message || "Failed to submit signup";
+
       setErrors((prev) => ({
         ...prev,
-        submit: error.message || "Failed to submit signup",
+        submit: errorMessage,
       }));
       setSubmitStatus("error");
-      toast.error(error.message || "Failed to submit signup");
+      toast.error(errorMessage);
     }
   };
-
-  if (isLoading) {
-    return <Loading />;
-  }
 
   if (loadError) {
     return (
@@ -510,8 +513,10 @@ export function ClassSignupProvider({
     formData,
     errors,
     submitStatus,
+    originalClassObj: classObj,
     isConfigDirty,
     isEditMode,
+    isLoading,
     isNew,
     handleClassConfigChange,
     handleSaveClass,

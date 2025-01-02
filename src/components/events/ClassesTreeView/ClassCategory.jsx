@@ -19,6 +19,8 @@ import { ViewClassSignupForm } from "@/components/class-signups/stepper-componen
 import ClassPreviewAccordion from "@/components/class-signups/ClassPreviewAccordion";
 import ClassCreationStepper from "@/components/class-signups/ClassCreationStepper";
 import { ClassSignupProvider } from "@/components/class-signups/ClassSignupContext";
+import { ClassDropdownActions } from "@/components/class-signups/ClassDropdownActions";
+import ClassPreview from "@/components/class-signups/stepper-components/ClassPreview";
 
 export const ClassCategory = ({
   category,
@@ -49,6 +51,14 @@ export const ClassCategory = ({
   const [duplicatedClassData, setDuplicatedClassData] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
 
+  const [hoverClass, setHoverClass] = useState(null);
+
+  const hideHoverClass = (id) => {
+    if (hoverClass === id) {
+      setHoverClass(null);
+    }
+  };
+
   const IconWithProps = React.cloneElement(ExampleIcons[category.icon], {
     sx: { height: 35, width: 35 },
   });
@@ -56,7 +66,17 @@ export const ClassCategory = ({
   const isEditing = editingCategoryId === category.id;
 
   const handleDuplicateClass = (classData) => {
-    setDuplicatedClassData(classData);
+    const duplicatedData = {
+      ...classData,
+      title: `${classData.title} (Copy)`,
+      id: undefined,
+      signupForm: {
+        formConfig: classData.signupForm?.formConfig || {},
+        fieldOrder: classData.signupForm?.fieldOrder || [],
+      },
+    };
+
+    setDuplicatedClassData(duplicatedData);
     setAddNewClass(true);
   };
 
@@ -130,6 +150,12 @@ export const ClassCategory = ({
       console.error("Failed to update class:", error);
       throw error;
     }
+  };
+
+  // Helper function to format class time
+  const formatClassTime = (startTime, endTime) => {
+    if (!startTime || !endTime) return "";
+    return `${startTime} - ${endTime}`;
   };
 
   return (
@@ -219,32 +245,59 @@ export const ClassCategory = ({
             ) {
               return null;
             } else {
-              if (openClassSignup === classObj.id) {
-                return (
-                  <Accordion>
-                    <AccordionSummary
-                      expandIcon={<ExpandMore />}
-                      onMouseEnter={() => setShowOptions(true)}
-                      onMouseLeave={() => setShowOptions(false)}
+              const formattedClassData = {
+                ...classObj,
+                schedule:
+                  classObj.meetingDays?.map((day) => ({
+                    day,
+                    time: formatClassTime(classObj.startTime, classObj.endTime),
+                  })) || [],
+                location: classObj.location || "",
+                capacity: classObj.capacity || "",
+                showCapacity: classObj.showCapacity || false,
+              };
+
+              return (
+                <Accordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMore />}
+                    onMouseEnter={() => setHoverClass(classObj.id)}
+                    onMouseLeave={() => hideHoverClass(null)}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        width: "100%",
+                      }}
                     >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          width: "100%",
-                        }}
-                      >
-                        {classObj.icon && ExampleIcons[classObj.icon] && (
-                          <Box sx={{ mr: 2 }}>
-                            {React.cloneElement(ExampleIcons[classObj.icon], {
-                              sx: { height: 24, width: 24 },
-                            })}
-                          </Box>
-                        )}
-                        <Typography>{classObj.title}</Typography>
-                      </Box>
-                    </AccordionSummary>
-                    <AccordionDetails>
+                      {classObj.icon && ExampleIcons[classObj.icon] && (
+                        <Box sx={{ mr: 2 }}>
+                          {React.cloneElement(ExampleIcons[classObj.icon], {
+                            sx: { height: 24, width: 24 },
+                          })}
+                        </Box>
+                      )}
+                      <Typography>{classObj.title}</Typography>
+                      <Box sx={{ flexGrow: 1 }} />
+                      {isEdit && hoverClass === classObj.id && (
+                        <ClassDropdownActions
+                          classObj={classObj}
+                          categoryId={category?.id}
+                          onEditClass={() => onEditSubclass(classObj.id)}
+                          onDuplicateClass={() =>
+                            handleDuplicateClass(classObj)
+                          }
+                          isFirstClass={index === 0}
+                          isLastClass={index === category.classes.length - 1}
+                          shiftUpClass={shiftUpSubclass}
+                          shiftDownClass={shiftDownSubclass}
+                        />
+                      )}
+                    </Box>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    {openClassSignup === classObj.id ? (
                       <ClassSignupProvider
                         key={classObj.id}
                         category={category}
@@ -256,26 +309,26 @@ export const ClassCategory = ({
                       >
                         <ViewClassSignupForm classData={classObj} />
                       </ClassSignupProvider>
-                    </AccordionDetails>
-                  </Accordion>
-                );
-              } else {
-                return (
-                  <ClassPreviewAccordion
-                    key={classObj.id}
-                    classData={classObj}
-                    isEdit={isEdit}
-                    category={category}
-                    onEditSubclass={onEditSubclass}
-                    onDuplicateClass={handleDuplicateClass}
-                    onSignupClick={() => setOpenClassSignup(classObj.id)}
-                    isFirstClass={index === 0}
-                    isLastClass={index === category.classes.length - 1}
-                    shiftUpClass={shiftUpSubclass}
-                    shiftDownClass={shiftDownSubclass}
-                  />
-                );
-              }
+                    ) : (
+                      <>
+                        <ClassPreview classData={formattedClassData} />
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          fullWidth
+                          sx={{ mt: 2 }}
+                          onClick={() => setOpenClassSignup(classObj.id)}
+                          disabled={isEdit}
+                        >
+                          {isEdit
+                            ? "Sign Up (Not available in edit mode)"
+                            : "Sign Up"}
+                        </Button>
+                      </>
+                    )}
+                  </AccordionDetails>
+                </Accordion>
+              );
             }
           })}
 

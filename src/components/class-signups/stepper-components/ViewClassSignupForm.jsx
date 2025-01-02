@@ -39,24 +39,17 @@ export function ViewClassSignupForm({ testSubmit, classData }) {
     formConfig,
     formData,
     errors,
+    originalClassObj,
     submitStatus,
     handleFormChange,
     handleSubmit,
+
     testSignup,
   } = useClassSignup();
 
   return (
     <Stack spacing={3} component="form">
-      {/* <Accordion>
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          <Typography>Debug</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <pre>{JSON.stringify(classConfig, null, 4)}</pre>
-        </AccordionDetails>
-      </Accordion> */}
-
-      <ClassPreview classData={classData} />
+      <ClassPreview classData={originalClassObj} />
 
       <Divider sx={{ my: 3 }} />
 

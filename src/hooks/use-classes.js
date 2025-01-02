@@ -143,7 +143,7 @@ export const useClasses = () => {
     } catch (err) {
       setError(err.message);
       setLoading(false);
-      return null;
+      throw err; // Re-throw to be caught by handleSubmit
     }
   };
 

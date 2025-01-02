@@ -122,12 +122,12 @@ export default function CustomClassSignup({
       const { classConfig: basicClassInfo, signupForm: classSignupForm } =
         classData;
 
-      alert(
-        JSON.stringify({
-          basicClassInfo,
-          classSignupForm,
-        })
-      );
+      // alert(
+      //   JSON.stringify({
+      //     basicClassInfo,
+      //     classSignupForm,
+      //   })
+      // );
 
       // Log the full class data
       console.log("Create class", classData);
