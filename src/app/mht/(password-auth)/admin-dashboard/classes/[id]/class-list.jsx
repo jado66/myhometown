@@ -31,6 +31,7 @@ import ClassRollTable from "./class-roll-table";
 import Close from "@mui/icons-material/Close";
 import ClassPreview from "@/components/class-signups/stepper-components/ClassPreview";
 import { ExampleIcons } from "@/components/events/ClassesTreeView/IconSelect";
+import { Phone, School } from "@mui/icons-material";
 
 export default function ClassList({ communityId }) {
   const { getClassesByCommunity, loading, error } = useClasses();
@@ -103,12 +104,12 @@ export default function ClassList({ communityId }) {
               />
               <CardContent sx={{ flexGrow: 1 }}>
                 <Box display="flex" flexDirection="column" gap={2}>
-                  <Box display="flex" alignItems="center" gap={1}>
+                  {/* <Box display="flex" alignItems="center" gap={1}>
                     <CalendarTodayIcon color="action" fontSize="small" />
                     <Typography variant="body2" color="text.secondary">
                       Created: {formatDate(classItem.createdAt)}
                     </Typography>
-                  </Box>
+                  </Box> */}
 
                   {classItem.startDate && (
                     <Box display="flex" alignItems="center" gap={1}>
@@ -123,6 +124,16 @@ export default function ClassList({ communityId }) {
                       <AccessTimeIcon color="action" fontSize="small" />
                       <Typography variant="body2" color="text.secondary">
                         End: {formatDate(classItem.endDate)}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {classItem.teachers && classItem.teachers.length > 0 && (
+                    <Box display="flex" alignItems="center" gap={1}>
+                      {/* <LocationOnIcon color="action" fontSize="small" /> */}
+                      <School color="action" fontSize="small" />
+                      <Typography variant="body2" color="text.secondary">
+                        Teachers:
                       </Typography>
                     </Box>
                   )}
@@ -168,6 +179,18 @@ export default function ClassList({ communityId }) {
                   >
                     Class Student Information
                   </Button>
+                  <Tooltip title="Coming Soon" arrow>
+                    <Button
+                      color="primary"
+                      startIcon={<Phone />}
+                      variant="outlined"
+                      fullWidth
+                      disabled
+                      onClick={() => viewClass(classItem)}
+                    >
+                      Text Your Students
+                    </Button>
+                  </Tooltip>
                 </Stack>
               </CardActions>
             </Card>

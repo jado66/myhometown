@@ -30,11 +30,11 @@ export default function ProjectFormsPage() {
   const [projectToDelete, setProjectToDelete] = useState(null);
 
   const handleProjectClick = (id) => {
-    router.push(`/mht/days-of-service/project-forms/${id}`);
+    router.push(`/mht/days-of-service/project-development-forms/${id}`);
   };
 
   const handleNewProject = () => {
-    router.push("/mht/days-of-service/project-forms/new");
+    router.push("/mht/days-of-service/project-development-forms/new");
   };
 
   const handleDeleteClick = (e, project) => {

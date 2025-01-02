@@ -49,7 +49,9 @@ const SidebarNav = ({ onClose }) => {
           <Box marginBottom={2}>
             <Typography
               onClick={() =>
-                handleLinkClick(rootUrl + "/days-of-service/project-forms")
+                handleLinkClick(
+                  rootUrl + "/days-of-service/project-development-forms"
+                )
               }
               variant="h5"
               sx={{
@@ -61,7 +63,7 @@ const SidebarNav = ({ onClose }) => {
                 cursor: "pointer",
               }}
             >
-              Project Forms
+              Project Development Forms
             </Typography>
           </Box>
         </Box>

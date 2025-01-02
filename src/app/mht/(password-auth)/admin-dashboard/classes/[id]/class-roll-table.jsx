@@ -105,7 +105,7 @@ export default function ClassRollTable({ classData, show, onClose }) {
         setIsSaving(false);
       }
     },
-    [localAttendance, classData.id, markBulkAttendance]
+    [localAttendance, classData?.id, markBulkAttendance]
   );
 
   const handleAttendanceChange = (studentId, date, checked) => {

@@ -19,11 +19,11 @@ const ClassPreview = ({ classData, noBanner }) => {
 
   return (
     <>
-      {classData.classBannerUrl && !noBanner && (
+      {classData?.classBannerUrl && !noBanner && (
         <CardMedia
           component="img"
           height="200"
-          image={classData.classBannerUrl}
+          image={classData?.classBannerUrl}
           alt={classData.title}
           onError={(e) => {
             e.target.src = "/api/placeholder/800/200";
@@ -33,12 +33,12 @@ const ClassPreview = ({ classData, noBanner }) => {
       )}
 
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        {classData.description}
+        {classData?.description}
       </Typography>
 
       <Divider sx={{ my: 2 }} />
 
-      {classData.startDate && classData.endDate && (
+      {classData?.startDate && classData?.endDate && (
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
           <CalendarToday fontSize="small" color="action" />
           <Typography variant="body2">
@@ -47,7 +47,7 @@ const ClassPreview = ({ classData, noBanner }) => {
         </Box>
       )}
 
-      {classData.meetings && (
+      {classData?.meetings && (
         <>
           <Box sx={{ mb: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
@@ -88,14 +88,14 @@ const ClassPreview = ({ classData, noBanner }) => {
         </>
       )}
 
-      {classData.location && (
+      {classData?.location && (
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
           <LocationOn fontSize="small" color="action" />
           <Typography variant="body2">{classData.location}</Typography>
         </Box>
       )}
 
-      {classData.showCapacity && (
+      {classData?.showCapacity && (
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <People fontSize="small" color="action" />
           <Typography variant="body2">

@@ -38,6 +38,15 @@ export function ProjectFormProvider({ children, id }) {
     propertyOwner: "",
     phoneNumber: "",
     area: "",
+    tasks: [
+      {
+        id: "1",
+        priority: 1,
+        todos: [""],
+        photos: [],
+        equipment: [],
+      },
+    ],
     isAddressVerified: false,
     violations: "",
     remedies: "",
@@ -171,6 +180,13 @@ export function ProjectFormProvider({ children, id }) {
       setFormData((prev) => {
         const newData = { ...prev, [field]: value };
 
+        // Special handling for tasks to ensure immediate save
+        if (field === "tasks") {
+          handleImmediateSave(newData);
+          return newData;
+        }
+
+        // Existing address handling logic
         if (field.startsWith("address")) {
           const address = [
             newData.addressStreet1,
@@ -188,6 +204,7 @@ export function ProjectFormProvider({ children, id }) {
           });
         }
 
+        // Existing propertyOwner handling
         if (field === "propertyOwner") {
           updateProject(newData.id, {
             propertyOwner: value,
@@ -195,6 +212,7 @@ export function ProjectFormProvider({ children, id }) {
           });
         }
 
+        // Use debounced save for string values, immediate save for others
         if (typeof value === "string") {
           debouncedSave(newData);
         } else {
