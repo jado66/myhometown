@@ -27,6 +27,7 @@ import {
   Search as SearchIcon,
 } from "@mui/icons-material";
 import Creatable from "react-select/creatable";
+import { components } from "react-select";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 
 const Directory = () => {
@@ -346,16 +347,22 @@ const Directory = () => {
       return;
     }
 
-    setContacts(
-      contacts.map((contact) =>
-        contact.id === id
-          ? {
-              ...contact,
-              ...editForm,
-            }
-          : contact
-      )
+    const updatedContacts = contacts.map((contact) =>
+      contact.id === id
+        ? {
+            ...contact,
+            ...editForm,
+          }
+        : contact
     );
+
+    // Update contacts first
+    setContacts(updatedContacts);
+
+    // Then clean up unused groups based on the updated contacts
+    const updatedGroups = cleanupUnusedGroups(updatedContacts);
+    setGroups(updatedGroups);
+
     setEditingId(null);
     setError("");
   };
@@ -437,6 +444,18 @@ const Directory = () => {
     return cleaned;
   };
 
+  const cleanupUnusedGroups = (currentContacts) => {
+    // Get all groups currently in use by any contact
+    const usedGroupValues = new Set(
+      currentContacts.flatMap((contact) =>
+        contact.groups.map((group) => group.value)
+      )
+    );
+
+    // Filter out any groups that aren't being used
+    return groups.filter((group) => usedGroupValues.has(group.value));
+  };
+
   const exportContacts = () => {
     const header = "First Name,Middle Name,Last Name,Phone,Email,Groups\n";
     const csv = contacts
@@ -468,8 +487,79 @@ const Directory = () => {
     }),
     menu: (provided) => ({
       ...provided,
+      position: "absolute",
+      width: "100%",
+      zIndex: 9999,
+      marginTop: 0,
+      backgroundColor: "white",
+      border: "1px solid #e2e8f0",
+      borderRadius: "6px",
+      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+      overflow: "hidden",
+    }),
+    menuList: (provided) => ({
+      ...provided,
+      padding: "4px",
+      fontSize: "14px",
+    }),
+    option: (provided, { isFocused, isSelected }) => ({
+      ...provided,
+      fontSize: "14px",
+      backgroundColor: isFocused ? "#f7fafc" : isSelected ? "#e2e8f0" : "white",
+      color: "#2d3748",
+      padding: "8px",
+      "&:active": {
+        backgroundColor: "#e2e8f0",
+      },
+    }),
+    menuPortal: (provided) => ({
+      ...provided,
       zIndex: 9999,
     }),
+  };
+
+  const selectComponents = {
+    // Reverse the menu so it displays upwards
+    MenuList: ({ children, ...props }) => (
+      <components.MenuList
+        {...props}
+        style={{
+          padding: "4px",
+          fontSize: "14px", // Smaller font size
+        }}
+      >
+        {React.Children.toArray(children).reverse()}
+      </components.MenuList>
+    ),
+    // Move create option to top
+    Menu: ({ children, ...props }) => {
+      const { options, createOption } = props.selectProps;
+      return (
+        <components.Menu
+          {...props}
+          style={{
+            backgroundColor: "white",
+            border: "1px solid #e2e8f0",
+            borderRadius: "6px",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+            overflow: "hidden",
+          }}
+        >
+          {createOption && (
+            <div
+              style={{
+                padding: "4px 8px",
+                borderBottom: "1px solid #e2e8f0",
+                fontSize: "14px", // Smaller font size
+              }}
+            >
+              {createOption}
+            </div>
+          )}
+          {children}
+        </components.Menu>
+      );
+    },
   };
 
   return (
@@ -641,6 +731,10 @@ const Directory = () => {
                         handleGroupChange(contact.id, newGroups)
                       }
                       styles={selectStyles}
+                      components={selectComponents}
+                      menuPortalTarget={document.body}
+                      noOptionsMessage={() => "Type to create new group"}
+                      menuPosition="fixed"
                       placeholder="Select or create groups"
                     />
                   ) : (
