@@ -52,6 +52,7 @@ const DEFAULT_STRUCTURAL_FIELDS = {
 
 const DEFAULT_CLASS_CONFIG = {
   title: "",
+  categoryId: "default",
   startDate: "",
   endDate: "",
   meetings: [],
@@ -107,6 +108,7 @@ export function ClassSignupProvider({
       return {
         ...DEFAULT_CLASS_CONFIG,
         ...defaultConfig,
+        categoryId: category.id,
         id: undefined, // Ensure we don't carry over the ID
       };
     } else if (classObj && !isNew) {
@@ -114,10 +116,11 @@ export function ClassSignupProvider({
       return {
         ...DEFAULT_CLASS_CONFIG,
         ...classObj,
+        categoryId: category.id,
       };
     }
     // Otherwise use defaults
-    return { ...DEFAULT_CLASS_CONFIG };
+    return { ...DEFAULT_CLASS_CONFIG, categoryId: category.id };
   });
 
   const [fieldOrder, setFieldOrder] = useState(() => {
@@ -176,6 +179,7 @@ export function ClassSignupProvider({
         const newClassConfig = {
           ...DEFAULT_CLASS_CONFIG,
           title: loadedClass.title || "",
+          categoryId: loadedClass.categoryId || "",
           description: loadedClass.description || "",
           icon: loadedClass.icon || "default",
           startDate: loadedClass.startDate || "",

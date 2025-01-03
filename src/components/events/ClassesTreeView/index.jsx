@@ -57,9 +57,14 @@ export const ClassesTreeView = ({
     return null;
   }
 
+  const classCategories = classes.map((category) => ({
+    title: category.title,
+    id: category.id,
+  }));
   const renderTreeItems = (category, index) => {
     return (
       <ClassCategory
+        classCategories={classCategories}
         key={category.id}
         isEdit={isEdit}
         onToggleExpand={(e, category, forceOpen) =>

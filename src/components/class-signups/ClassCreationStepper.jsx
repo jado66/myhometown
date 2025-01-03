@@ -39,7 +39,11 @@ const steps = [
   },
 ];
 
-export default function ClassCreationStepper({ isNew, handleClose }) {
+export default function ClassCreationStepper({
+  isNew,
+  handleClose,
+  classCategories,
+}) {
   const [activeStep, setActiveStep] = useState(0);
   const [isFieldSelectorOpen, setIsFieldSelectorOpen] = useState(false);
   const {
@@ -71,7 +75,12 @@ export default function ClassCreationStepper({ isNew, handleClose }) {
   const renderStepContent = (step) => {
     switch (step) {
       case 0:
-        return <ClassDescriptionEditor />;
+        return (
+          <ClassDescriptionEditor
+            classCategories={classCategories}
+            isNew={isNew}
+          />
+        );
 
       case 1:
         return (

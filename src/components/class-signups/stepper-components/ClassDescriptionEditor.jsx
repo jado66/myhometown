@@ -8,6 +8,10 @@ import {
   Button,
   Grid,
   Box,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import { Upload } from "@mui/icons-material";
 import { IconSelect } from "@/components/events/ClassesTreeView/IconSelect";
@@ -15,7 +19,7 @@ import { useImageUpload } from "@/hooks/use-upload-image";
 import { ClassMeetings } from "../ClassMeetings";
 import { useClassSignup } from "../ClassSignupContext";
 
-export function ClassDescriptionEditor() {
+export function ClassDescriptionEditor({ classCategories, isNew }) {
   const { classConfig, handleClassConfigChange, errors } = useClassSignup();
 
   const { handleFileUpload, loading } = useImageUpload((classBannerUrl) => {
@@ -24,18 +28,38 @@ export function ClassDescriptionEditor() {
 
   return (
     <Stack spacing={3} sx={{ py: 2 }}>
-      {/* <pre>{JSON.stringify(classConfig, null, 4)}</pre> */}
       <Typography variant="h6">Class Description</Typography>
 
       <Grid container>
-        <Grid item xs={3} sx={{ pr: 1 }}>
+        <Grid item xs={2} sx={{ pr: 1 }}>
           <IconSelect
             onSelect={(e) => handleClassConfigChange("icon", e.target.value)}
             icon={classConfig.icon}
             height="56px"
           />
         </Grid>
-        <Grid item xs={9} sx={{ pl: 1 }}>
+        <Grid item xs={3} sx={{ pl: 1 }}>
+          <FormControl fullWidth>
+            <InputLabel>Category</InputLabel>
+            <Select
+              disabled={!isNew}
+              fullWidth
+              label="Category"
+              value={classConfig.categoryId}
+              onChange={(e) =>
+                handleClassConfigChange("categoryId", e.target.value)
+              }
+            >
+              {classCategories.map((category) => (
+                <MenuItem key={category.id} value={category.id}>
+                  {category.title}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+
+        <Grid item xs={7} sx={{ pl: 1 }}>
           <TextField
             fullWidth
             label="Class Name"

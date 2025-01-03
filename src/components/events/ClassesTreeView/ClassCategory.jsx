@@ -24,6 +24,7 @@ import ClassPreview from "@/components/class-signups/stepper-components/ClassPre
 import { ClassSignup } from "./ClassSignup";
 
 export const ClassCategory = ({
+  classCategories,
   category,
   isEdit,
   onDeleteClassCategory,
@@ -118,7 +119,7 @@ export const ClassCategory = ({
       // Ensure all required fields are present
 
       const createdClass = await onCreateSubclass(
-        category.id,
+        classConfig.categoryId || category.id,
         classConfig,
         signupForm
       );
@@ -372,6 +373,7 @@ export const ClassCategory = ({
               handleClose={() => {
                 setEditingClassId(null);
               }}
+              classCategories={classCategories}
             />
           </ClassSignupProvider>
         )}
@@ -400,6 +402,7 @@ export const ClassCategory = ({
                 setAddNewClass(false);
                 setDuplicatedClassData(null);
               }}
+              classCategories={classCategories}
             />
           </ClassSignupProvider>
         )}
