@@ -166,22 +166,28 @@ export const ClassCategory = ({
       >
         {Array.isArray(category.classes) &&
           category.classes.length > 0 &&
-          category.classes.map((classObj, index) => (
-            <ClassSignup
-              key={`classname-${classObj.id}`}
-              classObj={classObj}
-              category={category}
-              editingClassId={editingClassId}
-              onUpdateSubclass={onUpdateSubclass}
-              onDeleteSubclass={onDeleteSubclass}
-              shiftUpClass={shiftUpSubclass}
-              shiftDownClass={shiftDownSubclass}
-              showIframeHelpDialog={showIframeHelpDialog}
-              isFirstClass={index === 0}
-              isLastClass={index === category.classes.length - 1}
-              isEdit={isEdit}
-            />
-          ))}
+          category.classes.map((classObj, index) => {
+            if (classObj?.v === 1) {
+              return null;
+            }
+
+            return (
+              <ClassSignup
+                key={`classname-${classObj.id}`}
+                classObj={classObj}
+                category={category}
+                editingClassId={editingClassId}
+                onUpdateSubclass={onUpdateSubclass}
+                onDeleteSubclass={onDeleteSubclass}
+                shiftUpClass={shiftUpSubclass}
+                shiftDownClass={shiftDownSubclass}
+                showIframeHelpDialog={showIframeHelpDialog}
+                isFirstClass={index === 0}
+                isLastClass={index === category.classes.length - 1}
+                isEdit={isEdit}
+              />
+            );
+          })}
 
         {isAddNewClass && (
           <CreateClassForm
