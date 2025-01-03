@@ -360,6 +360,7 @@ const Page = ({ params }) => {
         createdAt: new Date().toISOString(),
         signupForm: signupForm,
         signups: [],
+        v: 1,
       };
 
       handleStagedClassRequest(newSubclass.id, "add", newSubclass);
