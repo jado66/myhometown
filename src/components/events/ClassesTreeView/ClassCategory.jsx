@@ -245,97 +245,96 @@ export const ClassCategory = ({
         {Array.isArray(category.classes) &&
           category.classes.length > 0 &&
           category.classes.map((classObj, index) => {
-            if (
-              classObj.contentType === "form" ||
-              classObj.contentType === "iframe"
-            ) {
-              return null;
-            } else {
-              const formattedClassData = {
-                ...classObj,
-                schedule:
-                  classObj.meetingDays?.map((day) => ({
-                    day,
-                    time: formatClassTime(classObj.startTime, classObj.endTime),
-                  })) || [],
-                location: classObj.location || "",
-                capacity: classObj.capacity || "",
-                showCapacity: classObj.showCapacity || false,
-              };
+            const formattedClassData = {
+              ...classObj,
+              schedule:
+                classObj.meetingDays?.map((day) => ({
+                  day,
+                  time: formatClassTime(classObj.startTime, classObj.endTime),
+                })) || [],
+              location: classObj.location || "",
+              capacity: classObj.capacity || "",
+              showCapacity: classObj.showCapacity || false,
+            };
 
-              return (
-                <Accordion>
-                  <AccordionSummary
-                    expandIcon={<ExpandMore />}
-                    onMouseEnter={() => setHoverClass(classObj.id)}
-                    onMouseLeave={() => hideHoverClass(null)}
+            return (
+              <Accordion>
+                <AccordionSummary
+                  expandIcon={<ExpandMore />}
+                  onMouseEnter={() => setHoverClass(classObj.id)}
+                  onMouseLeave={() => hideHoverClass(null)}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      width: "100%",
+                    }}
                   >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        width: "100%",
-                      }}
-                    >
-                      {classObj.icon && ExampleIcons[classObj.icon] && (
-                        <Box sx={{ mr: 2 }}>
-                          {React.cloneElement(ExampleIcons[classObj.icon], {
-                            sx: { height: 24, width: 24 },
-                          })}
-                        </Box>
-                      )}
-                      <Typography>{classObj.title}</Typography>
-                      <Box sx={{ flexGrow: 1 }} />
-                      {isEdit && hoverClass === classObj.id && (
-                        <ClassDropdownActions
-                          classObj={classObj}
-                          categoryId={category?.id}
-                          onEditClass={() => onEditSubclass(classObj.id)}
-                          onDuplicateClass={() =>
-                            handleDuplicateClass(classObj)
-                          }
-                          isFirstClass={index === 0}
-                          isLastClass={index === category.classes.length - 1}
-                          shiftUpClass={shiftUpSubclass}
-                          shiftDownClass={shiftDownSubclass}
-                        />
-                      )}
-                    </Box>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    {openClassSignup === classObj.id ? (
-                      <ClassSignupProvider
-                        key={classObj.id}
-                        category={category}
-                        classObj={classObj}
-                        onClassConfigChange={() => alert("not in edit mode")}
-                        onCreateSubclass={() => alert("not in edit mode")}
-                        onEditSubclass={() => alert("not in edit mode")}
-                        onDeleteSubclass={() => alert("not in edit mode")}
-                      >
-                        <ViewClassSignupForm classData={classObj} />
-                      </ClassSignupProvider>
-                    ) : (
-                      <>
-                        <ClassPreview classData={formattedClassData} />
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          fullWidth
-                          sx={{ mt: 2 }}
-                          onClick={() => setOpenClassSignup(classObj.id)}
-                          disabled={isEdit}
-                        >
-                          {isEdit
-                            ? "Sign Up (Not available in edit mode)"
-                            : "Sign Up"}
-                        </Button>
-                      </>
+                    {classObj.icon && ExampleIcons[classObj.icon] && (
+                      <Box sx={{ mr: 2 }}>
+                        {React.cloneElement(ExampleIcons[classObj.icon], {
+                          sx: { height: 24, width: 24 },
+                        })}
+                      </Box>
                     )}
-                  </AccordionDetails>
-                </Accordion>
-              );
-            }
+                    <Typography>{classObj.title}</Typography>
+                    <Box sx={{ flexGrow: 1 }} />
+                    {isEdit && hoverClass === classObj.id && (
+                      <ClassDropdownActions
+                        classObj={classObj}
+                        categoryId={category?.id}
+                        onEditClass={() => onEditSubclass(classObj.id)}
+                        onDuplicateClass={() => handleDuplicateClass(classObj)}
+                        isFirstClass={index === 0}
+                        isLastClass={index === category.classes.length - 1}
+                        shiftUpClass={shiftUpSubclass}
+                        shiftDownClass={shiftDownSubclass}
+                      />
+                    )}
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  {classObj?.v === 1 ? (
+                    <>
+                      {openClassSignup === classObj.id ? (
+                        <ClassSignupProvider
+                          key={classObj.id}
+                          category={category}
+                          classObj={classObj}
+                          onClassConfigChange={() => alert("not in edit mode")}
+                          onCreateSubclass={() => alert("not in edit mode")}
+                          onEditSubclass={() => alert("not in edit mode")}
+                          onDeleteSubclass={() => alert("not in edit mode")}
+                        >
+                          <ViewClassSignupForm classData={classObj} />
+                        </ClassSignupProvider>
+                      ) : (
+                        <>
+                          <ClassPreview classData={formattedClassData} />
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            fullWidth
+                            sx={{ mt: 2 }}
+                            onClick={() => setOpenClassSignup(classObj.id)}
+                            disabled={isEdit}
+                          >
+                            {isEdit
+                              ? "Sign Up (Not available in edit mode)"
+                              : "Sign Up"}
+                          </Button>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <Typography variant="h6">Old Class Data</Typography>
+                    </>
+                  )}
+                </AccordionDetails>
+              </Accordion>
+            );
           })}
 
         {editingClassId && (
