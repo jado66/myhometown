@@ -13,7 +13,7 @@ import { useLoadedClassesContext } from "@/hooks/use-loaded-classes-context";
 import Loading from "@/components/util/Loading";
 import { useClasses } from "@/hooks/use-classes";
 import { toast } from "react-toastify";
-import { Box, Divider, Typography } from "@mui/material";
+import { Box, Button, Divider, Typography } from "@mui/material";
 
 const ClassSignupContext = createContext(null);
 
@@ -502,6 +502,17 @@ export function ClassSignupProvider({
     return (
       <div className="flex items-center justify-center p-4 text-red-500">
         Error loading class: {loadError}
+        {isEditMode && (
+          <Button
+            variant="contained"
+            color="error"
+            onClick={onDeleteSubclass}
+            sx={{ ml: 2 }}
+            size="small"
+          >
+            Delete Class
+          </Button>
+        )}
       </div>
     );
   }
