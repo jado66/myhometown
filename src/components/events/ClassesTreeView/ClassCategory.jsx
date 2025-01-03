@@ -64,6 +64,14 @@ export const ClassCategory = ({
   const [duplicatedClassData, setDuplicatedClassData] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
 
+  // Check if the icon exists before attempting to clone it
+  let IconWithProps = null;
+
+  if (category.icon && ExampleIcons[category.icon]) {
+    IconWithProps = React.cloneElement(ExampleIcons[category.icon], {
+      sx: { height: 35, width: 35 },
+    });
+  }
   const { loadClass } = useLoadedClassesContext();
 
   const [hoverClass, setHoverClass] = useState(null);
