@@ -59,9 +59,14 @@ export const ClassCategory = ({
     }
   };
 
-  const IconWithProps = React.cloneElement(ExampleIcons[category.icon], {
-    sx: { height: 35, width: 35 },
-  });
+  // Check if the icon exists before attempting to clone it
+  let IconWithProps = null;
+
+  if (category.icon && ExampleIcons[category.icon]) {
+    IconWithProps = React.cloneElement(ExampleIcons[category.icon], {
+      sx: { height: 35, width: 35 },
+    });
+  }
 
   const isEditing = editingCategoryId === category.id;
 
@@ -215,6 +220,7 @@ export const ClassCategory = ({
           ) : (
             <div style={{ display: "flex", alignItems: "center" }}>
               {IconWithProps}
+
               <Typography sx={{ marginLeft: "1em" }} variant="h5">
                 {category.title}
               </Typography>

@@ -30,11 +30,24 @@ export const RecipientsList = ({ selectedRecipients, contacts }) => {
           Array.isArray(contact.groups) &&
           contact.groups.some((g) => g && g.value === groupName)
       )
-      .map((contact) => ({
-        value: contact.phone || "",
-        label: `${contact.name || "Unknown"} (${contact.phone || "No Phone"})`,
-        fromGroup: groupName,
-      }));
+      .map((contact) => {
+        const { firstName, middleName, lastName, phone } = contact;
+
+        // Construct the full name with optional middle and last names.
+        const fullName = [
+          firstName || "Unknown",
+          middleName || "",
+          lastName || "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        return {
+          value: phone || "",
+          label: `${fullName} (${phone || "No Phone"})`,
+          fromGroup: groupName,
+        };
+      });
   };
 
   // Process recipients and track duplicates with their order of appearance
