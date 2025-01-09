@@ -335,18 +335,6 @@ const Page = ({ params }) => {
     signupForm
   ) => {
     try {
-      console.log(
-        JSON.stringify(
-          {
-            classCategoryId,
-            basicClassInfo,
-            signupForm,
-          },
-          null,
-          4
-        )
-      );
-
       if (!signupForm || !signupForm.formConfig || !signupForm.fieldOrder) {
         throw new Error("Missing required signup form configuration");
       }
@@ -388,30 +376,16 @@ const Page = ({ params }) => {
 
   const onUpdateSubclass = (classCategoryId, basicClassInfo, classData) => {
     try {
-      alert(
-        JSON.stringify(
-          {
-            classCategoryId,
-            basicClassInfo,
-            classData,
-          },
-          null,
-          4
-        )
-      );
-
       if (!classCategoryId || !basicClassInfo.id) {
         throw new Error("Missing required class information");
       }
-
-      // Create the class data merging basic info and form data
-      // alert(JSON.stringify(community, null, 4));
 
       const updatedClass = {
         ...basicClassInfo,
         communityId: community._id,
         signupForm: classData,
         categoryId: classCategoryId,
+        v: 1,
       };
 
       // Stage the update request
@@ -685,7 +659,7 @@ const Page = ({ params }) => {
         // Stage the delete request
         handleStagedClassRequest(subclassId, "delete", null);
 
-        closeStepperFunction();
+        if (closeStepperFunction) closeStepperFunction();
         // Update the UI state
         setCommunityData((prevState) => ({
           ...prevState,

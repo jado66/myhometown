@@ -280,7 +280,9 @@ export const ClassCategory = ({
                           })}
                         </Box>
                       )}
-                      <Typography>{classObj.title}</Typography>
+                      <Typography>
+                        {classObj.title} - V.{classObj.v}
+                      </Typography>
                       <Box sx={{ flexGrow: 1 }} />
                       {isEdit && hoverClass === classObj.id && (
                         <ClassDropdownActions
@@ -333,20 +335,22 @@ export const ClassCategory = ({
               );
             else
               return (
-                <ClassSignup
-                  key={`classname-${classObj.id}`}
-                  classObj={classObj}
-                  category={category}
-                  editingClassId={editingClassId}
-                  onUpdateSubclass={onUpdateSubclass}
-                  onDeleteSubclass={onDeleteSubclass}
-                  shiftUpClass={shiftUpSubclass}
-                  shiftDownClass={shiftDownSubclass}
-                  showIframeHelpDialog={showIframeHelpDialog}
-                  isFirstClass={index === 0}
-                  isLastClass={index === category.classes.length - 1}
-                  isEdit={isEdit}
-                />
+                <>
+                  <ClassSignup
+                    key={`classname-${classObj.id}`}
+                    classObj={classObj}
+                    category={category}
+                    editingClassId={editingClassId}
+                    onUpdateSubclass={onUpdateSubclass}
+                    onDeleteSubclass={onDeleteSubclass}
+                    shiftUpClass={shiftUpSubclass}
+                    shiftDownClass={shiftDownSubclass}
+                    showIframeHelpDialog={showIframeHelpDialog}
+                    isFirstClass={index === 0}
+                    isLastClass={index === category.classes.length - 1}
+                    isEdit={isEdit}
+                  />
+                </>
               );
           })}
 

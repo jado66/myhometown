@@ -392,6 +392,23 @@ export function ClassSignupProvider({
     setFieldOrder(newOrder);
   };
 
+  const handleBulkFieldUpdate = (desiredFields) => {
+    // Create a new config with only the desired fields
+    const newConfig = {};
+    desiredFields.forEach((field) => {
+      if (AVAILABLE_FIELDS[field]) {
+        // If field exists in current config, keep its current settings
+        newConfig[field] = formConfig[field] || {
+          ...AVAILABLE_FIELDS[field],
+          visible: true,
+        };
+      }
+    });
+
+    setFormConfig(newConfig);
+    setFieldOrder(desiredFields);
+  };
+
   const handleRemoveField = (fieldToRemove) => {
     const newConfig = { ...formConfig };
     delete newConfig[fieldToRemove];
@@ -530,6 +547,7 @@ export function ClassSignupProvider({
     handleFormChange,
     handleSubmit,
     onDragEnd,
+    handleBulkFieldUpdate,
     DAYS_OF_WEEK,
   };
 

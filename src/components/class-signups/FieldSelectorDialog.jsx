@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Button,
   Checkbox,
@@ -13,67 +13,55 @@ import {
 } from "@mui/material";
 import { useClassSignup } from "./ClassSignupContext";
 import { AVAILABLE_FIELDS } from "./AvailableFields";
-
 export const FieldSelectorDialog = ({ isOpen, handleClose }) => {
-  const { fieldOrder, handleAddFields, handleRemoveField } = useClassSignup();
+  const { fieldOrder, handleBulkFieldUpdate } = useClassSignup();
 
-  // Track all selected fields, including existing ones
-  const [selectedFields, setSelectedFields] = useState([]);
+  // Track selected fields with a ref to maintain latest state
+  const [selectedFields, setSelectedFields] = useState(new Set());
 
-  // Initialize selected fields with existing fields when dialog opens
+  // Reset selection state whenever dialog opens
   useEffect(() => {
-    setSelectedFields([...fieldOrder]);
-  }, [fieldOrder]);
+    if (isOpen) {
+      setSelectedFields(new Set(fieldOrder));
+    }
+  }, [isOpen, fieldOrder]);
 
-  // Group all available fields by category
-  const allFieldsByCategory = Object.entries(AVAILABLE_FIELDS).reduce(
-    (acc, [key, value]) => {
+  // Group available fields by category (memoized to prevent unnecessary recalculations)
+  const fieldsByCategory = useMemo(() => {
+    return Object.entries(AVAILABLE_FIELDS).reduce((acc, [key, value]) => {
       if (!acc[value.category]) {
         acc[value.category] = [];
       }
       acc[value.category].push({ key, ...value });
       return acc;
-    },
-    {}
-  );
+    }, {});
+  }, []);
 
-  const handleSave = () => {
-    const fieldsToAdd = selectedFields.filter(
-      (field) => !fieldOrder.includes(field)
-    );
-    const fieldsToRemove = fieldOrder.filter(
-      (field) => !selectedFields.includes(field)
-    );
+  const handleToggleField = useCallback((fieldKey) => {
+    setSelectedFields((prev) => {
+      const newSelection = new Set(prev);
+      if (newSelection.has(fieldKey)) {
+        newSelection.delete(fieldKey);
+      } else {
+        newSelection.add(fieldKey);
+      }
+      return newSelection;
+    });
+  }, []);
 
-    if (fieldsToAdd.length > 0) {
-      handleAddFields(fieldsToAdd);
-    }
-    if (fieldsToRemove.length > 0) {
-      fieldsToRemove.forEach((field) => handleRemoveField(field));
-    }
-
+  const handleSave = useCallback(() => {
+    // Convert sets to arrays for the bulk update
+    const desiredFields = [...selectedFields];
+    handleBulkFieldUpdate(desiredFields);
     handleClose();
-  };
+  }, [selectedFields, handleBulkFieldUpdate, handleClose]);
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      maxWidth="md"
-      fullWidth
-      sx={{
-        "& .MuiDialog-paper": {
-          margin: 0,
-          position: "absolute",
-          top: "50%",
-          transform: "translateY(-50%)",
-        },
-      }}
-    >
+    <Dialog open={isOpen} onClose={handleClose} maxWidth="md" fullWidth>
       <DialogTitle>Manage Form Fields</DialogTitle>
       <DialogContent>
         <Box sx={{ mt: 2 }}>
-          {Object.entries(allFieldsByCategory).map(([category, fields]) => (
+          {Object.entries(fieldsByCategory).map(([category, fields]) => (
             <Box key={category} sx={{ mb: 3 }}>
               <Typography
                 variant="subtitle1"
@@ -93,16 +81,8 @@ export const FieldSelectorDialog = ({ isOpen, handleClose }) => {
                     key={field.key}
                     control={
                       <Checkbox
-                        checked={selectedFields.includes(field.key)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedFields([...selectedFields, field.key]);
-                          } else {
-                            setSelectedFields(
-                              selectedFields.filter((f) => f !== field.key)
-                            );
-                          }
-                        }}
+                        checked={selectedFields.has(field.key)}
+                        onChange={() => handleToggleField(field.key)}
                       />
                     }
                     label={
@@ -122,7 +102,7 @@ export const FieldSelectorDialog = ({ isOpen, handleClose }) => {
         <Button
           onClick={handleSave}
           variant="contained"
-          disabled={selectedFields.length === 0}
+          disabled={selectedFields.size === 0}
         >
           Save Changes
         </Button>
