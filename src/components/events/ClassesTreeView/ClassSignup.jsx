@@ -88,8 +88,6 @@ export const ClassSignup = ({
   };
 
   const renderContent = () => {
-    console.log("Rendering content. Current classObj:", localClassObj);
-
     if (editingClassId === localClassObj.id) {
       return (
         <CreateClassForm

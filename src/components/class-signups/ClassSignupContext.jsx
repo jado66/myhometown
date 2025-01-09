@@ -218,7 +218,6 @@ export function ClassSignupProvider({
 
   const validateClassConfig = () => {
     const newErrors = {};
-    const now = new Date();
     const startDate = new Date(classConfig.startDate);
     const endDate = new Date(classConfig.endDate);
 
