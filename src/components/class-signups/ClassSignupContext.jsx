@@ -240,14 +240,6 @@ export function ClassSignupProvider({
     // Date validation
     if (!classConfig.startDate) {
       newErrors.startDate = "Start date is required";
-    } else {
-      try {
-        if (startDate < now) {
-          newErrors.startDate = "Start date must be in the future";
-        }
-      } catch (e) {
-        newErrors.startDate = "Invalid start date format";
-      }
     }
 
     if (!classConfig.endDate) {
