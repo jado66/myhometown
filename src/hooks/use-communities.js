@@ -11,6 +11,20 @@ export default function useCommunities(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  async function fetchCommunitiesByCityId(cityId) {
+    const response = await fetch("/api/communities/by-city", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        cityId: cityId,
+      }),
+    });
+
+    return response.json();
+  }
+
   useEffect(() => {
     async function fetchAllCommunities() {
       try {
@@ -187,6 +201,7 @@ export default function useCommunities(
     communities,
     communitySelectOptions,
     hasLoaded,
+    fetchCommunitiesByCityId,
     handleAddCommunity,
     handleEditCommunity,
     handleDeleteCommunity,

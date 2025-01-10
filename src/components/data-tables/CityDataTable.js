@@ -3,10 +3,15 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
+import { Typography, Chip, Box, Button, CircularProgress } from "@mui/material";
+import { generateFullReport } from "@/util/csv-utils";
+import GenerateReportDialog from "../admin/GenerateReportsDialogue";
 
-import { Typography, Chip, Box, Button } from "@mui/material";
+const CityDataTable = ({ data, onAddClick, onRowClick, getCommunity }) => {
+  const [openReportDialog, setOpenReportDialog] = useState(false);
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-const CityDataTable = ({ data, onAddClick, onRowClick }) => {
   const getStoredState = (key, defaultValue) => {
     try {
       const savedState = localStorage.getItem(key);
@@ -17,14 +22,10 @@ const CityDataTable = ({ data, onAddClick, onRowClick }) => {
     }
   };
 
-  const exportToCSV = () => {
-    alert("Exporting to CSV is not implemented yet.");
-  };
-
   const [columnSizing, setColumnSizing] = useState(
     getStoredState("tableColumnSizes", {
       _id: 200,
-      name: 200, // Increased size for combined name
+      name: 200,
       status: 250,
       managers: 140,
       communities: 150,
@@ -58,7 +59,6 @@ const CityDataTable = ({ data, onAddClick, onRowClick }) => {
         accessorKey: "name",
         header: "Name",
         size: columnSizing.name,
-        // Optional: Add a custom cell renderer if you want to style the name
         Cell: ({ row }) => (
           <Typography variant="body2">{row.original.name}</Typography>
         ),
@@ -121,25 +121,36 @@ const CityDataTable = ({ data, onAddClick, onRowClick }) => {
         header: "ID",
         size: 200,
       },
-      // Buttons for actions
-      // {
-      //   accessorKey: "actions",
-      //   header: "Actions",
-      //   size: 150,
-      //   Cell: ({ row }) => (
-      //     <Box sx={{ display: "flex", gap: 1 }}>
-      //       <Button
-      //         variant="outlined"
-      //         color="secondary"
-      //         size="small"
-      //         onClick={() => alert(`Edit ${row.original.name}`)}
-      //       >
-      //         <Edit sx={{ mr: 1 }} />
-      //         Edit City
-      //       </Button>
-      //     </Box>
-      //   ),
-      // },
+      {
+        accessorKey: "actions",
+        header: "Actions",
+        size: 200,
+        enableResizing: false,
+        enableSorting: false,
+        Cell: ({ row }) => (
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedCity(row.original);
+                setOpenReportDialog(true);
+              }}
+              disabled={isGenerating}
+            >
+              {isGenerating && selectedCity?._id === row.original._id ? (
+                <>
+                  <CircularProgress size={20} sx={{ mr: 1 }} />
+                  Generating...
+                </>
+              ) : (
+                "Generate Report"
+              )}
+            </Button>
+          </Box>
+        ),
+      },
     ],
     [columnSizing]
   );
@@ -186,9 +197,41 @@ const CityDataTable = ({ data, onAddClick, onRowClick }) => {
     saveState("tableDensity", newDensity);
   };
 
+  const handleGenerateReport = async (includedCommunities) => {
+    if (!selectedCity) return;
+
+    alert("selectedCity: " + selectedCity);
+    setIsGenerating(true);
+    try {
+      const csv = await generateFullReport(
+        selectedCity,
+        includedCommunities,
+        getCommunity
+      );
+
+      // Create and trigger download
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const downloadButton = document.createElement("a");
+      downloadButton.href = url;
+      downloadButton.download = `${selectedCity.name}-detailed-report.csv`;
+      document.body.appendChild(downloadButton);
+      downloadButton.click();
+      document.body.removeChild(downloadButton);
+      URL.revokeObjectURL(url);
+
+      setOpenReportDialog(false);
+    } catch (error) {
+      console.error("Error generating report:", error);
+      alert("Error generating report. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const table = useMaterialReactTable({
     columns,
-    data: data, // Use the processed data instead of raw data
+    data: data,
     defaultColumn: {
       maxSize: 400,
       minSize: 80,
@@ -198,6 +241,7 @@ const CityDataTable = ({ data, onAddClick, onRowClick }) => {
     enablePagination: true,
     enableColumnVisibility: true,
     enableDensityToggle: true,
+    enableRowSelection: false,
     columnResizeMode: "onChange",
     paginationDisplayMode: "pages",
     onColumnSizingChange: handleColumnSizingChange,
@@ -211,22 +255,6 @@ const CityDataTable = ({ data, onAddClick, onRowClick }) => {
 
     renderTopToolbarCustomActions: () => (
       <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-        {/* <Button
-          color="primary"
-          onClick={onAddClick}
-          variant="contained"
-          startIcon={<AddIcon />}
-        >
-          Add User
-        </Button> */}
-        {/* <Button
-          color="primary"
-          onClick={exportToCSV}
-          variant="outlined"
-          startIcon={<ImportExport />}
-        >
-          Export Table
-        </Button> */}
         <Typography variant="body2" color="text.secondary">
           Total Cities: {data.length}
         </Typography>
@@ -250,6 +278,13 @@ const CityDataTable = ({ data, onAddClick, onRowClick }) => {
   return (
     <>
       <MaterialReactTable table={table} />
+      <GenerateReportDialog
+        open={openReportDialog}
+        handleClose={() => setOpenReportDialog(false)}
+        onSubmit={handleGenerateReport}
+        city={selectedCity}
+        isGenerating={isGenerating}
+      />
     </>
   );
 };

@@ -23,6 +23,7 @@ import AddEditCityDialog from "@/components/data-tables/AddEditCityDialog";
 import { useRouter } from "next/navigation";
 import useManageCities from "@/hooks/use-manage-cities";
 import { useUser } from "@/hooks/use-user";
+import { mkConfig, generateCsv, download } from "export-to-csv";
 
 export default function Management() {
   const theme = useTheme();
@@ -373,13 +374,47 @@ function AddCityStatsForm({ city, updateCityStats }) {
   );
 }
 
-import { faker } from "@faker-js/faker";
-
 export function SingleCity({ city, goToEditCity, handleEditCity }) {
   const theme = useTheme();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { getCommunity } = useCommunities();
+
+  const [openReportDialog, setOpenReportDialog] = useState(false);
+
+  const handleCloseReportDialog = () => {
+    setOpenReportDialog(false);
+  };
 
   const updateCityStats = (cityWithNewStats) => {
     handleEditCity(city, cityWithNewStats);
+  };
+
+  const handleGenerateReport = async (includedCommunities) => {
+    alert("Generating report for " + city.name);
+    setIsGenerating(true);
+    try {
+      const csv = await generateFullReport(
+        city,
+        includedCommunities,
+        getCommunity
+      );
+
+      // Create and trigger download
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const downloadButton = document.createElement("a");
+      downloadButton.href = url;
+      downloadButton.download = `${city.name}-detailed-report.csv`;
+      document.body.appendChild(downloadButton);
+      downloadButton.click();
+      document.body.removeChild(downloadButton);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error generating report:", error);
+      alert("Error generating report. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const communityCardSize = city?.communities?.length
@@ -480,7 +515,33 @@ export function SingleCity({ city, goToEditCity, handleEditCity }) {
 
       <Divider width="100%" sx={{ mx: "auto", mb: 3 }} />
 
-      <EventsCalendar events={city.events} onSelectEvent={() => {}} />
+      <Typography
+        variant="h4"
+        component="h2"
+        color="primary"
+        textAlign="center"
+        gutterBottom
+      >
+        Reports
+      </Typography>
+
+      <Button
+        variant="outlined"
+        color="primary"
+        size="large"
+        onClick={() => setOpenReportDialog(true)}
+        disabled={isGenerating}
+      >
+        {isGenerating ? "Generating Report..." : "Generate Complete Report"}
+      </Button>
+
+      <GenerateReportDialog
+        open={openReportDialog}
+        handleClose={handleCloseReportDialog}
+        city={city}
+        onSubmit={handleGenerateReport}
+      />
+      {/* <EventsCalendar events={city.events} onSelectEvent={() => {}} /> */}
 
       {/* Form for adding volunteer hours */}
       {/* <Grid item xs={12} mt={4}>
@@ -496,6 +557,9 @@ import { EventsCalendar } from "@/components/events/EventsCalendar";
 import { CommunityCard } from "@/components/CommunityCard";
 import { NotResponsiveAlert } from "@/util/NotResponsiveAlert";
 import CityDataTable from "@/components/data-tables/CityDataTable";
+import GenerateReportDialog from "@/components/admin/GenerateReportsDialogue";
+import useCommunities from "@/hooks/use-communities";
+import { generateFullReport } from "@/util/csv-utils";
 
 export function MultipleCities({
   cities,
@@ -504,11 +568,14 @@ export function MultipleCities({
   setCityToEdit,
   toggleVisibility,
 }) {
+  const { getCommunity } = useCommunities();
+
   return (
     <CityDataTable
       id="city"
       data={cities}
       onRowClick={(row) => setCityToEdit(row)}
+      getCommunity={getCommunity}
     />
   );
 }
