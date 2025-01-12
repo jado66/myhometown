@@ -9,11 +9,12 @@ import {
   Typography,
   CircularProgress,
   Container,
+  Divider,
 } from "@mui/material";
 import { supabase } from "@/util/supabase";
 import { useUser } from "@/hooks/use-user";
 
-export default function FeatureRequestForm() {
+export default function BugReportForm() {
   const { user } = useUser();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -31,9 +32,7 @@ export default function FeatureRequestForm() {
         const { data, error } = await supabase.storage
           .from("user_uploads")
           .upload(
-            `feature_requests/${user?.id || "guest"}/${Date.now()}-${
-              image.name
-            }`,
+            `bug_reports/${user?.id || "guest"}/${Date.now()}-${image.name}`,
             image
           );
 
@@ -41,7 +40,7 @@ export default function FeatureRequestForm() {
         imageUrl = data.path;
       }
 
-      const { error } = await supabase.from("feature_requests").insert({
+      const { error } = await supabase.from("bug_reports").insert({
         user_id: user?.id,
         title,
         description,
@@ -52,8 +51,8 @@ export default function FeatureRequestForm() {
 
       router.push("/thank-you");
     } catch (error) {
-      console.error("Error submitting feature request:", error);
-      alert("Failed to submit feature request. Please try again.");
+      console.error("Error submitting bug report:", error);
+      alert("Failed to submit bug report. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -69,7 +68,7 @@ export default function FeatureRequestForm() {
           fontWeight: "medium",
         }}
       >
-        Submit a Feature Request
+        Submit a Bug report
       </Typography>
 
       <Box
@@ -217,10 +216,11 @@ export default function FeatureRequestForm() {
               Submitting...
             </>
           ) : (
-            "Submit Feature Request"
+            "Submit Bug report"
           )}
         </Button>
       </Box>
+      <Divider sx={{ mt: 3 }} />
     </Container>
   );
 }

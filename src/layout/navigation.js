@@ -69,10 +69,20 @@ export const pages = () => {
           title: "Request a Feature",
           href: rootUrl + "/feature-request",
         },
+      ],
+    },
+    {
+      title: "Development Tools",
+      id: "landing-pages",
+      requiredPermission: "administrator",
+      pages: [
         {
           title: "Impersonate User",
           href: rootUrl + "/admin-dashboard/impersonate",
-          requiredPermission: "administrator",
+        },
+        {
+          title: "Bugs and Feature Requests",
+          href: rootUrl + "/admin-dashboard/bugs-and-features",
         },
       ],
     },
