@@ -19,7 +19,13 @@ import { useImageUpload } from "@/hooks/use-upload-image";
 import { FIELD_TYPES } from "./FieldTypes";
 import { Upload } from "@mui/icons-material";
 
-export const FieldEditor = ({ field, config = {}, onUpdate, onRemove }) => {
+export const FieldEditor = ({
+  field,
+  isAlwaysRequired,
+  config = {},
+  onUpdate,
+  onRemove,
+}) => {
   const [isHelpTextExpanded, setIsHelpTextExpanded] = useState(false);
   const { handleFileUpload, loading } = useImageUpload((url) => {
     onUpdate(field, { ...config, url });
@@ -135,6 +141,7 @@ export const FieldEditor = ({ field, config = {}, onUpdate, onRemove }) => {
                   size="small"
                 />
               }
+              disabled={isAlwaysRequired}
               label="Required"
             />
             <FormControlLabel
@@ -219,6 +226,7 @@ export const FieldEditor = ({ field, config = {}, onUpdate, onRemove }) => {
             color="error"
             size="small"
             onClick={() => onRemove(field)}
+            disabled={isAlwaysRequired}
           >
             Remove
           </Button>

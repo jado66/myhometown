@@ -23,7 +23,7 @@ export default function ClassPage({ params }) {
 
   return (
     <Container maxWidth="xl">
-      <Typography variant="h4" component="h1" gutterBottom>
+      <Typography variant="h4" component="h1" gutterBottom sx={{ my: 3 }}>
         {community?.name} Community Classes
       </Typography>
       <Suspense fallback={<div>Loading...</div>}>

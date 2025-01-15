@@ -13,16 +13,26 @@ import {
 } from "@mui/material";
 import { useClassSignup } from "./ClassSignupContext";
 import { AVAILABLE_FIELDS } from "./AvailableFields";
+
+// Define required fields (same as in FormBuilder)
+const REQUIRED_FIELDS = [
+  "firstName",
+  "lastName",
+  "phone",
+  "communicationConsent",
+]; // adjust these field names as needed
+
 export const FieldSelectorDialog = ({ isOpen, handleClose }) => {
   const { fieldOrder, handleBulkFieldUpdate } = useClassSignup();
 
   // Track selected fields with a ref to maintain latest state
   const [selectedFields, setSelectedFields] = useState(new Set());
 
-  // Reset selection state whenever dialog opens
+  // Reset selection state whenever dialog opens, ensuring required fields are always selected
   useEffect(() => {
     if (isOpen) {
-      setSelectedFields(new Set(fieldOrder));
+      const initialSelection = new Set([...fieldOrder, ...REQUIRED_FIELDS]);
+      setSelectedFields(initialSelection);
     }
   }, [isOpen, fieldOrder]);
 
@@ -38,6 +48,11 @@ export const FieldSelectorDialog = ({ isOpen, handleClose }) => {
   }, []);
 
   const handleToggleField = useCallback((fieldKey) => {
+    // Prevent toggling required fields
+    if (REQUIRED_FIELDS.includes(fieldKey)) {
+      return;
+    }
+
     setSelectedFields((prev) => {
       const newSelection = new Set(prev);
       if (newSelection.has(fieldKey)) {
@@ -50,8 +65,9 @@ export const FieldSelectorDialog = ({ isOpen, handleClose }) => {
   }, []);
 
   const handleSave = useCallback(() => {
-    // Convert sets to arrays for the bulk update
-    const desiredFields = [...selectedFields];
+    // Ensure required fields are included in the final selection
+    const finalSelection = new Set([...selectedFields, ...REQUIRED_FIELDS]);
+    const desiredFields = [...finalSelection];
     handleBulkFieldUpdate(desiredFields);
     handleClose();
   }, [selectedFields, handleBulkFieldUpdate, handleClose]);
@@ -76,22 +92,40 @@ export const FieldSelectorDialog = ({ isOpen, handleClose }) => {
                   gap: 1,
                 }}
               >
-                {fields.map((field) => (
-                  <FormControlLabel
-                    key={field.key}
-                    control={
-                      <Checkbox
-                        checked={selectedFields.has(field.key)}
-                        onChange={() => handleToggleField(field.key)}
-                      />
-                    }
-                    label={
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Typography>{field.originalLabel}</Typography>
-                      </Box>
-                    }
-                  />
-                ))}
+                {fields.map((field) => {
+                  const isRequired = REQUIRED_FIELDS.includes(field.key);
+                  return (
+                    <FormControlLabel
+                      key={field.key}
+                      control={
+                        <Checkbox
+                          checked={selectedFields.has(field.key) || isRequired}
+                          onChange={() => handleToggleField(field.key)}
+                          disabled={isRequired}
+                        />
+                      }
+                      label={
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Typography>
+                            {field.originalLabel}
+                            {isRequired && (
+                              <Typography
+                                component="span"
+                                sx={{
+                                  ml: 1,
+                                  color: "text.secondary",
+                                  fontSize: "0.875rem",
+                                }}
+                              >
+                                (Required)
+                              </Typography>
+                            )}
+                          </Typography>
+                        </Box>
+                      }
+                    />
+                  );
+                })}
               </Box>
             </Box>
           ))}

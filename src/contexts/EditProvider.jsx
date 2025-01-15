@@ -53,7 +53,7 @@ const EditProvider = ({ children }) => {
           case "add":
             result = await createClass(request.data);
             break;
-          case "update":
+          case "edit":
             result = await updateClass(id, request.data);
             break;
           case "delete":

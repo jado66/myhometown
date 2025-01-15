@@ -106,7 +106,7 @@ export const LoadedClassesProvider = ({
 
   return (
     <LoadedClassesContext.Provider value={value}>
-      <JsonViewer data={loadedClasses} title="Loaded Class" />
+      {/* <JsonViewer data={loadedClasses} title="Loaded Class" /> */}
       {children}
     </LoadedClassesContext.Provider>
   );

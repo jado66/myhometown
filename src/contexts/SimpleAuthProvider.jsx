@@ -42,7 +42,7 @@ export const SimpleAuthProvider = ({ children }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (password === "MHT2024!") {
+    if (password === "MHT2025!") {
       setIsAuthenticated(true);
       localStorage.setItem("auth", JSON.stringify({ timestamp: Date.now() }));
       setError("");

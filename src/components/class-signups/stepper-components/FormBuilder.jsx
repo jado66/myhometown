@@ -17,6 +17,9 @@ import { StructuralElementAdder } from "../StructuralElementAdder";
 import { useImageUpload } from "@/hooks/use-upload-image";
 import { useClassSignup } from "../ClassSignupContext";
 
+// Define the fields that should always be required
+const REQUIRED_FIELDS = ["firstName", "lastName", "phone"]; // adjust these field names as needed
+
 export function FormBuilder({ showFieldSelector }) {
   const {
     fieldOrder,
@@ -26,6 +29,17 @@ export function FormBuilder({ showFieldSelector }) {
     onDragEnd,
     handleAddElement,
   } = useClassSignup();
+
+  // Modify the handleFieldUpdate to prevent changing required status for certain fields
+  const handleFieldUpdateWithRequiredCheck = (fieldId, updates) => {
+    if (REQUIRED_FIELDS.includes(fieldId) && "required" in updates) {
+      // If trying to update required status of a required field, keep it required
+      const newUpdates = { ...updates, required: true };
+      handleFieldUpdate(fieldId, newUpdates);
+    } else {
+      handleFieldUpdate(fieldId, updates);
+    }
+  };
 
   return (
     <Stack spacing={3} sx={{ py: 2 }}>
@@ -71,8 +85,9 @@ export function FormBuilder({ showFieldSelector }) {
                         <FieldEditor
                           field={field}
                           config={formConfig[field]}
-                          onUpdate={handleFieldUpdate}
+                          onUpdate={handleFieldUpdateWithRequiredCheck}
                           onRemove={handleRemoveField}
+                          isAlwaysRequired={REQUIRED_FIELDS.includes(field)}
                         />
                       </div>
                     )}

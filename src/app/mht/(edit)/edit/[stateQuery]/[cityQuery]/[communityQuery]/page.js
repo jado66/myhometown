@@ -1218,7 +1218,7 @@ const Page = ({ params }) => {
         />
         <Divider sx={{ my: 5 }} />
 
-        <JsonViewer data={stagedClassRequests} title="Staged Class Request" />
+        {/* <JsonViewer data={stagedClassRequests} title="Staged Class Request" /> */}
 
         <LoadedClassesProvider isEdit stagedRequests={stagedClassRequests}>
           <ClassesTreeView

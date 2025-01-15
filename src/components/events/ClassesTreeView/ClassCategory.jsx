@@ -261,7 +261,7 @@ export const ClassCategory = ({
         )
       }
     >
-      <JsonViewer data={classes.map((c) => c.signupForm)} title="Classes" />
+      {/* <JsonViewer data={classes.map((c) => c.signupForm)} title="Classes" /> */}
 
       {Array.isArray(classes) &&
         classes.length > 0 &&

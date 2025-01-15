@@ -14,6 +14,7 @@ import Loading from "@/components/util/Loading";
 import { useClasses } from "@/hooks/use-classes";
 import { toast } from "react-toastify";
 import { Box, Button, Divider, Typography } from "@mui/material";
+import JsonViewer from "../util/debug/DebugOutput";
 
 const ClassSignupContext = createContext(null);
 
@@ -37,6 +38,7 @@ const DEFAULT_VISIBLE_FIELDS = [
   "phone",
   "dob",
   "gender",
+  "communicationConsent",
 ];
 
 const DEFAULT_STRUCTURAL_FIELDS = {
@@ -121,9 +123,24 @@ export function ClassSignupProvider({
   });
 
   const [fieldOrder, setFieldOrder] = useState(() => {
+    // First priority: defaultConfig field order
     if (defaultConfig?.fieldOrder) {
       return defaultConfig.fieldOrder;
     }
+
+    // Second priority: classObj's signupForm field order
+    if (classObj?.signupForm?.fieldOrder) {
+      return classObj.signupForm.fieldOrder;
+    }
+
+    // Third priority: extract order from formConfig fields that are visible
+    if (defaultConfig?.formConfig) {
+      return Object.keys(defaultConfig.formConfig).filter(
+        (key) => defaultConfig.formConfig[key].visible
+      );
+    }
+
+    // Last resort: use default visible fields
     return DEFAULT_VISIBLE_FIELDS;
   });
 

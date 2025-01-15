@@ -47,6 +47,16 @@ export const AVAILABLE_FIELDS = {
     helpText: "Include country code for international numbers",
     category: "Contact Information",
   },
+  communicationConsent: {
+    label: "Communication Consent",
+    type: FIELD_TYPES.checkbox,
+    visible: true,
+    required: true,
+    originalLabel: "Communication Consent",
+    helpText:
+      "I consent to being contacted via phone or email regarding my course enrollment and related communications",
+    category: "Legal Information",
+  },
   dob: {
     label: "Date of Birth",
     type: FIELD_TYPES.date,
