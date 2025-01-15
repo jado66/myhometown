@@ -44,6 +44,7 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { LoadedClassesProvider } from "@/contexts/LoadedClassesProvider";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const communityDataContentTemplate = {
   paragraph1Text: faker.lorem.paragraph(),
@@ -420,6 +421,57 @@ const Page = ({ params }) => {
       console.error("Error updating subclass:", error);
       toast.error("Failed to update class: " + error.message);
       throw error;
+    }
+  };
+
+  const onUpdateSubclassField = (classCategoryId, subclassId, field, value) => {
+    try {
+      if (!classCategoryId || !subclassId || !field) {
+        throw new Error("Missing required class information");
+      }
+
+      // Find the class category and subclass to get the title
+      const category = communityData.classes.find(
+        (cat) => cat.id === classCategoryId
+      );
+      const subclass = category?.classes.find((cls) => cls.id === subclassId);
+
+      if (!category || !subclass) {
+        throw new Error("Class not found");
+      }
+
+      // Stage the update request
+      handleStagedClassRequest(subclassId, "edit", {
+        ...subclass,
+        [field]: value,
+      });
+
+      // Update the UI state
+      setCommunityData((prevState) => ({
+        ...prevState,
+        classes: prevState.classes.map((classCategory) => {
+          if (classCategory.id === classCategoryId) {
+            return {
+              ...classCategory,
+              classes: classCategory.classes.map((cls) => {
+                if (cls.id === subclassId) {
+                  return {
+                    ...cls,
+                    [field]: value,
+                  };
+                }
+                return cls;
+              }),
+            };
+          }
+          return classCategory;
+        }),
+      }));
+
+      toast.success("Class updated successfully! Remember to save.");
+    } catch (error) {
+      console.error("Error updating subclass field:", error);
+      toast.error("Failed to update class: " + error.message);
     }
   };
 
@@ -1166,6 +1218,8 @@ const Page = ({ params }) => {
         />
         <Divider sx={{ my: 5 }} />
 
+        <JsonViewer data={stagedClassRequests} title="Staged Class Request" />
+
         <LoadedClassesProvider isEdit stagedRequests={stagedClassRequests}>
           <ClassesTreeView
             isEdit
@@ -1180,6 +1234,7 @@ const Page = ({ params }) => {
             shiftDownSubclass={shiftDownSubclass}
             onUpdateClassCategory={onUpdateClassCategory}
             onUpdateSubclass={onUpdateSubclass}
+            onUpdateSubclassField={onUpdateSubclassField}
           />
         </LoadedClassesProvider>
         <Divider sx={{ my: 5 }} />

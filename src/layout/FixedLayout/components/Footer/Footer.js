@@ -49,7 +49,7 @@ const Footer = () => (
         color="textSecondary"
         gutterBottom
       >
-        Copyright © 2023 myHometown Utah
+        Copyright ©{` 2023 - ${new Date().getFullYear()}`} myHometown Utah
       </Typography>
     </Grid>
   </Grid>

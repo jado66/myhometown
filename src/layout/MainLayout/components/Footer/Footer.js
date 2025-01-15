@@ -27,7 +27,7 @@ const Footer = () => {
           variant={"subtitle2"}
           color="textSecondary"
         >
-          © Copyright myHometown Utah 2024
+          Copyright ©{` 2023 - ${new Date().getFullYear()}`} myHometown Utah
         </Typography>
       </Grid>
       <Grid

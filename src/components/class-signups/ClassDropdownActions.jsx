@@ -4,6 +4,8 @@ import {
   ArrowUpward,
   ArrowDownward,
   ContentCopy,
+  Visibility,
+  VisibilityOff,
 } from "@mui/icons-material";
 import { Button, Divider, Menu, MenuItem } from "@mui/material";
 import { useState } from "react";
@@ -14,6 +16,7 @@ export const ClassDropdownActions = ({
   onEditClass,
   shiftUpClass,
   shiftDownClass,
+  onUpdateVisibility,
   onDuplicateClass,
   isFirstClass,
   isLastClass,
@@ -76,6 +79,27 @@ export const ClassDropdownActions = ({
         >
           <ContentCopy sx={{ mr: 1 }} /> Duplicate Class
         </MenuItem>
+        {classObj.visibility ? (
+          <MenuItem
+            onClick={(e) => {
+              onUpdateVisibility(classObj.id, false);
+              handleClose(e);
+            }}
+          >
+            <VisibilityOff sx={{ mr: 1 }} />
+            Make Hidden
+          </MenuItem>
+        ) : (
+          <MenuItem
+            onClick={(e) => {
+              onUpdateVisibility(classObj.id, true);
+              handleClose(e);
+            }}
+          >
+            <Visibility sx={{ mr: 1 }} />
+            Make Visible
+          </MenuItem>
+        )}
 
         <Divider />
         <MenuItem

@@ -16,6 +16,7 @@ export const ClassesTreeView = ({
   onDeleteSubclass,
   onUpdateClassCategory,
   onUpdateSubclass,
+  onUpdateSubclassField,
   shiftDownClassCategory,
   shiftUpClassCategory,
   shiftDownSubclass,
@@ -69,6 +70,7 @@ export const ClassesTreeView = ({
         onDeleteClassCategory={onDeleteClassCategory}
         onCreateSubclass={onCreateSubclass}
         onUpdateSubclass={onUpdateSubclass}
+        onUpdateSubclassField={onUpdateSubclassField}
         category={category}
         showIframeHelpDialog={showIframeHelpDialog}
         editingCategoryId={editingCategoryId}

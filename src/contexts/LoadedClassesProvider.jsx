@@ -1,3 +1,4 @@
+import JsonViewer from "@/components/util/debug/DebugOutput";
 import { useClasses } from "@/hooks/use-classes";
 import React, { createContext, useState, useCallback } from "react";
 
@@ -105,6 +106,7 @@ export const LoadedClassesProvider = ({
 
   return (
     <LoadedClassesContext.Provider value={value}>
+      <JsonViewer data={loadedClasses} title="Loaded Class" />
       {children}
     </LoadedClassesContext.Provider>
   );
