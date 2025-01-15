@@ -31,7 +31,6 @@ import { ClassSignupProvider } from "@/components/class-signups/ClassSignupConte
 import { ClassDropdownActions } from "@/components/class-signups/ClassDropdownActions";
 import ClassPreview from "@/components/class-signups/stepper-components/ClassPreview";
 import { ClassSignup } from "./ClassSignup";
-import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export const ClassCategory = ({
   category,

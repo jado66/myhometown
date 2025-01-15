@@ -44,7 +44,6 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { LoadedClassesProvider } from "@/contexts/LoadedClassesProvider";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
-import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const communityDataContentTemplate = {
   paragraph1Text: faker.lorem.paragraph(),

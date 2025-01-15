@@ -14,7 +14,6 @@ import Loading from "@/components/util/Loading";
 import { useClasses } from "@/hooks/use-classes";
 import { toast } from "react-toastify";
 import { Box, Button, Divider, Typography } from "@mui/material";
-import JsonViewer from "../util/debug/DebugOutput";
 
 const ClassSignupContext = createContext(null);
 
