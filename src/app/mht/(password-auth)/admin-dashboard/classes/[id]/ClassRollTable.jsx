@@ -46,10 +46,16 @@ export default function ClassRollTable({ classData, show, onClose }) {
   }, [classData]);
 
   const generateDates = useCallback(() => {
-    if (!classData?.startDate || !classData?.endDate || !classData?.meetings) {
+    if (!classData?.startDate || !classData?.endDate) {
       return [];
     }
 
+    // For a single day class, we just need to return that one date
+    if (classData.startDate === classData.endDate) {
+      return [classData.startDate];
+    }
+
+    // Original logic for multi-day classes
     const dates = [];
     let currentDate = new Date(classData.startDate);
     const endDateTime = new Date(classData.endDate);
@@ -235,7 +241,9 @@ export default function ClassRollTable({ classData, show, onClose }) {
                 ))}
                 {dates.map((date) => (
                   <TableCell key={date} align="center" sx={{ minWidth: 100 }}>
-                    {moment(date).format("dddd")}
+                    {new Date(date).toLocaleDateString("en-US", {
+                      weekday: "long",
+                    })}
                   </TableCell>
                 ))}
               </TableRow>
@@ -256,7 +264,11 @@ export default function ClassRollTable({ classData, show, onClose }) {
                 ))}
                 {dates.map((date) => (
                   <TableCell key={date} align="center" sx={{ minWidth: 100 }}>
-                    {moment(date).format("DD/MM/YY")}
+                    {new Date(date).toLocaleDateString("en-US", {
+                      month: "2-digit",
+                      day: "2-digit",
+                      year: "2-digit",
+                    })}
                   </TableCell>
                 ))}
               </TableRow>
