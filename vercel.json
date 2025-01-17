@@ -3,5 +3,10 @@
     "app/api/communications/send-texts/route.js": {
       "maxDuration": 60
     }
+  },
+  "build": {
+    "env": {
+      "ENABLE_EXPERIMENTAL_COREPACK": "1"
+    }
   }
 }
