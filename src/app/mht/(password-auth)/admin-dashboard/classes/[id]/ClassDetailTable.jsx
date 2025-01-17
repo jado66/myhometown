@@ -304,7 +304,7 @@ const ClassDetailTable = ({
             width: 180,
             flex: 1,
             sortable: true,
-            editable: true,
+            // editable: true,
             // Add valueFormatter for boolean fields
             valueFormatter:
               field.type === "checkbox"
@@ -326,17 +326,10 @@ const ClassDetailTable = ({
         width: 100,
         getActions: (params) => [
           <GridActionsCellItem
-            icon={<EditIcon />}
-            label="Edit"
-            onClick={handleEditClick(params.id)}
-            disabled={removeSignupLoading}
-          />,
-          <GridActionsCellItem
             icon={<DeleteIcon />}
             label="Remove Student"
             onClick={handleDeleteClick(params.id)}
             disabled={removeSignupLoading}
-            showInMenu
           />,
         ],
       },
@@ -389,8 +382,8 @@ const ClassDetailTable = ({
             },
           }}
           density="comfortable"
-          processRowUpdate={processRowUpdate}
-          experimentalFeatures={{ newEditingApi: true }}
+          // processRowUpdate={processRowUpdate}
+          // experimentalFeatures={{ newEditingApi: true }}
           initialState={{
             sorting: {
               sortModel: [
