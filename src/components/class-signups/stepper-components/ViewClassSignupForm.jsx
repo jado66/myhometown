@@ -16,6 +16,7 @@ import { FIELD_TYPES } from "../FieldTypes";
 import { ExampleIcons } from "@/components/events/ClassesTreeView/IconSelect";
 import ClassPreview from "./ClassPreview";
 import { ExpandMore } from "@mui/icons-material";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 function formatMeetingDays(days) {
   if (days.length <= 1) return days.join("");
@@ -47,10 +48,27 @@ export function ViewClassSignupForm({ testSubmit, classData }) {
     testSignup,
   } = useClassSignup();
 
+  if (
+    classConfig &&
+    classConfig.signups &&
+    classConfig.signups.length == classConfig.capacity
+  ) {
+    return (
+      <>
+        <ClassPreview classData={originalClassObj} />
+        <Divider sx={{ my: 3 }} />
+
+        <Alert severity="warning">
+          This class is currently full. Please check back later for more
+          availability.
+        </Alert>
+      </>
+    );
+  }
+
   return (
     <Stack spacing={3} component="form">
       <ClassPreview classData={originalClassObj} />
-
       <Divider sx={{ my: 3 }} />
 
       {fieldOrder.map((field) => {
@@ -86,7 +104,6 @@ export function ViewClassSignupForm({ testSubmit, classData }) {
           />
         );
       })}
-
       {false ? (
         <>
           {/* TODO */}
@@ -127,7 +144,6 @@ export function ViewClassSignupForm({ testSubmit, classData }) {
           )}
         </>
       )}
-
       {submitStatus === "error" && (
         <Typography variant="body1" color="error" sx={{ mt: 2 }}>
           There was an error submitting the form. Please try again.

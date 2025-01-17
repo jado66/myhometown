@@ -45,7 +45,6 @@ export async function GET(req) {
             typeof data === "string" ? data : JSON.stringify(data);
           controller.enqueue(new TextEncoder().encode(`data: ${message}\n\n`));
         } catch (error) {
-          // Ignore controller closed errors
           if (error.code !== "ERR_INVALID_STATE") {
             console.error("Error sending message:", error);
           }
@@ -92,7 +91,6 @@ export async function GET(req) {
               try {
                 controller.close();
               } catch (error) {
-                // Ignore controller closed errors
                 if (error.code !== "ERR_INVALID_STATE") {
                   console.error("Error closing controller:", error);
                 }
@@ -118,7 +116,7 @@ export async function GET(req) {
   });
 }
 
-// Helper function to send messages through the stream
+// Export these helper functions for the messaging utility
 export async function sendMessageToStream(messageId, data) {
   try {
     const streamKey = getStreamKey(messageId);
@@ -138,7 +136,6 @@ export async function sendMessageToStream(messageId, data) {
   }
 }
 
-// Helper function to complete a stream
 export async function completeStream(messageId) {
   try {
     const streamKey = getStreamKey(messageId);

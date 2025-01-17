@@ -178,6 +178,8 @@ export function ClassSignupProvider({
         setLoadError(null);
 
         const loadedClass = await loadedClassesContext.loadClass(classObj.id);
+
+        console.log("Loaded class:", JSON.stringify(loadedClass, null, 4));
         if (!loadedClass) {
           throw new Error(`Could not find class with ID ${classObj.id}`);
         }
@@ -203,6 +205,7 @@ export function ClassSignupProvider({
           startTime: loadedClass.meetings?.[0]?.startTime || "",
           endTime: loadedClass.meetings?.[0]?.endTime || "",
           id: loadedClass.id,
+          signups: loadedClass.signups || [],
         };
 
         setClassConfig(newClassConfig);

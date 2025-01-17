@@ -1,7 +1,7 @@
+import { sendClassSignupText } from "@/util/communication/sendTexts";
 import { connectToMongoDatabase } from "@/util/db/mongodb";
 import { v4 as uuidv4 } from "uuid";
 
-// Signup for a class
 export async function POST(req, { params }) {
   const { id } = params;
   const signupData = await req.json();
@@ -30,7 +30,6 @@ export async function POST(req, { params }) {
 
     // Generate a unique ID for the signup
     const signupId = uuidv4();
-
     const signupWithId = {
       ...signupData,
       id: signupId,
@@ -42,10 +41,21 @@ export async function POST(req, { params }) {
       { $push: { signups: signupWithId } }
     );
 
+    // Send notification after successful signup
+    let notificationResult = null;
+    if (result.modifiedCount > 0) {
+      notificationResult = await sendClassSignupText({
+        firstName: signupData.firstName,
+        phone: signupData.phone,
+        classDoc, // Pass the entire class document
+      });
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         signup: signupWithId,
+        notification: notificationResult,
       }),
       { status: 201 }
     );
