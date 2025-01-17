@@ -66,6 +66,8 @@ export const ClassCategory = ({
 
   // Check if the icon exists before attempting to clone it
 
+  let IconWithProps = null;
+
   if (category.icon && ExampleIcons[category.icon]) {
     IconWithProps = React.cloneElement(ExampleIcons[category.icon], {
       sx: { height: 35, width: 35 },
