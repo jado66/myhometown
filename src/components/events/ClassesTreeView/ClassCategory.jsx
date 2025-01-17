@@ -31,6 +31,7 @@ import { ClassSignupProvider } from "@/components/class-signups/ClassSignupConte
 import { ClassDropdownActions } from "@/components/class-signups/ClassDropdownActions";
 import ClassPreview from "@/components/class-signups/stepper-components/ClassPreview";
 import { ClassSignup } from "./ClassSignup";
+import { useLoadedClassesContext } from "@/hooks/use-loaded-classes-context";
 
 export const ClassCategory = ({
   category,
@@ -54,6 +55,7 @@ export const ClassCategory = ({
   isFirstCategory,
   isLastCategory,
   onToggleExpand,
+  CategorySelectOptions,
 }) => {
   const [isAddNewClass, setAddNewClass] = useState(false);
   const [editTitle, setEditTitle] = useState(category.title);
@@ -61,6 +63,8 @@ export const ClassCategory = ({
   const [openClassSignup, setOpenClassSignup] = useState(null);
   const [duplicatedClassData, setDuplicatedClassData] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
+
+  const { loadClass } = useLoadedClassesContext();
 
   const [hoverClass, setHoverClass] = useState(null);
 
@@ -81,14 +85,18 @@ export const ClassCategory = ({
 
   const isEditing = editingCategoryId === category.id;
 
-  const handleDuplicateClass = (classData) => {
+  const handleDuplicateClass = async (classId) => {
+    const newClassData = await loadClass(classId);
+
+    console.log("DUPLICATED DATA" + JSON.stringify(newClassData, null, 4));
+
     const duplicatedData = {
-      ...classData,
-      title: `${classData.title} (Copy)`,
+      ...newClassData,
+      title: `${newClassData.title} (Copy)`,
       id: undefined,
       signupForm: {
-        formConfig: classData.signupForm?.formConfig || {},
-        fieldOrder: classData.signupForm?.fieldOrder || [],
+        formConfig: newClassData.signupForm?.formConfig || {},
+        fieldOrder: newClassData.signupForm?.fieldOrder || [],
       },
     };
 
@@ -128,7 +136,7 @@ export const ClassCategory = ({
       // Ensure all required fields are present
 
       const createdClass = await onCreateSubclass(
-        category.id,
+        classConfig.categoryId || category.id,
         classConfig,
         signupForm
       );
@@ -260,8 +268,6 @@ export const ClassCategory = ({
         )
       }
     >
-      {/* <JsonViewer data={classes.map((c) => c.signupForm)} title="Classes" /> */}
-
       {Array.isArray(classes) &&
         classes.length > 0 &&
         classes.map((classObj, index) => {
@@ -307,7 +313,9 @@ export const ClassCategory = ({
                         classObj={classObj}
                         categoryId={category?.id}
                         onEditClass={() => onEditSubclass(classObj.id)}
-                        onDuplicateClass={() => handleDuplicateClass(classObj)}
+                        onDuplicateClass={() =>
+                          handleDuplicateClass(classObj.id)
+                        }
                         onUpdateVisibility={onUpdateVisibility}
                         isFirstClass={index === 0}
                         isLastClass={index === category.classes.length - 1}
@@ -406,6 +414,7 @@ export const ClassCategory = ({
             handleClose={() => {
               setEditingClassId(null);
             }}
+            CategorySelectOptions={CategorySelectOptions}
           />
         </ClassSignupProvider>
       )}
@@ -434,6 +443,7 @@ export const ClassCategory = ({
               setAddNewClass(false);
               setDuplicatedClassData(null);
             }}
+            CategorySelectOptions={CategorySelectOptions}
           />
         </ClassSignupProvider>
       )}

@@ -8,6 +8,10 @@ import {
   Button,
   Grid,
   Box,
+  Select,
+  FormControl,
+  InputLabel,
+  MenuItem,
 } from "@mui/material";
 import { Upload } from "@mui/icons-material";
 import { IconSelect } from "@/components/events/ClassesTreeView/IconSelect";
@@ -15,8 +19,9 @@ import { useImageUpload } from "@/hooks/use-upload-image";
 import { ClassMeetings } from "../ClassMeetings";
 import { useClassSignup } from "../ClassSignupContext";
 
-export function ClassDescriptionEditor() {
-  const { classConfig, handleClassConfigChange, errors } = useClassSignup();
+export function ClassDescriptionEditor({ CategorySelectOptions, isEdit }) {
+  const { classConfig, handleClassConfigChange, errors, fieldOrder } =
+    useClassSignup();
 
   const { handleFileUpload, loading } = useImageUpload((classBannerUrl) => {
     handleClassConfigChange("classBannerUrl", classBannerUrl);
@@ -28,14 +33,37 @@ export function ClassDescriptionEditor() {
       <Typography variant="h6">Class Description</Typography>
 
       <Grid container>
-        <Grid item xs={3} sx={{ pr: 1 }}>
+        <Grid item xs={2} sx={{ pr: 1 }}>
           <IconSelect
             onSelect={(e) => handleClassConfigChange("icon", e.target.value)}
             icon={classConfig.icon}
             height="56px"
           />
         </Grid>
-        <Grid item xs={9} sx={{ pl: 1 }}>
+
+        <Grid item xs={3} sx={{ pl: 1 }}>
+          <FormControl fullWidth variant="outlined">
+            <InputLabel id="category-select-label">Category</InputLabel>
+            <Select
+              labelId="category-select-label"
+              id="category-select"
+              value={classConfig.categoryId || ""}
+              label="Category"
+              onChange={(e) =>
+                handleClassConfigChange("categoryId", e.target.value)
+              }
+              disabled={isEdit}
+            >
+              {CategorySelectOptions?.map((category) => (
+                <MenuItem key={category.value} value={category.value}>
+                  {category.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+
+        <Grid item xs={7} sx={{ pl: 1 }}>
           <TextField
             fullWidth
             label="Class Name"
@@ -54,7 +82,6 @@ export function ClassDescriptionEditor() {
           alt={classConfig.title}
           sx={{
             display: "block",
-            maxHeight: "200px",
             width: "100%",
             objectFit: "cover",
             objectPosition: "left center",

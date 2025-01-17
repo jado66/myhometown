@@ -743,6 +743,11 @@ const Page = ({ params }) => {
     });
   };
 
+  const CategorySelectOptions = communityData?.classes?.map((category) => ({
+    value: category.id,
+    label: category.title,
+  }));
+
   if (!hasLoaded) {
     return (
       <div
@@ -792,6 +797,7 @@ const Page = ({ params }) => {
           })
         }
       />
+
       <Container sx={{ paddingTop: 3, marginBottom: 2 }}>
         <Breadcrumbs
           separator="-"
@@ -1217,8 +1223,6 @@ const Page = ({ params }) => {
         />
         <Divider sx={{ my: 5 }} />
 
-        {/* <JsonViewer data={stagedClassRequests} title="Staged Class Request" /> */}
-
         <LoadedClassesProvider isEdit stagedRequests={stagedClassRequests}>
           <ClassesTreeView
             isEdit
@@ -1234,6 +1238,7 @@ const Page = ({ params }) => {
             onUpdateClassCategory={onUpdateClassCategory}
             onUpdateSubclass={onUpdateSubclass}
             onUpdateSubclassField={onUpdateSubclassField}
+            CategorySelectOptions={CategorySelectOptions}
           />
         </LoadedClassesProvider>
         <Divider sx={{ my: 5 }} />

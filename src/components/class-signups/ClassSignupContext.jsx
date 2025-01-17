@@ -109,31 +109,40 @@ export function ClassSignupProvider({
         ...DEFAULT_CLASS_CONFIG,
         ...defaultConfig,
         id: undefined, // Ensure we don't carry over the ID
+        categoryId: category?.id,
       };
     } else if (classObj && !isNew) {
       // If we're editing an existing class
       return {
         ...DEFAULT_CLASS_CONFIG,
         ...classObj,
+        id: classObj.id,
+        categoryId: category.id,
       };
     }
     // Otherwise use defaults
-    return { ...DEFAULT_CLASS_CONFIG };
+    return { ...DEFAULT_CLASS_CONFIG, categoryId: category.id };
   });
 
   const [fieldOrder, setFieldOrder] = useState(() => {
     // First priority: defaultConfig field order
     if (defaultConfig?.fieldOrder) {
+      alert("defaultConfig");
       return defaultConfig.fieldOrder;
     }
 
     // Second priority: classObj's signupForm field order
-    if (classObj?.signupForm?.fieldOrder) {
+    if (classObj?.fieldOrder) {
+      alert(
+        "Setting field order from classObj" +
+          JSON.stringify(classObj.signupForm.fieldOrder)
+      );
       return classObj.signupForm.fieldOrder;
     }
 
     // Third priority: extract order from formConfig fields that are visible
     if (defaultConfig?.formConfig) {
+      alert("defaultConfig");
       return Object.keys(defaultConfig.formConfig).filter(
         (key) => defaultConfig.formConfig[key].visible
       );
@@ -199,6 +208,8 @@ export function ClassSignupProvider({
           startDate: loadedClass.startDate || "",
           endDate: loadedClass.endDate || "",
           location: loadedClass.location || "",
+          meetings: loadedClass.meetings || [],
+          classBannerUrl: loadedClass.classBannerUrl || null,
           capacity: loadedClass.capacity || "",
           showCapacity: loadedClass.showCapacity || false,
           meetingDays: loadedClass.meetings?.map((m) => m.day) || [],
@@ -206,6 +217,7 @@ export function ClassSignupProvider({
           endTime: loadedClass.meetings?.[0]?.endTime || "",
           id: loadedClass.id,
           signups: loadedClass.signups || [],
+          categoryId: category?.id,
         };
 
         setClassConfig(newClassConfig);

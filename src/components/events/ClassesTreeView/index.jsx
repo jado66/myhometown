@@ -22,6 +22,7 @@ export const ClassesTreeView = ({
   shiftDownSubclass,
   shiftUpSubclass,
   isEdit,
+  CategorySelectOptions,
 }) => {
   const [isAddNewCategory, setAddNewCategory] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState(null);
@@ -85,6 +86,7 @@ export const ClassesTreeView = ({
         shiftDownSubclass={shiftDownSubclass}
         isFirstCategory={index === 0}
         isLastCategory={index === classes.length - 1}
+        CategorySelectOptions={CategorySelectOptions}
       />
     );
   };

@@ -9,7 +9,7 @@ export const AVAILABLE_FIELDS = {
     originalLabel: "First Name",
     validation: (value) =>
       value.length >= 2 ? null : "First name must be at least 2 characters",
-    helpText: "Enter your legal first name as it appears on official documents",
+    helpText: "Enter your first name",
     category: "Personal Information",
   },
 
@@ -21,7 +21,7 @@ export const AVAILABLE_FIELDS = {
     originalLabel: "Last Name",
     validation: (value) =>
       value.length >= 2 ? null : "Last name must be at least 2 characters",
-    helpText: "Enter your legal last name as it appears on official documents",
+    helpText: "Enter your last name",
     category: "Personal Information",
   },
 

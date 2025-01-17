@@ -146,8 +146,11 @@ export default function ClassList({ communityId }) {
     return <Typography>No classes found for this community</Typography>;
 
   const formatDate = (dateString) => {
-    if (!dateString) return "Not specified";
-    return new Date(dateString).toLocaleDateString("en-US", {
+    // Create date by parsing the components to ensure consistent timezone handling
+    const [year, month, day] = dateString.split("-").map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-based in JS Date
+
+    return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",

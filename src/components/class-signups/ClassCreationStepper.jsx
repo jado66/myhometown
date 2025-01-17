@@ -39,7 +39,11 @@ const steps = [
   },
 ];
 
-export default function ClassCreationStepper({ isNew, handleClose }) {
+export default function ClassCreationStepper({
+  isNew,
+  handleClose,
+  CategorySelectOptions,
+}) {
   const [activeStep, setActiveStep] = useState(0);
   const [isFieldSelectorOpen, setIsFieldSelectorOpen] = useState(false);
   const {
@@ -47,6 +51,7 @@ export default function ClassCreationStepper({ isNew, handleClose }) {
     formConfig,
     fieldOrder,
     handleSaveClass,
+    originalClassObj,
     isLoading,
     handleDeleteClass,
   } = useClassSignup();
@@ -71,7 +76,12 @@ export default function ClassCreationStepper({ isNew, handleClose }) {
   const renderStepContent = (step) => {
     switch (step) {
       case 0:
-        return <ClassDescriptionEditor />;
+        return (
+          <ClassDescriptionEditor
+            CategorySelectOptions={CategorySelectOptions}
+            isEdit={!isNew}
+          />
+        );
 
       case 1:
         return (

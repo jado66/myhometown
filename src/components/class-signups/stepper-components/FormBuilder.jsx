@@ -44,6 +44,7 @@ export function FormBuilder({ showFieldSelector }) {
   return (
     <Stack spacing={3} sx={{ py: 2 }}>
       <Typography variant="h6">Class Signup Form Builder</Typography>
+
       <Typography variant="subtitle1" fontWeight="bold">
         Drag and drop fields to reorder them. You can change the label on the
         field, mark it as required, and add help text.

@@ -55,24 +55,24 @@ export default function ClassRollTable({ classData, show, onClose }) {
       return [classData.startDate];
     }
 
-    // Original logic for multi-day classes
     const dates = [];
-    let currentDate = new Date(classData.startDate);
-    const endDateTime = new Date(classData.endDate);
+    // Use UTC dates to prevent timezone shifts
+    let currentDate = moment.utc(classData.startDate).startOf("day");
+    const endDateTime = moment.utc(classData.endDate).endOf("day");
 
-    while (currentDate <= endDateTime) {
-      const dayOfWeek = currentDate.toLocaleDateString("en-US", {
-        weekday: "long",
-      });
+    while (currentDate.isSameOrBefore(endDateTime)) {
+      // Get day of week in user's timezone
+      const dayOfWeek = currentDate.clone().local().format("dddd");
       const matchingMeetings = classData.meetings.filter(
         (meeting) => meeting.day === dayOfWeek
       );
 
       if (matchingMeetings.length > 0) {
-        dates.push(currentDate.toISOString().split("T")[0]);
+        // Store the date in YYYY-MM-DD format while preserving UTC
+        dates.push(currentDate.format("YYYY-MM-DD"));
       }
 
-      currentDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
+      currentDate = currentDate.add(1, "days");
     }
 
     return dates;

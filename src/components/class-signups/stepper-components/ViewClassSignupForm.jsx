@@ -16,7 +16,6 @@ import { FIELD_TYPES } from "../FieldTypes";
 import { ExampleIcons } from "@/components/events/ClassesTreeView/IconSelect";
 import ClassPreview from "./ClassPreview";
 import { ExpandMore } from "@mui/icons-material";
-import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export function ViewClassSignupForm({ testSubmit, classData }) {
   const {
@@ -40,7 +39,7 @@ export function ViewClassSignupForm({ testSubmit, classData }) {
   ) {
     return (
       <>
-        <ClassPreview classData={originalClassObj} />
+        <ClassPreview classData={classConfig} />
         <Divider sx={{ my: 3 }} />
 
         <Alert severity="warning">
@@ -53,7 +52,7 @@ export function ViewClassSignupForm({ testSubmit, classData }) {
 
   return (
     <Stack spacing={3} component="form">
-      <ClassPreview classData={originalClassObj} />
+      <ClassPreview classData={classConfig} />
       <Divider sx={{ my: 3 }} />
 
       {fieldOrder.map((field) => {
