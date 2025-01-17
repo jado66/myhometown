@@ -1,7 +1,7 @@
 "use client";
 import { Suspense, useEffect, useState } from "react";
-import AccessCodeDialog from "./access-code-dialog";
-import ClassList from "./class-list";
+import AccessCodeDialog from "./AccessCodeDialog";
+import ClassList from "./ClassList";
 import { Container, Typography } from "@mui/material";
 import useCommunities from "@/hooks/use-communities";
 

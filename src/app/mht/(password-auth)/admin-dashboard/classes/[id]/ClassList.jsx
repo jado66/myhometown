@@ -1,7 +1,7 @@
 "use client";
 
 import { useClasses } from "@/hooks/use-classes";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -26,31 +26,119 @@ import CategoryIcon from "@mui/icons-material/Category";
 import GroupIcon from "@mui/icons-material/Group";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import PersonIcon from "@mui/icons-material/Person";
-import ClassDetailTable from "./class-detail-table";
-import ClassRollTable from "./class-roll-table";
+import ClassDetailTable from "./ClassDetailTable";
+import ClassRollTable from "./ClassRollTable";
 import Close from "@mui/icons-material/Close";
 import ClassPreview from "@/components/class-signups/stepper-components/ClassPreview";
 import { ExampleIcons } from "@/components/events/ClassesTreeView/IconSelect";
 import { Phone, School } from "@mui/icons-material";
 
 export default function ClassList({ communityId }) {
-  const { getClassesByCommunity, loading, error } = useClasses();
+  const {
+    getClassesByCommunity,
+    updateClass,
+    loading,
+    signupLoading,
+    error,
+    signupForClass,
+    removeSignup,
+    removeSignupLoading,
+  } = useClasses();
   const [classes, setClasses] = useState([]);
 
   const [showClassRoll, setShowClassRoll] = useState(false);
   const [selectedClass, setSelectedClass] = useState(null);
   const [showClassDetails, setShowClassDetails] = useState(false);
 
-  useEffect(() => {
-    const fetchClasses = async () => {
-      const data = await getClassesByCommunity(communityId);
-      if (data) {
-        setClasses(data);
-      }
-    };
-
-    fetchClasses();
+  const fetchClasses = useCallback(async () => {
+    const data = await getClassesByCommunity(communityId);
+    if (data) {
+      setClasses(data);
+    }
   }, [communityId]);
+
+  useEffect(() => {
+    fetchClasses();
+  }, [fetchClasses]);
+
+  const handleStudentAdd = async (classId, newStudent) => {
+    const result = await signupForClass(classId, newStudent);
+    if (result?.success && result?.signup) {
+      // Extract the signup data from the response
+      const signupData = result.signup;
+
+      setClasses((prevClasses) =>
+        prevClasses.map((cls) => {
+          if (cls.id === classId) {
+            return {
+              ...cls,
+              signups: [...(cls.signups || []), signupData],
+            };
+          }
+          return cls;
+        })
+      );
+
+      if (selectedClass?.id === classId) {
+        setSelectedClass((prev) => ({
+          ...prev,
+          signups: [...(prev.signups || []), signupData],
+        }));
+      }
+    }
+  };
+
+  const handleRemoveSignup = async (signupId) => {
+    if (!selectedClass) return false;
+
+    const result = await removeSignup(selectedClass.id, signupId);
+    if (result?.success) {
+      // Update local state to remove the signup
+      setClasses((prevClasses) =>
+        prevClasses.map((cls) => {
+          if (cls.id === selectedClass.id) {
+            return {
+              ...cls,
+              signups: cls.signups.filter((signup) => signup.id !== signupId),
+            };
+          }
+          return cls;
+        })
+      );
+
+      // Update selected class state
+      setSelectedClass((prev) => ({
+        ...prev,
+        signups: prev.signups.filter((signup) => signup.id !== signupId),
+      }));
+
+      return true;
+    }
+    return false;
+  };
+
+  const handleStudentUpdate = (classId, updatedStudents) => {
+    // Update the classes state with the updated students
+    setClasses((prevClasses) =>
+      prevClasses.map((cls) => {
+        if (cls.id === classId) {
+          return {
+            ...cls,
+            signups: updatedStudents,
+          };
+        }
+        return cls;
+      })
+    );
+
+    // Update the selected class if it's currently selected
+    if (selectedClass?.id === classId) {
+      setSelectedClass((prev) => ({
+        ...prev,
+        signups: updatedStudents,
+      }));
+    }
+  };
 
   if (loading) return <Typography>Loading classes...</Typography>;
   if (error) return <Typography color="error">Error: {error}</Typography>;
@@ -231,8 +319,19 @@ export default function ClassList({ communityId }) {
           <Divider sx={{ my: 2 }} />
 
           <ClassDetailTable
+            key={`${selectedClass?.id}-${selectedClass?.signups?.length}`}
             classData={selectedClass}
             onClose={() => setShowClassDetails(false)}
+            onUpdate={(updatedStudents) => {
+              handleStudentUpdate(selectedClass.id, updatedStudents);
+              updateClass(selectedClass.id, { signups: updatedStudents });
+            }}
+            onAddStudent={(newStudent) => {
+              handleStudentAdd(selectedClass.id, newStudent);
+            }}
+            onRemoveSignup={handleRemoveSignup}
+            removeSignupLoading={removeSignupLoading}
+            signupLoading={signupLoading}
           />
         </Box>
       </Dialog>

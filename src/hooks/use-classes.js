@@ -4,6 +4,8 @@ import { useState } from "react";
 export const useClasses = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [signupLoading, setSignupLoading] = useState(false);
+  const [removeSignupLoading, setRemoveSignupLoading] = useState(false);
 
   const fetchClasses = async () => {
     setLoading(true);
@@ -121,7 +123,7 @@ export const useClasses = () => {
   };
 
   const signupForClass = async (id, signupData) => {
-    setLoading(true);
+    setSignupLoading(true);
     setError(null);
     try {
       const response = await fetch(`/api/database/classes/${id}/signup`, {
@@ -138,12 +140,41 @@ export const useClasses = () => {
       }
 
       const data = await response.json();
-      setLoading(false);
+      setSignupLoading(false);
+      // Return the entire response object
       return data;
     } catch (err) {
       setError(err.message);
-      setLoading(false);
-      throw err; // Re-throw to be caught by handleSubmit
+      setSignupLoading(false);
+      return null;
+    }
+  };
+
+  const removeSignup = async (classId, signupId) => {
+    setRemoveSignupLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/database/classes/${classId}/signup/${signupId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || "Failed to remove student from class"
+        );
+      }
+
+      const data = await response.json();
+      setRemoveSignupLoading(false);
+      return data;
+    } catch (err) {
+      setError(err.message);
+      setRemoveSignupLoading(false);
+      return null;
     }
   };
 
@@ -180,5 +211,8 @@ export const useClasses = () => {
     deleteClass,
     getClassesByCommunity,
     signupForClass,
+    removeSignup,
+    removeSignupLoading,
+    signupLoading,
   };
 };
