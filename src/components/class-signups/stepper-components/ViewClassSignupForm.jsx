@@ -18,21 +18,6 @@ import ClassPreview from "./ClassPreview";
 import { ExpandMore } from "@mui/icons-material";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 
-function formatMeetingDays(days) {
-  if (days.length <= 1) return days.join("");
-  const lastDay = days.pop();
-  return `${days.join(", ")}, and ${lastDay}`;
-}
-
-function formatTime(timeStr) {
-  const [hour, minute] = timeStr.split(":");
-  const date = new Date(1970, 0, 1, hour, minute);
-  return date.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
 export function ViewClassSignupForm({ testSubmit, classData }) {
   const {
     classConfig,

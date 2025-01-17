@@ -7,10 +7,15 @@ import {
   People,
 } from "@mui/icons-material";
 import { ExampleIcons } from "@/components/events/ClassesTreeView/IconSelect";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const ClassPreview = ({ classData, noBanner }) => {
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+    // Create date by parsing the components to ensure consistent timezone handling
+    const [year, month, day] = dateString.split("-").map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-based in JS Date
+
+    return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -22,7 +27,7 @@ const ClassPreview = ({ classData, noBanner }) => {
       {classData?.classBannerUrl && !noBanner && (
         <CardMedia
           component="img"
-          height="200"
+          width="100%"
           image={classData?.classBannerUrl}
           alt={classData.title}
           onError={(e) => {
