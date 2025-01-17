@@ -65,7 +65,6 @@ export const ClassCategory = ({
   const [showOptions, setShowOptions] = useState(false);
 
   // Check if the icon exists before attempting to clone it
-  let IconWithProps = null;
 
   if (category.icon && ExampleIcons[category.icon]) {
     IconWithProps = React.cloneElement(ExampleIcons[category.icon], {
@@ -83,20 +82,11 @@ export const ClassCategory = ({
   };
 
   // Check if the icon exists before attempting to clone it
-  let IconWithProps = null;
-
-  if (category.icon && ExampleIcons[category.icon]) {
-    IconWithProps = React.cloneElement(ExampleIcons[category.icon], {
-      sx: { height: 35, width: 35 },
-    });
-  }
 
   const isEditing = editingCategoryId === category.id;
 
   const handleDuplicateClass = async (classId) => {
     const newClassData = await loadClass(classId);
-
-    console.log("DUPLICATED DATA" + JSON.stringify(newClassData, null, 4));
 
     const duplicatedData = {
       ...newClassData,
@@ -106,6 +96,8 @@ export const ClassCategory = ({
         formConfig: newClassData.signupForm?.formConfig || {},
         fieldOrder: newClassData.signupForm?.fieldOrder || [],
       },
+      attendance: [],
+      signups: [],
     };
 
     setDuplicatedClassData(duplicatedData);
