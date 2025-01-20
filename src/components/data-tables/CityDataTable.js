@@ -200,7 +200,6 @@ const CityDataTable = ({ data, onAddClick, onRowClick, getCommunity }) => {
   const handleGenerateReport = async (includedCommunities) => {
     if (!selectedCity) return;
 
-    alert("selectedCity: " + selectedCity);
     setIsGenerating(true);
     try {
       const csv = await generateFullReport(

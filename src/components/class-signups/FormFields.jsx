@@ -115,7 +115,10 @@ export const FormField = ({
       case FIELD_TYPES.select:
         return (
           <FormControl fullWidth error={!!error}>
-            <InputLabel id={`${field}-label`}>{config.label}</InputLabel>
+            <InputLabel id={`${field}-label`}>
+              {config.label}
+              {config.required && <span> *</span>}
+            </InputLabel>
             <Select
               labelId={`${field}-label`}
               value={value || ""}

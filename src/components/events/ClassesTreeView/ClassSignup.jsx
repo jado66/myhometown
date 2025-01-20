@@ -177,6 +177,7 @@ export const ClassSignup = ({
             >
               <ClassDropdownActions
                 classObj={localClassObj}
+                categoryId={category.id}
                 onEditClass={() => handleEditClass(localClassObj.id)}
                 onDeleteClass={onDeleteSubclass}
                 shiftUpClass={shiftUpClass}

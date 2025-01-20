@@ -681,12 +681,22 @@ const Page = ({ params }) => {
     });
   };
 
+  const closeYesNoDialog = () => {
+    setDeleteDialogConfig({
+      open: false,
+      title: "",
+      description: "",
+      onConfirm: null,
+    });
+  };
+
   const onDeleteSubclass = (
     classCategoryId,
     subclassId,
     closeStepperFunction
   ) => {
     if (!classCategoryId || !subclassId) {
+      alert(JSON.stringify({ classCategoryId, subclassId }));
       toast.error("Missing required class information");
       return;
     }
@@ -706,6 +716,14 @@ const Page = ({ params }) => {
       open: true,
       title: "Delete Class",
       description: `Are you sure you want to delete the class "${subclass.title}" from category "${category.title}"? This action cannot be undone.`,
+      onClose: () => {
+        setDeleteDialogConfig({
+          open: false,
+          title: "",
+          description: "",
+          onConfirm: null,
+        });
+      },
       onConfirm: () => {
         // Stage the delete request
         handleStagedClassRequest(subclassId, "delete", null);
@@ -783,20 +801,16 @@ const Page = ({ params }) => {
   return (
     <>
       <UnsavedChangesAlert hasUnsavedChanges={isDirty} />
-      <AskYesNoDialog
-        open={deleteDialogConfig.open}
-        title={deleteDialogConfig.title}
-        description={deleteDialogConfig.description}
-        onConfirm={deleteDialogConfig.onConfirm}
-        onClose={() =>
-          setDeleteDialogConfig({
-            open: false,
-            title: "",
-            description: "",
-            onConfirm: null,
-          })
-        }
-      />
+
+      {deleteDialogConfig.open && (
+        <AskYesNoDialog
+          open={deleteDialogConfig.open}
+          title={deleteDialogConfig.title}
+          description={deleteDialogConfig.description}
+          onConfirm={deleteDialogConfig.onConfirm}
+          onCancel={deleteDialogConfig.onClose}
+        />
+      )}
 
       <Container sx={{ paddingTop: 3, marginBottom: 2 }}>
         <Breadcrumbs

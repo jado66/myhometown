@@ -16,6 +16,7 @@ import { FieldEditor } from "../FieldEditor";
 import { StructuralElementAdder } from "../StructuralElementAdder";
 import { useImageUpload } from "@/hooks/use-upload-image";
 import { useClassSignup } from "../ClassSignupContext";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 // Define the fields that should always be required
 const REQUIRED_FIELDS = ["firstName", "lastName", "phone"]; // adjust these field names as needed
@@ -44,6 +45,9 @@ export function FormBuilder({ showFieldSelector }) {
   return (
     <Stack spacing={3} sx={{ py: 2 }}>
       <Typography variant="h6">Class Signup Form Builder</Typography>
+      {/* 
+      <JsonViewer data={formConfig} />
+      <JsonViewer data={fieldOrder} /> */}
 
       <Typography variant="subtitle1" fontWeight="bold">
         Drag and drop fields to reorder them. You can change the label on the

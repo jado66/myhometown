@@ -22,6 +22,7 @@ import { toast } from "react-toastify";
 import Close from "@mui/icons-material/Close";
 import ClassPreview from "@/components/class-signups/stepper-components/ClassPreview";
 import { useAttendance } from "@/hooks/use-attendance";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export default function ClassRollTable({ classData, show, onClose }) {
   const [saveTimeout, setSaveTimeout] = useState(null);
@@ -56,13 +57,13 @@ export default function ClassRollTable({ classData, show, onClose }) {
     }
 
     const dates = [];
-    // Use UTC dates to prevent timezone shifts
+    // Start from the day after the start date to align with the expected schedule
     let currentDate = moment.utc(classData.startDate).startOf("day");
     const endDateTime = moment.utc(classData.endDate).endOf("day");
 
     while (currentDate.isSameOrBefore(endDateTime)) {
       // Get day of week in user's timezone
-      const dayOfWeek = currentDate.clone().local().format("dddd");
+      const dayOfWeek = currentDate.clone().format("dddd");
       const matchingMeetings = classData.meetings.filter(
         (meeting) => meeting.day === dayOfWeek
       );
@@ -190,6 +191,7 @@ export default function ClassRollTable({ classData, show, onClose }) {
         <Typography variant="h6" sx={{ mt: 4 }}>
           Attendance Table
         </Typography>
+
         <TableContainer
           component={Paper}
           sx={{
@@ -241,9 +243,7 @@ export default function ClassRollTable({ classData, show, onClose }) {
                 ))}
                 {dates.map((date) => (
                   <TableCell key={date} align="center" sx={{ minWidth: 100 }}>
-                    {new Date(date).toLocaleDateString("en-US", {
-                      weekday: "long",
-                    })}
+                    {moment(date).format("dddd")}
                   </TableCell>
                 ))}
               </TableRow>
@@ -262,15 +262,14 @@ export default function ClassRollTable({ classData, show, onClose }) {
                     {field.label}
                   </TableCell>
                 ))}
-                {dates.map((date) => (
-                  <TableCell key={date} align="center" sx={{ minWidth: 100 }}>
-                    {new Date(date).toLocaleDateString("en-US", {
-                      month: "2-digit",
-                      day: "2-digit",
-                      year: "2-digit",
-                    })}
-                  </TableCell>
-                ))}
+                {dates.map((date) => {
+                  const [year, month, day] = date.split("-");
+                  return (
+                    <TableCell key={date} align="center" sx={{ minWidth: 100 }}>
+                      {`${month}/${day}/${year.slice(-2)}`}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             </TableHead>
             <TableBody>

@@ -16,6 +16,7 @@ import { FIELD_TYPES } from "../FieldTypes";
 import { ExampleIcons } from "@/components/events/ClassesTreeView/IconSelect";
 import ClassPreview from "./ClassPreview";
 import { ExpandMore } from "@mui/icons-material";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export function ViewClassSignupForm({ testSubmit, classData }) {
   const {
@@ -35,6 +36,7 @@ export function ViewClassSignupForm({ testSubmit, classData }) {
   if (
     classConfig &&
     classConfig.signups &&
+    classConfig.capacity &&
     classConfig.signups.length == classConfig.capacity
   ) {
     return (
@@ -54,6 +56,8 @@ export function ViewClassSignupForm({ testSubmit, classData }) {
     <Stack spacing={3} component="form">
       <ClassPreview classData={classConfig} />
       <Divider sx={{ my: 3 }} />
+
+      {/* <JsonViewer data={classData} title="Class Config" /> */}
 
       {fieldOrder.map((field) => {
         const config = formConfig[field];
@@ -130,7 +134,7 @@ export function ViewClassSignupForm({ testSubmit, classData }) {
       )}
       {submitStatus === "error" && (
         <Typography variant="body1" color="error" sx={{ mt: 2 }}>
-          There was an error submitting the form. Please try again.
+          Please fill out all required fields.
         </Typography>
       )}
     </Stack>

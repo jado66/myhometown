@@ -84,8 +84,8 @@ export function ClassSignupProvider({
 
   // Initialize form configuration
   const [formConfig, setFormConfig] = useState(() => {
-    if (defaultConfig?.formConfig) {
-      return defaultConfig.formConfig;
+    if (defaultConfig?.signupForm?.formConfig) {
+      return defaultConfig?.signupForm?.formConfig;
     }
 
     const newFormConfig = DEFAULT_VISIBLE_FIELDS.reduce((acc, key) => {
@@ -126,23 +126,17 @@ export function ClassSignupProvider({
 
   const [fieldOrder, setFieldOrder] = useState(() => {
     // First priority: defaultConfig field order
-    if (defaultConfig?.fieldOrder) {
-      alert("defaultConfig");
-      return defaultConfig.fieldOrder;
+    if (defaultConfig?.signupForm?.fieldOrder) {
+      return defaultConfig?.signupForm?.fieldOrder;
     }
 
     // Second priority: classObj's signupForm field order
     if (classObj?.fieldOrder) {
-      alert(
-        "Setting field order from classObj" +
-          JSON.stringify(classObj.signupForm.fieldOrder)
-      );
       return classObj.signupForm.fieldOrder;
     }
 
     // Third priority: extract order from formConfig fields that are visible
     if (defaultConfig?.formConfig) {
-      alert("defaultConfig");
       return Object.keys(defaultConfig.formConfig).filter(
         (key) => defaultConfig.formConfig[key].visible
       );
@@ -197,6 +191,7 @@ export function ClassSignupProvider({
         if (loadedClass.signupForm) {
           setFormConfig(loadedClass.signupForm.formConfig);
           initialFormConfigRef.current = loadedClass.signupForm;
+          setFieldOrder(loadedClass.signupForm.fieldOrder);
         }
 
         // Update class configuration
@@ -222,11 +217,6 @@ export function ClassSignupProvider({
 
         setClassConfig(newClassConfig);
         initialClassConfigRef.current = newClassConfig;
-
-        // Update field order
-        if (loadedClass.fieldOrder) {
-          setFieldOrder(loadedClass.fieldOrder);
-        }
 
         hasLoadedRef.current = true;
       } catch (error) {
