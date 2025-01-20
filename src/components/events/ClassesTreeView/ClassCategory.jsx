@@ -285,7 +285,18 @@ export const ClassCategory = ({
 
           if (classObj?.v == 1)
             return (
-              <Accordion>
+              <Accordion
+                component={({ children, ...props }) => (
+                  <div
+                    {...props}
+                    onKeyDown={null}
+                    onKeyUp={null}
+                    onKeyPress={null}
+                  >
+                    {children}
+                  </div>
+                )}
+              >
                 <AccordionSummary
                   expandIcon={<ExpandMore />}
                   onMouseEnter={() => setHoverClass(classObj.id)}

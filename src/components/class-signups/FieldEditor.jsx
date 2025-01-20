@@ -123,9 +123,9 @@ export const FieldEditor = ({
           <TextField
             size="small"
             value={config.label}
-            onChange={(e) =>
-              onUpdate(field, { ...config, label: e.target.value })
-            }
+            onChange={(e) => {
+              onUpdate(field, { ...config, label: e.target.value });
+            }}
             label="Label"
             sx={{ flexGrow: 1 }}
           />
@@ -177,9 +177,10 @@ export const FieldEditor = ({
         <TextField
           size="small"
           value={config.label}
-          onChange={(e) =>
-            onUpdate(field, { ...config, label: e.target.value })
-          }
+          onChange={(e) => {
+            e.stopPropagation();
+            onUpdate(field, { ...config, label: e.target.value });
+          }}
           sx={{ flexGrow: 1 }}
         />
 

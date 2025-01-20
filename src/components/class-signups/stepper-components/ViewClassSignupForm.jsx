@@ -86,6 +86,9 @@ export function ViewClassSignupForm({ testSubmit, classData }) {
             key={field}
             field={field}
             config={config}
+            onKeyDown={(e) => {
+              e.stopPropagation();
+            }}
             value={formData[field] || ""}
             onChange={handleFormChange}
             error={errors[field]}
