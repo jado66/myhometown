@@ -188,7 +188,7 @@ export const ClassCategory = ({
 
   const classes = isEdit
     ? category.classes
-    : category.classes.filter((c) => c.visibility);
+    : category.classes.filter((c) => c.v !== 1 || c.visibility);
 
   return (
     <StyledTreeItem
