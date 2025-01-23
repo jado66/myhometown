@@ -144,7 +144,7 @@ const SidebarNav = ({ onClose }) => {
                     </Typography>
                   </NextLink>
                   <NextLink
-                    href={rootUrl + `/maintenance`}
+                    href={rootUrl + `/provo`}
                     style={{ textDecoration: "none", color: "#686868" }}
                   >
                     <Typography
@@ -161,7 +161,7 @@ const SidebarNav = ({ onClose }) => {
                   </NextLink>
 
                   <NextLink
-                    href={rootUrl + `/maintenance`}
+                    href={rootUrl + `/salt-lake-city`}
                     style={{ textDecoration: "none", color: "#686868" }}
                   >
                     <Typography
@@ -177,7 +177,7 @@ const SidebarNav = ({ onClose }) => {
                     </Typography>
                   </NextLink>
                   <NextLink
-                    href={rootUrl + `/maintenance`}
+                    href={rootUrl + `/west-valley-city`}
                     style={{ textDecoration: "none", color: "#686868" }}
                   >
                     <Typography

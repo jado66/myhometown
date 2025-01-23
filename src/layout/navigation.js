@@ -48,6 +48,10 @@ export const pages = () => {
           href: rootUrl + "/admin-dashboard/classes",
         },
         // {
+        //   title: "Volunteer Signups",
+        //   href: rootUrl + "/admin-dashboard/volunteer-signups",
+        // },
+        // {
         //   title: "User Guide",
         //   href: rootUrl + "/admin-dashboard/tools/user-guide",
         // },
