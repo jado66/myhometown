@@ -31,11 +31,15 @@ export async function PUT(req, { params }) {
   const { id } = params;
   const updateData = await req.json();
 
+  // Remove attendance and signups from the update data if present
+  const { attendance, signups, ...safeUpdateData } = updateData;
+
   let db, classes;
   try {
     ({ db } = await connectToMongoDatabase());
     classes = db.collection("Classes");
-    const result = await classes.updateOne({ id }, { $set: updateData });
+
+    const result = await classes.updateOne({ id }, { $set: safeUpdateData });
 
     if (result.matchedCount === 0) {
       return new Response(JSON.stringify({ error: "Class not found" }), {

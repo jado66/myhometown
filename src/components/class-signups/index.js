@@ -147,6 +147,10 @@ export default function CustomClassSignup({
     const { classConfig: basicClassInfo, signupForm: classSignupForm } =
       classData;
 
+    // remove signups and attendance from the class data
+    delete classData.signups;
+    delete classData.attendance;
+
     try {
       // Log the full class data
 

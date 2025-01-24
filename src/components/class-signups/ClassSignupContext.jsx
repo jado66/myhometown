@@ -182,7 +182,12 @@ export function ClassSignupProvider({
 
         const loadedClass = await loadedClassesContext.loadClass(classObj.id);
 
-        console.log("Loaded class:", JSON.stringify(loadedClass, null, 4));
+        console.log(
+          "Loaded class trigger:",
+          classObj?.id,
+          isNew,
+          JSON.stringify(loadedClass, null, 4)
+        );
         if (!loadedClass) {
           throw new Error(`Could not find class with ID ${classObj.id}`);
         }
@@ -228,7 +233,7 @@ export function ClassSignupProvider({
     }
 
     loadClassData();
-  }, [classObj?.id, isNew, loadedClassesContext]);
+  }, [classObj?.id, isNew]);
 
   const handleClassConfigChange = useCallback((field, value) => {
     setClassConfig((prev) => ({
