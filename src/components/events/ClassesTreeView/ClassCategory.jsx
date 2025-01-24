@@ -203,7 +203,7 @@ export const ClassCategory = ({
                 behavior: "smooth",
               });
             }
-          }, 500); // Reduced timeout since we're now properly controlling expansion
+          }, 1500); // Reduced timeout since we're now properly controlling expansion
         }
       }
     }

@@ -7,6 +7,9 @@ import { IframeHelpDialog } from "../IframeHelpDialog";
 import { ClassCategory } from "./ClassCategory";
 import { CreateCategoryForm } from "./CreateCategoryForm";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
+import Link from "next/link";
+import { Link as LinkIcon } from "@mui/icons-material";
+import { toast } from "react-toastify";
 
 export const ClassesTreeView = ({
   classes,
@@ -106,7 +109,25 @@ export const ClassesTreeView = ({
         id="crc-classes"
       >
         Community Resource Center Classes
+        {isEdit && (
+          <Button
+            onClick={
+              // copy to clipboard
+              () => {
+                navigator.clipboard.writeText(
+                  `${window.location.href}#crc-classes`.replace(/edit\//g, "")
+                );
+                toast.success("Link copied to clipboard");
+              }
+            }
+            variant="text"
+            sx={{ mb: 1 }}
+          >
+            <LinkIcon sx={{ mr: 1 }} />
+          </Button>
+        )}
       </Typography>
+
       <Card sx={{ padding: 2, marginTop: 2 }}>
         <Grid item xs={12}>
           <SimpleTreeView

@@ -75,15 +75,23 @@ const Page = ({ params }) => {
 
       if (hash) {
         // Find the element with the matching ID
-        const element = document.getElementById(hash);
 
-        if (element) {
-          // Scroll to the element with smooth behavior
-          element.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
-        }
+        // set timeout
+        setTimeout(() => {
+          const element = document.getElementById(hash);
+
+          if (element) {
+            const headerOffset = 66;
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition =
+              elementPosition + window.pageYOffset - headerOffset;
+
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: "smooth",
+            });
+          }
+        }, 1500);
       }
     }
   }, [hasLoaded]);
