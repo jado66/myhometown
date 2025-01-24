@@ -197,8 +197,9 @@ export const ClassCategory = ({
       itemId={category.id.toString()}
       onClick={(e) => onToggleExpand(e, category.id.toString(), false)}
       isExpanded={false}
-      onMouseEnter={() => setShowOptions(true)}
-      onMouseLeave={() => setShowOptions(false)}
+      onMouseEnter={isEdit ? () => setShowOptions(true) : () => {}}
+      // TODO - Fix this it is causing a rerender if not on edit
+      onMouseLeave={isEdit ? () => setShowOptions(false) : () => {}}
       label={
         isEditing ? (
           <Grid container alignItems="center" spacing={2}>
@@ -300,7 +301,7 @@ export const ClassCategory = ({
                 <AccordionSummary
                   expandIcon={<ExpandMore />}
                   onMouseEnter={() => setHoverClass(classObj.id)}
-                  onMouseLeave={() => hideHoverClass(null)}
+                  // onMouseLeave={() => hideHoverClass(null)}
                 >
                   <Box
                     sx={{
