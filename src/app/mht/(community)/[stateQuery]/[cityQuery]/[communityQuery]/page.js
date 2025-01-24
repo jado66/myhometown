@@ -33,10 +33,12 @@ import { VolunteerSignUps } from "@/components/VolunteerSignUps";
 import { LightBox } from "@/components/LightBox";
 import { MaintenanceMode } from "@/views/supportingPages";
 import { LoadedClassesProvider } from "@/contexts/LoadedClassesProvider";
+import { useSearchParams } from "next/navigation";
 
 const Page = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params; //TODO change me to stateQuery... VsCode hates renaming folders
   const [selectedImage, setSelectedImage] = useState();
+  const searchParams = useSearchParams(); // Add this hook
 
   const {
     community,
@@ -64,6 +66,27 @@ const Page = ({ params }) => {
       localStorage.setItem("lastCommunity", JSON.stringify(community));
     }
   }, [community, hasLoaded]);
+
+  useEffect(() => {
+    // Check if the page has loaded and if there's a hash in the URL
+    if (hasLoaded && typeof window !== "undefined") {
+      // Get the hash from the URL (without the #)
+      const hash = window.location.hash.replace("#", "");
+
+      if (hash) {
+        // Find the element with the matching ID
+        const element = document.getElementById(hash);
+
+        if (element) {
+          // Scroll to the element with smooth behavior
+          element.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }
+      }
+    }
+  }, [hasLoaded]);
 
   const alertNotEdit = () => {
     alert("this isn't edit");

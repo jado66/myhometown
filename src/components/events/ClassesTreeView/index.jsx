@@ -103,6 +103,7 @@ export const ClassesTreeView = ({
         color="primary"
         textAlign="center"
         gutterBottom
+        id="crc-classes"
       >
         Community Resource Center Classes
       </Typography>

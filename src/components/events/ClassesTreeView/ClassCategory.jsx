@@ -287,6 +287,7 @@ export const ClassCategory = ({
           if (classObj?.v == 1)
             return (
               <Accordion
+                // id={`class-${classObj.id}`}
                 component={({ children, ...props }) => (
                   <div
                     {...props}
