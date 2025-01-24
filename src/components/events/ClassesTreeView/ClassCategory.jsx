@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Grid,
@@ -63,10 +63,10 @@ export const ClassCategory = ({
   const [openClassSignup, setOpenClassSignup] = useState(null);
   const [duplicatedClassData, setDuplicatedClassData] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
+  const [expandedClass, setExpandedClass] = useState(null);
+  const [hoverClass, setHoverClass] = useState(null);
 
   const { loadClass } = useLoadedClassesContext();
-
-  const [hoverClass, setHoverClass] = useState(null);
 
   const hideHoverClass = (id) => {
     if (hoverClass === id) {
@@ -76,7 +76,6 @@ export const ClassCategory = ({
 
   // Check if the icon exists before attempting to clone it
   let IconWithProps = null;
-
   if (category.icon && ExampleIcons[category.icon]) {
     IconWithProps = React.cloneElement(ExampleIcons[category.icon], {
       sx: { height: 35, width: 35 },
@@ -87,9 +86,6 @@ export const ClassCategory = ({
 
   const handleDuplicateClass = async (classId) => {
     const newClassData = await loadClass(classId);
-
-    console.log("DUPLICATED DATA" + JSON.stringify(newClassData, null, 4));
-
     const duplicatedData = {
       ...newClassData,
       title: `${newClassData.title} (Copy)`,
@@ -99,7 +95,6 @@ export const ClassCategory = ({
         fieldOrder: newClassData.signupForm?.fieldOrder || [],
       },
     };
-
     setDuplicatedClassData(duplicatedData);
     setAddNewClass(true);
   };
@@ -121,19 +116,10 @@ export const ClassCategory = ({
   };
 
   const handleCreateSubclass = async (classConfig, signupForm) => {
-    // alert("Calling function from class category");
-    console.log(
-      JSON.stringify(
-        "Calling function from class category" +
-          JSON.stringify({ classConfig, signupForm }, null, 4)
-      )
-    );
     try {
       if (!category.id) {
         throw new Error("Category ID is required");
       }
-
-      // Ensure all required fields are present
 
       const createdClass = await onCreateSubclass(
         classConfig.categoryId || category.id,
@@ -186,6 +172,43 @@ export const ClassCategory = ({
     onUpdateSubclassField(category.id, classId, "visibility", visibility);
   };
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash.replace("#class-", "");
+
+      if (hash) {
+        // Find the class with matching ID
+        const matchingClass = category.classes.find(
+          (classObj) => classObj.title.toLowerCase().replace(" ", "-") === hash
+        );
+
+        if (matchingClass) {
+          // First, expand the category
+          forceExpandCategory();
+
+          // Then set the expanded class state
+          setExpandedClass(matchingClass.id);
+
+          // Finally, scroll to the element after a delay to ensure expansion is complete
+          setTimeout(() => {
+            const element = document.getElementById(`class-${hash}`);
+            if (element) {
+              const headerOffset = 115;
+              const elementPosition = element.getBoundingClientRect().top;
+              const offsetPosition =
+                elementPosition + window.pageYOffset - headerOffset;
+
+              window.scrollTo({
+                top: offsetPosition,
+                behavior: "smooth",
+              });
+            }
+          }, 500); // Reduced timeout since we're now properly controlling expansion
+        }
+      }
+    }
+  }, []);
+
   const classes = isEdit
     ? category.classes
     : category.classes.filter((c) => c.v !== 1 || c.visibility);
@@ -198,7 +221,6 @@ export const ClassCategory = ({
       onClick={(e) => onToggleExpand(e, category.id.toString(), false)}
       isExpanded={false}
       onMouseEnter={isEdit ? () => setShowOptions(true) : () => {}}
-      // TODO - Fix this it is causing a rerender if not on edit
       onMouseLeave={isEdit ? () => setShowOptions(false) : () => {}}
       label={
         isEditing ? (
@@ -247,7 +269,6 @@ export const ClassCategory = ({
         ) : (
           <div style={{ display: "flex", alignItems: "center" }}>
             {IconWithProps}
-
             <Typography sx={{ marginLeft: "1em" }} variant="h5">
               {category.title}
             </Typography>
@@ -284,10 +305,15 @@ export const ClassCategory = ({
             showCapacity: classObj.showCapacity || false,
           };
 
-          if (classObj?.v == 1)
+          if (classObj?.v === 1)
             return (
               <Accordion
-                // id={`class-${classObj.id}`}
+                key={classObj.id}
+                expanded={expandedClass === classObj.id}
+                onChange={(e, isExpanded) =>
+                  setExpandedClass(isExpanded ? classObj.id : null)
+                }
+                id={`class-${classObj.title?.toLowerCase().replace(" ", "-")}`}
                 component={({ children, ...props }) => (
                   <div
                     {...props}
@@ -302,7 +328,6 @@ export const ClassCategory = ({
                 <AccordionSummary
                   expandIcon={<ExpandMore />}
                   onMouseEnter={() => setHoverClass(classObj.id)}
-                  // onMouseLeave={() => hideHoverClass(null)}
                 >
                   <Box
                     sx={{
@@ -318,9 +343,9 @@ export const ClassCategory = ({
                         })}
                       </Box>
                     )}
+
                     <Typography>{classObj.title}</Typography>
                     <Box sx={{ flexGrow: 1 }} />
-
                     {isEdit && hoverClass === classObj.id && (
                       <ClassDropdownActions
                         classObj={classObj}
@@ -337,7 +362,6 @@ export const ClassCategory = ({
                       />
                     )}
                     {isEdit && !classObj.visibility && (
-                      // Drop down button with visibility options
                       <VisibilityDropdown
                         classObj={classObj}
                         onUpdateVisibility={onUpdateVisibility}
@@ -380,22 +404,20 @@ export const ClassCategory = ({
             );
           else
             return (
-              <>
-                <ClassSignup
-                  key={`classname-${classObj.id}`}
-                  classObj={classObj}
-                  category={category}
-                  editingClassId={editingClassId}
-                  onUpdateSubclass={onUpdateSubclass}
-                  onDeleteSubclass={onDeleteSubclass}
-                  shiftUpClass={shiftUpSubclass}
-                  shiftDownClass={shiftDownSubclass}
-                  showIframeHelpDialog={showIframeHelpDialog}
-                  isFirstClass={index === 0}
-                  isLastClass={index === category.classes.length - 1}
-                  isEdit={isEdit}
-                />
-              </>
+              <ClassSignup
+                key={`classname-${classObj.id}`}
+                classObj={classObj}
+                category={category}
+                editingClassId={editingClassId}
+                onUpdateSubclass={onUpdateSubclass}
+                onDeleteSubclass={onDeleteSubclass}
+                shiftUpClass={shiftUpSubclass}
+                shiftDownClass={shiftDownSubclass}
+                showIframeHelpDialog={showIframeHelpDialog}
+                isFirstClass={index === 0}
+                isLastClass={index === category.classes.length - 1}
+                isEdit={isEdit}
+              />
             );
         })}
 

@@ -1,3 +1,4 @@
+import { Link } from "@mui/icons-material";
 import {
   Delete,
   Edit,
@@ -9,6 +10,7 @@ import {
 } from "@mui/icons-material";
 import { Button, Divider, Menu, MenuItem } from "@mui/material";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 export const ClassDropdownActions = ({
   classObj,
@@ -79,6 +81,25 @@ export const ClassDropdownActions = ({
         >
           <ContentCopy sx={{ mr: 1 }} /> Duplicate Class
         </MenuItem>
+        <MenuItem
+          // copy class title to clipboard
+          onClick={(e) => {
+            //  this should be the current url + #class-{classObj.id.toLowerCase().replace(/ /g, "-")}
+            navigator.clipboard.writeText(
+              `${window.location.href}#class-${classObj.title
+                .toLowerCase()
+                .replace(/ /g, "-")}`
+                // replace edit out of the url
+                .replace(/\/edit/g, "")
+            );
+            toast.success("Class URL copied to clipboard");
+            handleClose(e);
+          }}
+        >
+          <Link sx={{ mr: 1 }} />
+          Copy Class URL
+        </MenuItem>
+
         {classObj.visibility ? (
           <MenuItem
             onClick={(e) => {
