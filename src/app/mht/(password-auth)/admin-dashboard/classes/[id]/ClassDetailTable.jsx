@@ -25,6 +25,7 @@ import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import { AVAILABLE_FIELDS } from "@/components/class-signups/AvailableFields";
 import { FIELD_TYPES } from "@/components/class-signups/FieldTypes";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const getFieldConfig = (fieldKey, formConfig) => {
   const customConfig = formConfig[fieldKey] || {};
@@ -320,6 +321,22 @@ const ClassDetailTable = ({
     () => [
       ...baseColumns,
       {
+        field: "createdAt",
+        headerName: "Sign Up Date",
+        width: 220,
+        flex: 1,
+        // render cell value as a date in UTC with slashes
+        valueFormatter: ({ value }) => {
+          const date = new Date(value);
+          const day = String(date.getUTCDate()).padStart(2, "0");
+          const month = String(date.getUTCMonth() + 1).padStart(2, "0"); // Months are zero-based
+          const year = date.getUTCFullYear();
+
+          return `${month}/${day}/${year} `;
+        },
+      },
+
+      {
         field: "actions",
         type: "actions",
         headerName: "Actions",
@@ -348,6 +365,8 @@ const ClassDetailTable = ({
         }}
       >
         <Typography variant="h6">Class Roster</Typography>
+        {/* <JsonViewer data={classData} /> */}
+
         <Button
           variant="contained"
           startIcon={<AddIcon />}

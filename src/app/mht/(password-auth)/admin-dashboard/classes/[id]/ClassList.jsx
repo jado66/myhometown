@@ -10,7 +10,6 @@ import {
   Typography,
   Grid,
   Box,
-  Chip,
   IconButton,
   Tooltip,
   CardActions,
@@ -24,7 +23,6 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CategoryIcon from "@mui/icons-material/Category";
 import GroupIcon from "@mui/icons-material/Group";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import PersonIcon from "@mui/icons-material/Person";
 import ClassDetailTable from "./ClassDetailTable";
 import ClassRollTable from "./ClassRollTable";
@@ -33,7 +31,7 @@ import ClassPreview from "@/components/class-signups/stepper-components/ClassPre
 import { ExampleIcons } from "@/components/events/ClassesTreeView/IconSelect";
 import { Phone, School } from "@mui/icons-material";
 
-export default function ClassList({ communityId }) {
+export default function ClassList({ communityId, searchTerm }) {
   const {
     getClassesByCommunity,
     updateClass,
@@ -169,124 +167,131 @@ export default function ClassList({ communityId }) {
 
   return (
     <>
-      <Grid container spacing={3} sx={{ mx: 1, mb: 3 }}>
-        {classes.map((classItem) => (
-          <Grid item xs={12} md={6} lg={3} key={classItem.id}>
-            <Card
-              sx={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                cursor: "pointer",
-                "&:hover": {
-                  boxShadow: 6,
-                  transition: "box-shadow 0.3s ease-in-out",
-                },
-              }}
-            >
-              <CardHeader
-                title={
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <Typography variant="h6">{classItem.title}</Typography>
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        {/* Search bar */}
 
-                    {ExampleIcons[classItem.icon]}
-                  </Box>
-                }
-              />
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Box display="flex" flexDirection="column" gap={2}>
-                  {/* <Box display="flex" alignItems="center" gap={1}>
+        {classes
+          .sort((a, b) => a.title.localeCompare(b.title))
+          .filter((classItem) =>
+            classItem.title.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+          .map((classItem) => (
+            <Grid item xs={12} md={6} lg={3} key={classItem.id} gap={2}>
+              <Card
+                sx={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  cursor: "pointer",
+                  "&:hover": {
+                    boxShadow: 6,
+                    transition: "box-shadow 0.3s ease-in-out",
+                  },
+                }}
+              >
+                <CardHeader
+                  title={
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Typography variant="h6">{classItem.title}</Typography>
+
+                      {ExampleIcons[classItem.icon]}
+                    </Box>
+                  }
+                />
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Box display="flex" flexDirection="column" gap={2}>
+                    {/* <Box display="flex" alignItems="center" gap={1}>
                     <CalendarTodayIcon color="action" fontSize="small" />
                     <Typography variant="body2" color="text.secondary">
                       Created: {formatDate(classItem.createdAt)}
                     </Typography>
                   </Box> */}
 
-                  {classItem.startDate && (
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <AccessTimeIcon color="action" fontSize="small" />
-                      <Typography variant="body2" color="text.secondary">
-                        Start: {formatDate(classItem.startDate)}
-                      </Typography>
-                    </Box>
-                  )}
-                  {classItem.endDate && (
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <AccessTimeIcon color="action" fontSize="small" />
-                      <Typography variant="body2" color="text.secondary">
-                        End: {formatDate(classItem.endDate)}
-                      </Typography>
-                    </Box>
-                  )}
+                    {classItem.startDate && (
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <AccessTimeIcon color="action" fontSize="small" />
+                        <Typography variant="body2" color="text.secondary">
+                          Start: {formatDate(classItem.startDate)}
+                        </Typography>
+                      </Box>
+                    )}
+                    {classItem.endDate && (
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <AccessTimeIcon color="action" fontSize="small" />
+                        <Typography variant="body2" color="text.secondary">
+                          End: {formatDate(classItem.endDate)}
+                        </Typography>
+                      </Box>
+                    )}
 
-                  {classItem.teachers && classItem.teachers.length > 0 && (
+                    {classItem.teachers && classItem.teachers.length > 0 && (
+                      <Box display="flex" alignItems="center" gap={1}>
+                        {/* <LocationOnIcon color="action" fontSize="small" /> */}
+                        <School color="action" fontSize="small" />
+                        <Typography variant="body2" color="text.secondary">
+                          Teachers:
+                        </Typography>
+                      </Box>
+                    )}
+
+                    {classItem.location && (
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <LocationOnIcon color="action" fontSize="small" />
+                        <Typography variant="body2" color="text.secondary">
+                          {classItem.location}
+                        </Typography>
+                      </Box>
+                    )}
+
                     <Box display="flex" alignItems="center" gap={1}>
-                      {/* <LocationOnIcon color="action" fontSize="small" /> */}
-                      <School color="action" fontSize="small" />
+                      <GroupIcon color="action" fontSize="small" />
                       <Typography variant="body2" color="text.secondary">
-                        Teachers:
+                        Signups: {classItem.signups?.length || 0}
+                        {classItem.showCapacity &&
+                          classItem.capacity &&
+                          ` / ${classItem.capacity}`}
                       </Typography>
                     </Box>
-                  )}
-
-                  {classItem.location && (
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <LocationOnIcon color="action" fontSize="small" />
-                      <Typography variant="body2" color="text.secondary">
-                        {classItem.location}
-                      </Typography>
-                    </Box>
-                  )}
-
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <GroupIcon color="action" fontSize="small" />
-                    <Typography variant="body2" color="text.secondary">
-                      Signups: {classItem.signups?.length || 0}
-                      {classItem.showCapacity &&
-                        classItem.capacity &&
-                        ` / ${classItem.capacity}`}
-                    </Typography>
                   </Box>
-                </Box>
-              </CardContent>
-              <CardActions>
-                <Stack direction="column" spacing={1} sx={{ flexGrow: 1 }}>
-                  <Divider />
-                  <Button
-                    color="primary"
-                    fullWidth
-                    startIcon={<PersonIcon />}
-                    variant="outlined"
-                    onClick={() => takeAttendance(classItem)}
-                  >
-                    Take Attendance
-                  </Button>
-                  <Button
-                    color="primary"
-                    startIcon={<CategoryIcon />}
-                    variant="outlined"
-                    fullWidth
-                    onClick={() => viewClass(classItem)}
-                  >
-                    Class Student Information
-                  </Button>
-                  <Tooltip title="Coming Soon" arrow>
+                </CardContent>
+                <CardActions>
+                  <Stack direction="column" spacing={1} sx={{ flexGrow: 1 }}>
+                    <Divider />
                     <Button
                       color="primary"
-                      startIcon={<Phone />}
+                      fullWidth
+                      startIcon={<PersonIcon />}
+                      variant="outlined"
+                      onClick={() => takeAttendance(classItem)}
+                    >
+                      Take Attendance
+                    </Button>
+                    <Button
+                      color="primary"
+                      startIcon={<CategoryIcon />}
                       variant="outlined"
                       fullWidth
-                      disabled
                       onClick={() => viewClass(classItem)}
                     >
-                      Text Your Students
+                      Class Student Information
                     </Button>
-                  </Tooltip>
-                </Stack>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
+                    <Tooltip title="Coming Soon" arrow>
+                      <Button
+                        color="primary"
+                        startIcon={<Phone />}
+                        variant="outlined"
+                        fullWidth
+                        disabled
+                        onClick={() => viewClass(classItem)}
+                      >
+                        Text Your Students
+                      </Button>
+                    </Tooltip>
+                  </Stack>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
       </Grid>
 
       <ClassRollTable

@@ -17,10 +17,10 @@ const MyPage = () => {
         App Development Lists
       </Typography>
       <Grid container spacing={2}>
-        <Grid item xs={6}>
+        <Grid item xs={6} sx={{ maxHeight: "70vh", overflow: "auto" }}>
           <ItemsList type="bug_reports" />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={6} sx={{ maxHeight: "70vh", overflow: "auto" }}>
           <ItemsList type="feature_requests" />
         </Grid>
       </Grid>

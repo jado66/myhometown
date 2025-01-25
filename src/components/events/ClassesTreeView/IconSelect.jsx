@@ -25,6 +25,13 @@ import YouthInActionIcon from "@/assets/svg/icons/YouthInActionIcon";
 import CraftsIcon from "@/assets/svg/icons/CraftsIcon";
 import BeeIcon from "@/assets/svg/icons/BeeIcon";
 import SingleClassIcon from "@/assets/svg/icons/SingleClassIcon";
+import SpanishIcon from "@/assets/svg/icons/SpanishIcon";
+import JuniorLeadersIcon from "@/assets/svg/icons/JuniorLeadersIcon";
+import Finance2Icon from "@/assets/svg/icons/Finance2Icon";
+import AslIcon from "@/assets/svg/icons/AslIcon";
+import LoveAndLogicIcon from "@/assets/svg/icons/LoveandLogicIcon";
+import LearningTreeIcon from "@/assets/svg/icons/LearningTreeIcon";
+import EverydayStrongIcon from "@/assets/svg/icons/EverydayStrongIcon";
 
 export const ExampleIcons = {
   None: <div style={{ height: "30px", width: "35px" }}> </div>,
@@ -48,6 +55,13 @@ export const ExampleIcons = {
   LifeSkills: <LifeSkillsIcon />,
   YogaIcon: <YogaIcon />,
   YouthInIcon: <YouthInActionIcon />,
+  SpanishIcon: <SpanishIcon />,
+  JuniorLeadersIcon: <JuniorLeadersIcon />,
+  Finance2Icon: <Finance2Icon />,
+  AslIcon: <AslIcon />,
+  LoveAndLogicIcon: <LoveAndLogicIcon />,
+  LearningTreeIcon: <LearningTreeIcon />,
+  EverydayStrongIcon: <EverydayStrongIcon />,
   // Tutoring: <TutoringIcon />,
   // Music: <MusicIcon />,
 

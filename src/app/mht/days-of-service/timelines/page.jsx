@@ -15,7 +15,7 @@ import {
   Alert,
 } from "@mui/material";
 import JsonViewer from "@/components/util/debug/DebugOutput";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 const API_BASE_URL = "/api/database/project-forms";
 
@@ -30,6 +30,8 @@ export default function StatusTable() {
   const [endDate, setEndDate] = useState("2025-01-25");
   const [todayLeftPosition, setTodayLeftPosition] = useState(0);
   const [todayTopPosition, setTodayTopPosition] = useState(0);
+
+  const router = useRouter();
 
   const tableRef = useRef(null);
   const projectColumnRef = useRef(null);
@@ -90,25 +92,16 @@ export default function StatusTable() {
       const availableWidth = tableWidth - projectColumnWidth;
       const position = projectColumnWidth + availableWidth * todayPercentage;
 
-      console.log(
-        JSON.stringify({
-          today,
-          startDay,
-          endDay,
-          totalDays,
-          daysSinceStart,
-          todayPercentage,
-          tableWidth,
-          projectColumnWidth,
-          availableWidth,
-          position,
-        })
-      );
-
       setTodayLeftPosition(position);
       setTodayTopPosition(projectRowHeight);
     }
-  }, [startDate, endDate, tableRef.current, projectColumnRef.current]);
+  }, [
+    startDate,
+    endDate,
+    tableRef.current,
+    projectColumnRef.current,
+    projects,
+  ]);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -157,8 +150,12 @@ export default function StatusTable() {
   };
 
   const handleCellClick = (projectIndex, columnIndex) => {
-    alert(
-      `Clicked Project ${projectIndex + 1}, Column ${letters[columnIndex]}`
+    // use router to take me to /projects/[id]
+    const projectId = projects[projectIndex].id;
+    const letter = letters[columnIndex];
+    router.push(
+      process.env.NEXT_PUBLIC_DOMAIN +
+        `/days-of-service/projects/${projectId}?task=${letter}`
     );
   };
 

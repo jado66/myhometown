@@ -34,12 +34,15 @@ import { useSendSMS } from "@/hooks/communications/useSendSMS";
 import { toast } from "react-toastify";
 import { useRedisHealth } from "@/hooks/health/useRedisHealth";
 import { RecipientsList } from "./RecipientList";
+import { useSearchParams } from "next/navigation";
 
 const MAX_ATTACHMENTS = 10;
 const MAX_TOTAL_SIZE_MB = 5;
 const MAX_TOTAL_SIZE_BYTES = MAX_TOTAL_SIZE_MB * 1024 * 1024; // Convert MB to bytes
 
 export default function BulkMMSMessaging() {
+  const searchParams = useSearchParams();
+
   const [message, setMessage] = useState("");
   const [contacts, setContacts] = useState([]);
   const [groups, setGroups] = useState([]);
@@ -55,6 +58,25 @@ export default function BulkMMSMessaging() {
   const [totalFileSize, setTotalFileSize] = useState(0);
 
   const redisHealth = useRedisHealth(60000);
+
+  useEffect(() => {
+    const phone = searchParams.get("phone");
+    const urlMessage = searchParams.get("message");
+
+    if (urlMessage) {
+      const decodedMessage = decodeURIComponent(urlMessage);
+      setMessage(decodedMessage);
+    }
+
+    if (phone) {
+      setSelectedRecipients([
+        {
+          value: phone,
+          label: `${phone}`,
+        },
+      ]);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const savedContacts = JSON.parse(localStorage.getItem("contacts")) || [];

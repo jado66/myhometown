@@ -1,8 +1,23 @@
+"use client";
 import Link from "next/link";
 import { Button, Container, Paper, Typography, Box } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import { House } from "@mui/icons-material";
+import { ArrowBack } from "@mui/icons-material";
+import { useRouter } from "next/navigation";
 
 export default function ThankYou() {
+  const router = useRouter();
+
+  const goBack = () => {
+    // go back two pages
+    router.back();
+
+    setTimeout(() => {
+      router.back();
+    }, 100);
+  };
+
   return (
     <Box
       sx={{
@@ -48,11 +63,21 @@ export default function ThankYou() {
             don&apos;t hesitate to contact our support team.
           </Typography>
 
-          <Link href="/" style={{ width: "100%" }}>
-            <Button variant="contained" fullWidth>
-              Return to Home
+          <Box
+            sx={{ flexGrow: 1, display: "flex", flexDirection: "row", gap: 2 }}
+          >
+            <Button variant="contained" fullWidth onClick={goBack}>
+              <ArrowBack sx={{ mr: 1 }} />
+              Go Back
             </Button>
-          </Link>
+
+            <Link href="/" style={{ width: "100%" }}>
+              <Button variant="contained" fullWidth>
+                <House sx={{ mr: 1 }} />
+                Home
+              </Button>
+            </Link>
+          </Box>
         </Paper>
       </Container>
     </Box>

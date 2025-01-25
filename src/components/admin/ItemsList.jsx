@@ -14,6 +14,7 @@ import {
   Paper,
   Select,
   MenuItem,
+  Button,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -23,6 +24,8 @@ import PriorityHighIcon from "@mui/icons-material/PriorityHigh";
 import BrightnessLowIcon from "@mui/icons-material/BrightnessLow";
 import BedtimeIcon from "@mui/icons-material/Bedtime";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
+import JsonViewer from "../util/debug/DebugOutput";
+import { Message } from "@mui/icons-material";
 
 // Styled components
 
@@ -173,6 +176,8 @@ function ItemsList({ type }) {
 
   return (
     <Card>
+      <JsonViewer data={items} title="Items" />
+
       <CardContent>
         <Box
           display="flex"
@@ -324,13 +329,46 @@ function ItemsList({ type }) {
                       </IconButton>
                     </Box>
                     {expandedItems.has(item.id) && (
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ mt: 1 }}
-                      >
-                        {item.description}
-                      </Typography>
+                      <>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ mt: 1 }}
+                        >
+                          {item.description}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ mt: 1, mr: 1 }}
+                        >
+                          {item.user_name} - {item.phone_number} - Created on{" "}
+                          {new Date(item.created_at).toDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </Typography>
+
+                        <IconButton
+                          variant="text"
+                          size="small"
+                          href={
+                            process.env.NEXT_PUBLIC_DOMAIN +
+                            `/admin-dashboard/tools/sms?phone=${
+                              item.phone_number
+                            }&message=${encodeURIComponent(
+                              `Hi ${item.user_name},\n\nYour ${
+                                type === "bug_reports" ? "bug," : "feature"
+                              } "${item.title}", has been ${
+                                type === "bug_reports" ? "fixed" : "developed"
+                              }. Thank you for your patience!`
+                            )}`
+                          }
+                        >
+                          <Message fontSize="small" />
+                        </IconButton>
+                      </>
                     )}
                   </Box>
                 </Box>
