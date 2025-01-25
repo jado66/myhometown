@@ -71,18 +71,40 @@ export default function StatusTable() {
       const tableWidth = tableRef.current.getBoundingClientRect().width;
       const projectColumnWidth =
         projectColumnRef.current.getBoundingClientRect().width;
-
       const projectRowHeight =
         projectColumnRef.current.getBoundingClientRect().height;
-      const today = new Date().toISOString().split("T")[0];
-      const startDateTime = new Date(startDate).getTime();
-      const endDateTime = new Date(endDate).getTime();
-      const todayDateTime = new Date(today).getTime();
-      const todayPercentage =
-        (todayDateTime - startDateTime) / (endDateTime - startDateTime);
+
+      // Get dates in local time
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const startDay = new Date(startDate + "T00:00:00");
+      const endDay = new Date(endDate + "T00:00:00");
+
+      const totalDays = (endDay - startDay) / (1000 * 60 * 60 * 24);
+      const daysSinceStart = (today - startDay) / (1000 * 60 * 60 * 24);
+      const todayPercentage = Math.min(
+        Math.max(daysSinceStart / totalDays, 0),
+        1
+      );
 
       const availableWidth = tableWidth - projectColumnWidth;
       const position = projectColumnWidth + availableWidth * todayPercentage;
+
+      console.log(
+        JSON.stringify({
+          today,
+          startDay,
+          endDay,
+          totalDays,
+          daysSinceStart,
+          todayPercentage,
+          tableWidth,
+          projectColumnWidth,
+          availableWidth,
+          position,
+        })
+      );
+
       setTodayLeftPosition(position);
       setTodayTopPosition(projectRowHeight);
     }
@@ -112,129 +134,6 @@ export default function StatusTable() {
     fetchProjects();
   }, [searchParams, getProjectForm]);
 
-  const statusesByGroup = [
-    [
-      "done",
-      "progress",
-      "progress",
-      "progress",
-      "progress",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-    ],
-    [
-      "done",
-      "done",
-      "done",
-      "progress",
-      "progress",
-      "progress",
-      "none",
-      "none",
-      "none",
-      "none",
-    ],
-    [
-      "progress",
-      "progress",
-      "progress",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-    ],
-    [
-      "progress",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-    ],
-    [
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-    ],
-    [
-      "done",
-      "done",
-      "done",
-      "done",
-      "done",
-      "done",
-      "progress",
-      "progress",
-      "none",
-      "none",
-    ],
-    [
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-    ],
-    [
-      "done",
-      "done",
-      "progress",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-    ],
-    [
-      "progress",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-    ],
-    [
-      "done",
-      "progress",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-      "none",
-    ],
-  ];
-
   const getStatusColor = (status) => {
     switch (status) {
       case "done":
@@ -263,12 +162,24 @@ export default function StatusTable() {
     );
   };
 
-  const today = new Date().toISOString().split("T")[0];
-  const startDateTime = new Date(startDate).getTime();
-  const endDateTime = new Date(endDate).getTime();
-  const todayDateTime = new Date(today).getTime();
-  const todayPosition =
-    ((todayDateTime - startDateTime) / (endDateTime - startDateTime)) * 100;
+  const getProjectStatus = (project) => {
+    const statuses = [
+      !!project.propertyOwner,
+      !!project.projectLead,
+      !!project.workSummary,
+      !!project.materialsProcured,
+      !!project.called811,
+      !!project.budget,
+      !!project.homeownerAbility,
+      !!project.preferredRemedies,
+      !!project.isAddressVerified,
+      !!project.toolsArranged,
+    ];
+
+    return statuses.map((status) => (status ? "done" : "none"));
+  };
+
+  const statusesByGroup = projects.map((project) => getProjectStatus(project));
 
   if (loading) {
     return (
@@ -288,7 +199,7 @@ export default function StatusTable() {
 
   return (
     <Box sx={{ width: "100%", p: 4 }}>
-      <JsonViewer data={projects} />
+      {/* <JsonViewer data={projects} /> */}
 
       <Box sx={{ display: "flex", gap: 2, mb: 4 }}>
         <TextField
