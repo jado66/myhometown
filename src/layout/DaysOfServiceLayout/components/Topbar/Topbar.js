@@ -77,10 +77,10 @@ const Topbar = ({ onSidebarOpen, theme }) => {
             <Link
               underline="none"
               component="a"
-              href={rootUrl + "/days-of-service/project-development-forms"}
+              href={rootUrl + "/days-of-service/projects"}
               color={theme.palette.primary.contrastText}
             >
-              Project Development Forms
+              Projects
             </Link>
           </Box>
         </Box>

@@ -404,7 +404,7 @@ const ProjectForm = () => {
         </Stepper>
 
         <Typography variant="h6" gutterBottom>
-          {steps[activeStep].label}
+          {steps[activeStep]?.label}
         </Typography>
 
         {renderStepContent()}

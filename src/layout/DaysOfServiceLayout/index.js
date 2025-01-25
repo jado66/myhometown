@@ -117,10 +117,7 @@ const DaysOfServiceLayout = ({ children }) => {
               backgroundColor: "#fafafa",
               mx: "auto",
               boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
-              maxWidth: {
-                lg: "md",
-                xl: "lg",
-              },
+              maxWidth: "xl",
             }}
           >
             {children}

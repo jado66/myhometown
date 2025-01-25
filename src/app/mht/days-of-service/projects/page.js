@@ -15,8 +15,13 @@ import {
   IconButton,
   CircularProgress,
   Alert,
+  Checkbox,
 } from "@mui/material";
-import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Timeline as TimelineIcon,
+} from "@mui/icons-material";
 import { useLocalStorageProjectForms } from "@/hooks/use-local-storage-project-forms";
 import { useState } from "react";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
@@ -28,13 +33,18 @@ export default function ProjectFormsPage() {
     useLocalStorageProjectForms();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
+  const [selectedProjects, setSelectedProjects] = useState([]);
 
   const handleProjectClick = (id) => {
-    router.push(`/days-of-service/project-development-forms/${id}`);
+    router.push(
+      process.env.NEXT_PUBLIC_DOMAIN + `/days-of-service/projects/${id}`
+    );
   };
 
   const handleNewProject = () => {
-    router.push("/days-of-service/project-development-forms/new");
+    router.push(
+      process.env.NEXT_PUBLIC_DOMAIN + "/days-of-service/projects/new"
+    );
   };
 
   const handleDeleteClick = (e, project) => {
@@ -48,9 +58,7 @@ export default function ProjectFormsPage() {
       try {
         const response = await fetch(
           `/api/database/project-forms/${projectToDelete.id}`,
-          {
-            method: "DELETE",
-          }
+          { method: "DELETE" }
         );
 
         if (!response.ok && response.status !== 404) {
@@ -60,6 +68,9 @@ export default function ProjectFormsPage() {
         deleteProject(projectToDelete.id);
         setDeleteDialogOpen(false);
         setProjectToDelete(null);
+        setSelectedProjects((prev) =>
+          prev.filter((id) => id !== projectToDelete.id)
+        );
         toast.success("Project deleted successfully");
       } catch (error) {
         console.error("Error deleting project:", error);
@@ -70,6 +81,27 @@ export default function ProjectFormsPage() {
   const handleCancelDelete = () => {
     setDeleteDialogOpen(false);
     setProjectToDelete(null);
+  };
+
+  const handleCheckboxChange = (e, projectId) => {
+    e.stopPropagation();
+    setSelectedProjects((prev) =>
+      prev.includes(projectId)
+        ? prev.filter((id) => id !== projectId)
+        : [...prev, projectId]
+    );
+  };
+
+  const handleViewTimelines = () => {
+    if (selectedProjects.length === 0) {
+      toast.warning("Please select at least one project");
+      return;
+    }
+
+    router.push(
+      process.env.NEXT_PUBLIC_DOMAIN +
+        `/days-of-service/timelines?projects=${selectedProjects.join(",")}`
+    );
   };
 
   const formatDate = (dateString) => {
@@ -83,12 +115,8 @@ export default function ProjectFormsPage() {
   };
 
   const getProjectTitle = (project) => {
-    if (project.propertyOwner) {
-      return project.propertyOwner;
-    }
-    if (project.address) {
-      return project.address;
-    }
+    if (project.propertyOwner) return project.propertyOwner;
+    if (project.address) return project.address;
     return `Project ${project.id.slice(0, 8)}...`;
   };
 
@@ -179,6 +207,11 @@ export default function ProjectFormsPage() {
                       </Box>
                     }
                   >
+                    <Checkbox
+                      checked={selectedProjects.includes(project.id)}
+                      onChange={(e) => handleCheckboxChange(e, project.id)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
                     <ListItemButton
                       onClick={() => handleProjectClick(project.id)}
                     >
@@ -215,7 +248,7 @@ export default function ProjectFormsPage() {
           )}
         </Paper>
 
-        <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
+        <Box sx={{ mt: 2, display: "flex", justifyContent: "center", gap: 2 }}>
           <Button
             variant="contained"
             color="primary"
@@ -224,6 +257,15 @@ export default function ProjectFormsPage() {
             disabled={isLoading}
           >
             New Project
+          </Button>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={handleViewTimelines}
+            startIcon={<TimelineIcon />}
+            disabled={isLoading || selectedProjects.length === 0}
+          >
+            View Project Timelines
           </Button>
         </Box>
 
