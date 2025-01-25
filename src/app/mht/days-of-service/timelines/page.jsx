@@ -108,7 +108,7 @@ export default function StatusTable() {
       setTodayLeftPosition(position);
       setTodayTopPosition(projectRowHeight);
     }
-  }, [startDate, endDate]);
+  }, [startDate, endDate, tableRef.current, projectColumnRef.current]);
 
   useEffect(() => {
     const fetchProjects = async () => {
