@@ -44,6 +44,8 @@ export default function BugReportForm() {
         user_id: user?.id,
         title,
         description,
+        phone_number: user?.contactNumber,
+        user_name: user?.firstName + " " + user?.lastName,
         image_url: imageUrl,
       });
 

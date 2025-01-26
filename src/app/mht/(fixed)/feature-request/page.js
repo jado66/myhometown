@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { supabase } from "@/util/supabase";
 import { useUser } from "@/hooks/use-user";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export default function FeatureRequestForm() {
   const { user } = useUser();
@@ -45,6 +46,8 @@ export default function FeatureRequestForm() {
         user_id: user?.id,
         title,
         description,
+        phone_number: user?.contactNumber,
+        user_name: user?.firstName + " " + user?.lastName,
         image_url: imageUrl,
       });
 
