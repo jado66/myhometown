@@ -53,7 +53,7 @@ export default function FeatureRequestForm() {
 
       if (error) throw error;
 
-      router.push("/thank-you");
+      router.push(process.env.NEXT_PUBLIC_DOMAIN + "/thank-you");
     } catch (error) {
       console.error("Error submitting feature request:", error);
       alert("Failed to submit feature request. Please try again.");

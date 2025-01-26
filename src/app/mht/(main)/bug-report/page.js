@@ -51,7 +51,7 @@ export default function BugReportForm() {
 
       if (error) throw error;
 
-      router.push("/thank-you");
+      router.push(process.env.NEXT_PUBLIC_DOMAIN + "/thank-you");
     } catch (error) {
       console.error("Error submitting bug report:", error);
       alert("Failed to submit bug report. Please try again.");

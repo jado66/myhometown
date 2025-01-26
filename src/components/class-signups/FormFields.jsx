@@ -110,7 +110,15 @@ export const FormField = ({
     switch (config.type) {
       case FIELD_TYPES.textarea:
         return (
-          <TextField {...commonProps} label={config.label} multiline rows={4} />
+          <TextField
+            {...commonProps}
+            label={config.label}
+            multiline
+            rows={4}
+            onKeyDown={(e) => {
+              e.stopPropagation();
+            }}
+          />
         );
       case FIELD_TYPES.select:
         return (
@@ -146,12 +154,22 @@ export const FormField = ({
             InputLabelProps={{
               shrink: true,
             }}
+            onKeyDown={(e) => {
+              e.stopPropagation();
+            }}
           />
         );
 
       default:
         return (
-          <TextField {...commonProps} type={config.type} label={config.label} />
+          <TextField
+            {...commonProps}
+            type={config.type}
+            label={config.label}
+            onKeyDown={(e) => {
+              e.stopPropagation();
+            }}
+          />
         );
     }
   };

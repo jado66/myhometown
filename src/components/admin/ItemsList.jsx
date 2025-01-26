@@ -337,37 +337,58 @@ function ItemsList({ type }) {
                         >
                           {item.description}
                         </Typography>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ mt: 1, mr: 1 }}
-                        >
-                          {item.user_name} - {item.phone_number} - Created on{" "}
-                          {new Date(item.created_at).toDateString("en-US", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </Typography>
+                        {item.user_name && item.phone_number ? (
+                          <>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ mt: 1, mr: 1 }}
+                            >
+                              {item.user_name} - {item.phone_number} - Created
+                              on{" "}
+                              {new Date(item.created_at).toDateString("en-US", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </Typography>
 
-                        <IconButton
-                          variant="text"
-                          size="small"
-                          href={
-                            process.env.NEXT_PUBLIC_DOMAIN +
-                            `/admin-dashboard/tools/sms?phone=${
-                              item.phone_number
-                            }&message=${encodeURIComponent(
-                              `Hi ${item.user_name},\n\nYour ${
-                                type === "bug_reports" ? "bug," : "feature"
-                              } "${item.title}", has been ${
-                                type === "bug_reports" ? "fixed" : "developed"
-                              }. Thank you for your patience!`
-                            )}`
-                          }
-                        >
-                          <Message fontSize="small" />
-                        </IconButton>
+                            <IconButton
+                              variant="text"
+                              size="small"
+                              href={
+                                process.env.NEXT_PUBLIC_DOMAIN +
+                                `/admin-dashboard/tools/sms?phone=${
+                                  item.phone_number
+                                }&message=${encodeURIComponent(
+                                  `Hi ${item.user_name},\n\nYour ${
+                                    type === "bug_reports" ? "bug," : "feature"
+                                  } "${item.title}", has been ${
+                                    type === "bug_reports"
+                                      ? "fixed"
+                                      : "developed"
+                                  }. Thank you for your patience!`
+                                )}`
+                              }
+                            >
+                              <Message fontSize="small" />
+                            </IconButton>
+                          </>
+                        ) : (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ mt: 1, mr: 1 }}
+                          >
+                            Created on{" "}
+                            {new Date(item.created_at).toDateString("en-US", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })}{" "}
+                            by a guest.
+                          </Typography>
+                        )}
                       </>
                     )}
                   </Box>
