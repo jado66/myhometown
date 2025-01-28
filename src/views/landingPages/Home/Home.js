@@ -294,6 +294,7 @@ community-minded businesses.`}
           <Box
             component="img"
             src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/MHT+landing+page+photos/Photos+1/iStock-1164938630.jpg"
+            // src="mht\city-page\happy volunteers.jpeg"
             alt="Kids Learning"
             sx={{
               borderRadius: 3,

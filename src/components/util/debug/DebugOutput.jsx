@@ -1,3 +1,5 @@
+"use client";
+
 import ReactJson from "react-json-view";
 
 const JsonViewer = ({ data, title }) => {
