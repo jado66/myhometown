@@ -47,26 +47,25 @@ const Header = () => {
             display: "flex",
             alignItems: "center",
             mb: 2,
+            textAlign: "center",
             mx: "auto",
           }}
         >
-          <Gavel sx={{ fontSize: 40, mr: 2 }} />
-          <Typography variant="h3" component="h1" sx={{ fontWeight: "bold" }}>
-            Code Violation Resolution
+          <Typography
+            variant="h3"
+            component="h1"
+            sx={{ fontWeight: "bold", mx: "auto" }}
+          >
+            Day of Service Project Tracking
           </Typography>
         </Box>
 
         <Box sx={{ ml: 6 }}>
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: "normal" }}>
-            Days Of Service Enforcement Workflow System
-          </Typography>
-
           <Typography variant="body1" sx={{ maxWidth: "800px" }}>
             This system manages the process of documenting, tracking, and
-            resolving property code violations. Input from multiple stakeholders
-            including enforcement officers, neighbors, and ward members helps
-            ensure fair and effective resolution of violations while providing
-            support to homeowners.
+            reporting the progress of a Days of Service Project. Input from
+            multiple Days of Service Leaders are compiled to track progress and
+            facilitate communication and enable accurate reporting.
           </Typography>
         </Box>
       </Container>

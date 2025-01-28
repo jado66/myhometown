@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import { Search } from "@mui/icons-material";
 import useCommunities from "@/hooks/use-communities";
+import CommunitySelect from "@/components/data-tables/selects/CommunitySelect";
 
 const CommunitySelectionPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -59,18 +60,10 @@ const CommunitySelectionPage = () => {
           Select a Community to View Classes
         </Typography>
         <Box sx={{ mb: 4 }}>
-          <TextField
+          <CommunitySelect
+            value={selectedCommunity}
+            onChange={setSelectedCommunity}
             fullWidth
-            placeholder="Search communities or cities..."
-            value={searchTerm}
-            onChange={handleSearch}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }}
           />
         </Box>
 

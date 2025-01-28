@@ -5,11 +5,12 @@ import { Container, Typography } from "@mui/material";
 import useCommunities from "@/hooks/use-communities";
 import { Box, TextField, InputAdornment } from "@mui/material";
 import { Search } from "@mui/icons-material";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 export default function ClassPage({ params }) {
   const { getCommunity, loading, error } = useCommunities();
   const [community, setCommunity] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useLocalStorage("classSearch", "");
 
   useEffect(() => {
     const fetchCommunity = async () => {
@@ -40,9 +41,13 @@ export default function ClassPage({ params }) {
       <Box sx={{ mb: 4 }}>
         <TextField
           fullWidth
-          placeholder="Search communities or cities..."
+          placeholder="Search classes..."
           value={searchTerm}
           onChange={handleSearch}
+          sx={{
+            // colored background if there is a value in the search field
+            backgroundColor: searchTerm ? "#d4e7fa" : "white",
+          }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
