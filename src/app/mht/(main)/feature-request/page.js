@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -12,7 +11,6 @@ import {
 } from "@mui/material";
 import { supabase } from "@/util/supabase";
 import { useUser } from "@/hooks/use-user";
-import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export default function FeatureRequestForm() {
   const { user } = useUser();
