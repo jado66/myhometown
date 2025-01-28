@@ -299,12 +299,19 @@ community-minded businesses.`}
             sx={{
               borderRadius: 3,
               width: "100%",
-              height: "100%",
+              height: {
+                xs: "100%",
+                lg: "140%", // Increase height on large screens to prevent cropping
+              },
               objectFit: "cover",
               position: "absolute",
               bottom: {
-                xs: "0%", // Default position for small screens
-                lg: "-20%", // Shift down by 20% on large screens
+                xs: "0%",
+                lg: "-40%",
+              },
+              top: {
+                xs: "0%",
+                lg: "auto", // Remove top constraint on large screens
               },
             }}
           />
