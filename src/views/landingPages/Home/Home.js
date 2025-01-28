@@ -302,7 +302,10 @@ community-minded businesses.`}
               height: "100%",
               objectFit: "cover",
               position: "absolute",
-              bottom: "0%",
+              bottom: {
+                xs: "0%", // Default position for small screens
+                lg: "-20%", // Shift down by 20% on large screens
+              },
             }}
           />
         </Grid>
