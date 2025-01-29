@@ -154,7 +154,13 @@ const ProjectForm = () => {
       case 0:
         return (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <CommunitySelect />
+            <CommunitySelect
+              value={formData.community}
+              onChange={(community) =>
+                handleInputChange("community", community)
+              }
+              isMulti={false}
+            />
             <TextField
               label="Project Lead"
               fullWidth

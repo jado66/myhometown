@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import { cityStrings } from "@/constants/cities";
+import { toast } from "react-toastify";
 
 const Topbar = ({ onSidebarOpen }) => {
   const { groupedCityStrings } = useManageCities(null, true);
@@ -155,7 +156,34 @@ const Topbar = ({ onSidebarOpen }) => {
                 },
               }}
             >
-              Community Resource Center Classes
+              Classes
+              {/* {
+                !resourcesAnchorEl ?
+                <ExpandMore/>
+                :
+                <ExpandLess/>
+              } */}
+            </Link>
+          </Box>
+
+          <Box marginX={2}>
+            <Link
+              underline="none"
+              component="a"
+              href={"#"} //process.env.NEXT_PUBLIC_DOMAIN + "/days-of-service"}
+              color="black"
+              display="flex"
+              fontWeight="bold"
+              fontSize="larger"
+              alignContent="center"
+              sx={{
+                "&:hover": {
+                  color: "#3A3B3C",
+                },
+              }}
+              onClick={() => toast.info("Days of Service is coming soon!")}
+            >
+              Days Of Service
               {/* {
                 !resourcesAnchorEl ?
                 <ExpandMore/>

@@ -12,6 +12,19 @@ export default function useCommunities(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Update select options whenever communities change
+  useEffect(() => {
+    const selectOptions = communities
+      .map((community) => ({
+        value: community._id,
+        label: community.city + " - " + community.name,
+        data: community,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+
+    setCommunitySelectOptions(selectOptions);
+  }, [communities]);
+
   async function fetchCommunitiesByCityId(cityId) {
     const response = await fetch("/api/communities/by-city", {
       method: "POST",
@@ -32,20 +45,11 @@ export default function useCommunities(
         const res = await fetch(`/api/database/communities`);
         const data = await res.json();
         setCommunities(data);
-
-        const selectOptions = data
-          .filter((community) => !Boolean(community.city)) // Filter here
-          .map((community) => ({
-            value: community._id,
-            label: community.name,
-            data: community,
-          }));
-        setCommunitySelectOptions(selectOptions);
+        setHasLoaded(true);
       } catch (e) {
         console.error("Error occurred while fetching communities", e);
+        setHasLoaded(true);
       }
-
-      setHasLoaded(true);
     }
 
     async function fetchCommunitiesByIds(ids) {
@@ -59,11 +63,11 @@ export default function useCommunities(
         });
         const data = await res.json();
         setCommunities(data);
+        setHasLoaded(true);
       } catch (e) {
         console.error("Error occurred while fetching communities", e);
+        setHasLoaded(true);
       }
-
-      setHasLoaded(true);
     }
 
     if (!userfilter && !forDropDownCommunityMenu) {
@@ -76,7 +80,6 @@ export default function useCommunities(
       const communityIds = userfilter.communities.map(
         (community) => community._id
       );
-
       fetchCommunitiesByIds(communityIds);
     }
   }, [userfilter]);
@@ -90,7 +93,7 @@ export default function useCommunities(
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify([id]), // Send as array with single ID
+        body: JSON.stringify([id]),
       });
 
       if (!res.ok) {
@@ -104,7 +107,7 @@ export default function useCommunities(
         throw new Error("Community not found");
       }
 
-      return data[0]; // Return first (and only) community
+      return data[0];
     } catch (err) {
       setError(err.message);
       setLoading(false);
@@ -142,19 +145,16 @@ export default function useCommunities(
         }),
       });
 
-      // Check to see is users has changed
       if (
         JSON.stringify(previousCommunity.communityOwners) !==
         JSON.stringify(community.communityOwners)
       ) {
-        // Make a list of users that need the community added
         const usersToAddCommunity = community.communityOwners.filter(
           (user) => !previousCommunity.communityOwners.includes(user)
         );
 
         handleAddCommunityToUsers(community, usersToAddCommunity);
 
-        // Make a list of users that need the community removed
         const usersToRemoveCommunity = previousCommunity.communityOwners.filter(
           (user) => !community.communityOwners.includes(user)
         );
@@ -172,7 +172,6 @@ export default function useCommunities(
   };
 
   const handleDeleteCommunity = async (community) => {
-    // Ensure there are no users with this community
     if (community.communityOwners.length > 0) {
       toast.error("Remove all users with this community before deleting it");
       return;
@@ -213,14 +212,13 @@ export default function useCommunities(
 }
 
 // Util functions not passed down
-
 const handleAddCommunityToUsers = async (community, users) => {
   if (users.length === 0) {
     return;
   }
 
   try {
-    const res = await fetch("/api/database/users/updateCommunityOwners", {
+    await fetch("/api/database/users/updateCommunityOwners", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -241,7 +239,7 @@ const handleDeleteCommunityFromUsers = async (community, users) => {
   }
 
   try {
-    const res = await fetch("/api/database/users/updateCommunityOwners", {
+    await fetch("/api/database/users/updateCommunityOwners", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
