@@ -23,7 +23,6 @@ import AddEditCityDialog from "@/components/data-tables/AddEditCityDialog";
 import { useRouter } from "next/navigation";
 import useManageCities from "@/hooks/use-manage-cities";
 import { useUser } from "@/hooks/use-user";
-import { mkConfig, generateCsv, download } from "export-to-csv";
 
 export default function Management() {
   const theme = useTheme();

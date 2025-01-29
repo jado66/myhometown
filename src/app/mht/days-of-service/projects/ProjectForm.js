@@ -18,6 +18,8 @@ import {
   Typography,
   Box,
   Divider,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
@@ -29,11 +31,20 @@ import Loading from "@/components/util/Loading";
 import AddressFormFields from "./form-components/AddressFormFields";
 import CommunitySelect from "@/components/data-tables/selects/CommunitySelect";
 import TaskTable from "./form-components/TaskTable";
+import { Info } from "@mui/icons-material";
+import EmailPreviewDialog from "./EmailPreviewDialog";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 const ProjectForm = () => {
   const [collaboratorEmail, setCollaboratorEmail] = useState("");
   const [collaboratorMessage, setCollaboratorMessage] = useState("");
+  const [fromName, setFromName] = useLocalStorage(
+    "days-of-service-from-name",
+    ""
+  );
   const [isSending, setIsSending] = useState(false);
+
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
 
   // Replace useState with context
   const {
@@ -67,6 +78,20 @@ const ProjectForm = () => {
       fields: ["preferredRemedies", "specificTasks"],
     },
     {
+      label: "Review Project Assignment",
+      fields: [
+        "volunteerTools",
+        "equipment",
+        "materials",
+        "materialsProcured",
+        "toolsArranged",
+        "called811",
+      ],
+    },
+    {
+      label: "Partner Stake & Ward Participation",
+    },
+    {
       label: "Resource Assessment",
       fields: ["budget", "homeownerAbility"],
     },
@@ -90,21 +115,20 @@ const ProjectForm = () => {
 
     setIsSending(true);
     try {
-      const response = await fetch("/api/send-request-form-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          subject: "Collaboration Request: Project Form",
-          html: {
-            email: collaboratorEmail,
-            message: `You have been invited to collaborate on a project form. Click the link below to access the form:\n\nhttps://myhometown.vercel.app/days-of-service/project-development-forms/${formData.id} + \n\n${collaboratorMessage}`,
-            firstName: "Collaborator",
-            lastName: "Invitation",
+      const response = await fetch(
+        "/api/communications/send-mail/send-dos-invite",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        }),
-      });
+          body: JSON.stringify({
+            to: collaboratorEmail,
+            from: fromName,
+            message: collaboratorMessage,
+          }),
+        }
+      );
 
       if (response.ok) {
         toast.success(
@@ -196,12 +220,11 @@ const ProjectForm = () => {
               onChange={(newTasks) => handleInputChange("tasks", newTasks)}
               hideResources={true} // New prop to hide resources section
             />
-          </Box>
-        );
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
+              Budget Estimates
+            </Typography>
 
-      case 2:
-        return (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <TextField
               label="Resource Budget Estimates"
               fullWidth
@@ -220,7 +243,326 @@ const ProjectForm = () => {
                 handleInputChange("homeownerAbility", e.target.value)
               }
             />
+          </Box>
+        );
 
+      case 2:
+        return (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Paper sx={{ p: 3 }}>
+              {/* Project Details Review */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" color="primary">
+                  Basic Information
+                </Typography>
+                <Box sx={{ pl: 2 }}>
+                  <Typography>
+                    <strong>Project Lead:</strong> {formData.projectLead}
+                  </Typography>
+                  <Typography>
+                    <strong>Property Owner:</strong> {formData.propertyOwner}
+                  </Typography>
+                  <Typography>
+                    <strong>Contact:</strong> {formData.phoneNumber} |{" "}
+                    {formData.email}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* Address Review */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" color="primary">
+                  Project Location
+                </Typography>
+                <Box sx={{ pl: 2 }}>
+                  <Typography>
+                    {formData.addressStreet1}
+                    {formData.addressStreet2 && `, ${formData.addressStreet2}`}
+                  </Typography>
+                  <Typography>
+                    {formData.addressCity}, {formData.addressState}{" "}
+                    {formData.addressZipCode}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* Work Summary Review */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" color="primary">
+                  Work Summary
+                </Typography>
+                <Box sx={{ pl: 2 }}>
+                  <Typography>{formData.workSummary}</Typography>
+                </Box>
+              </Box>
+
+              {/* Preferred Remedies Review */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" color="primary">
+                  Preferred Remedies
+                </Typography>
+                <Box sx={{ pl: 2 }}>
+                  <Typography>{formData.preferredRemedies}</Typography>
+                </Box>
+              </Box>
+
+              {/* Tasks Review */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" color="primary">
+                  Planned Tasks
+                </Typography>
+                <Box sx={{ pl: 2 }}>
+                  {
+                    // check if is array
+                    formData.tasks &&
+                      Array.isArray(formData.tasks) &&
+                      formData.tasks?.map((task, index) => (
+                        <Box key={index} sx={{ mb: 1 }}>
+                          <Typography>
+                            <strong>Task {index + 1}:</strong>{" "}
+                            {task.description}
+                          </Typography>
+                          {task.notes && (
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ pl: 2 }}
+                            >
+                              Notes: {task.notes}
+                            </Typography>
+                          )}
+                        </Box>
+                      ))
+                  }
+                </Box>
+              </Box>
+            </Paper>
+
+            {/* Textfield for project development couple */}
+            <TextField
+              label="Project Development Couple"
+              fullWidth
+              value={formData.projectDevelopmentCouple}
+              onChange={(e) =>
+                handleInputChange("projectDevelopmentCouple", e.target.value)
+              }
+            />
+
+            {/* Review Confirmation */}
+            <FormControl component="fieldset" sx={{ mt: 2 }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={formData.reviewCompletedWithCouple}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "reviewCompletedWithCouple",
+                        e.target.checked
+                      )
+                    }
+                  />
+                }
+                label="I have reviewed the project information with the project development couple"
+              />
+            </FormControl>
+            <FormControl component="fieldset">
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={formData.reviewCompletedWithHomeowner}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "reviewCompletedWithHomeowner",
+                        e.target.checked
+                      )
+                    }
+                  />
+                }
+                label="I have reviewed the project information with the homeowner"
+              />
+            </FormControl>
+
+            {/* Issues or Concerns Section */}
+            <TextField
+              label="Issues or Concerns (Optional)"
+              multiline
+              rows={4}
+              fullWidth
+              value={formData.reviewNotes || ""}
+              onChange={(e) => handleInputChange("reviewNotes", e.target.value)}
+              placeholder="Note any issues or concerns that need to be addressed"
+            />
+          </Box>
+        );
+
+      case 3:
+        return (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Paper sx={{ p: 3 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {/* Input Stake */}
+                <TextField
+                  label="Partner Stake"
+                  fullWidth
+                  value={formData.partnerStake}
+                  onChange={(e) =>
+                    handleInputChange("partnerStake", e.target.value)
+                  }
+                />
+
+                <TextField
+                  label="Partner Stake Liaison"
+                  fullWidth
+                  value={formData.partnerStakeLiaison}
+                  onChange={(e) =>
+                    handleInputChange("partnerStakeLiaison", e.target.value)
+                  }
+                />
+
+                {/* Gather phone and email from partner stake liaison */}
+                <Box sx={{ display: "flex", gap: 2 }}>
+                  <TextField
+                    label="Partner Stake Liaison Phone"
+                    fullWidth
+                    value={formData.partnerStakeLiaisonPhone}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "partnerStakeLiaisonPhone",
+                        e.target.value
+                      )
+                    }
+                  />
+
+                  <TextField
+                    label="Partner Stake Liaison Email"
+                    fullWidth
+                    value={formData.partnerStakeLiaisonEmail}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "partnerStakeLiaisonEmail",
+                        e.target.value
+                      )
+                    }
+                  />
+                </Box>
+
+                <Divider sx={{ my: 2 }} />
+
+                <TextField
+                  // parnter ward
+                  label="Partner Ward"
+                  fullWidth
+                  value={formData.partnerWard}
+                  onChange={(e) =>
+                    handleInputChange("partnerWard", e.target.value)
+                  }
+                />
+
+                <TextField
+                  label="Partner Ward Liaison"
+                  fullWidth
+                  value={formData.partnerWardLiaison}
+                  onChange={(e) =>
+                    handleInputChange("partnerWardLiaison", e.target.value)
+                  }
+                />
+
+                {/* Gather phone and email from partner ward liaison */}
+                <Box sx={{ display: "flex", gap: 2 }}>
+                  <TextField
+                    label="Partner Ward Liaison Phone"
+                    fullWidth
+                    value={formData.partnerWardLiaisonPhone}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "partnerWardLiaisonPhone",
+                        e.target.value
+                      )
+                    }
+                  />
+
+                  <TextField
+                    label="Partner Ward Liaison Email"
+                    fullWidth
+                    value={formData.partnerWardLiaisonEmail}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "partnerWardLiaisonEmail",
+                        e.target.value
+                      )
+                    }
+                  />
+                </Box>
+
+                <Box sx={{ display: "flex", gap: 2 }}>
+                  <TextField
+                    label="Partner Ward Liaison Phone 2 (Optional)"
+                    fullWidth
+                    value={formData.partnerWardLiaisonPhone2}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "partnerWardLiaisonPhone",
+                        e.target.value
+                      )
+                    }
+                  />
+
+                  <TextField
+                    label="Partner Ward Liaison Email 2 (Optional)"
+                    fullWidth
+                    value={formData.partnerWardLiaisonEmail2}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "partnerWardLiaisonEmail",
+                        e.target.value
+                      )
+                    }
+                  />
+                </Box>
+              </Box>
+              <Divider sx={{ my: 2 }} />
+
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <FormControlLabel
+                  fullWidth
+                  control={
+                    <Checkbox
+                      checked={formData.partnerStakeContacted}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "partnerStakeContacted",
+                          e.target.checked
+                        )
+                      }
+                    />
+                  }
+                  label="Has the Partner Stake been contacted?"
+                />
+
+                <FormControlLabel
+                  fullWidth
+                  control={
+                    <Checkbox
+                      checked={formData.partnerWardContacted}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "partnerWardContacted",
+                          e.target.checked
+                        )
+                      }
+                    />
+                  }
+                  label="Has the Partner Ward been contacted?"
+                />
+              </Box>
+              {/* Partner stake and partner ward have been contacted  */}
+            </Paper>
+          </Box>
+        );
+
+      case 4:
+        return (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {/* Resources Section */}
             <Paper sx={{ p: 3, mt: 2 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
@@ -302,17 +644,53 @@ const ProjectForm = () => {
               </Box>
 
               {/* Materials */}
-              <Box>
+              <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                  Materials
+                  Materials provided by Homeowner
                 </Typography>
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {formData.materials?.map((item, index) => (
+                  {formData.homeownerMaterials?.map((item, index) => (
                     <Chip
                       key={index}
                       label={item}
                       onDelete={() => {
-                        const newMaterials = formData.materials.filter(
+                        const newMaterials = formData.homeownerMaterials.filter(
+                          (_, i) => i !== index
+                        );
+                        handleInputChange("homeownerMaterials", newMaterials);
+                      }}
+                      size="small"
+                    />
+                  ))}
+                  <TextField
+                    size="small"
+                    variant="standard"
+                    placeholder="Add material..."
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && e.target.value.trim()) {
+                        const newMaterials = [
+                          ...(formData.materials || []),
+                          e.target.value.trim(),
+                        ];
+                        handleInputChange("materials", newMaterials);
+                        e.target.value = "";
+                      }
+                    }}
+                  />
+                </Box>
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                  Other Materials provided
+                </Typography>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                  {formData.otherMaterials?.map((item, index) => (
+                    <Chip
+                      key={index}
+                      label={item}
+                      onDelete={() => {
+                        const newMaterials = formData.otherMaterials.filter(
                           (_, i) => i !== index
                         );
                         handleInputChange("materials", newMaterials);
@@ -338,9 +716,23 @@ const ProjectForm = () => {
                 </Box>
               </Box>
 
+              {/* Textfield number for manpower # of people needed */}
+              <Box sx={{ mt: 3 }}>
+                <TextField
+                  label="Number of Volunteers Needed"
+                  type="number"
+                  min={0}
+                  fullWidth
+                  value={formData.volunteersNeeded}
+                  onChange={(e) =>
+                    handleInputChange("volunteersNeeded", e.target.value)
+                  }
+                />
+              </Box>
+
               <Box sx={{ mt: 3 }}>
                 <FormControl component="fieldset">
-                  <FormLabel component="legend">Project Status</FormLabel>
+                  <FormLabel component="legend">Procurement Status</FormLabel>
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -353,8 +745,9 @@ const ProjectForm = () => {
                         }
                       />
                     }
-                    label="Have the materials been procured?"
+                    label="Have the materials been procured (i.e. materials, dumpster)?"
                   />
+
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -364,8 +757,21 @@ const ProjectForm = () => {
                         }
                       />
                     }
-                    label="Has arrangement been made for the tools and equipment?"
+                    label="Have arrangements been made for the tools and equipment?"
                   />
+
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={formData.materialsOnSite}
+                        onChange={(e) =>
+                          handleInputChange("materialsOnSite", e.target.checked)
+                        }
+                      />
+                    }
+                    label="Are materials on site?"
+                  />
+
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -375,7 +781,7 @@ const ProjectForm = () => {
                         }
                       />
                     }
-                    label="Have we called 811 and gotten Blue Flags if needed?"
+                    label="Have we called 811 and ordered Blue Flags if needed?"
                   />
                 </FormControl>
               </Box>
@@ -393,73 +799,118 @@ const ProjectForm = () => {
   }
 
   return (
-    <Card sx={{ maxWidth: 800, margin: "auto" }}>
-      <CardContent>
-        <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
-          {steps.map((step, index) => (
-            <Step key={index}>
-              <StepLabel>{step.label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
+    <>
+      <Card sx={{ margin: "auto" }}>
+        <CardContent>
+          <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
+            {steps.map((step, index) => (
+              <Step key={index}>
+                <StepLabel>{step.label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
 
-        <Typography variant="h6" gutterBottom>
-          {steps[activeStep]?.label}
-        </Typography>
-
-        {renderStepContent()}
-
-        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
-          <Button
-            variant="contained"
-            color="inherit"
-            onClick={handleBack}
-            disabled={activeStep === 0}
-          >
-            Back
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleNext}
-            disabled={activeStep === steps.length - 1}
-          >
-            Next
-          </Button>
-        </Box>
-        <Box sx={{ borderTop: 1, borderColor: "divider", mt: 4, pt: 4 }}>
           <Typography variant="h6" gutterBottom>
-            Email Collaborative Link
+            {steps[activeStep]?.label}
           </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-              alignItems: "stretch",
-            }}
-          >
-            <TextField
-              label="Collaborator's Email"
-              fullWidth
-              value={collaboratorEmail}
-              onChange={(e) => setCollaboratorEmail(e.target.value)}
-              sx={{ flexGrow: 1 }}
-            />
-            <TextField
-              label="Message"
-              multiline
-              rows={4} // Adjust the 'rows' property as needed
-              fullWidth
-              value={collaboratorMessage}
-              onChange={(e) => setCollaboratorMessage(e.target.value)}
-              sx={{ flexGrow: 1 }}
-            />
+
+          {renderStepContent()}
+
+          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
+            <Button
+              variant="contained"
+              color="inherit"
+              onClick={handleBack}
+              disabled={activeStep === 0}
+            >
+              Back
+            </Button>
             <Button
               variant="contained"
               color="primary"
+              onClick={handleNext}
+              disabled={activeStep === steps.length - 1}
+            >
+              Next
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+      <Box sx={{ borderTop: 1, borderColor: "divider", mt: 4, pt: 4 }}>
+        <Typography variant="h6" gutterBottom>
+          Email Invitation to Collaborate
+        </Typography>
+
+        <EmailPreviewDialog
+          open={showEmailDialog}
+          onClose={() => setShowEmailDialog(false)}
+          email={collaboratorEmail}
+          message={collaboratorMessage}
+          fromName={fromName}
+        />
+
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            alignItems: "stretch",
+          }}
+        >
+          <TextField
+            label="Your Name"
+            fullWidth
+            value={fromName}
+            onChange={(e) => setFromName(e.target.value)}
+          />
+
+          <TextField
+            label="Collaborator's Email"
+            helperText="Enter the email of the person you want to collaborate with"
+            fullWidth
+            value={collaboratorEmail}
+            onChange={(e) => setCollaboratorEmail(e.target.value)}
+            sx={{ flexGrow: 1 }}
+          />
+          <TextField
+            label="Message"
+            multiline
+            rows={4} // Adjust the 'rows' property as needed
+            fullWidth
+            value={collaboratorMessage}
+            onChange={(e) => setCollaboratorMessage(e.target.value)}
+            sx={{ flexGrow: 1 }}
+          />
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
+            <Button
+              color="primary"
+              variant="outlined"
+              fullWidth
+              onClick={(e) => {
+                e.preventDefault();
+                setShowEmailDialog(true);
+              }}
+            >
+              View Preview of Email
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
               onClick={handleSendCollaborationEmail}
-              disabled={!collaboratorEmail || isSending}
+              disabled={
+                !collaboratorEmail ||
+                isSending ||
+                !fromName ||
+                !collaboratorMessage
+              }
             >
               {isSending ? (
                 <CircularProgress size={24} color="inherit" />
@@ -469,8 +920,8 @@ const ProjectForm = () => {
             </Button>
           </Box>
         </Box>
-      </CardContent>
-    </Card>
+      </Box>
+    </>
   );
 };
 

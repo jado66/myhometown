@@ -54,20 +54,18 @@ const Header = () => {
           <Typography
             variant="h3"
             component="h1"
-            sx={{ fontWeight: "bold", mx: "auto" }}
+            sx={{ fontWeight: "bold", width: "100%", textAlign: "center" }}
           >
             Day of Service Project Tracking
           </Typography>
         </Box>
 
-        <Box sx={{ ml: 6 }}>
-          <Typography variant="body1" sx={{ maxWidth: "800px" }}>
-            This system manages the process of documenting, tracking, and
-            reporting the progress of a Days of Service Project. Input from
-            multiple Days of Service Leaders are compiled to track progress and
-            facilitate communication and enable accurate reporting.
-          </Typography>
-        </Box>
+        <Typography variant="body1" sx={{ maxWidth: "800px" }}>
+          This system manages the process of documenting, tracking, and
+          reporting the progress of a Days of Service Project. Input from
+          multiple Days of Service Leaders are compiled to track progress and
+          facilitate communication and enable accurate reporting.
+        </Typography>
       </Container>
     </Paper>
   );

@@ -1,3 +1,5 @@
+"use client";
+
 import ProviderWrapper from "@/contexts/ProviderWrapper";
 import SimpleAuthProvider from "@/contexts/SimpleAuthProvider";
 import { FixedLayout } from "@/layout";

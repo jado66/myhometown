@@ -1,3 +1,5 @@
+"use client";
+
 import ImpersonationBanner from "@/components/util/ImpersonationBanner";
 import ProviderWrapper from "@/contexts/ProviderWrapper";
 import AuthGuard from "@/guards/auth-guard";
