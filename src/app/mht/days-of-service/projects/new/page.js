@@ -26,9 +26,7 @@ export default function NewProjectPage() {
         await new Promise((resolve) => setTimeout(resolve, 1500));
 
         // Redirect to the project form page
-        router.push(
-          rootUrl + `/days-of-service/project-development-forms/${newId}`
-        );
+        router.push(rootUrl + `/days-of-service/projects/${newId}`);
       } catch (error) {
         console.error("Error creating new project:", error);
       }

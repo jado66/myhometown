@@ -217,7 +217,7 @@ const SidebarNav = ({ onClose }) => {
           </Box>
           <Box marginBottom={2}>
             <NextLink
-              href={rootUrl + "/days-of-service"}
+              href={rootUrl + "/about-days-of-service"}
               style={{ textDecoration: "none", color: "#686868" }}
             >
               <Typography

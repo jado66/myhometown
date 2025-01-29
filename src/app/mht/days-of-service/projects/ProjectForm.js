@@ -99,6 +99,9 @@ const ProjectForm = () => {
 
   // Replace local handlers with context handlers
   const handleNext = () => {
+    // scroll to top of page
+    window.scrollTo(0, 0);
+
     if (activeStep < steps.length - 1) {
       setActiveStep(activeStep + 1);
     }

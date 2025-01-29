@@ -228,7 +228,7 @@ const Topbar = ({ onSidebarOpen }) => {
               underline="none"
               component="a"
               href="#"
-              onClick={() => handleNavigation("days-of-service")}
+              onClick={() => handleNavigation("about-days-of-service")}
               color="black"
               display="flex"
               fontWeight="bold"

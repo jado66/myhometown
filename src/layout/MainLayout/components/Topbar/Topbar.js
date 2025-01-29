@@ -268,7 +268,7 @@ const Topbar = ({ onSidebarOpen }) => {
             <Link
               underline="none"
               component="a"
-              href="/days-of-service"
+              href="/about-days-of-service"
               onClick={handleResourcesClick}
               color="black"
               display="flex"
