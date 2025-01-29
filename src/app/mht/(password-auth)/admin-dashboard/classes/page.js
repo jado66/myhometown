@@ -22,6 +22,9 @@ import { Search } from "@mui/icons-material";
 import useCommunities from "@/hooks/use-communities";
 import CommunitySelect from "@/components/data-tables/selects/CommunitySelect";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const CommunitySelectionPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [entryCode, setEntryCode] = useState("");

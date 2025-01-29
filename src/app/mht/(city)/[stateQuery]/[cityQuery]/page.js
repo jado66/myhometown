@@ -21,6 +21,9 @@ import { useCommunityList } from "@/hooks/useCommunityList";
 import Link from "next/link";
 import { MaintenanceMode } from "@/views/supportingPages";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const Page = ({ params }) => {
   const { stateQuery, cityQuery } = params;
   const { city, hasLoaded, handleSaveCity, error } = useCity(

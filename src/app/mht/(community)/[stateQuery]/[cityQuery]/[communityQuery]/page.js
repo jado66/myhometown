@@ -35,6 +35,9 @@ import { MaintenanceMode } from "@/views/supportingPages";
 import { LoadedClassesProvider } from "@/contexts/LoadedClassesProvider";
 import { useSearchParams } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const Page = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params; //TODO change me to stateQuery... VsCode hates renaming folders
   const [selectedImage, setSelectedImage] = useState();
