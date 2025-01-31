@@ -154,6 +154,30 @@ const ProjectForm = () => {
       case 0:
         return (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Typography variant="h4" sx={{ mt: 2, mb: 1, textAlign: "center" }}>
+              This step of the form is typically filled out by the Project
+              Developer(s)
+            </Typography>
+            <Divider sx={{ mt: 2 }} />
+
+            <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
+              Project Information
+            </Typography>
+
+            {/* Date for day of service */}
+            <FormControl component="fieldset" sx={{ mt: 2 }}>
+              <FormLabel component="legend">Date of Service</FormLabel>
+
+              <TextField
+                type="date"
+                fullWidth
+                value={formData.dateOfService}
+                onChange={(e) =>
+                  handleInputChange("dateOfService", e.target.value)
+                }
+              />
+            </FormControl>
+
             <CommunitySelect
               value={formData.community}
               onChange={(community) =>
@@ -162,10 +186,13 @@ const ProjectForm = () => {
               isMulti={false}
             />
             <TextField
-              label="Project Lead"
+              label="Project Developer"
               fullWidth
-              value={formData.projectLead}
-              onChange={(e) => handleInputChange("projectLead", e.target.value)}
+              value={formData.projectDeveloper}
+              onChange={(e) =>
+                handleInputChange("projectDeveloper", e.target.value)
+              }
+              helperText="Name of the person or couple who is developing the project. They will be the main point of contact for the project."
             />
             <TextField
               fullWidth
@@ -211,6 +238,23 @@ const ProjectForm = () => {
       case 1:
         return (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Typography variant="h4" sx={{ mt: 2, mb: 1, textAlign: "center" }}>
+              This step of the form is typically filled out by the Resource
+              Couple
+            </Typography>
+            <Divider sx={{ mt: 2 }} />
+            <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
+              Detailed Planning
+            </Typography>
+            <TextField
+              label="Project Development Couple"
+              fullWidth
+              value={formData.projectDevelopmentCouple}
+              onChange={(e) =>
+                handleInputChange("projectDevelopmentCouple", e.target.value)
+              }
+            />
+
             <TextField
               label="Preferred Remedies"
               fullWidth
@@ -229,21 +273,202 @@ const ProjectForm = () => {
               onChange={(newTasks) => handleInputChange("tasks", newTasks)}
               hideResources={true} // New prop to hide resources section
             />
+
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Tools, Equipment, and Materials
+            </Typography>
+
+            {/* Volunteer Tools */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Volunteer Tools
+              </Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                {formData.volunteerTools?.map((tool, index) => (
+                  <Chip
+                    key={index}
+                    label={tool}
+                    onDelete={() => {
+                      const newTools = formData.volunteerTools.filter(
+                        (_, i) => i !== index
+                      );
+                      handleInputChange("volunteerTools", newTools);
+                    }}
+                    size="small"
+                  />
+                ))}
+                <TextField
+                  size="small"
+                  variant="standard"
+                  placeholder="Add tool..."
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && e.target.value.trim()) {
+                      const newTools = [
+                        ...(formData.volunteerTools || []),
+                        e.target.value.trim(),
+                      ];
+                      handleInputChange("volunteerTools", newTools);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+              </Box>
+            </Box>
+
+            {/* Equipment */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Equipment
+              </Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                {formData.equipment?.map((item, index) => (
+                  <Chip
+                    key={index}
+                    label={item}
+                    onDelete={() => {
+                      const newEquipment = formData.equipment.filter(
+                        (_, i) => i !== index
+                      );
+                      handleInputChange("equipment", newEquipment);
+                    }}
+                    size="small"
+                  />
+                ))}
+                <TextField
+                  size="small"
+                  variant="standard"
+                  placeholder="Add equipment..."
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && e.target.value.trim()) {
+                      const newEquipment = [
+                        ...(formData.equipment || []),
+                        e.target.value.trim(),
+                      ];
+                      handleInputChange("equipment", newEquipment);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+              </Box>
+            </Box>
+
+            {/* Materials */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Materials provided by Homeowner
+              </Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                {formData.homeownerMaterials?.map((item, index) => (
+                  <Chip
+                    key={index}
+                    label={item}
+                    onDelete={() => {
+                      const newMaterials = formData.homeownerMaterials.filter(
+                        (_, i) => i !== index
+                      );
+                      handleInputChange("homeownerMaterials", newMaterials);
+                    }}
+                    size="small"
+                  />
+                ))}
+                <TextField
+                  size="small"
+                  variant="standard"
+                  placeholder="Add material..."
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && e.target.value.trim()) {
+                      const newMaterials = [
+                        ...(formData.materials || []),
+                        e.target.value.trim(),
+                      ];
+                      handleInputChange("materials", newMaterials);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+              </Box>
+            </Box>
+
+            <Box>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Other Materials provided
+              </Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                {formData.otherMaterials?.map((item, index) => (
+                  <Chip
+                    key={index}
+                    label={item}
+                    onDelete={() => {
+                      const newMaterials = formData.otherMaterials.filter(
+                        (_, i) => i !== index
+                      );
+                      handleInputChange("materials", newMaterials);
+                    }}
+                    size="small"
+                  />
+                ))}
+                <TextField
+                  size="small"
+                  variant="standard"
+                  placeholder="Add material..."
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && e.target.value.trim()) {
+                      const newMaterials = [
+                        ...(formData.materials || []),
+                        e.target.value.trim(),
+                      ];
+                      handleInputChange("materials", newMaterials);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+              </Box>
+            </Box>
+
+            <Divider sx={{ my: 1 }} />
+
+            {/* Textfield number for manpower # of people needed */}
+            <Box sx={{ mt: 3 }}>
+              <TextField
+                label="Number of Volunteers Needed"
+                type="number"
+                min={0}
+                fullWidth
+                value={formData.volunteersNeeded}
+                onChange={(e) =>
+                  handleInputChange("volunteersNeeded", e.target.value)
+                }
+                helperText="Enter the number of total volunteers needed for the entire project."
+              />
+            </Box>
+
             <Divider sx={{ my: 2 }} />
             <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
               Budget Estimates
             </Typography>
 
             <TextField
-              label="Resource Budget Estimates"
+              label="Resource Budget Description"
               fullWidth
               multiline
               rows={4}
               value={formData.budget}
               onChange={(e) => handleInputChange("budget", e.target.value)}
+              helperText="Describe the budget for the project. Include any costs that will be incurred by the project developer or the homeowner."
             />
             <TextField
-              label="Homeowner's Ability Assessment"
+              label="Resource Budget Estimates"
+              fullWidth
+              value={formData.budgetEstimates}
+              onChange={(e) =>
+                handleInputChange("budgetEstimates", e.target.value)
+              }
+              helperText="Total estimate the cost of the project."
+            />
+            <Divider sx={{ my: 1 }} />
+
+            <TextField
+              label="Homeowner's Ability Description"
               fullWidth
               multiline
               rows={4}
@@ -251,6 +476,16 @@ const ProjectForm = () => {
               onChange={(e) =>
                 handleInputChange("homeownerAbility", e.target.value)
               }
+              helperText="Describe the homeowner's ability to contribute to the project. Include monetary resources."
+            />
+            <TextField
+              label="Homeowner's Ability Estimates"
+              fullWidth
+              value={formData.homeownerAbilityEstimates}
+              onChange={(e) =>
+                handleInputChange("homeownerAbilityEstimates", e.target.value)
+              }
+              helperText="Total estimate the homeowner's ability to contribute to the project."
             />
           </Box>
         );
@@ -266,7 +501,8 @@ const ProjectForm = () => {
                 </Typography>
                 <Box sx={{ pl: 2 }}>
                   <Typography>
-                    <strong>Project Lead:</strong> {formData.projectLead}
+                    <strong>Project Developer:</strong>{" "}
+                    {formData.projectDeveloper}
                   </Typography>
                   <Typography>
                     <strong>Property Owner:</strong> {formData.propertyOwner}
@@ -348,14 +584,6 @@ const ProjectForm = () => {
             </Paper>
 
             {/* Textfield for project development couple */}
-            <TextField
-              label="Project Development Couple"
-              fullWidth
-              value={formData.projectDevelopmentCouple}
-              onChange={(e) =>
-                handleInputChange("projectDevelopmentCouple", e.target.value)
-              }
-            />
 
             {/* Review Confirmation */}
             <FormControl component="fieldset" sx={{ mt: 2 }}>
@@ -574,171 +802,6 @@ const ProjectForm = () => {
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {/* Resources Section */}
             <Paper sx={{ p: 3, mt: 2 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Tools, Equipment, and Materials
-              </Typography>
-
-              {/* Volunteer Tools */}
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                  Volunteer Tools
-                </Typography>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {formData.volunteerTools?.map((tool, index) => (
-                    <Chip
-                      key={index}
-                      label={tool}
-                      onDelete={() => {
-                        const newTools = formData.volunteerTools.filter(
-                          (_, i) => i !== index
-                        );
-                        handleInputChange("volunteerTools", newTools);
-                      }}
-                      size="small"
-                    />
-                  ))}
-                  <TextField
-                    size="small"
-                    variant="standard"
-                    placeholder="Add tool..."
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && e.target.value.trim()) {
-                        const newTools = [
-                          ...(formData.volunteerTools || []),
-                          e.target.value.trim(),
-                        ];
-                        handleInputChange("volunteerTools", newTools);
-                        e.target.value = "";
-                      }
-                    }}
-                  />
-                </Box>
-              </Box>
-
-              {/* Equipment */}
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                  Equipment
-                </Typography>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {formData.equipment?.map((item, index) => (
-                    <Chip
-                      key={index}
-                      label={item}
-                      onDelete={() => {
-                        const newEquipment = formData.equipment.filter(
-                          (_, i) => i !== index
-                        );
-                        handleInputChange("equipment", newEquipment);
-                      }}
-                      size="small"
-                    />
-                  ))}
-                  <TextField
-                    size="small"
-                    variant="standard"
-                    placeholder="Add equipment..."
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && e.target.value.trim()) {
-                        const newEquipment = [
-                          ...(formData.equipment || []),
-                          e.target.value.trim(),
-                        ];
-                        handleInputChange("equipment", newEquipment);
-                        e.target.value = "";
-                      }
-                    }}
-                  />
-                </Box>
-              </Box>
-
-              {/* Materials */}
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                  Materials provided by Homeowner
-                </Typography>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {formData.homeownerMaterials?.map((item, index) => (
-                    <Chip
-                      key={index}
-                      label={item}
-                      onDelete={() => {
-                        const newMaterials = formData.homeownerMaterials.filter(
-                          (_, i) => i !== index
-                        );
-                        handleInputChange("homeownerMaterials", newMaterials);
-                      }}
-                      size="small"
-                    />
-                  ))}
-                  <TextField
-                    size="small"
-                    variant="standard"
-                    placeholder="Add material..."
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && e.target.value.trim()) {
-                        const newMaterials = [
-                          ...(formData.materials || []),
-                          e.target.value.trim(),
-                        ];
-                        handleInputChange("materials", newMaterials);
-                        e.target.value = "";
-                      }
-                    }}
-                  />
-                </Box>
-              </Box>
-
-              <Box>
-                <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                  Other Materials provided
-                </Typography>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {formData.otherMaterials?.map((item, index) => (
-                    <Chip
-                      key={index}
-                      label={item}
-                      onDelete={() => {
-                        const newMaterials = formData.otherMaterials.filter(
-                          (_, i) => i !== index
-                        );
-                        handleInputChange("materials", newMaterials);
-                      }}
-                      size="small"
-                    />
-                  ))}
-                  <TextField
-                    size="small"
-                    variant="standard"
-                    placeholder="Add material..."
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && e.target.value.trim()) {
-                        const newMaterials = [
-                          ...(formData.materials || []),
-                          e.target.value.trim(),
-                        ];
-                        handleInputChange("materials", newMaterials);
-                        e.target.value = "";
-                      }
-                    }}
-                  />
-                </Box>
-              </Box>
-
-              {/* Textfield number for manpower # of people needed */}
-              <Box sx={{ mt: 3 }}>
-                <TextField
-                  label="Number of Volunteers Needed"
-                  type="number"
-                  min={0}
-                  fullWidth
-                  value={formData.volunteersNeeded}
-                  onChange={(e) =>
-                    handleInputChange("volunteersNeeded", e.target.value)
-                  }
-                />
-              </Box>
-
               <Box sx={{ mt: 3 }}>
                 <FormControl component="fieldset">
                   <FormLabel component="legend">Procurement Status</FormLabel>
@@ -811,6 +874,10 @@ const ProjectForm = () => {
     <>
       <Card sx={{ margin: "auto" }}>
         <CardContent>
+          <Typography variant="h4" sx={{ mt: 1, mb: 3, textAlign: "center" }}>
+            Days of Service Project Form
+          </Typography>
+
           <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
             {steps.map((step, index) => (
               <Step key={index}>
@@ -819,9 +886,9 @@ const ProjectForm = () => {
             ))}
           </Stepper>
 
-          <Typography variant="h6" gutterBottom>
+          {/* <Typography variant="h6" gutterBottom>
             {steps[activeStep]?.label}
-          </Typography>
+          </Typography> */}
 
           {renderStepContent()}
 
@@ -875,7 +942,7 @@ const ProjectForm = () => {
 
           <TextField
             label="Collaborator's Email"
-            helperText="Enter the email of the person you want to collaborate with"
+            helperText="Enter the email of the person, or persons, you want to collaborate with (separate multiple emails with a comma)"
             fullWidth
             value={collaboratorEmail}
             onChange={(e) => setCollaboratorEmail(e.target.value)}

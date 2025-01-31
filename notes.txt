@@ -1,0 +1,73 @@
+Autologgin or not? on email sender
+
+Add a accordion summary for review on step 4
+
+Move Tools Equipment into the task picker... 
+
+Budget stuff on it's own page
+
+
+
+[
+  {
+    "id": "Find Projects",
+    "name": "Find and Determine Project",
+    "fields": [
+      "materialsProcured"
+    ],
+    "daysToComplete": 28
+  },
+  {
+    "id": "DOS - 6w",
+    "name": "Project Review & Ready",
+    "fields": [
+      "called811"
+    ],
+    
+    "daysToComplete": 35
+  },
+  {
+    "id": "DOS - 5w",
+    "name": "Budget Approval",
+    "fields": [
+      "budget"
+    ],
+    
+    "daysToComplete": 42
+  },
+  {
+    "id": "DOS - 4w",
+    "name": "Homeowner Ability",
+    "fields": [
+      "homeownerAbility"
+    ],
+    
+    "daysToComplete": 49
+  },
+  {
+    "id": "DOS - 3w",
+    "name": "Hosts assigned and trained",
+    "fields": [
+      "preferredRemedies"
+    ],
+   
+    "daysToComplete": 56
+  },
+  {
+    "id": "DOS - 2w",
+    "name": "Meetings with Hosts and Homeowner",
+    "fields": [
+      "preferredRemedies"
+    ],
+    "daysToComplete": 63
+    
+  },
+  {
+    "id": "DOS - 1w",
+    "name": "Materials, Blue Stake, and Dumpsters ",
+    "fields": [
+      "isAddressVerified"
+    ]
+    
+  }
+]
