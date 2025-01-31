@@ -156,7 +156,9 @@ export default function ClassCreationStepper({
     >
       <Box sx={{ p: 4 }}>
         <Typography variant="h4" sx={{ mb: 3 }}>
-          {(isNew ? "Create New Class - " : "Edit Class - ") +
+          {(isNew ? "Create New Class: " : "Edit: ") +
+            classConfig.title +
+            " - " +
             steps[activeStep].label}
         </Typography>
 

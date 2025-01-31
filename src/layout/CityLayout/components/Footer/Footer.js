@@ -42,7 +42,7 @@ const Footer = () => {
           variant="outlined"
           component="a"
           sx={{ textTransform: "uppercase", borderRadius: 5 }}
-          href={rootUrl + "/admin-dashboard"}
+          href={rootUrl + "/admin-dashboard/classes"}
         >
           Teacher Login
         </Button>
