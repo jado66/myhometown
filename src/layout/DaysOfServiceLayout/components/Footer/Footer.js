@@ -46,14 +46,6 @@ const Footer = () => {
         >
           Admin Login
         </Button>
-        <Button
-          variant="outlined"
-          component="a"
-          sx={{ textTransform: "uppercase", borderRadius: 5 }}
-          href={rootUrl + "/admin-dashboard/classes"}
-        >
-          Teacher Login
-        </Button>
       </Grid>
     </Grid>
   );

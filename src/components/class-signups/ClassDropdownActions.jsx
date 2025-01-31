@@ -1,3 +1,4 @@
+import { makeUrlSafeString } from "@/util/makeUrlSafeStrings";
 import { Link } from "@mui/icons-material";
 import {
   Delete,
@@ -85,13 +86,12 @@ export const ClassDropdownActions = ({
           // copy class title to clipboard
           onClick={(e) => {
             //  this should be the current url + #class-{classObj.id.toLowerCase().replace(/ /g, "-")}
-            navigator.clipboard.writeText(
-              `${window.location.href}#class-${classObj.title
-                .toLowerCase()
-                .replace(/ /g, "-")}`
-                // replace edit out of the url
-                .replace(/\/edit/g, "")
-            );
+            const urlSafeTitle = makeUrlSafeString(classObj.title);
+            const currentUrl = window.location.href.replace(/\/edit/g, "");
+            const baseUrl = currentUrl.split("#")[0]; // Remove any existing hash
+            const fullUrl = `${baseUrl}#class-${urlSafeTitle}`;
+
+            navigator.clipboard.writeText(fullUrl);
             toast.success("Class URL copied to clipboard");
             handleClose(e);
           }}

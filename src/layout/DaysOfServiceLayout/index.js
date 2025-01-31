@@ -30,8 +30,8 @@ HideOnScroll.propTypes = {
 };
 
 export const metadata = {
-  title: "Cities Strong",
-  description: "Description of Cities Strong.", //#TODO
+  title: "Days of Service",
+  description: "Days of Service.", //#TODO
 };
 
 // const roboto = Roboto({
@@ -109,7 +109,7 @@ const DaysOfServiceLayout = ({ children }) => {
           open={openSidebar}
           variant="temporary"
         />
-        <main>
+        <main style={{ display: "flex", flexDirection: "column" }}>
           <Box height={{ xs: 56, md: 36 }} sx={{ mx: "auto" }} />
           <Grid
             container
@@ -118,10 +118,13 @@ const DaysOfServiceLayout = ({ children }) => {
               mx: "auto",
               boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
               maxWidth: "xl",
+              display: "flex",
+              direction: "column",
             }}
           >
             {children}
             <Divider />
+            <box sx={{ height: 100, grow: 1 }} />
             <Footer />
           </Grid>
         </main>

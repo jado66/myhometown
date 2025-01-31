@@ -274,8 +274,6 @@ export default function ConfigurableStatusTable() {
       const projectColumnWidth =
         projectColumnElement.getBoundingClientRect().width;
 
-      alert("tableWidth: " + tableWidth);
-
       const { columnWidths, maxWidthMap } = getColumnWidths(
         tableWidth,
         projectColumnWidth
@@ -489,7 +487,7 @@ export default function ConfigurableStatusTable() {
         )}
 
         {/* loop through maxMaps for not null */}
-        {maxWidthMap.map((width, index) => {
+        {/* {maxWidthMap.map((width, index) => {
           const projectColumnWidth =
             projectColumnRef.current.getBoundingClientRect().width;
 
@@ -523,7 +521,7 @@ export default function ConfigurableStatusTable() {
               </Box>
             );
           }
-        })}
+        })} */}
 
         <TableContainer component={Paper}>
           <Table>

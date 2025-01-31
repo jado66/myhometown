@@ -32,6 +32,7 @@ import { ClassDropdownActions } from "@/components/class-signups/ClassDropdownAc
 import ClassPreview from "@/components/class-signups/stepper-components/ClassPreview";
 import { ClassSignup } from "./ClassSignup";
 import { useLoadedClassesContext } from "@/hooks/use-loaded-classes-context";
+import { makeUrlSafeString } from "@/util/makeUrlSafeStrings";
 
 export const ClassCategory = ({
   category,
@@ -178,9 +179,9 @@ export const ClassCategory = ({
 
       if (hash) {
         // Find the class with matching ID
-        const matchingClass = category.classes.find(
-          (classObj) => classObj.title.toLowerCase().replace(" ", "-") === hash
-        );
+        const matchingClass = category.classes.find((classObj) => {
+          return makeUrlSafeString(classObj.title).trim() == hash.trim();
+        });
 
         if (matchingClass) {
           // First, expand the category
@@ -313,7 +314,7 @@ export const ClassCategory = ({
                 onChange={(e, isExpanded) =>
                   setExpandedClass(isExpanded ? classObj.id : null)
                 }
-                id={`class-${classObj.title?.toLowerCase().replace(" ", "-")}`}
+                id={`class-${makeUrlSafeString(classObj.title)}`}
                 component={({ children, ...props }) => (
                   <div
                     {...props}
