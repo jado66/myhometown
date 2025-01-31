@@ -1,4 +1,5 @@
 import { sendTextWithStream } from "@/util/communication/sendTexts";
+import { completeStream, sendMessageToStream } from "./stream/route";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
@@ -19,24 +20,47 @@ export async function POST(req) {
 
   try {
     // Process messages sequentially
-    const results = [];
-    for (const [index, recipient] of recipients.entries()) {
-      const result = await sendTextWithStream({
-        message,
-        recipient: {
-          phone: recipient.label,
-          name: recipient.name || recipient.label,
-        },
-        mediaUrls,
-        messageId, // Pass through the original messageId
-      });
-      results.push(result);
+    for (const recipient of recipients) {
+      try {
+        const result = await sendTextWithStream({
+          message,
+          recipient: {
+            phone: recipient.value, // Changed from label to value
+            name: recipient.label || recipient.value,
+          },
+          mediaUrls,
+          messageId,
+        });
+
+        // Send status update to stream
+        await sendMessageToStream(messageId, {
+          type: "status",
+          status: "success",
+          recipient: recipient.value,
+          messageId,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        console.error(`Error sending to ${recipient.value}:`, error);
+
+        // Send failure status to stream
+        await sendMessageToStream(messageId, {
+          type: "status",
+          status: "failed",
+          recipient: recipient.value,
+          error: error.message,
+          messageId,
+          timestamp: new Date().toISOString(),
+        });
+      }
     }
+
+    // Mark stream as complete
+    await completeStream(messageId);
 
     return new Response(
       JSON.stringify({
         success: true,
-        results,
         messageId,
         timestamp: new Date().toISOString(),
       }),
@@ -47,6 +71,9 @@ export async function POST(req) {
     );
   } catch (error) {
     console.error("Error in send-texts API:", error);
+
+    // Ensure stream completion even on error
+    await completeStream(messageId);
 
     return new Response(
       JSON.stringify({
