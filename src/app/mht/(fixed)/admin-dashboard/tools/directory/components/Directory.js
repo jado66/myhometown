@@ -648,7 +648,7 @@ const Directory = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {contacts.map((contact) => (
+            {filteredContacts.map((contact) => (
               <TableRow key={contact.id}>
                 <TableCell>
                   {editingId === contact.id ? (
