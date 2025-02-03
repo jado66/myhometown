@@ -2,10 +2,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
-export default function useCommunities(
-  userfilter,
-  forDropDownCommunityMenu = false
-) {
+export function useCommunities(userfilter, forDropDownCommunityMenu = false) {
   const [communities, setCommunities] = useState([]);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [communitySelectOptions, setCommunitySelectOptions] = useState([]);
@@ -25,18 +22,23 @@ export default function useCommunities(
     setCommunitySelectOptions(selectOptions);
   }, [communities]);
 
-  async function fetchCommunitiesByCityId(cityId) {
-    const response = await fetch("/api/communities/by-city", {
+  async function fetchCommunitiesByCity(city) {
+    const response = await fetch("/api/database/communities/by-city", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        cityId: cityId,
+        city: city,
       }),
     });
 
-    return response.json();
+    if (!response.ok) {
+      throw new Error("Failed to fetch communities by city");
+    }
+
+    const data = await response.json();
+    return data;
   }
 
   useEffect(() => {
@@ -201,7 +203,7 @@ export default function useCommunities(
     communities,
     communitySelectOptions,
     hasLoaded,
-    fetchCommunitiesByCityId,
+    fetchCommunitiesByCity,
     handleAddCommunity,
     handleEditCommunity,
     handleDeleteCommunity,

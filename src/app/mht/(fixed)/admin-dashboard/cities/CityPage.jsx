@@ -557,7 +557,7 @@ import { CommunityCard } from "@/components/CommunityCard";
 import { NotResponsiveAlert } from "@/util/NotResponsiveAlert";
 import CityDataTable from "@/components/data-tables/CityDataTable";
 import GenerateReportDialog from "@/components/admin/GenerateReportsDialogue";
-import useCommunities from "@/hooks/use-communities";
+import { useCommunities } from "@/hooks/use-communities";
 import { generateFullReport } from "@/util/csv-utils";
 
 export function MultipleCities({

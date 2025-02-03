@@ -22,6 +22,7 @@ import { ResponsiveVideoBanner } from "@/components/util/ResponsiveVideoBanner";
 import { MyHometownHouse } from "@/assets/svg/logos/MyHometownHouse";
 import CommunityResourceContent from "../MHT/CommunityResourceCenter";
 import DaysOfServiceContent from "../MHT/DaysOfService";
+import LoadingImage from "@/components/util/LoadingImage";
 
 const Home = () => {
   const theme = useTheme();
@@ -125,18 +126,16 @@ const Home = () => {
                 borderRadius: 3,
               }}
             >
-              <Box
-                component="img"
+              <LoadingImage
                 src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/MHT+landing+page+photos/Photos+1/IMG_0246.jpeg"
                 alt="Mental Health"
-                // Lazy load the image
                 sx={{
                   borderRadius: 3,
                   width: "100%",
                   height: "100%",
-                  objectFit: "cover", // Ensures the image covers the entire area
+                  objectFit: "cover",
                   position: "absolute",
-                  objectPosition: "center", // Centers the image horizontally
+                  objectPosition: "center",
                   top: "0",
                   left: "0px",
                 }}
@@ -167,7 +166,6 @@ const Home = () => {
               item
               xs={12}
               sx={{
-                backgroundColor: "grey",
                 height: "350px",
                 overflow: "hidden",
                 position: "relative",
@@ -175,18 +173,16 @@ const Home = () => {
                 borderRadius: 3,
               }}
             >
-              <Box
-                component="img"
+              <LoadingImage
                 src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/MHT+landing+page+photos/Photos+1/IMG_0246.jpeg"
                 alt="Mental Health"
-                // Lazy load the image
                 sx={{
                   borderRadius: 3,
                   width: "100%",
                   height: "100%",
-                  objectFit: "cover", // Ensures the image covers the entire area
+                  objectFit: "cover",
                   position: "absolute",
-                  objectPosition: "center", // Centers the image horizontally
+                  objectPosition: "center",
                   top: "0",
                   left: "0px",
                 }}
@@ -227,6 +223,7 @@ const Home = () => {
           m: 4,
           mt: 0,
           borderRadius: 3,
+          height: { sm: "375px", xs: "300px" },
 
           position: "relative",
           boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
@@ -236,24 +233,23 @@ const Home = () => {
           item
           xs={12}
           sx={{
-            backgroundColor: "grey",
             height: { sm: "375px", xs: "300px" },
+
             overflow: "hidden",
             position: "relative",
             borderRadius: 3,
           }}
         >
-          <Box
-            component="img"
+          <LoadingImage
             src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/MHT+landing+page+photos/private-foundation-vs-public-charity.webp"
             alt="Mental Health"
+            height="100%"
             sx={{
               borderRadius: 3,
               width: "100%",
               height: "100%",
               objectFit: "cover",
               position: "absolute",
-              bottom: "0%",
             }}
           />
         </Grid>
@@ -284,14 +280,36 @@ community-minded businesses.`}
           item
           xs={12}
           sx={{
-            backgroundColor: "grey",
             height: { sm: "375px", xs: "300px" },
             overflow: "hidden",
             position: "relative",
             borderRadius: 3,
           }}
         >
-          <Box
+          <LoadingImage
+            src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/MHT+landing+page+photos/Photos+1/iStock-1164938630.jpg"
+            alt="Mental Health"
+            height="100%"
+            sx={{
+              borderRadius: 3,
+              width: "100%",
+              height: {
+                xs: "100%",
+                lg: "140%", // Increase height on large screens to prevent cropping
+              },
+              objectFit: "cover",
+              position: "absolute",
+              bottom: {
+                xs: "0%",
+                lg: "-40%",
+              },
+              top: {
+                xs: "0%",
+                lg: "auto", // Remove top constraint on large screens
+              },
+            }}
+          />
+          {/* <Box
             component="img"
             src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/MHT+landing+page+photos/Photos+1/iStock-1164938630.jpg"
             // src="mht\city-page\happy volunteers.jpeg"
@@ -314,7 +332,7 @@ community-minded businesses.`}
                 lg: "auto", // Remove top constraint on large screens
               },
             }}
-          />
+          /> */}
         </Grid>
 
         <ImageAccordion

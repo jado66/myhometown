@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 
-import useCity from "@/hooks/use-city";
+import { useCity } from "@/hooks/use-city";
 import Loading from "@/components/util/Loading";
 import { cityTemplate } from "@/constants/templates/cityTemplate";
 import CarouselComponent from "@/components/ui/Carousel";

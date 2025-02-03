@@ -7,9 +7,7 @@ import { FixedLayout } from "@/layout";
 export default function Layout({ children }) {
   return (
     <ProviderWrapper>
-      <SimpleAuthProvider>
-        <FixedLayout>{children}</FixedLayout>
-      </SimpleAuthProvider>
+      <FixedLayout>{children}</FixedLayout>
     </ProviderWrapper>
   );
 }

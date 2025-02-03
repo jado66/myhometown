@@ -12,7 +12,7 @@ import {
 
 import { useEffect } from "react";
 
-import useCity from "@/hooks/use-city";
+import { useCity } from "@/hooks/use-city";
 import Loading from "@/components/util/Loading";
 import { useEdit } from "@/hooks/use-edit";
 import { cityTemplate } from "@/constants/templates/cityTemplate";

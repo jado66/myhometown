@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Card from "@mui/material/Card";
-import useCommunities from "@/hooks/use-communities";
+import { useCommunities } from "@/hooks/use-communities";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import AddEditCommunityDialog from "@/components/data-tables/AddEditCommunityDialog";
 import { DataTable } from "@/components/data-tables/DataTable";

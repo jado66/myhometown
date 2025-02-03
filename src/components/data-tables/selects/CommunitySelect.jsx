@@ -1,5 +1,5 @@
 "use client";
-import useCommunities from "@/hooks/use-communities";
+import { useCommunities } from "@/hooks/use-communities";
 import MultiSelect from "./MultiSelect";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { mergeObjectTemplate } from "@/util/mergeObjectTemplate";
 import { toast } from "react-toastify";
 
-export default function useCity(
+export function useCity(
   cityQuery,
   stateQuery,
   template = {},

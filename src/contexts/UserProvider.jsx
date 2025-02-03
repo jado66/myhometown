@@ -107,6 +107,7 @@ export const UserProvider = ({ children }) => {
       value={{
         user,
         isLoading,
+        isAdmin: user?.role === "Admin",
         impersonateUser,
         stopImpersonation,
         isImpersonating,
