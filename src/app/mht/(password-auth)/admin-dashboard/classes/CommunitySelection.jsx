@@ -252,6 +252,7 @@ const CommunitySelectionPage = () => {
                       borderRadius: "8px",
                       border: "1px solid #ccc",
                     }}
+                    onClick={() => handleCityClick(city)}
                   >
                     <CardContent>
                       <Typography variant="h6" align="center">
