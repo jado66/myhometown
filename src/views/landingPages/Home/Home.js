@@ -118,7 +118,6 @@ const Home = () => {
               item
               xs={12}
               sx={{
-                backgroundColor: "grey",
                 height: "350px",
                 overflow: "hidden",
                 position: "relative",

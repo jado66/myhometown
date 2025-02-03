@@ -6,7 +6,7 @@ import { useCommunities } from "@/hooks/use-communities";
 import { Box, TextField, InputAdornment } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { hasAnyAuth } from "@/util/auth/simpleAuth";
+import { isAuthenticated } from "@/util/auth/simpleAuth";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/util/Loading";
 import { useUser } from "@/hooks/use-user";
@@ -25,11 +25,9 @@ export default function ClassPage({ params }) {
       return;
     }
 
-    const hasAuth = hasAnyAuth();
+    const hasAuth = isAuthenticated(params.id) || isAdmin;
 
-    const isAuthenticated = hasAuth || isAdmin;
-
-    if (!isAuthenticated) {
+    if (!hasAuth) {
       router.push(process.env.NEXT_PUBLIC_DOMAIN + "/admin-dashboard/classes");
     }
 

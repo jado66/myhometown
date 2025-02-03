@@ -29,7 +29,11 @@ import { useUser } from "@/hooks/use-user";
 import Loading from "@/components/util/Loading";
 import { useCommunities } from "@/hooks/use-communities";
 import BackButton from "@/components/BackButton";
-import { authenticateCity, isAuthenticated } from "@/util/auth/simpleAuth";
+import {
+  authenticateCommunity,
+  CommunityIdToPasswordHash,
+  isAuthenticated,
+} from "@/util/auth/simpleAuth";
 import { ExpandMore } from "@mui/icons-material";
 import { toast } from "react-toastify";
 
@@ -44,27 +48,9 @@ const CityIdToPasswordHash = {
 const CommunitySelectionPage = () => {
   const searchParams = useSearchParams();
 
-  useEffect(() => {
-    // Check URL parameters for city and verify authentication
-    const city = searchParams.get("city");
-    if (city) {
-      // Convert URL format (provo) back to proper city name (Provo)
-      const properCityName = Object.keys(CityIdToPasswordHash).find(
-        (name) => name.toLowerCase().replaceAll(" ", "-") === city.toLowerCase()
-      );
-
-      if (properCityName && isAuthenticated(properCityName)) {
-        // If city is found and authenticated, redirect to city page
-        setAuthenticated(city);
-        return;
-      }
-
-      router.push(process.env.NEXT_PUBLIC_DOMAIN + "/admin-dashboard/classes");
-    }
-  }, [searchParams]);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCommunity, setSelectedCommunity] = useState(null);
+  const [selectedCommunityName, setSelectedCommunityName] = useState("");
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [selectedCity, setSelectedCity] = useState(null);
   const [authError, setAuthError] = useState("");
@@ -105,17 +91,17 @@ const CommunitySelectionPage = () => {
     }, {});
   }, [communities, searchTerm]);
 
-  useEffect(() => {
-    if (selectedCommunity) {
-      router.push(`/classes/${selectedCommunity._id}`);
-    }
-  }, [selectedCommunity]);
+  // useEffect(() => {
+  //   if (selectedCommunity) {
+  //     router.push(`/classes/${selectedCommunity._id}`);
+  //   }
+  // }, [selectedCommunity]);
 
   useEffect(() => {
     const fetchCommunities = async () => {
       if (user && isAdmin) {
         setCommunities(allCommunities);
-      } else if (authenticated && authenticated === city) {
+      } else {
         if (!city) {
           return;
         }
@@ -130,37 +116,40 @@ const CommunitySelectionPage = () => {
   }, [allCommunities, user, city, authenticated]);
 
   const handleCityClick = (city) => {
-    if (isAuthenticated(city)) {
-      setAuthenticated(city.toLowerCase().replaceAll(" ", "-"));
+    router.push(
+      process.env.NEXT_PUBLIC_DOMAIN +
+        `/admin-dashboard/classes?city=${city
+          .toLowerCase()
+          .replaceAll(" ", "-")}`,
+      undefined,
+      { shallow: true }
+    );
+  };
 
+  const handleCommunityClick = (community) => {
+    if (isAuthenticated(community._id)) {
       router.push(
         process.env.NEXT_PUBLIC_DOMAIN +
-          `/admin-dashboard/classes?city=${city
-            .toLowerCase()
-            .replaceAll(" ", "-")}`,
-        undefined,
-        { shallow: true }
+          `/admin-dashboard//classes/${community._id}`
       );
     } else {
-      setSelectedCity(city);
+      setSelectedCommunity(community);
+      setSelectedCommunityName(community.name);
+
       setShowAuthDialog(true);
       setAuthError("");
     }
   };
 
   const handleAuthSubmit = () => {
-    if (authenticateCity(selectedCity, password)) {
+    if (authenticateCommunity(selectedCommunity._id, password)) {
       setShowAuthDialog(false);
       setPassword("");
       setAuthenticated(city);
 
       router.push(
         process.env.NEXT_PUBLIC_DOMAIN +
-          `/admin-dashboard/classes?city=${selectedCity
-            .toLowerCase()
-            .replace(" ", "-")}`,
-        undefined,
-        { shallow: true }
+          `/admin-dashboard//classes/${selectedCommunity._id}`
       );
     } else {
       setAuthError("Incorrect password");
@@ -220,7 +209,10 @@ const CommunitySelectionPage = () => {
                     xl={2.4}
                     key={community._id}
                   >
-                    <CommunityCard community={community} />
+                    <CommunityCard
+                      community={community}
+                      handleCommunityClick={handleCommunityClick}
+                    />
                   </Grid>
                 ))}
               </Grid>
@@ -275,36 +267,39 @@ const CommunitySelectionPage = () => {
               </AccordionSummary>
               <AccordionDetails>
                 <>
-                  {Object.entries(CityIdToPasswordHash).map(
-                    ([city, password]) => (
-                      <Typography key={city}>
-                        {city}:{/* blue span */}
-                        <Typography
-                          component="span"
-                          sx={{
-                            color: "#318d43",
-                            fontWeight: "bold",
-                            cursor: "pointer",
-                          }}
-                          // copy password to clipboard
-                          onClick={() => {
-                            navigator.clipboard.writeText(password);
-                            toast.success("Password copied to clipboard");
-                          }}
-                        >
-                          {" "}
-                          {password}
-                        </Typography>
+                  {/* foreach key in a object */}
+                  {Object.keys(CommunityIdToPasswordHash).map((community) => (
+                    <Typography key={city}>
+                      {CommunityIdToPasswordHash[community].name}:{" "}
+                      <Typography
+                        component="span"
+                        sx={{
+                          color: "#318d43",
+                          fontWeight: "bold",
+                          cursor: "pointer",
+                        }}
+                        // copy password to clipboard
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            CommunityIdToPasswordHash[community].password
+                          );
+                          toast.success("Password copied to clipboard");
+                        }}
+                      >
+                        {" "}
+                        {CommunityIdToPasswordHash[community].password}
                       </Typography>
-                    )
-                  )}
+                    </Typography>
+                  ))}
                 </>
               </AccordionDetails>
             </Accordion>
           </>
         )}
         <Dialog open={showAuthDialog} onClose={() => setShowAuthDialog(false)}>
-          <DialogTitle>Enter City Password For {selectedCity}</DialogTitle>
+          <DialogTitle>
+            Enter Community Password For {selectedCommunityName}
+          </DialogTitle>
           <DialogContent>
             <TextField
               autoFocus
@@ -343,30 +338,29 @@ const CommunitySelectionPage = () => {
   );
 };
 
-const CommunityCard = ({ community }) => (
-  <Link href={`./classes/${community._id}`} style={{ textDecoration: "none" }}>
-    <Card
-      sx={{
-        cursor: "pointer",
-        transition: "all 0.3s",
-        "&:hover": {
-          transform: "scale(1.05)",
-        },
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        borderRadius: "8px",
-        border: "1px solid #ccc",
-      }}
-    >
-      <CardContent>
-        <Typography variant="h6" align="center">
-          {community.name} Classes
-        </Typography>
-      </CardContent>
-    </Card>
-  </Link>
+const CommunityCard = ({ community, handleCommunityClick }) => (
+  <Card
+    sx={{
+      cursor: "pointer",
+      transition: "all 0.3s",
+      "&:hover": {
+        transform: "scale(1.05)",
+      },
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      borderRadius: "8px",
+      border: "1px solid #ccc",
+    }}
+    onClick={() => handleCommunityClick(community)}
+  >
+    <CardContent>
+      <Typography variant="h6" align="center">
+        {community.name} Classes
+      </Typography>
+    </CardContent>
+  </Card>
 );
 
 export default CommunitySelectionPage;
