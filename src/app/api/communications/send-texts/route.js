@@ -25,7 +25,7 @@ export async function POST(req) {
         const result = await sendTextWithStream({
           message,
           recipient: {
-            phone: recipient.value, // Changed from label to value
+            phone: recipient.label, // Changed from label to value
             name: recipient.label || recipient.value,
           },
           mediaUrls,
@@ -36,18 +36,18 @@ export async function POST(req) {
         await sendMessageToStream(messageId, {
           type: "status",
           status: "success",
-          recipient: recipient.value,
+          recipient: recipient.label,
           messageId,
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        console.error(`Error sending to ${recipient.value}:`, error);
+        console.error(`Error sending to ${recipient.label}:`, error);
 
         // Send failure status to stream
         await sendMessageToStream(messageId, {
           type: "status",
           status: "failed",
-          recipient: recipient.value,
+          recipient: recipient.label,
           error: error.message,
           messageId,
           timestamp: new Date().toISOString(),
