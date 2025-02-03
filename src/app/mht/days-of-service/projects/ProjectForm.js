@@ -34,6 +34,8 @@ import TaskTable from "./form-components/TaskTable";
 import { Info } from "@mui/icons-material";
 import EmailPreviewDialog from "./EmailPreviewDialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import JsonViewer from "@/components/util/debug/DebugOutput";
+import { ProjectResources } from "./ProjectResources";
 
 const ProjectForm = () => {
   const [collaboratorEmail, setCollaboratorEmail] = useState("");
@@ -97,6 +99,36 @@ const ProjectForm = () => {
     },
   ];
 
+  const handleToolAdd = (e, category) => {
+    if (e.key === "Enter" && e.target.value.trim()) {
+      e.preventDefault();
+      const value = e.target.value.trim();
+
+      // Map the category to the correct form field name
+      const categoryMap = {
+        tools: "volunteerTools",
+        equipment: "equipment",
+        homeownerMaterials: "homeownerMaterials",
+        otherMaterials: "otherMaterials",
+      };
+
+      // Get the correct field name from the map
+      const fieldName = categoryMap[category];
+
+      // Get current items (or empty array if none exist)
+      const currentItems = formData[fieldName] || [];
+
+      // Create new array with the new item
+      const newItems = [...currentItems, value];
+
+      // Update the form data
+      handleInputChange(fieldName, newItems);
+
+      // Clear the input
+      e.target.value = "";
+    }
+  };
+
   // Replace local handlers with context handlers
   const handleNext = () => {
     // scroll to top of page
@@ -111,6 +143,10 @@ const ProjectForm = () => {
     if (activeStep > 0) {
       setActiveStep(activeStep - 1);
     }
+  };
+
+  const handleCommunityChange = (community) => {
+    handleInputChange("community", community?.value || null);
   };
 
   const handleSendCollaborationEmail = async () => {
@@ -180,9 +216,7 @@ const ProjectForm = () => {
 
             <CommunitySelect
               value={formData.community}
-              onChange={(community) =>
-                handleInputChange("community", community)
-              }
+              onChange={handleCommunityChange}
               isMulti={false}
             />
             <TextField
@@ -274,156 +308,14 @@ const ProjectForm = () => {
               hideResources={true} // New prop to hide resources section
             />
 
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Tools, Equipment, and Materials
+            <Typography variant="h4" component="h1" gutterBottom>
+              Project Setup
             </Typography>
-
-            {/* Volunteer Tools */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Volunteer Tools
-              </Typography>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                {formData.volunteerTools?.map((tool, index) => (
-                  <Chip
-                    key={index}
-                    label={tool}
-                    onDelete={() => {
-                      const newTools = formData.volunteerTools.filter(
-                        (_, i) => i !== index
-                      );
-                      handleInputChange("volunteerTools", newTools);
-                    }}
-                    size="small"
-                  />
-                ))}
-                <TextField
-                  size="small"
-                  variant="standard"
-                  placeholder="Add tool..."
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && e.target.value.trim()) {
-                      const newTools = [
-                        ...(formData.volunteerTools || []),
-                        e.target.value.trim(),
-                      ];
-                      handleInputChange("volunteerTools", newTools);
-                      e.target.value = "";
-                    }
-                  }}
-                />
-              </Box>
-            </Box>
-
-            {/* Equipment */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Equipment
-              </Typography>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                {formData.equipment?.map((item, index) => (
-                  <Chip
-                    key={index}
-                    label={item}
-                    onDelete={() => {
-                      const newEquipment = formData.equipment.filter(
-                        (_, i) => i !== index
-                      );
-                      handleInputChange("equipment", newEquipment);
-                    }}
-                    size="small"
-                  />
-                ))}
-                <TextField
-                  size="small"
-                  variant="standard"
-                  placeholder="Add equipment..."
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && e.target.value.trim()) {
-                      const newEquipment = [
-                        ...(formData.equipment || []),
-                        e.target.value.trim(),
-                      ];
-                      handleInputChange("equipment", newEquipment);
-                      e.target.value = "";
-                    }
-                  }}
-                />
-              </Box>
-            </Box>
-
-            {/* Materials */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Materials provided by Homeowner
-              </Typography>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                {formData.homeownerMaterials?.map((item, index) => (
-                  <Chip
-                    key={index}
-                    label={item}
-                    onDelete={() => {
-                      const newMaterials = formData.homeownerMaterials.filter(
-                        (_, i) => i !== index
-                      );
-                      handleInputChange("homeownerMaterials", newMaterials);
-                    }}
-                    size="small"
-                  />
-                ))}
-                <TextField
-                  size="small"
-                  variant="standard"
-                  placeholder="Add material..."
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && e.target.value.trim()) {
-                      const newMaterials = [
-                        ...(formData.materials || []),
-                        e.target.value.trim(),
-                      ];
-                      handleInputChange("materials", newMaterials);
-                      e.target.value = "";
-                    }
-                  }}
-                />
-              </Box>
-            </Box>
-
-            <Box>
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Other Materials provided
-              </Typography>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                {formData.otherMaterials?.map((item, index) => (
-                  <Chip
-                    key={index}
-                    label={item}
-                    onDelete={() => {
-                      const newMaterials = formData.otherMaterials.filter(
-                        (_, i) => i !== index
-                      );
-                      handleInputChange("materials", newMaterials);
-                    }}
-                    size="small"
-                  />
-                ))}
-                <TextField
-                  size="small"
-                  variant="standard"
-                  placeholder="Add material..."
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && e.target.value.trim()) {
-                      const newMaterials = [
-                        ...(formData.materials || []),
-                        e.target.value.trim(),
-                      ];
-                      handleInputChange("materials", newMaterials);
-                      e.target.value = "";
-                    }
-                  }}
-                />
-              </Box>
-            </Box>
+            <ProjectResources
+              formData={formData}
+              handleInputChange={handleInputChange}
+              handleToolAdd={handleToolAdd}
+            />
 
             <Divider sx={{ my: 1 }} />
 
@@ -560,22 +452,22 @@ const ProjectForm = () => {
                   {
                     // check if is array
                     formData.tasks &&
-                      Array.isArray(formData.tasks) &&
-                      formData.tasks?.map((task, index) => (
+                      formData.tasks.tasks &&
+                      Array.isArray(formData.tasks.tasks) &&
+                      formData.tasks.tasks?.map((task, index) => (
                         <Box key={index} sx={{ mb: 1 }}>
                           <Typography>
                             <strong>Task {index + 1}:</strong>{" "}
                             {task.description}
                           </Typography>
-                          {task.notes && (
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ pl: 2 }}
-                            >
-                              Notes: {task.notes}
-                            </Typography>
-                          )}
+                          {task.todos &&
+                            task.todos.map((todo, i) => (
+                              <Box key={i} sx={{ pl: 2 }}>
+                                <Typography>
+                                  <strong>- </strong> {todo}
+                                </Typography>
+                              </Box>
+                            ))}
                         </Box>
                       ))
                   }
@@ -791,6 +683,60 @@ const ProjectForm = () => {
                   }
                   label="Has the Partner Ward been contacted?"
                 />
+
+                {/* Was the site visit done with resource couple? */}
+
+                <Divider sx={{ my: 2 }} />
+
+                <FormControlLabel
+                  fullWidth
+                  control={
+                    <Checkbox
+                      checked={formData.siteVisitDoneWithResourceCouple}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "siteVisitDoneWithResourceCouple",
+                          e.target.checked
+                        )
+                      }
+                    />
+                  }
+                  label="Was the site visit done with the Resource Couple?"
+                />
+
+                {/* Was the site visit done with Host?
+                 Was the site visit done with Partner ward leader? */}
+                <FormControlLabel
+                  fullWidth
+                  control={
+                    <Checkbox
+                      checked={formData.siteVisitDoneWithHost}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "siteVisitDoneWithHost",
+                          e.target.checked
+                        )
+                      }
+                    />
+                  }
+                  label="Was the site visit done with the Host?"
+                />
+
+                <FormControlLabel
+                  fullWidth
+                  control={
+                    <Checkbox
+                      checked={formData.siteVisitDoneWithPartner}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "siteVisitDoneWithPartner",
+                          e.target.checked
+                        )
+                      }
+                    />
+                  }
+                  label="Was the site visit done with the Partner Ward Leader?"
+                />
               </Box>
               {/* Partner stake and partner ward have been contacted  */}
             </Paper>
@@ -854,6 +800,20 @@ const ProjectForm = () => {
                       />
                     }
                     label="Have we called 811 and ordered Blue Flags if needed?"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={formData.dumpsterRequested}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "dumpsterRequested",
+                            e.target.checked
+                          )
+                        }
+                      />
+                    }
+                    label="Has a dumpster been requested from the city?"
                   />
                 </FormControl>
               </Box>
