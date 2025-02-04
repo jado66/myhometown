@@ -112,30 +112,18 @@ const Topbar = ({ onSidebarOpen }) => {
           {/* <LanguageDropdown /> */}
 
           <Box marginX={2}>
-            <Link
-              underline="none"
-              component="a"
-              href="#"
+            <Button
               onClick={handleCitiesClick}
-              color="black"
-              fontWeight="bold"
-              display="flex"
-              alignContent="center"
-              fontSize="larger"
+              variant="text"
               sx={{
-                "&:hover": {
-                  color: "#3A3B3C",
-                },
+                fontSize: "larger",
+                color: "black",
+                fontWeight: "bold",
               }}
             >
-              Cities
-              {/* {
-                !citiesAnchorEl ?
-                <ExpandMore/>
-                :
-                <ExpandLess/>
-              } */}
-            </Link>
+              Our Cities
+              {!citiesAnchorEl ? <ExpandMore /> : <ExpandLess />}
+            </Button>
             <Menu
               id="cities-menu"
               anchorEl={citiesAnchorEl}
@@ -144,7 +132,6 @@ const Topbar = ({ onSidebarOpen }) => {
               keepMounted
               sx={{
                 maxHeight: 500,
-                mt: 1.5,
                 display: "flex",
                 flexDirection: "column",
               }}
@@ -268,8 +255,7 @@ const Topbar = ({ onSidebarOpen }) => {
             <Link
               underline="none"
               component="a"
-              href="/about-days-of-service"
-              onClick={handleResourcesClick}
+              href={rootUrl + "/what-we-do"}
               color="black"
               display="flex"
               fontWeight="bold"
@@ -281,63 +267,68 @@ const Topbar = ({ onSidebarOpen }) => {
                 },
               }}
             >
-              Days Of Service
-              {/* {
-                !resourcesAnchorEl ?
-                <ExpandMore/>
-                :
-                <ExpandLess/>
-              } */}
+              What We Do
             </Link>
           </Box>
-
           <Box marginX={2}>
-            <Link
-              underline="none"
-              component="a"
-              href="/community-resource-centers"
-              onClick={handleResourcesClick}
-              color="black"
-              display="flex"
-              fontWeight="bold"
-              fontSize="larger"
-              alignContent="center"
+            <Button
+              variant="text"
+              onClick={(event) => setResourcesAnchorEl(event.currentTarget)}
               sx={{
-                "&:hover": {
-                  color: "#3A3B3C",
+                fontSize: "larger",
+                color: "black",
+                fontWeight: "bold",
+              }}
+            >
+              Login
+              {!resourcesAnchorEl ? <ExpandMore /> : <ExpandLess />}
+            </Button>
+            <Menu
+              id="login-menu"
+              anchorEl={resourcesAnchorEl}
+              open={Boolean(resourcesAnchorEl)}
+              onClose={handleResourcesClose}
+              keepMounted
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+              }}
+              PaperProps={{
+                sx: {
+                  backgroundColor: "#1b75bc",
                 },
               }}
             >
-              Community Resource Centers
-              {/* {
-                !resourcesAnchorEl ?
-                <ExpandMore/>
-                :
-                <ExpandLess/>
-              } */}
-            </Link>
+              <MenuItem
+                onClick={handleResourcesClose}
+                component="a"
+                sx={{
+                  color: "black",
+                  fontWeight: "bold",
+                  "&:hover": {
+                    color: "#3A3B3C",
+                  },
+                }}
+                href={rootUrl + `/admin-dashboard`}
+              >
+                Admin Login
+              </MenuItem>
+              <MenuItem
+                onClick={handleResourcesClose}
+                component="a"
+                sx={{
+                  color: "black",
+                  fontWeight: "bold",
+                  "&:hover": {
+                    color: "#3A3B3C",
+                  },
+                }}
+                href={rootUrl + `/admin-dashboard/classes`}
+              >
+                Teacher Login
+              </MenuItem>
+            </Menu>
           </Box>
-
-          {/* <Box marginX={2}>
-            <Link
-              underline="none"
-              component="a"
-              href={rootUrl + "/about-us"}
-              color="textPrimary"
-            >
-              About Us
-            </Link>
-          </Box> */}
-          {/* <Box marginX={2}>
-            <Link
-              underline="none"
-              component="a"
-              href={rootUrl + "/donate"}
-              color="textPrimary"
-            >
-              Donate
-            </Link>
-          </Box> */}
         </Box>
       </Box>
     </Box>

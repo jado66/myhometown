@@ -97,6 +97,7 @@ const CityLayout = ({
               paddingY={{ xs: 1 / 2, sm: 1 }}
               paddingX={{ xs: 8, lg: 0 }}
               maxWidth={{ lg: "md", xl: "lg" }}
+              sx={{ backgroundColor: "rgb(161, 111, 175)" }}
             >
               <Topbar onSidebarOpen={handleSidebarOpen} />
             </Container>

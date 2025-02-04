@@ -17,7 +17,7 @@ const Sidebar = (props) => {
         "& .MuiPaper-root": {
           width: "100%",
           maxWidth: { xs: "100%", sm: 400 },
-          backgroundColor: "#1b75bc",
+          backgroundColor: "rgb(161, 111, 175)",
         },
       }}
     >

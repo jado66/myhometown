@@ -14,9 +14,14 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 import { ExpandLess } from "@mui/icons-material";
 import useManageCities from "@/hooks/use-manage-cities";
 import MyHometownLogo from "@/assets/svg/logos/MyHometown";
+import { useCommunityList } from "@/hooks/useCommunityList";
+import Link from "next/link";
 
 const SidebarNav = ({ onClose }) => {
+  const { communities } = useCommunityList();
+
   const [expandCities, setExpandCities] = useState(false);
+  const [expandLogin, setExpandLogin] = useState(false);
 
   const toggleExpandCities = () => setExpandCities((p) => !p);
   const { groupedCityStrings } = useManageCities(null, true);
@@ -103,140 +108,45 @@ const SidebarNav = ({ onClose }) => {
                   color: "black",
                 }}
               >
-                Cities
+                Communities
                 {expandCities ? <ExpandLess /> : <ExpandMore />}
               </Typography>
             </Button>
-            {expandCities && (
-              <div style={{ marginLeft: "2em" }}>
-                <>
-                  <NextLink
-                    href={rootUrl + `/utah/ogden`}
-                    style={{ textDecoration: "none", color: "#686868" }}
+            {expandCities &&
+              communities.map((community, index) => (
+                <Link
+                  style={{
+                    color: "black",
+                    fontWeight: "bold",
+                    textDecoration: "none",
+                    "&:hover": {
+                      color: "#3A3B3C",
+                    },
+                  }}
+                  href={
+                    rootUrl + "/utah/" + community.href.replace(/^\.\//, "")
+                  }
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 700,
+                      marginBottom: 1,
+                      my: 1,
+                      display: "block",
+                      color: "black",
+                      marginLeft: 2,
+                    }}
                   >
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        fontWeight: 700,
-                        marginBottom: 1,
-                        mt: 1,
-                        display: "block",
-                        color: "black",
-                      }}
-                    >
-                      Ogden
-                    </Typography>
-                  </NextLink>
-                  <NextLink
-                    href={rootUrl + `/utah/orem/geneva-heights`}
-                    style={{ textDecoration: "none", color: "#686868" }}
-                  >
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        fontWeight: 700,
-                        marginBottom: 1,
-                        display: "block",
-                        color: "black",
-                      }}
-                    >
-                      Orem
-                    </Typography>
-                  </NextLink>
-                  <NextLink
-                    href={rootUrl + `/utah/provo`}
-                    style={{ textDecoration: "none", color: "#686868" }}
-                  >
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        fontWeight: 700,
-                        marginBottom: 1,
-                        display: "block",
-                        color: "black",
-                      }}
-                    >
-                      Provo
-                    </Typography>
-                  </NextLink>
-
-                  <NextLink
-                    href={rootUrl + `/utah/salt-lake-city`}
-                    style={{ textDecoration: "none", color: "#686868" }}
-                  >
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        fontWeight: 700,
-                        marginBottom: 1,
-                        display: "block",
-                        color: "black",
-                      }}
-                    >
-                      Salt Lake City
-                    </Typography>
-                  </NextLink>
-                  <NextLink
-                    href={rootUrl + `/utah/west-valley-city`}
-                    style={{ textDecoration: "none", color: "#686868" }}
-                  >
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        fontWeight: 700,
-                        marginBottom: 1,
-                        display: "block",
-                        color: "black",
-                      }}
-                    >
-                      West Valley City
-                    </Typography>
-                  </NextLink>
-                </>
-              </div>
-            )}
-          </Box>
-          <Box marginBottom={2}>
-            <NextLink
-              href={"#events"}
-              style={{ textDecoration: "none", color: "#686868" }}
-            >
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 700,
-                  marginBottom: 1,
-                  display: "block",
-                  textDecoration: "none",
-                  color: "black",
-                }}
-              >
-                Events
-              </Typography>
-            </NextLink>
-          </Box>
-          <Box marginBottom={2}>
-            <NextLink
-              href={"#sign-ups"}
-              style={{ textDecoration: "none", color: "#686868" }}
-            >
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 700,
-                  marginBottom: 1,
-                  display: "block",
-                  color: "black",
-                }}
-              >
-                Classes
-              </Typography>
-            </NextLink>
+                    {community.title} Community
+                  </Typography>
+                </Link>
+              ))}
           </Box>
         </Box>
         <Box marginBottom={2}>
           <NextLink
-            href={"#volunteer"}
+            href={rootUrl + "/what-we-do"}
             style={{ textDecoration: "none", color: "#686868" }}
           >
             <Typography
@@ -245,12 +155,73 @@ const SidebarNav = ({ onClose }) => {
                 fontWeight: 700,
                 marginBottom: 1,
                 display: "block",
+                textDecoration: "none",
                 color: "black",
               }}
             >
-              Volunteer
+              What We Do
             </Typography>
           </NextLink>
+        </Box>
+
+        <Box marginBottom={2}>
+          <Button
+            variant="link"
+            onClick={() => setExpandLogin((prev) => !prev)}
+            sx={{ ml: 0, pl: 0 }}
+          >
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: 700,
+                marginBottom: 1,
+                mb: 0,
+                display: "flex",
+                alignItems: "flex-start",
+                color: "black",
+              }}
+            >
+              Login
+              {expandLogin ? <ExpandLess /> : <ExpandMore />}
+            </Typography>
+          </Button>
+          {expandLogin && (
+            <div style={{ marginLeft: "2em" }}>
+              <NextLink
+                href={rootUrl + "/admin-dashboard"}
+                style={{ textDecoration: "none", color: "#686868" }}
+              >
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontWeight: 700,
+                    marginY: 1,
+                    display: "block",
+                    color: "black",
+                  }}
+                >
+                  Admin Login
+                </Typography>
+              </NextLink>
+              <NextLink
+                href={rootUrl + "/admin-dashboard/classes"}
+                style={{ textDecoration: "none", color: "#686868" }}
+              >
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontWeight: 700,
+                    marginBottom: 1,
+                    mt: 1,
+                    display: "block",
+                    color: "black",
+                  }}
+                >
+                  Teacher Login
+                </Typography>
+              </NextLink>
+            </div>
+          )}
         </Box>
       </Box>
     </Box>

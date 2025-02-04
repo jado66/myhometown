@@ -17,6 +17,7 @@ import MyHometownLogo from "@/assets/svg/logos/MyHometown";
 
 const SidebarNav = ({ onClose }) => {
   const [expandCities, setExpandCities] = useState(false);
+  const [expandLogin, setExpandLogin] = useState(false);
 
   const toggleExpandCities = () => setExpandCities((p) => !p);
   const { groupedCityStrings } = useManageCities(null, true);
@@ -103,7 +104,7 @@ const SidebarNav = ({ onClose }) => {
                   color: "black",
                 }}
               >
-                Cities
+                Our Cities
                 {expandCities ? <ExpandLess /> : <ExpandMore />}
               </Typography>
             </Button>
@@ -144,7 +145,7 @@ const SidebarNav = ({ onClose }) => {
                     </Typography>
                   </NextLink>
                   <NextLink
-                    href={rootUrl + `/provo`}
+                    href={rootUrl + `/utah/provo`}
                     style={{ textDecoration: "none", color: "#686868" }}
                   >
                     <Typography
@@ -161,7 +162,7 @@ const SidebarNav = ({ onClose }) => {
                   </NextLink>
 
                   <NextLink
-                    href={rootUrl + `/salt-lake-city`}
+                    href={rootUrl + `/utah/salt-lake-city`}
                     style={{ textDecoration: "none", color: "#686868" }}
                   >
                     <Typography
@@ -177,7 +178,7 @@ const SidebarNav = ({ onClose }) => {
                     </Typography>
                   </NextLink>
                   <NextLink
-                    href={rootUrl + `/west-valley-city`}
+                    href={rootUrl + `/utah/west-valley-city`}
                     style={{ textDecoration: "none", color: "#686868" }}
                   >
                     <Typography
@@ -198,7 +199,7 @@ const SidebarNav = ({ onClose }) => {
           </Box>
           <Box marginBottom={2}>
             <NextLink
-              href={rootUrl + "/community-resource-centers"}
+              href={rootUrl + "/what-we-do"}
               style={{ textDecoration: "none", color: "#686868" }}
             >
               <Typography
@@ -211,27 +212,69 @@ const SidebarNav = ({ onClose }) => {
                   color: "black",
                 }}
               >
-                Community Resource Centers
+                What We Do
               </Typography>
             </NextLink>
           </Box>
+
           <Box marginBottom={2}>
-            <NextLink
-              href={rootUrl + "/about-days-of-service"}
-              style={{ textDecoration: "none", color: "#686868" }}
+            <Button
+              variant="link"
+              onClick={() => setExpandLogin((prev) => !prev)}
+              sx={{ ml: 0, pl: 0 }}
             >
               <Typography
                 variant="h5"
                 sx={{
                   fontWeight: 700,
                   marginBottom: 1,
-                  display: "block",
+                  mb: 0,
+                  display: "flex",
+                  alignItems: "flex-start",
                   color: "black",
                 }}
               >
-                Days Of Service
+                Login
+                {expandLogin ? <ExpandLess /> : <ExpandMore />}
               </Typography>
-            </NextLink>
+            </Button>
+            {expandLogin && (
+              <div style={{ marginLeft: "2em" }}>
+                <NextLink
+                  href={rootUrl + "/admin-dashboard"}
+                  style={{ textDecoration: "none", color: "#686868" }}
+                >
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontWeight: 700,
+                      marginY: 1,
+                      display: "block",
+                      color: "black",
+                    }}
+                  >
+                    Admin Login
+                  </Typography>
+                </NextLink>
+                <NextLink
+                  href={rootUrl + "/admin-dashboard/classes"}
+                  style={{ textDecoration: "none", color: "#686868" }}
+                >
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontWeight: 700,
+                      marginBottom: 1,
+                      mt: 1,
+                      display: "block",
+                      color: "black",
+                    }}
+                  >
+                    Teacher Login
+                  </Typography>
+                </NextLink>
+              </div>
+            )}
           </Box>
         </Box>
       </Box>

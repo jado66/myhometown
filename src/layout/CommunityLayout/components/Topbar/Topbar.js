@@ -170,33 +170,6 @@ const Topbar = ({ onSidebarOpen }) => {
             <Link
               underline="none"
               component="a"
-              href={"#"} //process.env.NEXT_PUBLIC_DOMAIN + "/days-of-service"}
-              color="black"
-              display="flex"
-              fontWeight="bold"
-              fontSize="larger"
-              alignContent="center"
-              sx={{
-                "&:hover": {
-                  color: "#3A3B3C",
-                },
-              }}
-              onClick={() => toast.info("Days of Service is coming soon!")}
-            >
-              Days Of Service
-              {/* {
-                !resourcesAnchorEl ?
-                <ExpandMore/>
-                :
-                <ExpandLess/>
-              } */}
-            </Link>
-          </Box>
-
-          <Box marginX={2}>
-            <Link
-              underline="none"
-              component="a"
               href="#volunteer"
               onClick={handleResourcesClick}
               color="black"
@@ -218,6 +191,66 @@ const Topbar = ({ onSidebarOpen }) => {
                 <ExpandLess/>
               } */}
             </Link>
+          </Box>
+
+          <Box marginX={2}>
+            <Button
+              variant="text"
+              onClick={(event) => setResourcesAnchorEl(event.currentTarget)}
+              sx={{
+                fontSize: "larger",
+                color: "black",
+                fontWeight: "bold",
+              }}
+            >
+              Login
+              {!resourcesAnchorEl ? <ExpandMore /> : <ExpandLess />}
+            </Button>
+            <Menu
+              id="login-menu"
+              anchorEl={resourcesAnchorEl}
+              open={Boolean(resourcesAnchorEl)}
+              onClose={handleResourcesClose}
+              keepMounted
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+              }}
+              PaperProps={{
+                sx: {
+                  backgroundColor: "#1b75bc",
+                },
+              }}
+            >
+              <MenuItem
+                onClick={handleResourcesClose}
+                component="a"
+                sx={{
+                  color: "black",
+                  fontWeight: "bold",
+                  "&:hover": {
+                    color: "#3A3B3C",
+                  },
+                }}
+                href={rootUrl + `/admin-dashboard`}
+              >
+                Admin Login
+              </MenuItem>
+              <MenuItem
+                onClick={handleResourcesClose}
+                component="a"
+                sx={{
+                  color: "black",
+                  fontWeight: "bold",
+                  "&:hover": {
+                    color: "#3A3B3C",
+                  },
+                }}
+                href={rootUrl + `/admin-dashboard/classes`}
+              >
+                Teacher Login
+              </MenuItem>
+            </Menu>
           </Box>
 
           {/* <Box marginX={2}>
