@@ -11,6 +11,7 @@ import {
   Box,
   Divider,
 } from "@mui/material";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export function ProjectResources({
   formData,
@@ -66,14 +67,15 @@ export function ProjectResources({
               {section.title}
             </Typography>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-              {section.items.map((item, index) => (
-                <Chip
-                  key={index}
-                  label={item}
-                  onDelete={() => handleDelete(section.category, index)}
-                  size="small"
-                />
-              ))}
+              {section.items &&
+                section.items.map((item, index) => (
+                  <Chip
+                    key={index}
+                    label={item}
+                    onDelete={() => handleDelete(section.category, index)}
+                    size="small"
+                  />
+                ))}
               <TextField
                 size="small"
                 variant="outlined"
