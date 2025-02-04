@@ -52,6 +52,19 @@ const Topbar = ({ onSidebarOpen }) => {
     event.stopPropagation();
   };
 
+  const scrollToWithOffset = (id, yOffset = -100) => {
+    const element = document.getElementById(id);
+
+    if (!element) {
+      toast.error("Could not find the element to scroll to.");
+      return;
+    }
+
+    const y =
+      element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    window.scrollTo({ top: y, behavior: "smooth" });
+  };
+
   let filteredGroupedCityStrings = Object.fromEntries(
     Object.entries(groupedCityStrings)
       .map(([state, cities]) => {
@@ -113,20 +126,13 @@ const Topbar = ({ onSidebarOpen }) => {
           {/* <LanguageDropdown /> */}
 
           <Box marginX={2}>
-            <Link
-              underline="none"
-              component="a"
-              href="#events"
-              onClick={handleResourcesClick}
-              color="black"
-              display="flex"
-              fontWeight="bold"
-              fontSize="larger"
-              alignContent="center"
+            <Button
+              variant="text"
+              onClick={(e) => scrollToWithOffset("events", -150)}
               sx={{
-                "&:hover": {
-                  color: "#3A3B3C",
-                },
+                fontSize: "larger",
+                color: "black",
+                fontWeight: "bold",
               }}
             >
               Events
@@ -136,24 +142,17 @@ const Topbar = ({ onSidebarOpen }) => {
                 :
                 <ExpandLess/>
               } */}
-            </Link>
+            </Button>
           </Box>
 
           <Box marginX={2}>
-            <Link
-              underline="none"
-              component="a"
-              href="#sign-ups"
-              onClick={handleResourcesClick}
-              color="black"
-              display="flex"
-              fontWeight="bold"
-              fontSize="larger"
-              alignContent="center"
+            <Button
+              variant="text"
+              onClick={(e) => scrollToWithOffset("crc-classes")}
               sx={{
-                "&:hover": {
-                  color: "#3A3B3C",
-                },
+                fontSize: "larger",
+                color: "black",
+                fontWeight: "bold",
               }}
             >
               Classes
@@ -163,24 +162,17 @@ const Topbar = ({ onSidebarOpen }) => {
                 :
                 <ExpandLess/>
               } */}
-            </Link>
+            </Button>
           </Box>
 
           <Box marginX={2}>
-            <Link
-              underline="none"
-              component="a"
-              href="#volunteer"
-              onClick={handleResourcesClick}
-              color="black"
-              display="flex"
-              fontWeight="bold"
-              fontSize="larger"
-              alignContent="center"
+            <Button
+              variant="text"
+              onClick={(e) => scrollToWithOffset("volunteer")}
               sx={{
-                "&:hover": {
-                  color: "#3A3B3C",
-                },
+                fontSize: "larger",
+                color: "black",
+                fontWeight: "bold",
               }}
             >
               Volunteer
@@ -190,7 +182,7 @@ const Topbar = ({ onSidebarOpen }) => {
                 :
                 <ExpandLess/>
               } */}
-            </Link>
+            </Button>
           </Box>
 
           <Box marginX={2}>
@@ -223,7 +215,6 @@ const Topbar = ({ onSidebarOpen }) => {
               }}
             >
               <MenuItem
-                onClick={handleResourcesClose}
                 component="a"
                 sx={{
                   color: "black",
@@ -237,7 +228,6 @@ const Topbar = ({ onSidebarOpen }) => {
                 Admin Login
               </MenuItem>
               <MenuItem
-                onClick={handleResourcesClose}
                 component="a"
                 sx={{
                   color: "black",

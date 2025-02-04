@@ -37,6 +37,23 @@ const SidebarNav = ({ onClose }) => {
       .filter(([state, cities]) => cities.length > 0)
   );
 
+  const scrollToWithOffset = (id, yOffset = -100) => {
+    const element = document.getElementById(id);
+
+    if (!element) {
+      toast.error("Could not find the element to scroll to.");
+      return;
+    }
+
+    const y =
+      element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    window.scrollTo({ top: y, behavior: "smooth" });
+
+    setTimeout(() => {
+      onClose();
+    }, 500);
+  };
+
   return (
     <Box>
       <Box
@@ -68,29 +85,10 @@ const SidebarNav = ({ onClose }) => {
       <Box paddingX={2} paddingBottom={1} paddingTop={3}>
         <Box>
           <Box marginBottom={2}>
-            <NextLink
-              href={rootUrl + "/"}
-              style={{ textDecoration: "none", color: "#686868" }}
-            >
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 700,
-                  marginBottom: 1,
-                  display: "block",
-                  textDecoration: "none",
-                  color: "black",
-                }}
-              >
-                Home
-              </Typography>
-            </NextLink>
-          </Box>
-
-          <Box marginBottom={2}>
-            <NextLink
-              href={"#events"}
-              style={{ textDecoration: "none", color: "#686868" }}
+            <Button
+              variant="link"
+              onClick={(e) => scrollToWithOffset("events", -150)}
+              sx={{ ml: 0, pl: 0, my: 0, py: 0 }}
             >
               <Typography
                 variant="h5"
@@ -104,12 +102,13 @@ const SidebarNav = ({ onClose }) => {
               >
                 Events
               </Typography>
-            </NextLink>
+            </Button>
           </Box>
           <Box marginBottom={2}>
-            <NextLink
-              href={"#sign-ups"}
-              style={{ textDecoration: "none", color: "#686868" }}
+            <Button
+              variant="link"
+              onClick={(e) => scrollToWithOffset("crc-classes")}
+              sx={{ ml: 0, pl: 0, my: 0, py: 0 }}
             >
               <Typography
                 variant="h5"
@@ -122,13 +121,14 @@ const SidebarNav = ({ onClose }) => {
               >
                 Classes
               </Typography>
-            </NextLink>
+            </Button>
           </Box>
         </Box>
         <Box marginBottom={2}>
-          <NextLink
-            href={"#volunteer"}
-            style={{ textDecoration: "none", color: "#686868" }}
+          <Button
+            variant="link"
+            onClick={(e) => scrollToWithOffset("volunteer")}
+            sx={{ ml: 0, pl: 0, my: 0, py: 0 }}
           >
             <Typography
               variant="h5"
@@ -141,7 +141,7 @@ const SidebarNav = ({ onClose }) => {
             >
               Volunteer
             </Typography>
-          </NextLink>
+          </Button>
         </Box>
         <Box marginBottom={2}>
           <Button

@@ -144,25 +144,6 @@ const SidebarNav = ({ onClose }) => {
               ))}
           </Box>
         </Box>
-        <Box marginBottom={2}>
-          <NextLink
-            href={rootUrl + "/what-we-do"}
-            style={{ textDecoration: "none", color: "#686868" }}
-          >
-            <Typography
-              variant="h5"
-              sx={{
-                fontWeight: 700,
-                marginBottom: 1,
-                display: "block",
-                textDecoration: "none",
-                color: "black",
-              }}
-            >
-              What We Do
-            </Typography>
-          </NextLink>
-        </Box>
 
         <Box marginBottom={2}>
           <Button

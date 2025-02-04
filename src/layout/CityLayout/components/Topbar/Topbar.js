@@ -220,25 +220,6 @@ const Topbar = ({ onSidebarOpen }) => {
           </Box>
 
           <Box marginX={2}>
-            <Link
-              underline="none"
-              component="a"
-              href={rootUrl + "/what-we-do"}
-              color="black"
-              display="flex"
-              fontWeight="bold"
-              fontSize="larger"
-              alignContent="center"
-              sx={{
-                "&:hover": {
-                  color: "#3A3B3C",
-                },
-              }}
-            >
-              What We Do
-            </Link>
-          </Box>
-          <Box marginX={2}>
             <Button
               variant="text"
               onClick={(event) => setResourcesAnchorEl(event.currentTarget)}
