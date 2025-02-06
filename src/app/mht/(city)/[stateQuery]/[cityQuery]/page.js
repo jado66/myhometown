@@ -251,7 +251,7 @@ const Page = ({ params }) => {
           </Grid>
         </Grid>
 
-        <Grid container spacing={5} padding={3}>
+        <Grid container spacing={5} padding={3} id="maps">
           {city.communities.map((community, index) => (
             <CommunityCard
               key={index}
@@ -262,6 +262,7 @@ const Page = ({ params }) => {
               }
               href={community.href}
               index={index}
+              totalCommunities={city.communities.length}
             />
           ))}
         </Grid>

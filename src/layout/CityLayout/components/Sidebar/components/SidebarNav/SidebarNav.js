@@ -30,6 +30,24 @@ const SidebarNav = ({ onClose }) => {
 
   const theme = useTheme();
   const [activeLink, setActiveLink] = useState("");
+
+  const scrollToWithOffset = (id, yOffset = -100) => {
+    const element = document.getElementById(id);
+
+    if (!element) {
+      toast.error("Could not find the element to scroll to.");
+      return;
+    }
+
+    const y =
+      element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    window.scrollTo({ top: y, behavior: "smooth" });
+
+    setTimeout(() => {
+      onClose();
+    }, 500);
+  };
+
   useEffect(() => {
     setActiveLink(window && window.location ? window.location.pathname : "");
   }, []);
@@ -73,23 +91,25 @@ const SidebarNav = ({ onClose }) => {
       <Box paddingX={2} paddingBottom={1} paddingTop={3}>
         <Box>
           <Box marginBottom={2}>
-            <NextLink
-              href={rootUrl + "/"}
-              style={{ textDecoration: "none", color: "#686868" }}
+            <Button
+              onClick={() => {
+                scrollToWithOffset("maps");
+              }}
+              sx={{ textDecoration: "none", color: "#686868", px: 0 }}
             >
               <Typography
                 variant="h5"
                 sx={{
                   fontWeight: 700,
-                  marginBottom: 1,
+                  marginBottom: 0,
                   display: "block",
                   textDecoration: "none",
                   color: "black",
                 }}
               >
-                Home
+                Find My Resource Center
               </Typography>
-            </NextLink>
+            </Button>
           </Box>
           <Box marginBottom={2}>
             <Button

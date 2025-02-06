@@ -55,6 +55,6 @@ Days of service volunteers identify neighborhood needs and coordinate additional
     ],
     communitiesHeader: "myHometown Communities in Provo",
     communitiesSubheader:
-      "Click on one of the links below to see what's happening in your community",
+      "Click on one of the maps below to see what's happening in your community",
   },
 };

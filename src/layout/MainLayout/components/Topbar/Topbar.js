@@ -98,7 +98,7 @@ const Topbar = ({ onSidebarOpen }) => {
         </Box>
 
         <Box
-          marginRight={{ xs: 1, sm: 2 }}
+          marginRight={{ xs: -6, sm: 2 }}
           sx={{ display: { xs: "flex", md: "none" } }}
         >
           <IconButton aria-label="Menu" onClick={onSidebarOpen}>

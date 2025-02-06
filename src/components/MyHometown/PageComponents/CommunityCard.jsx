@@ -10,6 +10,7 @@ export const CommunityCard = ({
   index,
   isEdit,
   setUrl,
+  totalCommunities,
 }) => {
   const ImageContent = (
     <Box
@@ -44,7 +45,7 @@ export const CommunityCard = ({
     <Grid
       item
       xs={12}
-      sm={6}
+      sm={totalCommunities > 3 ? 6 : 4}
       sx={{ mx: "auto" }}
       display="flex"
       justifyContent="center"

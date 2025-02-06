@@ -56,6 +56,19 @@ const Topbar = ({ onSidebarOpen }) => {
     event.stopPropagation();
   };
 
+  const scrollToWithOffset = (id, yOffset = -100) => {
+    const element = document.getElementById(id);
+
+    if (!element) {
+      toast.error("Could not find the element to scroll to.");
+      return;
+    }
+
+    const y =
+      element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    window.scrollTo({ top: y, behavior: "smooth" });
+  };
+
   const getNavigationPath = (basePath, newSection) => {
     const parts = basePath.split("/").filter(Boolean);
     const knownSections = ["days-of-service", "community-resource-centers"];
@@ -110,7 +123,7 @@ const Topbar = ({ onSidebarOpen }) => {
         </Box>
 
         <Box
-          marginRight={{ xs: 1, sm: 2 }}
+          marginRight={{ xs: -6, sm: 2 }}
           sx={{ display: { xs: "flex", md: "none" } }}
         >
           <IconButton aria-label="Menu" onClick={onSidebarOpen}>
@@ -122,6 +135,20 @@ const Topbar = ({ onSidebarOpen }) => {
       <Box display="flex" alignItems={"center"}>
         <Box sx={{ display: { xs: "none", md: "flex" } }} alignItems={"center"}>
           {/* <LanguageDropdown /> */}
+
+          <Box marginX={2}>
+            <Button
+              variant="text"
+              sx={{
+                fontSize: "larger",
+                color: "black",
+                fontWeight: "bold",
+              }}
+              onClick={() => scrollToWithOffset("maps", -125)}
+            >
+              Find My Resource Center
+            </Button>
+          </Box>
 
           <Box marginX={2}>
             <Button
