@@ -12,6 +12,7 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
+  ListSubheader,
 } from "@mui/material";
 import { Upload } from "@mui/icons-material";
 import { IconSelect } from "@/components/events/ClassesTreeView/IconSelect";
@@ -54,11 +55,24 @@ export function ClassDescriptionEditor({ CategorySelectOptions, isEdit }) {
               }
               disabled={isEdit}
             >
-              {CategorySelectOptions?.map((category) => (
-                <MenuItem key={category.value} value={category.value}>
-                  {category.label}
-                </MenuItem>
-              ))}
+              {CategorySelectOptions?.map((category) =>
+                category.type === "header" ? (
+                  <ListSubheader
+                    key={category.value}
+                    sx={{ fontWeight: "bold", fontSize: "larger" }}
+                  >
+                    {category.label}
+                  </ListSubheader>
+                ) : (
+                  <MenuItem
+                    key={category.value}
+                    value={category.value}
+                    sx={{ ml: 2 }}
+                  >
+                    {category.label}
+                  </MenuItem>
+                )
+              )}
             </Select>
           </FormControl>
         </Grid>

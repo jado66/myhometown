@@ -273,6 +273,21 @@ const Page = ({ params }) => {
     });
   };
 
+  const onCreateCategoryHeader = (title) => {
+    const id = uuidv4();
+
+    const newClassCategory = {
+      title: title,
+      id: id,
+      type: "header",
+    };
+
+    setCommunityData({
+      ...communityData,
+      classes: [...communityData.classes, newClassCategory],
+    });
+  };
+
   const handleStagedClassRequest = (classId, callVerb, data) => {
     setStagedClassRequests((prev) => {
       const currentEntry = prev[classId];
@@ -662,7 +677,7 @@ const Page = ({ params }) => {
     });
   };
 
-  const onUpdateClassCategory = (categoryId, newTitle, newIcon) => {
+  const onUpdateClassCategory = (categoryId, newTitle, newIcon, visibility) => {
     setCommunityData((prevState) => {
       const updatedClasses = prevState.classes.map((category) => {
         if (category.id === categoryId) {
@@ -670,6 +685,7 @@ const Page = ({ params }) => {
             ...category,
             title: newTitle,
             icon: newIcon,
+            visibility: visibility,
           };
         }
         return category;
@@ -765,6 +781,7 @@ const Page = ({ params }) => {
   const CategorySelectOptions = communityData?.classes?.map((category) => ({
     value: category.id,
     label: category.title,
+    type: category.type,
   }));
 
   if (!hasLoaded) {
@@ -1238,13 +1255,14 @@ const Page = ({ params }) => {
         />
         <Divider sx={{ my: 5 }} />
 
-        {/* <JsonViewer data={stagedClassRequests} /> */}
+        <JsonViewer data={communityData.classes} />
 
         <LoadedClassesProvider isEdit stagedRequests={stagedClassRequests}>
           <ClassesTreeView
             isEdit
             classes={communityData.classes}
             onCreateClassCategory={onCreateClassCategory}
+            onCreateCategoryHeader={onCreateCategoryHeader}
             onCreateSubclass={onCreateSubclass}
             onDeleteClassCategory={onDeleteClassCategory}
             onDeleteSubclass={onDeleteSubclass}

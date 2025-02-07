@@ -34,6 +34,7 @@ import { LightBox } from "@/components/LightBox";
 import { MaintenanceMode } from "@/views/supportingPages";
 import { LoadedClassesProvider } from "@/contexts/LoadedClassesProvider";
 import { useSearchParams } from "next/navigation";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

@@ -11,6 +11,7 @@ import {
   AccordionDetails,
   Menu,
   MenuItem,
+  Divider,
 } from "@mui/material";
 
 import {
@@ -73,6 +74,10 @@ export const ClassCategory = ({
     if (hoverClass === id) {
       setHoverClass(null);
     }
+  };
+
+  const onUpdateCategoryVisibility = (visibility) => {
+    onUpdateCategory(category.id, category.title, category.icon, visibility);
   };
 
   // Check if the icon exists before attempting to clone it
@@ -227,13 +232,15 @@ export const ClassCategory = ({
         isEditing ? (
           <Grid container alignItems="center" spacing={2}>
             <Grid item>
-              <IconSelect
-                onSelect={(e) => {
-                  e.stopPropagation();
-                  setEditIcon(e.target.value);
-                }}
-                icon={editIcon}
-              />
+              {category.type !== "header" && (
+                <IconSelect
+                  onSelect={(e) => {
+                    e.stopPropagation();
+                    setEditIcon(e.target.value);
+                  }}
+                  icon={editIcon}
+                />
+              )}
             </Grid>
             <Grid item xs>
               <TextField
@@ -270,9 +277,32 @@ export const ClassCategory = ({
         ) : (
           <div style={{ display: "flex", alignItems: "center" }}>
             {IconWithProps}
-            <Typography sx={{ marginLeft: "1em" }} variant="h5">
-              {category.title}
-            </Typography>
+            {category.type === "header" ? (
+              <Box
+                sx={{ display: "flex", flexDirection: "column", width: "100%" }}
+              >
+                {!isFirstCategory && <Divider sx={{ my: 2, width: "100%" }} />}
+                <Typography
+                  sx={{
+                    marginLeft: "1em",
+                    fontSize: "1.85em !important",
+                    width: "100%",
+                    textAlign: "center",
+                    color: "#318d43",
+                    mt: isFirstCategory ? 0 : "1em",
+                    ml: 0,
+                  }}
+                  variant="h4"
+                >
+                  {category.title}
+                </Typography>
+              </Box>
+            ) : (
+              <Typography sx={{ marginLeft: "1em" }} variant="h5">
+                {category.title}
+              </Typography>
+            )}
+
             <Box sx={{ flexGrow: 1 }} />
             {isEdit && showOptions && (
               <CategoryDropdownActions
@@ -285,8 +315,17 @@ export const ClassCategory = ({
                 isFirstCategory={isFirstCategory}
                 isLastCategory={isLastCategory}
                 onToggleExpand={forceExpandCategory}
+                onUpdateCategoryVisibility={onUpdateCategoryVisibility}
               />
             )}
+            {isEdit &&
+              category.visibility !== undefined &&
+              category.visibility === false && (
+                <CategoryVisibilityDropdown
+                  category={category}
+                  onUpdateVisibility={onUpdateCategoryVisibility}
+                />
+              )}
           </div>
         )
       }
@@ -363,7 +402,7 @@ export const ClassCategory = ({
                       />
                     )}
                     {isEdit && !classObj.visibility && (
-                      <VisibilityDropdown
+                      <ClassVisibilityDropdown
                         classObj={classObj}
                         onUpdateVisibility={onUpdateVisibility}
                       />
@@ -422,7 +461,7 @@ export const ClassCategory = ({
             );
         })}
 
-      {classes.length === 0 && (
+      {classes?.length === 0 && (
         <Typography variant="body2" sx={{ ml: 2, mt: 2 }}>
           No classes available yet. Check back later!
         </Typography>
@@ -484,7 +523,7 @@ export const ClassCategory = ({
         </ClassSignupProvider>
       )}
 
-      {isEdit && (
+      {isEdit && category.type !== "header" && (
         <>
           <Grid display="flex" justifyContent="center" flexDirection="column">
             <Button
@@ -502,7 +541,48 @@ export const ClassCategory = ({
   );
 };
 
-const VisibilityDropdown = ({ classObj, onUpdateVisibility }) => {
+const CategoryVisibilityDropdown = ({ category, onUpdateVisibility }) => {
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const handleClick = (event) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = (event, visibility) => {
+    event.stopPropagation();
+
+    onUpdateVisibility(category.id, visibility);
+    setAnchorEl(null);
+  };
+
+  return (
+    <div onClick={(e) => e.stopPropagation()}>
+      <Button
+        aria-controls="simple-menu"
+        aria-haspopup="true"
+        onClick={handleClick}
+        sx={{ p: 0, minWidth: 0, mx: 1 }}
+        size="small"
+      >
+        <VisibilityOff />
+      </Button>
+      <Menu
+        id="simple-menu"
+        anchorEl={anchorEl}
+        keepMounted
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+      >
+        <MenuItem onClick={(e) => handleClose(e, true)}>
+          <Visibility sx={{ mr: 1 }} /> Make Visible
+        </MenuItem>
+      </Menu>
+    </div>
+  );
+};
+
+const ClassVisibilityDropdown = ({ classObj, onUpdateVisibility }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
 
   const handleClick = (event) => {

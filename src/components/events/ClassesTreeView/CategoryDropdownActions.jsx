@@ -1,3 +1,5 @@
+import { Visibility } from "@mui/icons-material";
+import { VisibilityOff } from "@mui/icons-material";
 import {
   Add,
   Delete,
@@ -18,6 +20,7 @@ export const CategoryDropdownActions = ({
   isFirstCategory,
   isLastCategory,
   onToggleExpand,
+  onUpdateCategoryVisibility,
 }) => {
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -37,6 +40,8 @@ export const CategoryDropdownActions = ({
     setAnchorEl(null);
   };
 
+  const isHeader = category.type === "header";
+
   return (
     <div>
       <Button
@@ -48,7 +53,7 @@ export const CategoryDropdownActions = ({
         sx={{ ml: "auto" }}
       >
         <Edit sx={{ fontSize: 20, mr: 1 }} />
-        Category Options
+        {isHeader ? "Header Options" : "Category Options"}
       </Button>
       <Menu
         id="simple-menu"
@@ -65,21 +70,24 @@ export const CategoryDropdownActions = ({
           horizontal: "left",
         }}
       >
-        <MenuItem
-          onClick={(e) => {
-            setAddNewClass(true);
-            handleClose(e);
-          }}
-        >
-          <Add sx={{ mr: 1 }} /> Add New Class
-        </MenuItem>
+        {!isHeader && (
+          <MenuItem
+            onClick={(e) => {
+              setAddNewClass(true);
+              handleClose(e);
+            }}
+          >
+            <Add sx={{ mr: 1 }} /> Add New Class
+          </MenuItem>
+        )}
+
         <MenuItem
           onClick={(e) => {
             onEditCategory(category.id);
             handleClose(e);
           }}
         >
-          <Edit sx={{ mr: 1 }} /> Edit Category
+          <Edit sx={{ mr: 1 }} /> Edit {isHeader ? "Header" : "Category"}
         </MenuItem>
         <MenuItem
           onClick={(e) => {
@@ -87,7 +95,7 @@ export const CategoryDropdownActions = ({
             handleClose(e);
           }}
         >
-          <Delete sx={{ mr: 1 }} /> Delete Category
+          <Delete sx={{ mr: 1 }} /> Delete {isHeader ? "Header" : "Category"}
         </MenuItem>
         <MenuItem
           onClick={(e) => {
@@ -107,6 +115,27 @@ export const CategoryDropdownActions = ({
         >
           <ArrowDownward sx={{ mr: 1 }} /> Move Down
         </MenuItem>
+        {category.visibility !== undefined && category.visibility === false ? (
+          <MenuItem
+            onClick={(e) => {
+              onUpdateCategoryVisibility(true);
+              handleClose(e);
+            }}
+          >
+            <Visibility sx={{ mr: 1 }} />
+            Make Visible
+          </MenuItem>
+        ) : (
+          <MenuItem
+            onClick={(e) => {
+              onUpdateCategoryVisibility(false);
+              handleClose(e);
+            }}
+          >
+            <VisibilityOff sx={{ mr: 1 }} />
+            Make Hidden
+          </MenuItem>
+        )}
       </Menu>
     </div>
   );

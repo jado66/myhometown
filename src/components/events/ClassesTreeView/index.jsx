@@ -10,10 +10,12 @@ import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import Link from "next/link";
 import { Link as LinkIcon } from "@mui/icons-material";
 import { toast } from "react-toastify";
+import { CreateCategoryHeader } from "./CreateCategoryHeader";
 
 export const ClassesTreeView = ({
   classes,
   onCreateClassCategory,
+  onCreateCategoryHeader,
   onCreateSubclass,
   onDeleteClassCategory,
   onDeleteSubclass,
@@ -28,6 +30,8 @@ export const ClassesTreeView = ({
   CategorySelectOptions,
 }) => {
   const [isAddNewCategory, setAddNewCategory] = useState(false);
+  const [isAddNewHeader, setAddNewHeader] = useState(false);
+
   const [editingCategoryId, setEditingCategoryId] = useState(null);
   const [editingClassId, setEditingClassId] = useState(null);
   const [isShowIframeHelpDialog, setShowIframeHelpDialog] = useState(false);
@@ -45,8 +49,13 @@ export const ClassesTreeView = ({
     // alert("Setting Id to " + classId);
   };
 
-  const handleUpdateCategory = (categoryId, newTitle, newIcon) => {
-    onUpdateClassCategory(categoryId, newTitle, newIcon);
+  const handleUpdateCategory = (
+    categoryId,
+    newTitle,
+    newIcon,
+    visibility = true
+  ) => {
+    onUpdateClassCategory(categoryId, newTitle, newIcon, visibility);
     setEditingCategoryId(null);
   };
 
@@ -128,20 +137,33 @@ export const ClassesTreeView = ({
         )}
       </Typography>
 
-      <Card sx={{ padding: 2, marginTop: 2 }}>
+      <Card sx={{ paddingX: 2, marginTop: 2 }}>
         <Grid item xs={12}>
           <SimpleTreeView
             aria-label="classes tree view"
             disabledItemsFocusable={true}
             expandedItems={expandedItems ? [expandedItems] : []}
           >
-            {classes.map((classItem, index) =>
-              renderTreeItems(classItem, index)
-            )}
+            {classes
+              .filter(
+                (c) =>
+                  !(
+                    c.visibility !== undefined &&
+                    c.visibility === false &&
+                    !isEdit
+                  )
+              )
+              .map((classItem, index) => renderTreeItems(classItem, index))}
             {isAddNewCategory && (
               <CreateCategoryForm
                 onClose={() => setAddNewCategory(false)}
                 onCreate={onCreateClassCategory}
+              />
+            )}
+            {isAddNewHeader && (
+              <CreateCategoryHeader
+                onClose={() => setAddNewHeader(false)}
+                onCreate={onCreateCategoryHeader}
               />
             )}
             {isEdit && !isAddNewCategory && (
@@ -149,7 +171,13 @@ export const ClassesTreeView = ({
                 <Grid>
                   <Divider sx={{ my: 1 }} />
                 </Grid>
-                <Grid item xs={12} display="flex" justifyContent="center">
+                <Grid
+                  item
+                  xs={12}
+                  display="flex"
+                  justifyContent="center"
+                  gap={2}
+                >
                   <Button
                     startIcon={<Add />}
                     onClick={() => setAddNewCategory(true)}
@@ -157,6 +185,14 @@ export const ClassesTreeView = ({
                     variant="outlined"
                   >
                     Add New Category
+                  </Button>
+                  <Button
+                    startIcon={<Add />}
+                    onClick={() => setAddNewHeader(true)}
+                    sx={{ my: 1 }}
+                    variant="outlined"
+                  >
+                    Add New Header
                   </Button>
                 </Grid>
               </>

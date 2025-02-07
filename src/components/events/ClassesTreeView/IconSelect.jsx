@@ -12,7 +12,19 @@ import UkeIcon from "@/assets/svg/icons/UkeIcon";
 import LegalIcon from "@/assets/svg/icons/LegalIcon";
 import PianoIcon from "@/assets/svg/icons/PianoIcon";
 
-import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Paper,
+  IconButton,
+  Grid,
+  Button,
+} from "@mui/material";
 import ArtsIcon from "@/assets/svg/icons/ArtsIcon";
 import TutoringIcon from "@/assets/svg/icons/TutoringIcon";
 import FinanceIcon from "@/assets/svg/icons/FinanceIcon";
@@ -32,6 +44,7 @@ import AslIcon from "@/assets/svg/icons/AslIcon";
 import LoveAndLogicIcon from "@/assets/svg/icons/LoveandLogicIcon";
 import LearningTreeIcon from "@/assets/svg/icons/LearningTreeIcon";
 import EverydayStrongIcon from "@/assets/svg/icons/EverydayStrongIcon";
+import { useState } from "react";
 
 export const ExampleIcons = {
   None: <div style={{ height: "30px", width: "35px" }}> </div>,
@@ -73,48 +86,108 @@ export const ExampleIcons = {
   // Add other icons here...
 };
 
-export const IconSelect = ({ icon, onSelect, disabled, height }) => (
-  <FormControl
-    fullWidth
-    sx={{
-      my: "auto",
-      height: `${height || "40px"} !important`,
-      display: "flex",
-    }}
-    variant="outlined"
-    size="small"
-  >
-    <InputLabel id="icon-select-label">Icon</InputLabel>
-    <Select
-      labelId="icon-select-label"
-      label="Icon"
-      onChange={onSelect}
-      value={icon}
-      inputProps={{
-        sx: {
-          flex: 1,
-        },
+export const IconSelect = ({ icon, onSelect, disabled, height }) => {
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const handleSelect = (e, iconName) => {
+    e.stopPropagation();
+    // Create a synthetic event object that matches what your code expects
+    const syntheticEvent = {
+      target: { value: iconName },
+      stopPropagation: () => {},
+      preventDefault: () => {},
+    };
+    onSelect(syntheticEvent);
+    handleClose();
+  };
+
+  // Get the current icon component
+  const SelectedIcon = icon ? ExampleIcons[icon] : null;
+  const IconWrapper = ({ children, scale = 2 }) => (
+    <div
+      style={{
+        transform: `scale(${scale})`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        height: "100%",
       }}
-      sx={{
-        height: "100%", // Set the select's height to fill the parent
-        "& .MuiInputBase-root": {
-          height: "100%", // Ensures the inner input area fills the space
-        },
-      }}
-      MenuProps={{
-        PaperProps: {
-          style: {
-            maxHeight: 250,
-          },
-        },
-      }}
-      disabled={disabled}
     >
-      {Object.entries(ExampleIcons).map(([name, icon]) => (
-        <MenuItem key={name} value={name}>
-          {icon}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
-);
+      {children}
+    </div>
+  );
+
+  return (
+    <>
+      <Button
+        variant="outlined"
+        onClick={handleOpen}
+        disabled={disabled}
+        sx={{
+          width: "100%",
+          height: height || "40px",
+          minHeight: "40px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          p: 1,
+        }}
+      >
+        {SelectedIcon ? (
+          <IconWrapper scale={1.5}>{SelectedIcon}</IconWrapper>
+        ) : (
+          "Select Icon"
+        )}
+      </Button>
+
+      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+        <DialogTitle>Choose an Icon</DialogTitle>
+        <DialogContent>
+          <Grid
+            container
+            spacing={2}
+            sx={{
+              mt: 1,
+              maxHeight: "70vh",
+              overflowY: "auto",
+            }}
+          >
+            {Object.entries(ExampleIcons).map(([name, icon]) => (
+              <Grid item xs={4} sm={4} md={3} key={name}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    border: "1px solid",
+                    borderColor: "divider",
+                    "&:hover": {
+                      bgcolor: "action.hover",
+                      cursor: "pointer",
+                    },
+                  }}
+                >
+                  <IconButton
+                    onClick={(e) => handleSelect(e, name)}
+                    sx={{
+                      width: "100%",
+                      height: "80px",
+                      borderRadius: 1,
+                      p: 1,
+                    }}
+                  >
+                    <IconWrapper>{icon}</IconWrapper>
+                  </IconButton>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
+export default IconSelect;
