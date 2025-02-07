@@ -35,6 +35,7 @@ import { useClasses } from "@/hooks/use-classes";
 import { Grid3x3 } from "@mui/icons-material";
 import { ViewList } from "@mui/icons-material";
 import { ViewModule } from "@mui/icons-material";
+import { VisibilityOff } from "@mui/icons-material";
 
 const ClassListView = ({ classItem, onTakeAttendance, onViewClass }) => {
   return (
@@ -91,6 +92,15 @@ const ClassListView = ({ classItem, onTakeAttendance, onViewClass }) => {
           </Box>
 
           <Stack direction="row" spacing={1}>
+            {!classItem.visibility && (
+              <Chip
+                icon={<VisibilityOff />}
+                label="Not Visible"
+                size="large"
+                variant="outlined"
+              />
+            )}
+
             <Button
               variant="outlined"
               size="small"
@@ -132,6 +142,7 @@ const ClassGridView = ({ classItem, onTakeAttendance, onViewClass }) => {
         height: "100%",
         display: "flex",
         flexDirection: "column",
+        position: "relative",
         "&:hover": {
           boxShadow: 6,
           transition: "box-shadow 0.3s ease-in-out",
@@ -141,8 +152,17 @@ const ClassGridView = ({ classItem, onTakeAttendance, onViewClass }) => {
       <CardContent
         sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}
       >
+        {!classItem.visibility && (
+          <VisibilityOff
+            sx={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+            }}
+          />
+        )}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-          <Typography variant="h6">
+          <Typography variant="h6" display="flex">
             {ExampleIcons[classItem.icon] || null} {classItem.title}
           </Typography>
         </Box>
