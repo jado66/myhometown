@@ -215,9 +215,11 @@ export const ClassCategory = ({
     }
   }, []);
 
-  const classes = isEdit
-    ? category.classes
-    : category.classes.filter((c) => c.v !== 1 || c.visibility);
+  const classes = Array.isArray(category.classes)
+    ? isEdit
+      ? category.classes
+      : category.classes.filter((c) => c.v !== 1 || c.visibility)
+    : category.classes;
 
   return (
     <StyledTreeItem
@@ -470,9 +472,11 @@ export const ClassCategory = ({
       {editingClassId && (
         <ClassSignupProvider
           classObj={
-            category.classes.find(
-              (classObj) => classObj.id === editingClassId
-            ) || {}
+            (category.type !== "header" &&
+              category.classes.find(
+                (classObj) => classObj.id === editingClassId
+              )) ||
+            {}
           }
           category={category}
           onCreateSubclass={handleCreateSubclass}

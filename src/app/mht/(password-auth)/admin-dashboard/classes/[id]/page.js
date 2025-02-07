@@ -1,6 +1,6 @@
 "use client";
 import { Suspense, useEffect, useState } from "react";
-import ClassList from "./ClassList";
+import ClassList, { ViewToggle } from "./ClassList";
 import { Container, Typography } from "@mui/material";
 import { useCommunities } from "@/hooks/use-communities";
 import { Box, TextField, InputAdornment } from "@mui/material";
@@ -10,15 +10,22 @@ import { isAuthenticated } from "@/util/auth/simpleAuth";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/util/Loading";
 import { useUser } from "@/hooks/use-user";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export default function ClassPage({ params }) {
   const { getCommunity, loading: communityLoading, error } = useCommunities();
   const [community, setCommunity] = useState(null);
   const [searchTerm, setSearchTerm] = useLocalStorage("classSearch", "");
+  const [viewType, setViewType] = useLocalStorage("classViewType", "grid");
+
   const router = useRouter();
 
   const { isLoading, isAdmin } = useUser();
   const [loading, setLoading] = useState(true);
+
+  const toggleView = () => {
+    setViewType(viewType === "grid" ? "list" : "grid");
+  };
 
   useEffect(() => {
     if (isLoading) {
@@ -34,7 +41,6 @@ export default function ClassPage({ params }) {
     const fetchCommunity = async () => {
       const community = await getCommunity(params.id);
       if (community) {
-        // Handle the community data
         setCommunity(community);
       }
     };
@@ -62,6 +68,7 @@ export default function ClassPage({ params }) {
       >
         {community?.name} Community Classes
       </Typography>
+
       <Box sx={{ mb: 4 }}>
         <TextField
           fullWidth
@@ -69,7 +76,6 @@ export default function ClassPage({ params }) {
           value={searchTerm}
           onChange={handleSearch}
           sx={{
-            // colored background if there is a value in the search field
             backgroundColor: searchTerm ? "#d4e7fa" : "white",
           }}
           InputProps={{
@@ -81,8 +87,14 @@ export default function ClassPage({ params }) {
           }}
         />
       </Box>
+      <ViewToggle viewType={viewType} onToggle={toggleView} />
+
       <Suspense fallback={<div>Loading...</div>}>
-        <ClassList communityId={params.id} searchTerm={searchTerm} />
+        <ClassList
+          community={community}
+          searchTerm={searchTerm}
+          viewType={viewType}
+        />
       </Suspense>
     </Container>
   );

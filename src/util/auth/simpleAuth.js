@@ -20,6 +20,10 @@ export const isAuthenticated = (communityId) => {
 };
 
 export const CommunityIdToPasswordHash = {
+  "67411c5795464500ae7aab25": {
+    name: "Dev - Dev",
+    password: "1234",
+  },
   "66a811814800d08c300d88fd": {
     name: "Orem - Geneva Heights",
     password: "8631",
