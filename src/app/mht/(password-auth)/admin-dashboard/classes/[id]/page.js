@@ -3,6 +3,7 @@ import { Suspense, useEffect, useState } from "react";
 import ClassList, { ViewToggle } from "./ClassList";
 import { Container, Typography } from "@mui/material";
 import { useCommunities } from "@/hooks/use-communities";
+import { useClasses } from "@/hooks/use-classes";
 import { Box, TextField, InputAdornment } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { useLocalStorage } from "@/hooks/use-local-storage";
@@ -10,16 +11,16 @@ import { isAuthenticated } from "@/util/auth/simpleAuth";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/util/Loading";
 import { useUser } from "@/hooks/use-user";
-import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export default function ClassPage({ params }) {
-  const { getCommunity, loading: communityLoading, error } = useCommunities();
+  const { getCommunity, loading: communityLoading } = useCommunities();
+  const { getClassesByCommunity, loading: classesLoading } = useClasses();
   const [community, setCommunity] = useState(null);
+  const [mergedCommunityData, setMergedCommunityData] = useState(null);
   const [searchTerm, setSearchTerm] = useLocalStorage("classSearch", "");
   const [viewType, setViewType] = useLocalStorage("classViewType", "grid");
 
   const router = useRouter();
-
   const { isLoading, isAdmin } = useUser();
   const [loading, setLoading] = useState(true);
 
@@ -28,33 +29,69 @@ export default function ClassPage({ params }) {
   };
 
   useEffect(() => {
-    if (isLoading) {
-      return;
-    }
+    if (isLoading) return;
 
     const hasAuth = isAuthenticated(params.id) || isAdmin;
-
     if (!hasAuth) {
       router.push(process.env.NEXT_PUBLIC_DOMAIN + "/admin-dashboard/classes");
     }
 
-    const fetchCommunity = async () => {
-      const community = await getCommunity(params.id);
-      if (community) {
-        setCommunity(community);
+    const fetchData = async () => {
+      try {
+        // Fetch both community and classes data
+        const communityData = await getCommunity(params.id);
+        const classesData = await getClassesByCommunity(params.id);
+
+        if (communityData && classesData) {
+          // Create a map of classes for quick lookup
+          const classesMap = new Map(
+            classesData.map((classItem) => [classItem.id, classItem])
+          );
+
+          // Deep clone the community data to avoid mutations
+          const mergedData = JSON.parse(JSON.stringify(communityData));
+
+          // Merge the data while preserving structure
+          mergedData.classes = mergedData.classes.map((category) => {
+            if (category.type === "header") {
+              return category;
+            }
+
+            return {
+              ...category,
+              classes: category.classes.map((communityClass) => {
+                const fullClassData = classesMap.get(communityClass.id);
+                return {
+                  ...communityClass,
+                  ...fullClassData,
+                  // Preserve any community-specific overrides
+                  title: communityClass.title || fullClassData?.title,
+                  icon: communityClass.icon || fullClassData?.icon,
+                  visibility:
+                    communityClass.visibility ?? fullClassData?.visibility,
+                };
+              }),
+            };
+          });
+
+          setCommunity(communityData);
+          setMergedCommunityData(mergedData);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    setLoading(false);
-
-    fetchCommunity();
+    fetchData();
   }, [params.id, isLoading, isAdmin]);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
 
-  if (communityLoading || loading) {
+  if (communityLoading || classesLoading || loading) {
     return <Loading />;
   }
 
@@ -91,7 +128,7 @@ export default function ClassPage({ params }) {
 
       <Suspense fallback={<div>Loading...</div>}>
         <ClassList
-          community={community}
+          community={mergedCommunityData}
           searchTerm={searchTerm}
           viewType={viewType}
         />
