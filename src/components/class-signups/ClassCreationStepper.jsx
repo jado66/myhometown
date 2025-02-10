@@ -20,29 +20,34 @@ import { FieldSelectorDialog } from "./FieldSelectorDialog";
 import Loading from "../util/Loading";
 import { Close } from "@mui/icons-material";
 
-const steps = [
-  {
-    label: "Class Description",
-    optional: false,
-  },
-  {
-    label: "Review Description",
-    optional: false,
-  },
-  {
-    label: "Class Signup Form",
-    optional: false,
-  },
-  {
-    label: "Review Signup Form",
-    optional: false,
-  },
-];
+const getSteps = (onlyForm) => {
+  const allSteps = [
+    {
+      label: "Class Description",
+      optional: false,
+    },
+    {
+      label: "Review Description",
+      optional: false,
+    },
+    {
+      label: "Class Signup Form",
+      optional: false,
+    },
+    {
+      label: "Review Signup Form",
+      optional: false,
+    },
+  ];
+
+  return onlyForm ? allSteps.slice(2) : allSteps;
+};
 
 export default function ClassCreationStepper({
   isNew,
   handleClose,
   CategorySelectOptions,
+  onlyForm = false,
 }) {
   const [activeStep, setActiveStep] = useState(0);
   const [isFieldSelectorOpen, setIsFieldSelectorOpen] = useState(false);
@@ -55,6 +60,8 @@ export default function ClassCreationStepper({
     isLoading,
     handleDeleteClass,
   } = useClassSignup();
+
+  const steps = getSteps(onlyForm);
 
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1);
@@ -74,7 +81,10 @@ export default function ClassCreationStepper({
   };
 
   const renderStepContent = (step) => {
-    switch (step) {
+    // If onlyForm is true, we need to offset the step number since we're only showing the last two steps
+    const adjustedStep = onlyForm ? step + 2 : step;
+
+    switch (adjustedStep) {
       case 0:
         return (
           <ClassDescriptionEditor
@@ -182,8 +192,6 @@ export default function ClassCreationStepper({
               </Step>
             ))}
           </Stepper>
-
-          {/* <pre>{JSON.stringify(formConfig, null, 4)}</pre> */}
 
           <Box sx={{ mt: 4, mb: 4 }}>{renderStepContent(activeStep)}</Box>
 

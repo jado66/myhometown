@@ -117,6 +117,82 @@ export const FieldEditor = ({
       );
     }
 
+    if (config.type === FIELD_TYPES.radioGroup) {
+      return (
+        <Stack spacing={2} sx={{ width: "100%" }}>
+          <TextField
+            size="small"
+            value={config.label}
+            onChange={(e) =>
+              onUpdate(field, { ...config, label: e.target.value })
+            }
+            label="Label"
+          />
+          <TextField
+            size="small"
+            value={config.content}
+            onChange={(e) => {
+              const options = e.target.value.split("\n").map((option) => ({
+                value: option.trim().toLowerCase().replace(/\s+/g, "-"),
+                label: option.trim(),
+              }));
+              onUpdate(field, { ...config, options });
+            }}
+            label="Options (one per line)"
+            multiline
+            rows={4}
+          />
+        </Stack>
+      );
+    }
+
+    if (config.type === FIELD_TYPES.externalLink) {
+      return (
+        <Stack spacing={2} sx={{ width: "100%" }}>
+          <TextField
+            size="small"
+            value={config.label}
+            onChange={(e) =>
+              onUpdate(field, { ...config, label: e.target.value })
+            }
+            label="Label"
+          />
+          <TextField
+            size="small"
+            value={config.url}
+            onChange={(e) =>
+              onUpdate(field, { ...config, url: e.target.value })
+            }
+            label="URL"
+          />
+        </Stack>
+      );
+    }
+
+    if (config.type === FIELD_TYPES.infoDialog) {
+      return (
+        <Stack spacing={2} sx={{ width: "100%" }}>
+          <TextField
+            size="small"
+            value={config.label}
+            onChange={(e) =>
+              onUpdate(field, { ...config, label: e.target.value })
+            }
+            label="Label"
+          />
+          <TextField
+            size="small"
+            value={config.content}
+            onChange={(e) =>
+              onUpdate(field, { ...config, content: e.target.value })
+            }
+            label="Content"
+            multiline
+            rows={4}
+          />
+        </Stack>
+      );
+    }
     if (config.type === FIELD_TYPES.checkbox) {
       return (
         <>

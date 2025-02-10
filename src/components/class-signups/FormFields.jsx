@@ -14,11 +14,21 @@ import {
   Stack,
   Checkbox,
   FormControlLabel,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  RadioGroup,
+  Radio,
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { FIELD_TYPES } from "./FieldTypes";
 import { Upload } from "@mui/icons-material";
 import { useImageUpload } from "@/hooks/use-upload-image";
+import SignaturePad from "react-signature-canvas";
+import { useState } from "react";
+import Link from "next/link";
 
 // Form Field Component
 export const FormField = ({
@@ -29,6 +39,9 @@ export const FormField = ({
   error,
   isEditMode,
 }) => {
+  const [open, setOpen] = useState(false);
+  const [sigPad, setSigPad] = useState(null);
+
   const renderField = () => {
     if (config.type === FIELD_TYPES.header) {
       return (
@@ -159,7 +172,120 @@ export const FormField = ({
             }}
           />
         );
+      case FIELD_TYPES.signature:
+        return (
+          <Box sx={{ border: "1px solid #ccc", borderRadius: 1, p: 1 }}>
+            <Typography>
+              {config.label}
+              {config.required && " *"}
+            </Typography>
+            <SignaturePad
+              canvasProps={{
+                className: "signature-canvas",
+                width: 500,
+                height: 200,
+              }}
+              ref={(ref) => {
+                if (ref && !value) {
+                  setSigPad(ref);
+                  onChange(field, ref);
+                }
+              }}
+            />
+            <Button
+              size="small"
+              onClick={() => {
+                if (sigPad) {
+                  sigPad.clear();
+                  onChange(field, null);
+                }
+              }}
+            >
+              Clear
+            </Button>
+            {(error || config.helpText) && (
+              <FormHelperText error={!!error}>
+                {error || config.helpText}
+              </FormHelperText>
+            )}
+          </Box>
+        );
 
+      case FIELD_TYPES.radioGroup:
+        return (
+          <FormControl error={!!error} required={config.required} fullWidth>
+            <Typography>
+              {config.label}
+              {config.required && " *"}
+            </Typography>
+            <RadioGroup
+              value={value || ""}
+              onChange={(e) => onChange(field, e.target.value)}
+            >
+              {config.options?.map((option) => (
+                <FormControlLabel
+                  key={option.value}
+                  value={option.value}
+                  control={<Radio />}
+                  label={option.label}
+                />
+              ))}
+            </RadioGroup>
+            {(error || config.helpText) && (
+              <FormHelperText>{error || config.helpText}</FormHelperText>
+            )}
+          </FormControl>
+        );
+
+      case FIELD_TYPES.externalLink:
+        return (
+          <Box>
+            <Typography>
+              {config.label}
+              {config.required && " *"}
+            </Typography>
+            <Link
+              href={config.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => onChange(field, true)}
+            >
+              {config.helpText || "Click here"}
+            </Link>
+            {error && <FormHelperText error>{error}</FormHelperText>}
+          </Box>
+        );
+
+      case FIELD_TYPES.infoDialog:
+        return (
+          <Box>
+            <Button variant="outlined" onClick={() => setOpen(true)}>
+              {config.label}
+            </Button>
+            <Dialog
+              open={open}
+              onClose={() => setOpen(false)}
+              maxWidth="md"
+              fullWidth
+            >
+              <DialogTitle>{config.label}</DialogTitle>
+              <DialogContent>
+                <Typography>{config.content}</Typography>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => {
+                    setOpen(false);
+                    onChange(field, true);
+                  }}
+                >
+                  I Acknowledge
+                </Button>
+              </DialogActions>
+            </Dialog>
+            {error && <FormHelperText error>{error}</FormHelperText>}
+          </Box>
+        );
       default:
         return (
           <TextField

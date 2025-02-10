@@ -406,6 +406,55 @@ export const AVAILABLE_FIELDS = {
     helpText: "Check this box if applicable",
     category: "Miscellaneous",
   },
+  volunteerSignature: {
+    label: "Volunteer Signature",
+    type: FIELD_TYPES.signature,
+    visible: true,
+    required: true,
+    originalLabel: "Volunteer Signature",
+    helpText: "Please sign to confirm your participation",
+    category: "Days of Service",
+    validation: (value) =>
+      value && value.length > 0 ? null : "Signature is required",
+  },
+
+  safetyGuidelines: {
+    label: "Safety Rules and Guidelines",
+    type: FIELD_TYPES.infoDialog,
+    visible: true,
+    required: true,
+    originalLabel: "Safety Rules and Guidelines",
+    content: "Add your safety rules and guidelines here...",
+    helpText: "Please review and acknowledge the safety guidelines",
+    category: "Days of Service",
+    validation: (value) =>
+      value === true ? null : "You must review the safety guidelines",
+  },
+
+  serviceArea: {
+    label: "Service Area",
+    type: FIELD_TYPES.radioGroup,
+    visible: true,
+    required: true,
+    originalLabel: "Service Area",
+    options: [],
+    helpText: "Select your preferred service area",
+    category: "Days of Service",
+    validation: (value) => (value ? null : "Please select a service area"),
+  },
+
+  safetyVideo: {
+    label: "Safety Video",
+    type: FIELD_TYPES.externalLink,
+    visible: true,
+    required: true,
+    originalLabel: "Safety Video",
+    url: "",
+    helpText: "Watch the required safety video before proceeding",
+    category: "Days of Service",
+    validation: (value) =>
+      value === true ? null : "You must watch the safety video",
+  },
 };
 
 export const STRUCTURAL_ELEMENTS = {

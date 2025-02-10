@@ -16,6 +16,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import { IframeHelpDialog } from "./events/IframeHelpDialog";
 import { Edit } from "@mui/icons-material";
 import UploadImage from "./util/UploadImage";
+import { ClassSignupProvider } from "./class-signups/ClassSignupContext";
+import ClassCreationStepper from "./class-signups/ClassCreationStepper";
 
 const StyledTreeItem = styled(TreeItem)(({ theme }) => ({
   "& .MuiTreeItem-content": {
@@ -64,6 +66,16 @@ export const VolunteerSignUps = ({
       setError("This is not a valid Google Form iframe.");
     }
   };
+
+  const handleCreateSubclass = (classObj) => {
+    alert("Creating subclass: " + JSON.stringify(classObj));
+  };
+
+  const handleEditSubclass = (classObj) => {
+    alert("Editing subclass: " + JSON.stringify(classObj));
+  };
+
+  const duplicatedClassData = null;
 
   if (!isEdit && !signUpFormId) {
     return null;
@@ -119,101 +131,38 @@ export const VolunteerSignUps = ({
   if (isEditingValues || !signUpFormId) {
     return (
       <>
-        <IframeHelpDialog
-          open={isShowIframeHelpDialog}
-          handleClose={hideIframeHelpDialog}
-        />
-        <Grid item xs={12} display="flex" flexDirection="column">
-          <Typography
-            variant="h4"
-            component="h2"
-            color="primary"
-            textAlign="center"
-            gutterBottom
-          >
-            {volunteerHeaderText
-              ? volunteerHeaderText
-              : "Sign Up as a Volunteer"}
-          </Typography>
-
-          <Box
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            position="relative"
-            sx={{
-              px: 1,
-              width: "100%",
-              height: "100%",
-              minHeight: "100px",
-              backgroundColor: "transparent",
-            }}
-          >
-            <UploadImage setUrl={(url) => setVolunteerHeaderImage(url)} />
-
-            {volunteerHeaderImage ? (
-              <Box
-                component="img"
-                src={volunteerHeaderImage}
-                sx={{
-                  width: "100%",
-                  borderRadius: 4,
-                  height: "auto",
-                  boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
-                  objectFit: "cover",
-                }}
-              />
-            ) : (
-              <Typography variant="h4" component="h2" align="center">
-                Volunteer Header Image
-              </Typography>
-            )}
-          </Box>
-
-          <Grid
-            item
-            xs={12}
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            mt={2}
-          >
-            <Typography variant="body1" textAlign="left">
-              Copy the link from Google Forms
-            </Typography>
-            <Button
-              variant="outlined"
-              onClick={showIframeHelpDialog}
-              sx={{ ml: 2 }}
-            >
-              Get Help <HelpOutlineIcon sx={{ ml: 1 }} />
-            </Button>
+        <ClassSignupProvider
+          category={{
+            title: "Volunteer Sign Ups",
+            id: "volunteer",
+          }}
+          onCreateSubclass={handleCreateSubclass}
+          onEditSubclass={handleEditSubclass}
+          classObj={duplicatedClassData || {}}
+          defaultConfig={
+            duplicatedClassData
+              ? {
+                  ...duplicatedClassData,
+                  title: `${duplicatedClassData.title}`,
+                  id: undefined,
+                }
+              : undefined
+          }
+          isEdit={isEdit}
+          isNew={true}
+        >
+          <Grid item xs={12} display="flex" flexDirection="column">
+            <ClassCreationStepper
+              isNew={true}
+              handleClose={() => {
+                setAddNewClass(false);
+                setDuplicatedClassData(null);
+              }}
+              CategorySelectOptions={null}
+              onlyForm={true}
+            />
           </Grid>
-          <TextField
-            size="small"
-            value={rawIframeCode}
-            onChange={(e) => setRawIframeCode(e.target.value)}
-            placeholder="Google Form iframe code"
-            margin="normal"
-            error={!!error}
-            helperText={error || ""}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment
-                  position="end"
-                  sx={{
-                    borderLeft: `2px solid ${theme.palette.divider}`,
-                    paddingLeft: theme.spacing(1),
-                  }}
-                >
-                  <Button sx={{ mx: "auto" }} onClick={handleSave}>
-                    Save
-                  </Button>
-                </InputAdornment>
-              ),
-            }}
-          />
-        </Grid>
+        </ClassSignupProvider>
       </>
     );
   } else {

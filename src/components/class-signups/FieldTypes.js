@@ -10,4 +10,8 @@ export const FIELD_TYPES = {
   header: "header",
   staticText: "staticText",
   bannerImage: "bannerImage",
+  signature: "signature",
+  radioGroup: "radioGroup",
+  externalLink: "externalLink",
+  infoDialog: "infoDialog",
 };
