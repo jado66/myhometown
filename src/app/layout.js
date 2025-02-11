@@ -40,6 +40,7 @@ export const metadata = {
     initialScale: 1,
     maximumScale: 1,
   },
+  themeColor: "#FFFFFF",
 };
 
 export default function RootLayout({ children }) {
