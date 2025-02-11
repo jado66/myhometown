@@ -11,11 +11,12 @@ import CardActions from "@mui/material/CardActions";
 import CardMedia from "@mui/material/CardMedia";
 import Button from "@mui/material/Button";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { Container } from "@mui/material";
+import { Container, Divider } from "@mui/material";
 import { useUser } from "@/hooks/use-user";
 import Loading from "@/components/util/Loading";
 import NextLink from "next/link";
 import PermissionGuard from "@/guards/permission-guard";
+import { GetApp } from "@/components/GetApp";
 
 const AdminDashboardPages = () => {
   const theme = useTheme();
@@ -154,6 +155,8 @@ const AdminDashboardPages = () => {
                   <AdminDashboardCard item={item} i={i} />
                 </PermissionGuard>
               ))}
+              <Divider sx={{ my: 2, width: "100%" }} />
+              <GetApp />
             </Grid>
           </Box>
         </Container>
