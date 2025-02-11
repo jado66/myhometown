@@ -2,8 +2,11 @@
   "name": "myHometown",
   "short_name": "myHometown",
   "description": "Your local community.",
+  "prefer_related_applications": false,
   "start_url": "/admin-dashboard",
   "display": "standalone",
+  "orientation": "portrait",
+  "categories": ["community", "lifestyle"],
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "icons": [

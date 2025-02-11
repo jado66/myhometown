@@ -6,7 +6,10 @@ import "react-toastify/dist/ReactToastify.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "myHometown",
+  title: {
+    template: "myHometown",
+    default: "myHometown",
+  },
   description: "Your local community.",
   icons: {
     icon: [
