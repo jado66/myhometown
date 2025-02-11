@@ -74,6 +74,7 @@ export function ClassSignupProvider({
   onDeleteSubclass,
   isNew = false,
   isEditMode = false,
+  type = "class",
 }) {
   const loadedClassesContext = !isNew ? useLoadedClassesContext() : null;
   const { signupForClass } = useClasses();
@@ -323,13 +324,15 @@ export function ClassSignupProvider({
 
   const handleSaveClass = async () => {
     try {
-      const validationResult = validateClassConfig();
-      if (!validationResult.isValid) {
-        // Show all validation errors as toasts
-        Object.values(validationResult.errors).forEach((error) => {
-          toast.error(error);
-        });
-        throw new Error("Please correct all highlighted fields");
+      if (type === "class") {
+        const validationResult = validateClassConfig();
+        if (!validationResult.isValid) {
+          // Show all validation errors as toasts
+          Object.values(validationResult.errors).forEach((error) => {
+            toast.error(error);
+          });
+          throw new Error("Please correct all highlighted fields");
+        }
       }
 
       if (classConfig.id && !isNew) {

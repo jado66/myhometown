@@ -20,7 +20,7 @@ import { FieldSelectorDialog } from "./FieldSelectorDialog";
 import Loading from "../util/Loading";
 import { Close } from "@mui/icons-material";
 
-const getSteps = (onlyForm) => {
+const getSteps = (onlyForm, type) => {
   const allSteps = [
     {
       label: "Class Description",
@@ -31,7 +31,7 @@ const getSteps = (onlyForm) => {
       optional: false,
     },
     {
-      label: "Class Signup Form",
+      label: `${type === "class" ? "Class" : "Volunteer"} Signup Form`,
       optional: false,
     },
     {
@@ -48,6 +48,7 @@ export default function ClassCreationStepper({
   handleClose,
   CategorySelectOptions,
   onlyForm = false,
+  type = "class",
 }) {
   const [activeStep, setActiveStep] = useState(0);
   const [isFieldSelectorOpen, setIsFieldSelectorOpen] = useState(false);
@@ -61,7 +62,7 @@ export default function ClassCreationStepper({
     handleDeleteClass,
   } = useClassSignup();
 
-  const steps = getSteps(onlyForm);
+  const steps = getSteps(onlyForm, type);
 
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1);
@@ -112,13 +113,18 @@ export default function ClassCreationStepper({
         );
       case 2:
         return (
-          <FormBuilder showFieldSelector={() => setIsFieldSelectorOpen(true)} />
+          <FormBuilder
+            showFieldSelector={() => setIsFieldSelectorOpen(true)}
+            formTitle={
+              type === "volunteer signup" ? "Volunteer Signup" : "Class Signup"
+            }
+          />
         );
 
       case 3:
         return (
           <Paper sx={{ p: 3 }}>
-            <ViewClassSignupForm testSubmit />
+            <ViewClassSignupForm testSubmit type={type} />
           </Paper>
         );
       default:
@@ -165,8 +171,8 @@ export default function ClassCreationStepper({
       disableEscapeKeyDown
     >
       <Box sx={{ p: 4 }}>
-        <Typography variant="h4" sx={{ mb: 3 }}>
-          {(isNew ? "Create New Class: " : "Edit: ") +
+        <Typography variant="h4" sx={{ mb: 3, textTransform: "capitalize" }}>
+          {(isNew ? `Create New ${type}: ` : "Edit: ") +
             classConfig.title +
             " - " +
             steps[activeStep].label}
@@ -181,7 +187,14 @@ export default function ClassCreationStepper({
         )}
 
         <Box sx={{ width: "100%" }}>
-          <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+          <Stepper
+            activeStep={activeStep}
+            sx={{
+              mb: 4,
+              width: steps.length === 2 ? "50%" : "90%",
+              mx: "auto",
+            }}
+          >
             {steps.map((step, index) => (
               <Step key={step.label}>
                 <StepLabel>
@@ -219,8 +232,12 @@ export default function ClassCreationStepper({
                 Cancel
               </Button>
               {activeStep === steps.length - 1 ? (
-                <Button variant="contained" onClick={handleFinish}>
-                  {isNew ? "Create Class" : "Save Changes"}
+                <Button
+                  variant="contained"
+                  onClick={handleFinish}
+                  sx={{ textTransform: "capitalize" }}
+                >
+                  {isNew ? `Create ${type}` : "Save Changes"}
                 </Button>
               ) : (
                 <Button variant="contained" onClick={handleNext}>

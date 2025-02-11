@@ -18,6 +18,7 @@ import { Edit } from "@mui/icons-material";
 import UploadImage from "./util/UploadImage";
 import { ClassSignupProvider } from "./class-signups/ClassSignupContext";
 import ClassCreationStepper from "./class-signups/ClassCreationStepper";
+import JsonViewer from "./util/debug/DebugOutput";
 
 const StyledTreeItem = styled(TreeItem)(({ theme }) => ({
   "& .MuiTreeItem-content": {
@@ -37,6 +38,7 @@ export const VolunteerSignUps = ({
   setSignUpFormId,
   onClose,
 }) => {
+  const [signupForm, setSignupForm] = useState(null);
   const [isEditingValues, setEditingValues] = useState(false);
   const [rawIframeCode, setRawIframeCode] = useState("");
   const [error, setError] = useState("");
@@ -67,12 +69,14 @@ export const VolunteerSignUps = ({
     }
   };
 
-  const handleCreateSubclass = (classObj) => {
-    alert("Creating subclass: " + JSON.stringify(classObj));
+  const handleCreateSubclass = (classObj, formConfig) => {
+    onClose(formConfig);
+    toggleEditing();
   };
 
-  const handleEditSubclass = (classObj) => {
-    alert("Editing subclass: " + JSON.stringify(classObj));
+  const handleEditSubclass = (classObj, formConfig) => {
+    onClose(formConfig);
+    toggleEditing();
   };
 
   const duplicatedClassData = null;
@@ -91,6 +95,7 @@ export const VolunteerSignUps = ({
       sx={{ position: "relative" }}
       mb={2}
     >
+      <JsonViewer data={{ signupForm }} />
       <Typography variant="h4" component="h2" color="primary">
         {volunteerHeaderText ? volunteerHeaderText : "Sign Up as a Volunteer"}
       </Typography>
@@ -128,7 +133,7 @@ export const VolunteerSignUps = ({
     </Box>
   );
 
-  if (isEditingValues || !signUpFormId) {
+  if (isEditingValues) {
     return (
       <>
         <ClassSignupProvider
@@ -150,16 +155,17 @@ export const VolunteerSignUps = ({
           }
           isEdit={isEdit}
           isNew={true}
+          type="volunteer signup"
         >
           <Grid item xs={12} display="flex" flexDirection="column">
             <ClassCreationStepper
               isNew={true}
               handleClose={() => {
-                setAddNewClass(false);
-                setDuplicatedClassData(null);
+                toggleEditing();
               }}
               CategorySelectOptions={null}
               onlyForm={true}
+              type="volunteer signup"
             />
           </Grid>
         </ClassSignupProvider>

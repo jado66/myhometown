@@ -33,6 +33,35 @@ export default function useCommunity(
     }
   };
 
+  const updateCommunity = async (updates) => {
+    if (!community?._id) return;
+
+    try {
+      const response = await fetch(`/api/communities/id/${community._id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update community");
+      }
+
+      // Update local state
+      setCommunity((prev) => ({
+        ...prev,
+        ...updates,
+      }));
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error updating community:", error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     const fetchCommunity = async () => {
       try {
@@ -80,6 +109,7 @@ export default function useCommunity(
     community,
     hasLoaded,
     handleSaveCommunity,
+    updateCommunity,
     error,
   };
 }

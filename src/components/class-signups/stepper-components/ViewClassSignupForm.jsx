@@ -18,7 +18,7 @@ import ClassPreview from "./ClassPreview";
 import { ExpandMore } from "@mui/icons-material";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 
-export function ViewClassSignupForm({ testSubmit, classData }) {
+export function ViewClassSignupForm({ testSubmit, classData, type }) {
   const {
     classConfig,
     fieldOrder,
@@ -54,8 +54,12 @@ export function ViewClassSignupForm({ testSubmit, classData }) {
 
   return (
     <Stack spacing={3} component="form">
-      <ClassPreview classData={classConfig} />
-      <Divider sx={{ my: 3 }} />
+      {type === "class" && (
+        <>
+          <ClassPreview classData={classConfig} />
+          <Divider sx={{ my: 3 }} />
+        </>
+      )}
 
       {/* <JsonViewer data={classData} title="Class Config" /> */}
 
