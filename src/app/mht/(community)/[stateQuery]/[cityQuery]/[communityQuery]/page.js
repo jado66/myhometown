@@ -12,6 +12,9 @@ import {
   Link,
   Box,
   Breadcrumbs,
+  IconButton,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import ContentEditable from "react-contenteditable";
 import { useEffect, useState, useRef } from "react";
@@ -35,6 +38,8 @@ import { MaintenanceMode } from "@/views/supportingPages";
 import { LoadedClassesProvider } from "@/contexts/LoadedClassesProvider";
 import { useSearchParams } from "next/navigation";
 import JsonViewer from "@/components/util/debug/DebugOutput";
+import useTranslation from "@/hooks/use-translation";
+import { Translate } from "@mui/icons-material";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -42,7 +47,6 @@ export const revalidate = 0;
 const Page = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params; //TODO change me to stateQuery... VsCode hates renaming folders
   const [selectedImage, setSelectedImage] = useState();
-  const searchParams = useSearchParams(); // Add this hook
 
   const {
     community,
@@ -420,6 +424,8 @@ const Page = ({ params }) => {
             shiftDownSubclass={alertNotEdit}
           />
         </LoadedClassesProvider>
+        <h1>Translate</h1>
+        <TranslateControl />
         <Divider sx={{ my: 5 }} />
         {!showSignUp ? (
           <Grid
@@ -465,6 +471,13 @@ const Page = ({ params }) => {
       </Container>
     </>
   );
+};
+
+const TranslateControl = () => {
+  const { isLoaded } = useTranslation();
+
+  // We don't need a button anymore as the Google Translate widget will be visible directly
+  return null; // The widget is added directly to the body
 };
 
 const ImageDescriptionBlock = () => {
