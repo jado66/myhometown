@@ -1,27 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    domains: ["rcotpokskjafnxpgihpc.supabase.co"],
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  experimental: {
-    serverActions: {
-      bodySizeLimit: "50mb",
-    },
-  },
+  reactStrictMode: false,
   async headers() {
     return [
-      {
-        source: "/api/webhooks/stripe",
-        headers: [
-          {
-            key: "Content-Type",
-            value: "application/json",
-          },
-        ],
-      },
       {
         source: "/manifest.json",
         headers: [
@@ -36,9 +17,6 @@ const nextConfig = {
         ],
       },
     ];
-  },
-  typescript: {
-    tsconfigPath: "./tsconfig.json",
   },
 };
 

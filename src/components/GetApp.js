@@ -20,6 +20,7 @@ import {
   AddBox,
   Launch,
 } from "@mui/icons-material";
+import { toast } from "react-toastify";
 
 const getBrowserName = (userAgent) => {
   if (userAgent.match(/chrome|chromium|crios/i)) return "Chrome";
@@ -139,7 +140,7 @@ export function GetApp() {
         console.log("Installation failed. Please try again.");
       }
     } else {
-      console.log("Please use your browser's menu to install the app");
+      toast.info("Please use your browser's menu to install the app");
     }
   };
 
