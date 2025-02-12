@@ -1,18 +1,22 @@
 "use client";
-import { createContext, useState, useEffect } from "react";
-import { useUser } from "@auth0/nextjs-auth0/client";
+import { supabase } from "@/util/supabase";
+import { createContext, useState, useEffect, useContext } from "react";
 
 export const UserContext = createContext();
 
+export const useUser = () => {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error("useUser must be used within a UserProvider");
+  }
+  return context;
+};
+
 export const UserProvider = ({ children }) => {
-  const {
-    user: authUser,
-    error: authError,
-    isLoading: isAuthLoading,
-  } = useUser();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isImpersonating, setIsImpersonating] = useState(false);
+  const [authUser, setAuthUser] = useState(null);
 
   const getImpersonatedUser = () => {
     if (typeof window === "undefined") return null;
@@ -20,21 +24,39 @@ export const UserProvider = ({ children }) => {
     return stored ? JSON.parse(stored) : null;
   };
 
-  const fetchUser = async (sub, email) => {
+  const fetchUser = async (id, email) => {
     try {
-      const response = await fetch("/api/database/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ sub, email }),
-      });
+      // Query the users table in Supabase
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", id)
+        .single();
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (error) throw error;
+
+      // If user doesn't exist, create a new user record
+      if (!data) {
+        const { data: newUser, error: createError } = await supabase
+          .from("users")
+          .insert([
+            {
+              id: id,
+              email: email,
+              role: "User", // Default role
+              created_at: new Date().toISOString(),
+            },
+          ])
+          .select()
+          .single();
+
+        if (createError) throw createError;
+
+        setUser(newUser);
+        setIsLoading(false);
+        return newUser;
       }
 
-      const data = await response.json();
       setUser(data);
       setIsLoading(false);
       return data;
@@ -46,10 +68,31 @@ export const UserProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const initializeUser = async () => {
-      // Wait for auth loading to complete
-      if (isAuthLoading) return;
+    // Set up Supabase auth listener
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setAuthUser(session?.user ?? null);
 
+      if (event === "SIGNED_OUT") {
+        setUser(null);
+        window.localStorage.removeItem("impersonatedUser");
+        setIsImpersonating(false);
+      }
+    });
+
+    // Initial session check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAuthUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    const initializeUser = async () => {
       // Check for impersonated user first
       const impersonatedUser = getImpersonatedUser();
 
@@ -59,8 +102,7 @@ export const UserProvider = ({ children }) => {
         await fetchUser(sub, email);
       } else if (authUser) {
         setIsImpersonating(false);
-        const { sub, email } = authUser;
-        await fetchUser(sub, email);
+        await fetchUser(authUser.id, authUser.email);
       } else {
         // No authenticated or impersonated user
         setUser(null);
@@ -69,7 +111,7 @@ export const UserProvider = ({ children }) => {
     };
 
     initializeUser();
-  }, [authUser, isAuthLoading]);
+  }, [authUser]);
 
   const impersonateUser = async (newSub, newEmail) => {
     setIsLoading(true);
@@ -94,11 +136,50 @@ export const UserProvider = ({ children }) => {
     setIsImpersonating(false);
 
     if (authUser) {
-      const { sub, email } = authUser;
-      await fetchUser(sub, email);
+      await fetchUser(authUser.id, authUser.email);
     } else {
       setUser(null);
       setIsLoading(false);
+    }
+  };
+
+  // Authentication methods
+  const signIn = async (email, password) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error("Error signing in:", error.message);
+      return { data: null, error };
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      return { error: null };
+    } catch (error) {
+      console.error("Error signing out:", error.message);
+      return { error };
+    }
+  };
+
+  const resetPassword = async (email) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      return { error: null };
+    } catch (error) {
+      console.error("Error resetting password:", error.message);
+      return { error };
     }
   };
 
@@ -106,11 +187,15 @@ export const UserProvider = ({ children }) => {
     <UserContext.Provider
       value={{
         user,
+        authUser,
         isLoading,
         isAdmin: user?.role === "Admin",
         impersonateUser,
         stopImpersonation,
         isImpersonating,
+        signIn,
+        signOut,
+        resetPassword,
       }}
     >
       {children}

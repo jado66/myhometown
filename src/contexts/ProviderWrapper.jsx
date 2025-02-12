@@ -5,7 +5,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import getTheme from "@/theme";
 import Paper from "@mui/material/Paper";
 import { UserProvider } from "./UserProvider";
-import { UserProvider as AuthProvider } from "@auth0/nextjs-auth0/client";
+import { AuthProvider } from "./AuthContext";
 
 const ProviderWrapper = ({ children, theme = "default" }) => {
   return (

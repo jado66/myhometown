@@ -1,3 +1,4 @@
+import { supabase } from "@/util/supabase";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
@@ -31,12 +32,22 @@ const useUsers = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("/api/database/users");
-      const data = await res.json();
-      setUsers(data.map((u) => ({ ...u, id: u._id })));
+      const { data, error } = await supabase.from("users").select("*");
 
-      const selectOptions = data.map((user) => ({
-        value: user._id,
+      if (error) throw error;
+
+      const formattedUsers = data.map((user) => ({
+        ...user,
+        id: user.id,
+        permissions: user.permissions || initialUserState.permissions,
+        cities: user.cities || [],
+        communities: user.communities || [],
+      }));
+
+      setUsers(formattedUsers);
+
+      const selectOptions = formattedUsers.map((user) => ({
+        value: user.id,
         label: `${user.firstName} ${user.lastName}`,
         data: user,
       }));
@@ -54,21 +65,35 @@ const useUsers = () => {
     setError(null);
 
     try {
-      const response = await fetch("/api/database/users/add-user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
+      // First, create the auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password, // You'll need to modify your form to include this
       });
 
-      const data = await response.json();
+      if (authError) throw authError;
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to create user");
-      }
+      // Then, add the user profile data
+      const { data, error: dbError } = await supabase
+        .from("users")
+        .insert([
+          {
+            id: authData.user.id, // Use the auth user ID
+            email: userData.email,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            contactNumber: userData.contactNumber,
+            permissions: userData.permissions,
+            cities: userData.cities,
+            communities: userData.communities,
+          },
+        ])
+        .select()
+        .single();
 
-      setUsers((prevUsers) => [...prevUsers, { ...data, id: data._id }]);
+      if (dbError) throw dbError;
+
+      setUsers((prevUsers) => [...prevUsers, { ...data, id: data.id }]);
       toast.success("User created successfully");
       return { success: true, data };
     } catch (err) {
@@ -85,23 +110,25 @@ const useUsers = () => {
     setError(null);
 
     try {
-      const response = await fetch("/api/database/users", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ user: userData }),
-      });
+      const { data, error } = await supabase
+        .from("users")
+        .update({
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          contactNumber: userData.contactNumber,
+          permissions: userData.permissions,
+          cities: userData.cities,
+          communities: userData.communities,
+        })
+        .eq("id", userData.id)
+        .select()
+        .single();
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to update user");
-      }
+      if (error) throw error;
 
       setUsers((prevUsers) =>
         prevUsers.map((u) =>
-          u._id === userData._id ? { ...userData, id: userData._id } : u
+          u.id === userData.id ? { ...data, id: data.id } : u
         )
       );
       toast.success("User updated successfully");
@@ -120,14 +147,18 @@ const useUsers = () => {
     setError(null);
 
     try {
-      const response = await fetch(`/api/database/users/${userId}`, {
-        method: "DELETE",
-      });
+      // First, delete from the users table
+      const { error: dbError } = await supabase
+        .from("users")
+        .delete()
+        .eq("id", userId);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to delete user");
-      }
+      if (dbError) throw dbError;
+
+      // Then, delete the auth user
+      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+
+      if (authError) throw authError;
 
       setUsers((prevUsers) => prevUsers.filter((u) => u.id !== userId));
       toast.success("User deleted successfully");
@@ -146,18 +177,11 @@ const useUsers = () => {
     setError(null);
 
     try {
-      const response = await fetch(`/api/database/users/${email}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to send password reset");
-      }
+      if (error) throw error;
 
       toast.success("Password reset email sent successfully");
       return { success: true };
