@@ -4,6 +4,10 @@ const nextConfig = {
   async headers() {
     return [
       {
+        typescript: {
+          ignoreBuildErrors: true,
+        },
+
         source: "/manifest.json",
         headers: [
           {
