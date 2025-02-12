@@ -29,6 +29,7 @@ import { useImageUpload } from "@/hooks/use-upload-image";
 import SignaturePad from "react-signature-canvas";
 import { useState } from "react";
 import Link from "next/link";
+import { MultiLineTypography } from "../MultiLineTypography";
 
 // Form Field Component
 export const FormField = ({
@@ -180,11 +181,13 @@ export const FormField = ({
               {config.required && " *"}
             </Typography>
             <SignaturePad
+              backgroundColor="#edeff2"
               canvasProps={{
                 className: "signature-canvas",
                 width: 500,
                 height: 200,
               }}
+              style={{ border: "1px solid #ccc" }}
               ref={(ref) => {
                 if (ref && !value) {
                   setSigPad(ref);
@@ -270,7 +273,7 @@ export const FormField = ({
             >
               <DialogTitle>{config.label}</DialogTitle>
               <DialogContent>
-                <Typography>{config.content}</Typography>
+                <MultiLineTypography text={config.content} />
               </DialogContent>
               <DialogActions>
                 <Button

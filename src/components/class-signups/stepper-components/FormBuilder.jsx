@@ -45,9 +45,9 @@ export function FormBuilder({ showFieldSelector, formTitle = "Class Signup" }) {
   return (
     <Stack spacing={3} sx={{ py: 2 }}>
       <Typography variant="h6">{formTitle} Form Builder</Typography>
-      {/* 
+
       <JsonViewer data={formConfig} />
-      <JsonViewer data={fieldOrder} /> */}
+      <JsonViewer data={fieldOrder} />
 
       <Typography variant="subtitle1" fontWeight="bold">
         Drag and drop fields to reorder them. You can change the label on the

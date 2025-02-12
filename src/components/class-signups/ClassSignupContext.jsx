@@ -73,13 +73,17 @@ export function ClassSignupProvider({
   onEditSubclass,
   onDeleteSubclass,
   isNew = false,
+  dontUseLoadedClasses = false,
   isEditMode = false,
   type = "class",
 }) {
-  const loadedClassesContext = !isNew ? useLoadedClassesContext() : null;
+  const loadedClassesContext =
+    !isNew || !dontUseLoadedClasses ? useLoadedClassesContext() : null;
   const { signupForClass } = useClasses();
 
-  const [isLoading, setIsLoading] = useState(classObj?.id ? true : false);
+  const [isLoading, setIsLoading] = useState(
+    classObj?.id && !dontUseLoadedClasses ? true : false
+  );
   const [loadError, setLoadError] = useState(null);
   const hasLoadedRef = useRef(false);
 
@@ -133,7 +137,7 @@ export function ClassSignupProvider({
 
     // Second priority: classObj's signupForm field order
     if (classObj?.fieldOrder) {
-      return classObj.signupForm.fieldOrder;
+      return classObj?.signupForm?.fieldOrder;
     }
 
     // Third priority: extract order from formConfig fields that are visible
@@ -169,6 +173,15 @@ export function ClassSignupProvider({
   // Load existing class data
   useEffect(() => {
     async function loadClassData() {
+      if (dontUseLoadedClasses) {
+        const newFieldOrder = classObj.field_order || fieldOrder;
+        const newFormConfig = classObj.form_config || formConfig;
+
+        setFieldOrder(newFieldOrder);
+        setFormConfig(newFormConfig);
+        return;
+      }
+
       if (
         !classObj?.id ||
         isNew ||
@@ -180,6 +193,8 @@ export function ClassSignupProvider({
       try {
         setIsLoading(true);
         setLoadError(null);
+
+        alert("Trying to load class data");
 
         const loadedClass = await loadedClassesContext.loadClass(classObj.id);
 

@@ -18,7 +18,7 @@ import ClassPreview from "./ClassPreview";
 import { ExpandMore } from "@mui/icons-material";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 
-export function ViewClassSignupForm({ testSubmit, classData, type }) {
+export function ViewClassSignupForm({ testSubmit, classData, type, onSubmit }) {
   const {
     classConfig,
     fieldOrder,
@@ -63,42 +63,43 @@ export function ViewClassSignupForm({ testSubmit, classData, type }) {
 
       {/* <JsonViewer data={classData} title="Class Config" /> */}
 
-      {fieldOrder.map((field) => {
-        const config = formConfig[field];
+      {fieldOrder &&
+        fieldOrder.map((field) => {
+          const config = formConfig[field];
 
-        if (!config) return null;
+          if (!config) return null;
 
-        if (config?.type === FIELD_TYPES.bannerImage && config.url) {
+          if (config?.type === FIELD_TYPES.bannerImage && config.url) {
+            return (
+              <Box
+                key={field}
+                component="img"
+                src={config.url}
+                alt="Class Banner"
+                sx={{
+                  width: "100%",
+                  height: "auto",
+                  maxHeight: 200,
+                  objectFit: "cover",
+                  borderRadius: 1,
+                }}
+              />
+            );
+          }
           return (
-            <Box
+            <FormField
               key={field}
-              component="img"
-              src={config.url}
-              alt="Class Banner"
-              sx={{
-                width: "100%",
-                height: "auto",
-                maxHeight: 200,
-                objectFit: "cover",
-                borderRadius: 1,
+              field={field}
+              config={config}
+              onKeyDown={(e) => {
+                e.stopPropagation();
               }}
+              value={formData[field] || ""}
+              onChange={handleFormChange}
+              error={errors[field]}
             />
           );
-        }
-        return (
-          <FormField
-            key={field}
-            field={field}
-            config={config}
-            onKeyDown={(e) => {
-              e.stopPropagation();
-            }}
-            value={formData[field] || ""}
-            onChange={handleFormChange}
-            error={errors[field]}
-          />
-        );
-      })}
+        })}
       {false ? (
         <>
           {/* TODO */}
@@ -127,7 +128,13 @@ export function ViewClassSignupForm({ testSubmit, classData, type }) {
             fullWidth
             size="large"
             sx={{ mt: 3 }}
-            onClick={handleSubmit}
+            onClick={() => {
+              if (typeof onSubmit === "function") {
+                onSubmit(formData);
+              } else {
+                handleSubmit();
+              }
+            }}
             disabled={submitStatus === "submitting" || testSubmit}
           >
             {submitStatus === "submitting" ? "Signing Up..." : "Sign Up"}

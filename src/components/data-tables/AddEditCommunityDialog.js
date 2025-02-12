@@ -234,6 +234,7 @@ const AddEditCommunityDialog = ({
                 >
                   Edit Landing Page
                 </Button>
+                <Button>Days Of Service</Button>
               </>
             )}
           </Box>

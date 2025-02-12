@@ -3,7 +3,17 @@ export const generateAuthToken = (communityId) => {
   return btoa(`${communityId}-${Date.now()}`);
 };
 
-export const isAuthenticated = (communityId) => {
+export const generateCityAuthToken = (city) => {
+  // Simple token generation - in practice you'd want something more secure
+  return btoa(`${city}-${Date.now()}`);
+};
+
+export const isAuthenticated = (communityId, isCity = false) => {
+  if (isCity) {
+    const token = localStorage.getItem(`cityAuth_${communityId}`);
+    if (!token) return false;
+  }
+
   const token = localStorage.getItem(`communityAuth_${communityId}`);
   if (!token) return false;
 
@@ -17,6 +27,14 @@ export const isAuthenticated = (communityId) => {
   } catch (e) {
     return false;
   }
+};
+
+export const CityIdToPasswordHash = {
+  Provo: "082532",
+  Orem: "495932",
+  Ogden: "837588",
+  "Salt Lake City": "434347",
+  "West Valley City": "385957",
 };
 
 export const CommunityIdToPasswordHash = {
@@ -80,6 +98,15 @@ export const CommunityIdToPasswordHash = {
     name: "West Valley City - Central Valley View",
     password: "8844",
   },
+};
+
+export const authenticateCity = (city, password) => {
+  if (CityIdToPasswordHash[city] === password) {
+    const token = generateCityAuthToken(city);
+    localStorage.setItem(`cityAuth_${city}`, token);
+    return true;
+  }
+  return false;
 };
 
 export const authenticateCommunity = (communityId, password) => {

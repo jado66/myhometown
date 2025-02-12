@@ -16,7 +16,7 @@ interface FormField {
   url?: string;
 }
 
-interface FormConfig {
+export interface FormConfig {
   [key: string]: FormField;
 }
 
@@ -51,6 +51,25 @@ export const useCustomForms = (): UseCustomFormsReturn => {
   const [forms, setForms] = useState<CustomForm[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<PostgrestError | null>(null);
+
+  const createEmptyResponse = async (formId: string) => {
+    try {
+      const { error } = await supabase.from("form_responses").insert([
+        {
+          id: formId,
+          response_data: {},
+          status: "draft",
+        },
+      ]);
+
+      if (error && error.code !== "23505") {
+        // Ignore unique constraint violations
+        console.error("Error creating empty response:", error);
+      }
+    } catch (err) {
+      console.error("Error creating empty response:", err);
+    }
+  };
 
   const fetchForms = async () => {
     setLoading(true);
@@ -117,6 +136,9 @@ export const useCustomForms = (): UseCustomFormsReturn => {
         return null;
       }
 
+      // Create an empty response with the same ID
+      await createEmptyResponse(data.id);
+
       setForms((prevForms) => [data as CustomForm, ...prevForms]);
       return data as CustomForm;
     } catch (err) {
@@ -145,6 +167,9 @@ export const useCustomForms = (): UseCustomFormsReturn => {
         return null;
       }
 
+      // Ensure a response exists for this form
+      await createEmptyResponse(id);
+
       setForms((prevForms) =>
         prevForms.map((form) => (form.id === id ? { ...form, ...data } : form))
       );
@@ -158,6 +183,8 @@ export const useCustomForms = (): UseCustomFormsReturn => {
 
   const deleteForm = async (id: string): Promise<boolean> => {
     try {
+      // Due to our foreign key constraint with ON DELETE CASCADE,
+      // deleting the form will automatically delete the corresponding response
       const { error } = await supabase
         .from("custom_forms")
         .delete()

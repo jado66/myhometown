@@ -2,10 +2,10 @@ import { connectToMongoDatabase } from "@/util/db/mongodb";
 import { ObjectId } from "mongodb";
 
 export async function PATCH(req, { params }) {
-  const { communityId } = params;
+  const { id } = params;
 
   // Validate ObjectId format
-  if (!ObjectId.isValid(communityId)) {
+  if (!ObjectId.isValid(id)) {
     return new Response(
       JSON.stringify({ error: "Invalid community ID format" }),
       { status: 400 }
@@ -14,7 +14,7 @@ export async function PATCH(req, { params }) {
 
   // Create query using ObjectId
   const query = {
-    _id: new ObjectId(communityId),
+    _id: new ObjectId(id),
   };
 
   // Get partial update data from request body

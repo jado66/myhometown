@@ -37,13 +37,16 @@ export default function useCommunity(
     if (!community?._id) return;
 
     try {
-      const response = await fetch(`/api/communities/id/${community._id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updates),
-      });
+      const response = await fetch(
+        `/api/database/communities/id/${community._id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updates),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to update community");
