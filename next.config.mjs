@@ -1,13 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   async headers() {
     return [
       {
-        typescript: {
-          ignoreBuildErrors: true,
-        },
-
         source: "/manifest.json",
         headers: [
           {
