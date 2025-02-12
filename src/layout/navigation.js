@@ -47,6 +47,10 @@ export const pages = () => {
           title: "Classes and Rolls",
           href: rootUrl + "/admin-dashboard/classes",
         },
+        {
+          title: "Days Of Service",
+          href: rootUrl + "/admin-dashboard/days-of-service",
+        },
         // {
         //   title: "Volunteer Signups",
         //   href: rootUrl + "/admin-dashboard/volunteer-signups",
