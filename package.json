@@ -62,6 +62,7 @@
     "twilio": "^5.3.4",
     "uuid": "^9.0.1",
     "web-vitals": "^3.0.2",
+    "xmldom": "^0.6.0",
     "yup": "^0.32.11"
   },
   "devDependencies": {
