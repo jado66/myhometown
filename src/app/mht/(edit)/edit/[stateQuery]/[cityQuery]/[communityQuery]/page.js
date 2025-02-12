@@ -13,33 +13,24 @@ import {
   Typography,
 } from "@mui/material";
 import { fa, faker } from "@faker-js/faker";
-import GallerySLC from "@/views/supportingPages/About/components/GallerySLC/Gallery";
-import ContentEditable from "react-contenteditable";
+
 import { useEffect, createRef, useState, useRef } from "react";
-import createFakeEvents from "@/util/events/create-fake-events";
 import UpcomingEvents from "@/components/events/UpcomingEvents";
 import { EventsCalendar } from "@/components/events/EventsCalendar";
 import { EventDialog_NewEdit } from "@/components/events/EventDialog_NewEdit";
 import useCommunity from "@/hooks/use-community";
 import Loading from "@/components/util/Loading";
 import { useEdit } from "@/hooks/use-edit";
-import { useHandleEvents } from "@/hooks/use-handle-events";
 import { communityTemplate } from "@/constants/templates/communityTemplate";
 import PhotoGallery from "@/components/PhotoGallery";
 import { useUser } from "@/hooks/use-user";
-import { Info } from "@mui/icons-material";
 import UploadImage from "@/components/util/UploadImage";
-import { StatsCounter } from "@/components/StatsCounter";
 import { v4 as uuidv4 } from "uuid";
 import { VolunteerSignUps } from "@/components/VolunteerSignUps";
-import { LightBox } from "@/components/LightBox";
 import { ClassesTreeView } from "@/components/events/ClassesTreeView";
 import Link from "next/link";
 import UnsavedChangesAlert from "@/components/util/UnsavedChangesAlert";
 import { toast } from "react-toastify";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { LoadedClassesProvider } from "@/contexts/LoadedClassesProvider";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import JsonViewer from "@/components/util/debug/DebugOutput";
@@ -218,9 +209,14 @@ const Page = ({ params }) => {
     });
   };
 
-  const handleDeleteEvent = (eventId) => {
+  const handleDeleteEvent = async (eventId) => {
     try {
-      deleteEvent(eventId);
+      await deleteEvent(eventId);
+      const updatedEvents = await fetchEvents({
+        communityId: community._id,
+      });
+      setEvents(updatedEvents);
+
       toast.success("Event Deleted. No need to save.");
     } catch (err) {
       toast.error(JSON.stringify(err));
