@@ -19,9 +19,7 @@ import { useEffect, createRef, useState, useRef } from "react";
 import createFakeEvents from "@/util/events/create-fake-events";
 import UpcomingEvents from "@/components/events/UpcomingEvents";
 import { EventsCalendar } from "@/components/events/EventsCalendar";
-import { EventDialog } from "@/components/events/EventDialog";
 import { EventDialog_NewEdit } from "@/components/events/EventDialog_NewEdit";
-import useEvents from "@/hooks/use-events";
 import useCommunity from "@/hooks/use-community";
 import Loading from "@/components/util/Loading";
 import { useEdit } from "@/hooks/use-edit";
@@ -45,6 +43,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { LoadedClassesProvider } from "@/contexts/LoadedClassesProvider";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import JsonViewer from "@/components/util/debug/DebugOutput";
+import { useEvents } from "@/hooks/useEvents";
 
 const communityDataContentTemplate = {
   paragraph1Text: faker.lorem.paragraph(),
@@ -54,6 +53,8 @@ const communityDataContentTemplate = {
 const Page = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params;
   const { user } = useUser();
+  const { fetchEvents, addEvent, updateEvent, deleteEvent } = useEvents();
+  const [events, setEvents] = useState([]);
 
   const [loadedClassSignups, setLoadedClassSignups] = useState([]);
 
@@ -85,10 +86,10 @@ const Page = ({ params }) => {
     isDirty,
   } = useEdit();
 
-  let events, content;
+  let content;
 
   if (communityData) {
-    ({ events, content } = communityData);
+    ({ content } = communityData);
   }
 
   useEffect(() => {
@@ -97,6 +98,25 @@ const Page = ({ params }) => {
         content: { ...communityDataContentTemplate },
         ...community,
       });
+
+      if (!community._id) {
+        return;
+      }
+
+      async function loadCommunityEvents() {
+        // Changed name here
+
+        const communityId = community._id;
+        const events = await fetchEvents({
+          // This now clearly refers to the imported function
+          communityId: communityId,
+          // startDate: new Date(),
+        });
+        setEvents(events);
+      }
+
+      loadCommunityEvents();
+
       setEntityType("community");
     }
   }, [community]);
@@ -109,50 +129,6 @@ const Page = ({ params }) => {
     setIsCreatingNewEvent(true);
   };
 
-  const setEvents = (events) => {
-    // this is events
-    setCommunityData({
-      ...communityData,
-      events,
-    });
-  };
-
-  const modifyEvent = (id, modifiedEvent) => {
-    if (!id) {
-      alert("no ID!!!!");
-      return;
-    }
-
-    setCommunityData((prevCommunityData) => ({
-      ...prevCommunityData,
-      events: prevCommunityData.events.map((event) =>
-        event.id === id ? modifiedEvent : event
-      ),
-    }));
-  };
-
-  const addEvent = (newEvent) => {
-    const uniqueId = uuidv4();
-
-    newEvent.id = uniqueId;
-
-    setCommunityData((prevCommunityData) => ({
-      ...prevCommunityData,
-      events: [...prevCommunityData.events, newEvent],
-    }));
-  };
-
-  const deleteEvent = (eventId) => {
-    if (!eventId) {
-      alert("No ID provided for deletion!");
-      return;
-    }
-
-    setCommunityData((prevCommunityData) => ({
-      ...prevCommunityData,
-      events: prevCommunityData.events.filter((event) => event.id !== eventId),
-    }));
-  };
   const closeEventDialog = () => {
     setSelectedEvent(null);
     setIsCreatingNewEvent(false);
@@ -162,14 +138,32 @@ const Page = ({ params }) => {
     setSelectedEvent(event);
   };
 
-  const handleSaveEvent = (event) => {
-    if (isCreatingNewEvent) {
-      addEvent(event);
-    } else {
-      modifyEvent(event.id, event);
+  const handleSaveEvent = async (event) => {
+    try {
+      if (isCreatingNewEvent) {
+        await addEvent(event);
+        toast.success("Event created successfully!");
+      } else {
+        // Ensure we're passing the event ID for updates
+        await updateEvent(selectedEvent.id, {
+          ...event,
+          id: selectedEvent.id, // Preserve the original event ID
+        });
+        toast.success("Event updated successfully!");
+      }
+
+      // Refresh events after save
+      const updatedEvents = await fetchEvents({
+        communityId: community._id,
+      });
+      setEvents(updatedEvents);
+
+      setSelectedEvent(null);
+      setIsCreatingNewEvent(false);
+    } catch (error) {
+      console.error("Error saving event:", error);
+      toast.error("Failed to save event: " + error.message);
     }
-    setSelectedEvent(null);
-    setIsCreatingNewEvent(false);
   };
 
   const handleChangePhoto = (url, key) => {
@@ -215,7 +209,7 @@ const Page = ({ params }) => {
   const handleDeleteEvent = (eventId) => {
     try {
       deleteEvent(eventId);
-      toast.success("Event Deleted - Make sure to save to sync your changes.");
+      toast.success("Event Deleted. No need to save.");
     } catch (err) {
       toast.error(JSON.stringify(err));
     }
@@ -1226,6 +1220,7 @@ const Page = ({ params }) => {
           onSave={handleSaveEvent}
           onDelete={handleDeleteEvent}
           isEdit={!isCreatingNewEvent}
+          communityId={community._id}
         />
         <Grid item md={12}>
           <Divider sx={{ my: 5 }} />
@@ -1246,7 +1241,7 @@ const Page = ({ params }) => {
         {/* <pre>{JSON.stringify(cityData, null, 4)}</pre> */}
 
         <EventsCalendar
-          events={communityData.events}
+          events={events}
           onSelectEvent={onSelectEvent}
           onSelectSlot={(slot) => setSelectedEvent(slot)}
           onAdd={startCreatingNewEvent}

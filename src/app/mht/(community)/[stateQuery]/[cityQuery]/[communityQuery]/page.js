@@ -18,7 +18,6 @@ import { useEffect, useState, useRef } from "react";
 import UpcomingEvents from "@/components/events/UpcomingEvents";
 import { EventsCalendar } from "@/components/events/EventsCalendar";
 import { EventDialog } from "@/components/events/EventDialog";
-import useEvents from "@/hooks/use-events";
 
 import Loading from "@/components/util/Loading";
 import useCommunity from "@/hooks/use-community";
@@ -35,6 +34,7 @@ import { MaintenanceMode } from "@/views/supportingPages";
 import { LoadedClassesProvider } from "@/contexts/LoadedClassesProvider";
 import { useSearchParams } from "next/navigation";
 import JsonViewer from "@/components/util/debug/DebugOutput";
+import { useEvents } from "@/hooks/useEvents";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -52,8 +52,8 @@ const Page = ({ params }) => {
 
   const [showSignUp, setShowSignup] = useState(false);
 
-  const { events, isLoading, error, deleteEvent, modifyEvent, updateEvent } =
-    useEvents();
+  const { fetchEvents } = useEvents();
+  const [events, setEvents] = useState([]);
 
   const [selectedEvent, setSelectedEvent] = useState(null);
 
@@ -70,6 +70,28 @@ const Page = ({ params }) => {
       localStorage.setItem("lastCommunity", JSON.stringify(community));
     }
   }, [community, hasLoaded]);
+
+  useEffect(() => {
+    if (community) {
+      if (!community._id) {
+        return;
+      }
+
+      async function loadCommunityEvents() {
+        // Changed name here
+
+        const communityId = community._id;
+        const events = await fetchEvents({
+          // This now clearly refers to the imported function
+          communityId: communityId,
+          // startDate: new Date(),
+        });
+        setEvents(events);
+      }
+
+      loadCommunityEvents();
+    }
+  }, [community]);
 
   useEffect(() => {
     // Check if the page has loaded and if there's a hash in the URL
@@ -395,16 +417,11 @@ const Page = ({ params }) => {
         </Grid>
         <UpcomingEvents
           onSelect={onSelectEvent}
-          events={community.events}
+          events={events}
           maxEvents={5}
-          isLoading={isLoading}
         />
         <Divider sx={{ my: 5 }} />
-        <EventsCalendar
-          events={community.events}
-          onSelectEvent={onSelectEvent}
-          isLoading={isLoading}
-        />
+        <EventsCalendar events={events} onSelectEvent={onSelectEvent} />
         <Divider sx={{ my: 5 }} />
 
         <LoadedClassesProvider>
