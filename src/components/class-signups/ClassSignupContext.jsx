@@ -194,7 +194,7 @@ export function ClassSignupProvider({
         setIsLoading(true);
         setLoadError(null);
 
-        alert("Trying to load class data");
+        // alert("Trying to load class data");
 
         const loadedClass = await loadedClassesContext.loadClass(classObj.id);
 
