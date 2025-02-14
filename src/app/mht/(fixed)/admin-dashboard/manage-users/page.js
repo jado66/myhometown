@@ -5,6 +5,7 @@ import { Grid, Box, Typography, Card } from "@mui/material";
 import dynamic from "next/dynamic";
 import Loading from "@/components/util/Loading";
 import BackButton from "@/components/BackButton";
+import useUsers from "@/hooks/use-users";
 
 // Dynamically import components that need browser APIs with no SSR
 const DynamicUserTable = dynamic(

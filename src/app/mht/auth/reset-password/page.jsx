@@ -81,7 +81,7 @@ const ResetPasswordPage = () => {
       setIsSuccess(true);
       // Redirect to login after 3 seconds
       setTimeout(() => {
-        router.push("/login");
+        router.push("/auth/login");
       }, 3000);
     } catch (error) {
       setError(error.message);
