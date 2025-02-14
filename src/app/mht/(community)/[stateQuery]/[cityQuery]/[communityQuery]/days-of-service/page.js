@@ -24,6 +24,10 @@ const DaysOfServicePage = ({ params }) => {
     true
   );
 
+  const defaultConfig = {
+    signupForm: {},
+  };
+
   const { getFormById } = useCustomForms();
   const { submitResponse } = useFormResponses();
 
@@ -78,6 +82,8 @@ const DaysOfServicePage = ({ params }) => {
 
       <Divider sx={{ my: 4 }} />
 
+      <JsonViewer data={{ defaultConfig }} />
+
       <Container maxWidth="lg" className="p-8">
         {submitSuccess ? (
           <Alert sx={{ my: 4 }}>
@@ -100,6 +106,7 @@ const DaysOfServicePage = ({ params }) => {
                 form={form}
                 signUpFormId={community?.volunteerSignUpId}
                 handleSubmit={handleSubmit}
+                defaultConfgig={{}}
               />
             )}
           </>

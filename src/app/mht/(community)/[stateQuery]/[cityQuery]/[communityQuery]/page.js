@@ -35,6 +35,7 @@ import { LoadedClassesProvider } from "@/contexts/LoadedClassesProvider";
 import { useSearchParams } from "next/navigation";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { useEvents } from "@/hooks/useEvents";
+import MarketingItem from "@/components/community/MarketingItem";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -313,104 +314,64 @@ const Page = ({ params }) => {
         <Grid item xs={12} display="flex" justifyContent="center">
           <Divider sx={{ my: 5 }} />
         </Grid>
-        <Grid
-          item
-          xs={12}
-          display="flex"
-          justifyContent="center"
-          flexDirection="column"
-        >
-          {community?.content?.marketingImage1 && (
-            <>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  {community?.content?.marketingHeader && (
-                    <Typography
-                      variant="h4"
-                      align="center"
-                      sx={{
-                        textTransform: "capitalize",
-                        mb: 2,
-                        color: "#00357d",
-                      }}
-                    >
-                      {community.content?.marketingHeader}
-                    </Typography>
-                  )}
-                  <Box
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    position="relative"
-                    sx={{
-                      width: "100%",
-                      backgroundColor: "transparent",
-                    }}
-                  >
-                    <Box
-                      component="img"
-                      src={community.content.marketingImage1}
-                      sx={{
-                        cursor: "pointer",
-                        width: "100%",
-                        height: "auto",
-                        objectFit: "cover",
-                        boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
-                        borderRadius: 4,
-                      }}
-                      onClick={() =>
-                        openImageDialog(community.content.marketingImage1)
-                      }
-                    />
-                  </Box>
-                </Grid>
+        <Grid item xs={12}>
+          <Grid
+            container
+            spacing={2} // Adds spacing between items
+            display="flex"
+            justifyContent="center"
+            flexDirection="row" // Ensure items are laid out in a row
+            flexWrap="wrap" // Allow wrapping of items
+          >
+            {community?.content?.marketingImage1 && (
+              <MarketingItem
+                index={1}
+                marginTop={6}
+                content={community?.content}
+                openImageDialog={openImageDialog}
+                communityData={community}
+              />
+            )}
 
-                <Grid item xs={12} md={6}>
-                  {community?.content?.marketingHeader2 && (
-                    <Typography
-                      variant="h4"
-                      align="center"
-                      sx={{
-                        textTransform: "capitalize",
-                        mt: { md: 0, xs: 6 },
-                        mb: 2,
-                        color: "#00357d",
-                      }}
-                    >
-                      {community.content?.marketingHeader2}
-                    </Typography>
-                  )}
-                  <Box
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    position="relative"
-                    sx={{
-                      width: "100%",
-                      minHeight: "100px",
-                      backgroundColor: "transparent",
-                    }}
-                  >
-                    <Box
-                      component="img"
-                      src={community.content.marketingImage2}
-                      sx={{
-                        cursor: "pointer",
-                        width: "100%",
-                        height: "auto",
-                        objectFit: "cover",
-                        boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
-                        borderRadius: 4,
-                      }}
-                      onClick={() =>
-                        openImageDialog(community.content.marketingImage2)
-                      }
-                    />
-                  </Box>
-                </Grid>
-              </Grid>
-            </>
-          )}
+            {community?.content?.marketingImage2 && (
+              <MarketingItem
+                index={2}
+                marginTop={6}
+                content={community?.content}
+                openImageDialog={openImageDialog}
+                communityData={community}
+              />
+            )}
+
+            {/* Spacer for medium and larger screens */}
+            <Box
+              sx={{
+                height: "40px",
+                width: "100%",
+                display: { xs: "none", md: "block" },
+              }}
+            />
+
+            {community?.content?.marketingImage3 && (
+              <MarketingItem
+                index={3}
+                marginTop={6}
+                content={community?.content}
+                openImageDialog={openImageDialog}
+                communityData={community}
+              />
+            )}
+
+            {community?.content?.marketingImage4 && (
+              <MarketingItem
+                index={4}
+                marginTop={6}
+                content={community?.content}
+                openImageDialog={openImageDialog}
+                communityData={community}
+              />
+            )}
+          </Grid>
         </Grid>
         <Grid item xs={12}>
           <Divider sx={{ my: 5 }} />

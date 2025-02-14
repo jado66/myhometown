@@ -45,6 +45,8 @@ import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { useEvents } from "@/hooks/useEvents";
 
+import MarketingItemEdit from "@/components/community/MarketingItemEdit";
+
 const communityDataContentTemplate = {
   paragraph1Text: faker.lorem.paragraph(),
   paragraph2Text: faker.lorem.paragraph(),
@@ -55,6 +57,8 @@ const Page = ({ params }) => {
   const { user } = useUser();
   const { fetchEvents, addEvent, updateEvent, deleteEvent } = useEvents();
   const [events, setEvents] = useState([]);
+
+  const [marketingImageCount, setMarketingImageCount] = useState(2);
 
   const [loadedClassSignups, setLoadedClassSignups] = useState([]);
 
@@ -102,6 +106,14 @@ const Page = ({ params }) => {
       if (!community._id) {
         return;
       }
+
+      setMarketingImageCount(
+        Math.max(
+          ...Object.keys(community.content)
+            .filter((key) => key.startsWith("marketingImage"))
+            .map((key) => parseInt(key.replace("marketingImage", "")) || 0)
+        )
+      );
 
       async function loadCommunityEvents() {
         // Changed name here
@@ -876,6 +888,8 @@ const Page = ({ params }) => {
           </span>
         </Typography>
 
+        <JsonViewer data={communityData} />
+
         {/* <pre>{JSON.stringify(communityData, null, 4)}</pre> */}
 
         <PhotoGallery
@@ -1033,171 +1047,72 @@ const Page = ({ params }) => {
           <Divider sx={{ my: 5 }} />
 
           <Grid container item xs={12} display="flex" justifyContent="center">
-            <Grid item xs={12} md={6} display="flex" flexDirection="column">
-              <TextField
-                variant="standard"
-                value={content?.marketingHeader || "Your Flyer Title"}
-                onChange={(event) =>
-                  handleMarketingHeaderChange(event, "marketingHeader")
-                }
-                multiline
-                InputProps={{
-                  disableUnderline: true,
-                  style: {
-                    fontSize: "2rem",
-                    textAlign: "center",
-                    color: "#00357d",
-                    textTransform: "capitalize",
-                  },
-                }}
-                fullWidth
-                sx={{
-                  fontFamily: "inherit",
-                  fontSize: "2rem",
-                  border: "none",
-                  margin: 0,
-                  padding: "10px 16px",
-                  "& .MuiInputBase-input": {
-                    textAlign: "center",
-                  },
-                  "& .MuiInput-underline:before": {
-                    borderBottom: "none",
-                  },
-                  "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-                    borderBottom: "none",
-                  },
-                  "& .MuiInput-underline:after": {
-                    borderBottom: "none",
-                  },
-                  "& .Mui-focused": {
-                    backgroundColor: "#f0f0f0",
-                    borderRadius: "4px",
-                  },
-                }}
-              />
-              <Box
-                display="flex"
-                justifyContent="center"
-                position="relative"
-                sx={{
-                  display: "flex",
-                  px: 1,
-                  width: "100%",
-                  backgroundColor: "transparent",
-                }}
-              >
-                <UploadImage
-                  setUrl={(url) => handleChangeMarketingImage(url, 1)}
-                />
-                {communityData.content?.marketingImage1 ? (
-                  <Box
-                    component="img"
-                    src={communityData.content.marketingImage1}
-                    sx={{
-                      width: "100%",
-                      height: "auto",
-                      flexGrow: 1,
-                      objectFit: "cover",
-                      boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
-                      borderRadius: 4,
-                      aspectRatio: "8 / 11", // Ensures the image maintains an 8/11 aspect ratio
-                    }}
-                    onClick={() =>
-                      openImageDialog(communityData.content.marketingImage1)
-                    }
-                  />
-                ) : (
-                  <Typography variant="h4" component="h2" align="center">
-                    Marketing Image 1
-                  </Typography>
-                )}
-              </Box>
-            </Grid>
+            <MarketingItemEdit
+              index={1}
+              content={content}
+              handleMarketingHeaderChange={handleMarketingHeaderChange}
+              handleChangeMarketingImage={handleChangeMarketingImage}
+              // openImageDialog={openImageDialog}
+              UploadImage={UploadImage}
+              communityData={communityData}
+            />
 
-            <Grid item xs={12} md={6} display="flex" flexDirection="column">
-              <TextField
-                variant="standard"
-                value={content?.marketingHeader2 || "Your Flyer Title"}
-                onChange={(event) =>
-                  handleMarketingHeaderChange(event, "marketingHeader2")
-                }
-                multiline
-                InputProps={{
-                  disableUnderline: true,
-                  style: {
-                    fontSize: "2rem",
-                    textAlign: "center",
-                    color: "#00357d",
-                    textTransform: "capitalize",
-                  },
-                }}
-                fullWidth
-                sx={{
-                  mt: { md: 0, xs: 6 },
-                  fontFamily: "inherit",
-                  fontSize: "2rem",
-                  border: "none",
-                  margin: 0,
-                  padding: "10px 16px",
-                  "& .MuiInputBase-input": {
-                    textAlign: "center",
-                  },
-                  "& .MuiInput-underline:before": {
-                    borderBottom: "none",
-                  },
-                  "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-                    borderBottom: "none",
-                  },
-                  "& .MuiInput-underline:after": {
-                    borderBottom: "none",
-                  },
-                  "& .Mui-focused": {
-                    backgroundColor: "#f0f0f0",
-                    borderRadius: "4px",
-                  },
-                }}
+            <MarketingItemEdit
+              index={2}
+              marginTop={6}
+              content={content}
+              handleMarketingHeaderChange={handleMarketingHeaderChange}
+              handleChangeMarketingImage={handleChangeMarketingImage}
+              // openImageDialog={openImageDialog}
+              UploadImage={UploadImage}
+              communityData={communityData}
+            />
+            <Box
+              sx={{
+                height: "40px",
+                width: "100%",
+                display: { xs: "none", md: "block" },
+              }}
+            />
+
+            {(content?.marketingImage3 || marketingImageCount >= 3) && (
+              <MarketingItemEdit
+                index={3}
+                marginTop={6}
+                content={content}
+                handleMarketingHeaderChange={handleMarketingHeaderChange}
+                handleChangeMarketingImage={handleChangeMarketingImage}
+                // openImageDialog={openImageDialog}
+                UploadImage={UploadImage}
+                communityData={communityData}
               />
-              <Box
-                display="flex"
-                justifyContent="center"
-                position="relative"
-                sx={{
-                  px: 1,
-                  display: "flex",
-                  flexGrow: 1,
-                  width: "100%",
-                  minHeight: "100px",
-                  backgroundColor: "transparent",
-                }}
-              >
-                <UploadImage
-                  setUrl={(url) => handleChangeMarketingImage(url, 2)}
-                />
-                {communityData.content?.marketingImage2 ? (
-                  <Box
-                    component="img"
-                    src={communityData.content.marketingImage2}
-                    sx={{
-                      width: "100%",
-                      borderRadius: 4,
-                      flexGrow: 1,
-                      height: "auto",
-                      boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
-                      objectFit: "cover",
-                      aspectRatio: "8 / 11", // Ensures the image maintains an 8/11 aspect ratio
-                    }}
-                    onClick={() =>
-                      openImageDialog(communityData.content.marketingImage2)
-                    }
-                  />
-                ) : (
-                  <Typography variant="h4" component="h2" align="center">
-                    Marketing Image 2
-                  </Typography>
-                )}
-              </Box>
-            </Grid>
+            )}
+
+            {(content?.marketingImage4 || marketingImageCount >= 4) && (
+              <MarketingItemEdit
+                index={4}
+                marginTop={6}
+                content={content}
+                handleMarketingHeaderChange={handleMarketingHeaderChange}
+                handleChangeMarketingImage={handleChangeMarketingImage}
+                // openImageDialog={openImageDialog}
+                UploadImage={UploadImage}
+                communityData={communityData}
+              />
+            )}
           </Grid>
+
+          {marketingImageCount < 4 && (
+            <Grid item xs={12} display="flex" justifyContent="center">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setMarketingImageCount(marketingImageCount + 1)}
+              >
+                Add Marketing Image
+              </Button>
+            </Grid>
+          )}
         </Grid>
 
         {/* <Typography

@@ -17,12 +17,14 @@ import {
   Box,
   Divider,
   Typography,
+  Button,
 } from "@mui/material";
 import { toast } from "react-toastify";
 import Close from "@mui/icons-material/Close";
 import ClassPreview from "@/components/class-signups/stepper-components/ClassPreview";
 import { useAttendance } from "@/hooks/use-attendance";
 import JsonViewer from "@/components/util/debug/DebugOutput";
+import { Download } from "@mui/icons-material";
 
 export default function ClassRollTable({ classData, show, onClose }) {
   const [saveTimeout, setSaveTimeout] = useState(null);
@@ -187,11 +189,20 @@ export default function ClassRollTable({ classData, show, onClose }) {
     }
 
     return (
-      <>
+      <Box
+        sx={{
+          position: "relative",
+        }}
+      >
         <Typography variant="h6" sx={{ mt: 4 }}>
           Attendance Table
         </Typography>
-
+        <ExportButton
+          classData={classData}
+          dates={dates}
+          nameFields={nameFields}
+          localAttendance={localAttendance}
+        />
         <TableContainer
           component={Paper}
           sx={{
@@ -304,7 +315,7 @@ export default function ClassRollTable({ classData, show, onClose }) {
             </TableBody>
           </Table>
         </TableContainer>
-      </>
+      </Box>
     );
   };
 
@@ -360,3 +371,56 @@ export default function ClassRollTable({ classData, show, onClose }) {
     </>
   );
 }
+
+const ExportButton = ({ classData, dates, nameFields, localAttendance }) => {
+  const handleExport = () => {
+    // Generate CSV headers
+    const headers = [
+      ...nameFields.map((field) => field.label),
+      ...dates.map((date) => {
+        const [year, month, day] = date.split("-");
+        return `${month}/${day}/${year.slice(-2)}`;
+      }),
+    ];
+
+    // Generate CSV rows
+    const rows = classData.signups.map((signup) => {
+      const nameValues = nameFields.map((field) => signup[field.key] || "");
+      const attendanceValues = dates.map((date) =>
+        localAttendance[signup.id]?.[date] ? "X" : ""
+      );
+      return [...nameValues, ...attendanceValues];
+    });
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.join(",")),
+    ].join("\n");
+
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${classData.title}_attendance.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <Button
+      onClick={handleExport}
+      variant="outlined"
+      sx={{
+        position: "absolute",
+        top: -8,
+        right: 8,
+      }}
+    >
+      <Download className="w-4 h-4" />
+      <span>Export to CSV</span>
+    </Button>
+  );
+};

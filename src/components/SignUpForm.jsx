@@ -62,7 +62,9 @@ export const SignUpForm = ({
       mb={2}
     >
       <Typography variant="h4" component="h2" color="primary">
-        {volunteerHeaderText ? volunteerHeaderText : "Sign Up as a Volunteer"}
+        {volunteerHeaderText
+          ? volunteerHeaderText
+          : "Sign Up as a Days Of Service Volunteer"}
       </Typography>
       {isEdit && (
         <Button

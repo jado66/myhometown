@@ -144,7 +144,7 @@ const CitySelectionPage = () => {
     <>
       <Box sx={{ p: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Select a Community to View Days Of Service
+          Select a City to View Days Of Service
         </Typography>
 
         {/* <JsonViewer data={{ user, groupedCommunities, authenticated }} /> */}

@@ -128,6 +128,26 @@ const Topbar = ({ onSidebarOpen }) => {
           <Box marginX={2}>
             <Button
               variant="text"
+              href="http://localhost:3000/mht/edit/utah/dev/dev/days-of-service"
+              sx={{
+                fontSize: "larger",
+                color: "black",
+                fontWeight: "bold",
+              }}
+            >
+              Days of Service
+              {/* {
+                !resourcesAnchorEl ?
+                <ExpandMore/>
+                :
+                <ExpandLess/>
+              } */}
+            </Button>
+          </Box>
+
+          <Box marginX={2}>
+            <Button
+              variant="text"
               onClick={(e) => scrollToWithOffset("events", -150)}
               sx={{
                 fontSize: "larger",

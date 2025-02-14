@@ -56,6 +56,7 @@ export function ProjectFormProvider({ children, id }) {
     specificTasks: "",
     budget: "",
     homeownerAbility: "",
+    collaborators: [],
   });
 
   const getProjectForm = useCallback(
@@ -225,6 +226,27 @@ export function ProjectFormProvider({ children, id }) {
     [debouncedSave, handleImmediateSave, updateProject, getProject]
   );
 
+  const addCollaborator = useCallback(
+    (collaborator) => {
+      setFormData((prev) => {
+        // Ensure collaborators exists, default to empty array if not
+        const existingCollaborators = prev.collaborators || [];
+
+        const newCollaborators = [...existingCollaborators, collaborator];
+
+        const newData = {
+          ...prev,
+          collaborators: newCollaborators,
+        };
+
+        handleImmediateSave(newData);
+
+        return newData;
+      });
+    },
+    [handleImmediateSave]
+  );
+
   const handleAddressValidated = useCallback(
     (validatedAddress) => {
       setFormData((prev) => {
@@ -332,6 +354,7 @@ export function ProjectFormProvider({ children, id }) {
     getProjectForm,
     createProjectForm,
     updateProjectForm,
+    addCollaborator,
   };
 
   return (

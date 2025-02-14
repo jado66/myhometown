@@ -9,9 +9,13 @@ import {
   TableRow,
   Typography,
   Box,
+  Grid,
+  Card,
+  CardContent,
   Chip,
   IconButton,
   Tooltip,
+  TablePagination,
   CircularProgress,
 } from "@mui/material";
 import {
@@ -20,39 +24,10 @@ import {
   AccessTime as AccessTimeIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
-import { useFormResponses } from "../hooks/useFormResponses";
-import { useCustomForms } from "../hooks/useCustomForm";
 
-interface FormField {
-  label: string;
-  type: string;
-  visible: boolean;
-  required: boolean;
-  originalLabel: string;
-  helpText?: string;
-  category?: string;
-  options?: Array<{ label: string; value: string }>;
-}
+const PAGE_SIZE = 10;
 
-interface FormConfig {
-  [key: string]: FormField;
-}
-
-interface CustomForm {
-  id: string;
-  form_name: string;
-  form_config: FormConfig;
-  field_order: string[];
-  created_at: string;
-  updated_at: string;
-}
-
-interface FormResponsesTableProps {
-  formId: string;
-  onViewResponse?: (responseData: any) => void;
-}
-
-const StatusChip = ({ status }: { status?: string }) => {
+const StatusChip = ({ status }) => {
   switch (status) {
     case "submitted":
       return (
@@ -93,31 +68,55 @@ const StatusChip = ({ status }: { status?: string }) => {
   }
 };
 
-export const FormResponsesTable: React.FC<FormResponsesTableProps> = ({
+const SummaryCard = ({ title, value, color = "textPrimary" }) => (
+  <Card>
+    <CardContent>
+      <Typography variant="body2" color="textSecondary">
+        {title}
+      </Typography>
+      <Typography variant="h4" color={color}>
+        {value}
+      </Typography>
+    </CardContent>
+  </Card>
+);
+
+export const FormResponsesDashboard = ({
   formId,
+  responses,
+  formData,
   onViewResponse,
 }) => {
-  const { response, loading, error, fetchResponse } = useFormResponses();
-  const { getFormById } = useCustomForms();
-  const [formData, setFormData] = useState<CustomForm | null>(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(PAGE_SIZE);
+  const [summary, setSummary] = useState({
+    total: 0,
+    submitted: 0,
+    approved: 0,
+    rejected: 0,
+    draft: 0,
+  });
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        await fetchResponse(formId);
-        const form = await getFormById(formId);
-        if (form) {
-          setFormData(form);
-          console.log("Form data loaded:", form);
-        }
-      } catch (err) {
-        console.error("Error loading form data:", err);
-      }
-    };
-    loadData();
-  }, [formId]);
+    if (responses) {
+      // Calculate summary statistics using native JS
+      const stats = responses.reduce((acc, response) => {
+        const status = response.status || "draft";
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      }, {});
 
-  if (loading) {
+      setSummary({
+        total: responses.length,
+        submitted: stats.submitted || 0,
+        approved: stats.approved || 0,
+        rejected: stats.rejected || 0,
+        draft: stats.draft || 0,
+      });
+    }
+  }, [responses]);
+
+  if (!responses || !formData) {
     return (
       <Box display="flex" justifyContent="center" p={3}>
         <CircularProgress />
@@ -125,25 +124,16 @@ export const FormResponsesTable: React.FC<FormResponsesTableProps> = ({
     );
   }
 
-  if (error) {
-    return (
-      <Box p={3}>
-        <Typography color="error">
-          Error loading responses: {error.message}
-        </Typography>
-      </Box>
-    );
-  }
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
 
-  if (!response || !formData) {
-    return (
-      <Box p={3}>
-        <Typography>No responses found</Typography>
-      </Box>
-    );
-  }
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
-  const getFieldValue = (fieldId: string, value: any, field: FormField) => {
+  const getFieldValue = (fieldId, value, field) => {
     if (value === null || value === undefined) return "-";
 
     switch (field.type) {
@@ -155,61 +145,109 @@ export const FormResponsesTable: React.FC<FormResponsesTableProps> = ({
       case "date":
         return new Date(value).toLocaleDateString();
       default:
-        return value.toString();
+        return String(value);
     }
   };
 
-  return (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Field</TableCell>
-            <TableCell>Response</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {formData.field_order.map((fieldId) => {
-            const field = formData.form_config[fieldId];
-            if (!field || !field.visible) return null;
+  const visibleFields = formData.field_order
+    .filter((fieldId) => {
+      const field = formData.form_config[fieldId];
+      return field && field.visible;
+    })
+    .slice(0, 3);
 
-            return (
-              <TableRow key={fieldId}>
-                <TableCell>
-                  <Typography variant="subtitle2">{field.label}</Typography>
+  return (
+    <Box sx={{ width: "100%", mb: 4 }}>
+      {/* Summary Cards */}
+      <Grid container spacing={2} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} md={2.4}>
+          <SummaryCard title="Total Responses" value={summary.total} />
+        </Grid>
+        <Grid item xs={12} sm={6} md={2.4}>
+          <SummaryCard
+            title="Submitted"
+            value={summary.submitted}
+            color="primary"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={2.4}>
+          <SummaryCard
+            title="Approved"
+            value={summary.approved}
+            color="success"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={2.4}>
+          <SummaryCard
+            title="Rejected"
+            value={summary.rejected}
+            color="error"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={2.4}>
+          <SummaryCard title="Draft" value={summary.draft} />
+        </Grid>
+      </Grid>
+
+      {/* Responses Table */}
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Date</TableCell>
+              <TableCell>Status</TableCell>
+              {visibleFields.map((fieldId) => (
+                <TableCell key={fieldId}>
+                  {formData.form_config[fieldId].label}
                 </TableCell>
-                <TableCell>
-                  {getFieldValue(
-                    fieldId,
-                    response.response_data[fieldId],
-                    field
-                  )}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-          <TableRow>
-            <TableCell>
-              <Typography variant="subtitle2">Status</Typography>
-            </TableCell>
-            <TableCell>
-              <Box display="flex" alignItems="center" gap={1}>
-                <StatusChip status={response.status} />
-                {onViewResponse && (
-                  <Tooltip title="View Details">
-                    <IconButton
-                      size="small"
-                      onClick={() => onViewResponse(response.response_data)}
-                    >
-                      <VisibilityIcon />
-                    </IconButton>
-                  </Tooltip>
-                )}
-              </Box>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </TableContainer>
+              ))}
+              <TableCell align="right">Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {responses
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((response, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    {new Date(response.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <StatusChip status={response.status} />
+                  </TableCell>
+                  {visibleFields.map((fieldId) => (
+                    <TableCell key={fieldId}>
+                      {getFieldValue(
+                        fieldId,
+                        response.response_data[fieldId],
+                        formData.form_config[fieldId]
+                      )}
+                    </TableCell>
+                  ))}
+                  <TableCell align="right">
+                    <Tooltip title="View Details">
+                      <IconButton
+                        size="small"
+                        onClick={() => onViewResponse?.(response.response_data)}
+                      >
+                        <VisibilityIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25, 50]}
+          component="div"
+          count={responses.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </TableContainer>
+    </Box>
   );
 };

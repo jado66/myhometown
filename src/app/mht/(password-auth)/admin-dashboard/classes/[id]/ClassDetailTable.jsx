@@ -57,6 +57,8 @@ const ClassDetailTable = ({
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newStudent, setNewStudent] = useState({});
   const [formErrors, setFormErrors] = useState({});
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState(null);
 
   // Update rows when classData changes
   useEffect(() => {
@@ -121,17 +123,25 @@ const ClassDetailTable = ({
   };
 
   const handleDeleteClick = useCallback(
-    (id) => async () => {
-      if (onRemoveSignup) {
-        const success = await onRemoveSignup(id);
-        if (success) {
-          const updatedRows = rows.filter((row) => row.id !== id);
-          setRows(updatedRows);
-        }
-      }
+    (id) => () => {
+      // Instead of deleting immediately, open confirmation dialog
+      setStudentToDelete(id);
+      setDeleteConfirmOpen(true);
     },
-    [rows, onRemoveSignup]
+    []
   );
+
+  const handleConfirmedDelete = async () => {
+    if (onRemoveSignup && studentToDelete) {
+      const success = await onRemoveSignup(studentToDelete);
+      if (success) {
+        const updatedRows = rows.filter((row) => row.id !== studentToDelete);
+        setRows(updatedRows);
+      }
+      setDeleteConfirmOpen(false);
+      setStudentToDelete(null);
+    }
+  };
 
   const handleEditClick = useCallback(
     (id) => () => {
@@ -356,6 +366,41 @@ const ClassDetailTable = ({
 
   return (
     <>
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setStudentToDelete(null);
+        }}
+      >
+        <DialogTitle>Confirm Removal</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to remove this student from the class?
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setDeleteConfirmOpen(false);
+              setStudentToDelete(null);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmedDelete}
+            color="error"
+            variant="contained"
+            disabled={removeSignupLoading}
+          >
+            {removeSignupLoading ? "Removing..." : "Remove Student"}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Box
         sx={{
           display: "flex",

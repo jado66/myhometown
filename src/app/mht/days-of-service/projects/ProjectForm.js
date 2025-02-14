@@ -20,6 +20,10 @@ import {
   Divider,
   IconButton,
   Tooltip,
+  Stack,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
@@ -31,11 +35,14 @@ import Loading from "@/components/util/Loading";
 import AddressFormFields from "./form-components/AddressFormFields";
 import CommunitySelect from "@/components/data-tables/selects/CommunitySelect";
 import TaskTable from "./form-components/TaskTable";
-import { Info } from "@mui/icons-material";
+import { ExpandMore, Info } from "@mui/icons-material";
 import EmailPreviewDialog from "./EmailPreviewDialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { ProjectResources } from "./ProjectResources";
+import EmailIcon from "@mui/icons-material/Email";
+import PhoneIcon from "@mui/icons-material/Phone";
+import { date } from "yup/lib/locale";
 
 const ProjectForm = () => {
   const [collaboratorEmail, setCollaboratorEmail] = useState("");
@@ -55,6 +62,7 @@ const ProjectForm = () => {
     formData,
     handleInputChange,
     isInitialLoading,
+    addCollaborator,
   } = useProjectForm();
 
   const steps = [
@@ -173,6 +181,15 @@ const ProjectForm = () => {
         toast.success(
           `${collaboratorEmail} has just received an email with a link to this form`
         );
+
+        // add to history
+        addCollaborator({
+          email: collaboratorEmail,
+          from: fromName,
+          message: collaboratorMessage,
+          date: new Date(),
+        });
+
         setCollaboratorEmail("");
       } else {
         throw new Error("Failed to send email");
@@ -227,6 +244,24 @@ const ProjectForm = () => {
                 handleInputChange("projectDeveloper", e.target.value)
               }
               helperText="Name of the person or couple who is developing the project. They will be the main point of contact for the project."
+            />
+            <TextField
+              label="Project Developer Phone Number"
+              fullWidth
+              value={formData.projectDeveloperPhone}
+              onChange={(e) =>
+                handleInputChange("projectDeveloperPhone", e.target.value)
+              }
+              helperText="Phone number of the person or couple who is developing the project."
+            />
+            <TextField
+              label="Project Developer Email Address"
+              fullWidth
+              value={formData.projectDeveloperEmail}
+              onChange={(e) =>
+                handleInputChange("projectDeveloperEmail", e.target.value)
+              }
+              helperText="Email address of the person or couple who is developing the project."
             />
             <TextField
               fullWidth
@@ -286,6 +321,54 @@ const ProjectForm = () => {
               value={formData.projectDevelopmentCouple}
               onChange={(e) =>
                 handleInputChange("projectDevelopmentCouple", e.target.value)
+              }
+            />
+
+            <TextField
+              label="Project Development Couple Phone Number (1)"
+              fullWidth
+              value={formData.projectDevelopmentCouplePhone1}
+              onChange={(e) =>
+                handleInputChange(
+                  "projectDevelopmentCouplePhone1",
+                  e.target.value
+                )
+              }
+            />
+
+            <TextField
+              label="Project Development Couple Email (1)"
+              fullWidth
+              value={formData.projectDevelopmentCoupleEmail1}
+              onChange={(e) =>
+                handleInputChange(
+                  "projectDevelopmentCoupleEmail1",
+                  e.target.value
+                )
+              }
+            />
+
+            <TextField
+              label="Project Development Couple Phone Number (2)"
+              fullWidth
+              value={formData.projectDevelopmentCouplePhone2}
+              onChange={(e) =>
+                handleInputChange(
+                  "projectDevelopmentCouplePhone2",
+                  e.target.value
+                )
+              }
+            />
+
+            <TextField
+              label="Project Development Couple Email (2)"
+              fullWidth
+              value={formData.projectDevelopmentCoupleEmail2}
+              onChange={(e) =>
+                handleInputChange(
+                  "projectDevelopmentCoupleEmail2",
+                  e.target.value
+                )
               }
             />
 
@@ -392,16 +475,57 @@ const ProjectForm = () => {
                   Basic Information
                 </Typography>
                 <Box sx={{ pl: 2 }}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Typography>
+                      <strong>Project Developer:</strong>{" "}
+                      {formData.projectDeveloper}
+                    </Typography>
+                    <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+                      <Tooltip title={formData.projectDeveloperPhone} arrow>
+                        <IconButton
+                          color="primary"
+                          aria-label="phone number"
+                          size="small"
+                          sx={{ border: 1, borderColor: "primary.main" }}
+                          onClick={() => {
+                            // copy to navigator clipboard
+                            navigator.clipboard.writeText(
+                              formData.projectDeveloperPhone
+                            );
+                            toast.success("Phone number copied to clipboard");
+                          }}
+                        >
+                          <PhoneIcon />
+                        </IconButton>
+                      </Tooltip>
+
+                      <Tooltip title={formData.projectDeveloperEmail} arrow>
+                        <IconButton
+                          color="primary"
+                          aria-label="email address"
+                          size="small"
+                          sx={{ border: 1, borderColor: "primary.main" }}
+                          onClick={() => {
+                            // copy to navigator clipboard
+                            navigator.clipboard.writeText(
+                              formData.projectDeveloperEmail
+                            );
+                            toast.success("Email copied to clipboard");
+                          }}
+                        >
+                          <EmailIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
+                  </Box>
+
                   <Typography>
-                    <strong>Project Developer:</strong>{" "}
-                    {formData.projectDeveloper}
+                    <strong>Project Development Couple:</strong>{" "}
+                    {formData.projectDevelopmentCouple}
                   </Typography>
+
                   <Typography>
                     <strong>Property Owner:</strong> {formData.propertyOwner}
-                  </Typography>
-                  <Typography>
-                    <strong>Contact:</strong> {formData.phoneNumber} |{" "}
-                    {formData.email}
                   </Typography>
                 </Box>
               </Box>
@@ -588,7 +712,7 @@ const ProjectForm = () => {
                 />
 
                 <TextField
-                  label="Partner Ward Liaison"
+                  label="Partner Ward Liaison(s)"
                   fullWidth
                   value={formData.partnerWardLiaison}
                   onChange={(e) =>
@@ -604,7 +728,7 @@ const ProjectForm = () => {
                     value={formData.partnerWardLiaisonPhone}
                     onChange={(e) =>
                       handleInputChange(
-                        "partnerWardLiaisonPhone",
+                        "partnerWardLiaisonPhone1",
                         e.target.value
                       )
                     }
@@ -616,7 +740,7 @@ const ProjectForm = () => {
                     value={formData.partnerWardLiaisonEmail}
                     onChange={(e) =>
                       handleInputChange(
-                        "partnerWardLiaisonEmail",
+                        "partnerWardLiaisonEmail1",
                         e.target.value
                       )
                     }
@@ -630,7 +754,7 @@ const ProjectForm = () => {
                     value={formData.partnerWardLiaisonPhone2}
                     onChange={(e) =>
                       handleInputChange(
-                        "partnerWardLiaisonPhone",
+                        "partnerWardLiaisonPhone2",
                         e.target.value
                       )
                     }
@@ -642,7 +766,7 @@ const ProjectForm = () => {
                     value={formData.partnerWardLiaisonEmail2}
                     onChange={(e) =>
                       handleInputChange(
-                        "partnerWardLiaisonEmail",
+                        "partnerWardLiaisonEmail2",
                         e.target.value
                       )
                     }
@@ -956,6 +1080,33 @@ const ProjectForm = () => {
             </Button>
           </Box>
         </Box>
+
+        {formData.collaborators && (
+          <Box sx={{ mt: 4 }}>
+            <Accordion>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="collaboration-history-content"
+                id="collaboration-history-header"
+              >
+                <Typography variant="h6">Collaboration History</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  {formData.collaborators.map((collaborator, index) => (
+                    <Paper key={index} sx={{ p: 2 }}>
+                      <Typography variant="subtitle1">
+                        {collaborator.email} -{" "}
+                        {new Date(collaborator.date).toLocaleDateString()}
+                      </Typography>
+                      <Typography>{collaborator.message}</Typography>
+                    </Paper>
+                  ))}
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+          </Box>
+        )}
       </Box>
     </>
   );

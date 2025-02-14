@@ -406,16 +406,30 @@ export const AVAILABLE_FIELDS = {
     helpText: "Check this box if applicable",
     category: "Miscellaneous",
   },
+
   volunteerSignature: {
-    label: "Volunteer Signature",
+    label: "Your Signature",
     type: FIELD_TYPES.signature,
     visible: true,
     required: true,
-    originalLabel: "Volunteer Signature",
-    helpText: "Please sign to confirm your participation",
+    originalLabel: "Your Signature",
+    helpText:
+      "By signing, I acknowledge that I have read and understood all of the terms of this release, received the Safety Training, reviewed the Volunteer Safety form, and that I am voluntarily giving up substantial legal rights, including the right to sue the Organization. / Al firmar, reconozco que he leído y comprendido todos los términos de este acuerdo, que recibí la capacitación en seguridad, que he revisado el formulario de seguridad para voluntarios, y que renuncio voluntariamente a derechos legales sustanciales, incluyendo el derecho de demandar a la Organización.*",
     category: "Days of Service",
     validation: (value) =>
       value && value.length > 0 ? null : "Signature is required",
+  },
+
+  volunteerReleaseForm: {
+    label: "Volunteer Release Form",
+    type: FIELD_TYPES.infoDialog,
+    visible: true,
+    required: true,
+    originalLabel: "Volunteer Release Form",
+    content: "Add your volunteer release form here...",
+    category: "Days of Service",
+    validation: (value) =>
+      value === true ? null : "You must review the safety guidelines",
   },
 
   safetyGuidelines: {
@@ -425,7 +439,6 @@ export const AVAILABLE_FIELDS = {
     required: true,
     originalLabel: "Safety Rules and Guidelines",
     content: "Add your safety rules and guidelines here...",
-    helpText: "Please review and acknowledge the safety guidelines",
     category: "Days of Service",
     validation: (value) =>
       value === true ? null : "You must review the safety guidelines",
@@ -441,6 +454,48 @@ export const AVAILABLE_FIELDS = {
     helpText: "Select your preferred service area",
     category: "Days of Service",
     validation: (value) => (value ? null : "Please select a service area"),
+  },
+
+  inCityBoundaries: {
+    label: "Do you live within city boundaries?",
+    type: FIELD_TYPES.radioGroup,
+    visible: true,
+    required: true,
+    originalLabel: "In City Boundaries?",
+    options: [
+      { value: true, label: "Yes" },
+      { value: false, label: "No" },
+    ],
+    helpText: "Select your preferred service area",
+    category: "Days of Service",
+    validation: (value) => (value ? null : "Please select a service area"),
+  },
+
+  yourVolunteerHours: {
+    label: "Your Volunteer Hours",
+    type: FIELD_TYPES.number,
+    visible: true,
+    required: true,
+    originalLabel: "Your Volunteer Hours",
+    helpText: "Hours for minors are included below",
+    category: "Days of Service",
+    validation: (value) =>
+      value > 0 ? null : "Please enter a valid number of hours",
+  },
+
+  minorChildren: {
+    label: "Do you have minors/children volunteering with you today?",
+    type: FIELD_TYPES.radioGroup,
+    visible: true,
+    required: true,
+    originalLabel: "Minor Children?",
+    options: [
+      { value: true, label: "Yes" },
+      { value: false, label: "No" },
+    ],
+    helpText: "",
+    category: "Days of Service",
+    validation: (value) => (value ? null : "Please select an answer"),
   },
 
   safetyVideo: {
