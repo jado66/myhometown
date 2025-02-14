@@ -100,7 +100,7 @@ export async function POST(request) {
       type: "recovery",
       email,
       options: {
-        redirectTo: `https://myhometownut.com/auth/reset-password`,
+        redirectTo: `${process.env.NEXT_PUBLIC_DOMAIN}/auth/reset-password`,
       },
     });
 
