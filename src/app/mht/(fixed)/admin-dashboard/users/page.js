@@ -21,7 +21,6 @@ const DynamicManagementContent = dynamic(
   }
 );
 
-// Main wrapper component
 export default function Management() {
   return (
     <Grid container item sm={12} display="flex" sx={{ position: "relative" }}>
