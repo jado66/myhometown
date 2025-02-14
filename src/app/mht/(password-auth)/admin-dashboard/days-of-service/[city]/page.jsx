@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import { useCommunities } from "@/hooks/use-communities";
 import JsonViewer from "@/components/util/debug/DebugOutput";
-import { FormResponsesTable } from "@/components/FormResponseTable";
+import { FormResponseTable } from "@/components/FormResponseTable";
 // FormResponsesDialog.jsx
 
 import { Close } from "@mui/icons-material";
@@ -199,7 +199,7 @@ const FormResponsesDialog = ({ open, onClose, formId, communityName }) => {
         </Box>
       </DialogTitle>
       <DialogContent>
-        <FormResponsesTable formId={formId} />
+        <FormResponseTable formId={formId} />
       </DialogContent>
     </Dialog>
   );

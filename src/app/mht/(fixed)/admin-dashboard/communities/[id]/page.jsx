@@ -7,7 +7,7 @@ import { SignUpForm } from "@/components/SignUpForm";
 import { Container, Divider } from "@mui/material";
 import { useFormResponses } from "@/hooks/useFormResponses";
 import { useCommunities } from "@/hooks/use-communities";
-import { FormResponsesTable } from "@/components/FormResponseTable";
+import { FormResponseTable } from "@/components/FormResponseTable";
 
 const DaysOfServicePage = ({ params }) => {
   const { id } = params;
@@ -29,7 +29,7 @@ const DaysOfServicePage = ({ params }) => {
       {community?.volunteerSignUpId && (
         <>
           <h1>Days Of Service Volunteers</h1>
-          <FormResponsesTable formId={community.volunteerSignUpId} />
+          <FormResponseTable formId={community.volunteerSignUpId} />
         </>
       )}
     </Container>
