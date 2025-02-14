@@ -66,11 +66,12 @@ export default function useManageCities(
       return;
     }
 
-    if (userfilter?.role === "Admin" || forDropDownCityMenu) {
+    const isAdministrator = userfilter?.permissions?.administrator;
+    const cityIds = userfilter?.cities || [];
+
+    if (isAdministrator || forDropDownCityMenu) {
       fetchAllCities();
     } else {
-      const cityIds = userfilter.cities.map((city) => city._id);
-
       fetchCitiesByIds(cityIds);
     }
   }, [userfilter]);

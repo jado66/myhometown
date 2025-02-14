@@ -76,12 +76,14 @@ export function useCommunities(userfilter, forDropDownCommunityMenu = false) {
       return;
     }
 
-    if (userfilter?.role === "Admin" || forDropDownCommunityMenu) {
+    const isAdministrator = userfilter?.permissions?.administrator;
+    const communityIds = userfilter?.communities || [];
+
+    if (isAdministrator || forDropDownCommunityMenu) {
       fetchAllCommunities();
     } else {
-      const communityIds = userfilter.communities.map(
-        (community) => community._id
-      );
+      // alert("Fetching communities by userfilter" + JSON.stringify(userfilter));
+
       fetchCommunitiesByIds(communityIds);
     }
   }, [userfilter]);

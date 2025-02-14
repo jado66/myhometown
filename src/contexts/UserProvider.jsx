@@ -17,6 +17,7 @@ export const UserProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isImpersonating, setIsImpersonating] = useState(false);
   const [authUser, setAuthUser] = useState(null);
+  const [permissions, setPermissions] = useState(null);
 
   const getImpersonatedUser = () => {
     if (typeof window === "undefined") return null;
@@ -38,7 +39,7 @@ export const UserProvider = ({ children }) => {
     try {
       // Query the users table in Supabase
       const { data, error } = await supabase
-        .from("users")
+        .from("users_with_details")
         .select("*, permissions")
         .eq("id", id)
         .single();
@@ -219,6 +220,7 @@ export const UserProvider = ({ children }) => {
         impersonateUser,
         stopImpersonation,
         isImpersonating,
+        permissions,
         signIn,
         signOut,
         resetPassword,
