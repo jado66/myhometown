@@ -10,7 +10,7 @@ export const pages = () => {
       pages: [
         {
           title: "User Management",
-          href: rootUrl + "/admin-dashboard/users",
+          href: rootUrl + "/admin-dashboard/manage-users",
           requiredPermission: "administrator",
         },
         {

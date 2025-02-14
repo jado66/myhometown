@@ -93,7 +93,7 @@ const AdminDashboardPages = () => {
                   subtitle:
                     "Add, remove, or edit users and their roles to manage who can access your city or community.",
                   media: "/users.png",
-                  href: rootUrl + "/admin-dashboard/users",
+                  href: rootUrl + "/admin-dashboard/manage-users",
                   requiredPermission: "admin",
                 },
                 {
