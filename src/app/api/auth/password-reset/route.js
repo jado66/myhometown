@@ -69,7 +69,6 @@ const formattedHtml = (email, resetLink) => {
     <body>
       <div class="container">
         <div class="header">
-          // <img src="data:image/png;base64,${logoBase64}" alt="MyHometown" class="logo">
           <h1>myHometown - Password Reset Request</h1>
         </div>
         <div class="content">
