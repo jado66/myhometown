@@ -81,7 +81,7 @@ const SummaryCard = ({ title, value, color = "textPrimary" }) => (
   </Card>
 );
 
-export const FormResponsesDashboard = ({
+export const FormResponseTable = ({
   formId,
   responses,
   formData,
