@@ -97,6 +97,10 @@ const ForgotPasswordPage = () => {
                 onClick={() =>
                   router.push(process.env.NEXT_PUBLIC_DOMAIN + "/auth/login")
                 }
+                sx={{
+                  backgroundColor: "#318d43",
+                  ":hover": { backgroundColor: "#4ab55f" },
+                }}
               >
                 Return to Login
               </Button>

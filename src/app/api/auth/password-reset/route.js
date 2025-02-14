@@ -76,7 +76,7 @@ const formattedHtml = (email, resetLink) => {
           <p>We received a request to reset the password for your MyHometown account associated with ${email}.</p>
           <p>Click the button below to reset your password. This link will expire in 24 hours.</p>
           <p style="text-align: center;">
-            <a href="${resetLink}" class="button">Reset Your Password</a>
+            <a href="${resetLink}" class="button" style="color: #ffffff">Reset Your Password</a>
           </p>
           <p>If you didn't request this password reset, you can safely ignore this email. Your password will not be changed.</p>
           <p>For security reasons, this link will expire in 24 hours. If you need to reset your password after that, please request a new reset link.</p>
