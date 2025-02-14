@@ -35,13 +35,13 @@ export const metadata = {
   formatDetection: {
     telephone: false,
   },
-  themeColor: "#FFFFFF",
 };
 
 export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  themeColor: "#FFFFFF",
 };
 
 export default function RootLayout({ children }) {
