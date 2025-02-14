@@ -70,7 +70,7 @@ const ForgotPasswordPage = () => {
           {/* Logo */}
           <Box sx={{ mb: 3 }}>
             <img
-              src="/your-logo.png"
+              src="/svgs/Primary_Logo_Black_Text.svg"
               alt="MyHometown"
               style={{ height: "60px", width: "auto" }}
             />
@@ -132,7 +132,13 @@ const ForgotPasswordPage = () => {
                 fullWidth
                 variant="contained"
                 disabled={isSubmitting}
-                sx={{ mb: 2 }}
+                sx={{
+                  mb: 2,
+                  backgroundColor: "#318d43",
+                  ":hover": {
+                    backgroundColor: "#4ab55f",
+                  },
+                }}
               >
                 {isSubmitting ? "Sending..." : "Send Reset Link"}
               </Button>

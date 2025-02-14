@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -20,8 +21,14 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
+  const [mounted, setMounted] = useState(false);
 
   const router = useRouter();
+
+  // Add useEffect to handle client-side mounting
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
@@ -39,16 +46,16 @@ const LoginPage = () => {
         throw error;
       }
 
-      // Handle successful login
-      console.log("Logged in:", data);
-
       router.push(process.env.NEXT_PUBLIC_DOMAIN + "/admin-dashboard");
-
-      // Redirect or update app state here
     } catch (error) {
       setError(error.message);
     }
   };
+
+  // Return null or loading state while not mounted
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <Container component="main" maxWidth="xs">
@@ -70,10 +77,10 @@ const LoginPage = () => {
             width: "100%",
           }}
         >
-          {/* Logo */}
           <Box sx={{ mb: 3 }}>
+            {/* Use next/image instead of img tag */}
             <img
-              src="/your-logo.png"
+              src="/svgs/Primary_Logo_Black_Text.svg"
               alt="MyHometown"
               style={{ height: "60px", width: "auto" }}
             />
@@ -83,7 +90,7 @@ const LoginPage = () => {
             Welcome
           </Typography>
 
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography variant="body1" color="#318d43" sx={{ mb: 3 }}>
             Log in to your Admin Portal account
           </Typography>
 
@@ -146,7 +153,14 @@ const LoginPage = () => {
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 2, mb: 2 }}
+              sx={{
+                mt: 2,
+                mb: 2,
+                backgroundColor: "#318d43",
+                ":hover": {
+                  backgroundColor: "#4ab55f",
+                },
+              }}
             >
               Continue
             </Button>

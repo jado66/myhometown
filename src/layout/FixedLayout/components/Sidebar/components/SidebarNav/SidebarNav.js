@@ -10,14 +10,32 @@ import { useUser } from "@/hooks/use-user";
 import Loading from "@/components/util/Loading";
 import PermissionGuard from "@/guards/permission-guard";
 import { Divider } from "@mui/material";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/util/supabase";
 
 const SidebarNav = ({ pages, onClose }) => {
   const { user, isLoading } = useUser();
   const theme = useTheme();
   const [activeLink, setActiveLink] = useState("");
+
+  const router = useRouter();
+
   useEffect(() => {
     setActiveLink(window && window.location ? window.location.pathname : "");
   }, []);
+
+  const handleLogOut = async () => {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      toast.error("Error logging out");
+      console.error("Error logging out:", error.message);
+    } else {
+      toast.success("Logged out");
+      router.push("/");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -115,7 +133,7 @@ const SidebarNav = ({ pages, onClose }) => {
       </Box>
 
       <Box>
-        <Button variant="outlined" fullWidth component="a" href="/">
+        <Button variant="outlined" fullWidth onClick={handleLogOut}>
           Log Out
         </Button>
       </Box>

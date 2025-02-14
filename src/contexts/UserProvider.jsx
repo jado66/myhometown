@@ -24,12 +24,22 @@ export const UserProvider = ({ children }) => {
     return stored ? JSON.parse(stored) : null;
   };
 
+  const setDatabasePermissions = async (permissions) => {
+    try {
+      await supabase.rpc("set_permissions", {
+        permissions_json: permissions,
+      });
+    } catch (error) {
+      console.error("Error setting permissions:", error);
+    }
+  };
+
   const fetchUser = async (id, email) => {
     try {
       // Query the users table in Supabase
       const { data, error } = await supabase
         .from("users")
-        .select("*")
+        .select("*, permissions")
         .eq("id", id)
         .single();
 
@@ -37,14 +47,25 @@ export const UserProvider = ({ children }) => {
 
       // If user doesn't exist, create a new user record
       if (!data) {
+        const defaultPermissions = {
+          texting: false,
+          administrator: false,
+          city_management: false,
+          class_management: false,
+          community_management: false,
+        };
+
         const { data: newUser, error: createError } = await supabase
           .from("users")
           .insert([
             {
               id: id,
               email: email,
-              role: "User", // Default role
+              role: "User",
+              permissions: defaultPermissions,
               created_at: new Date().toISOString(),
+              first_name: authUser?.user_metadata?.firstName || "",
+              last_name: authUser?.user_metadata?.lastName || "",
             },
           ])
           .select()
@@ -52,12 +73,17 @@ export const UserProvider = ({ children }) => {
 
         if (createError) throw createError;
 
+        await setDatabasePermissions(defaultPermissions);
         setUser(newUser);
+        setPermissions(defaultPermissions);
         setIsLoading(false);
         return newUser;
       }
 
+      // Set the permissions in the database session
+      await setDatabasePermissions(data.permissions);
       setUser(data);
+      setPermissions(data.permissions);
       setIsLoading(false);
       return data;
     } catch (error) {

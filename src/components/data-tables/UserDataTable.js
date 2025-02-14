@@ -6,6 +6,7 @@ import {
 
 import { Typography, Chip, Box, Button } from "@mui/material";
 import { Add as AddIcon, ImportExport } from "@mui/icons-material";
+import { supabase } from "@/util/supabase";
 
 const UserDataTable = ({ data, onAddClick, onRowClick }) => {
   const getStoredState = (key, defaultValue) => {
@@ -68,7 +69,7 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
       name: 200, // Increased size for combined name
       email: 250,
       role: 140,
-      contactNumber: 150,
+      contact_number: 150,
       permissions: 200,
       cities: 200,
       communities: 200,
@@ -88,7 +89,7 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
       name: true,
       email: true,
       role: true,
-      contactNumber: true,
+      contact_number: true,
       cities: true,
       communities: true,
     })
@@ -102,7 +103,7 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
   const processedData = useMemo(() => {
     return data.map((row) => ({
       ...row,
-      name: `${row.firstName || ""} ${row.lastName || ""}`.trim(),
+      name: `${row.first_name || ""} ${row.last_name || ""}`.trim(),
     }));
   }, [data]);
 
@@ -123,9 +124,9 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
         size: columnSizing.email,
       },
       {
-        accessorKey: "contactNumber",
+        accessorKey: "contact_number",
         header: "Phone",
-        size: columnSizing.contactNumber,
+        size: columnSizing.contact_number,
       },
       {
         accessorKey: "permissions",
@@ -142,10 +143,10 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
                 .map(([key], index) => (
                   <Chip
                     key={index}
-                    label={key}
+                    label={key.replace(/_/g, " ")}
                     variant="outlined"
                     color="primary"
-                    style={{ margin: 2, textTransform: "capitalize" }}
+                    sx={{ mx: 0.5, textTransform: "capitalize" }}
                   />
                 ))}
             </Box>
@@ -157,14 +158,14 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
         header: "Cities",
         size: columnSizing.cities,
         Cell: ({ row }) => {
-          const cities = row.original.cities || [];
+          const cityDetails = row.original.cities_details || [];
 
           return (
             <Typography variant="body2">
-              {cities.map((city, index) => (
+              {cityDetails.map((city, index) => (
                 <Chip
-                  key={index}
-                  label={city.name}
+                  key={city.id}
+                  label={`${city.name}, ${city.state}`}
                   variant="outlined"
                   color="primary"
                   style={{ margin: 2 }}
@@ -179,13 +180,13 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
         header: "Communities",
         size: columnSizing.communities,
         Cell: ({ row }) => {
-          const communities = row.original.communities || [];
+          const communityDetails = row.original.communities_details || [];
 
           return (
             <Box>
-              {communities.map((community, index) => (
+              {communityDetails.map((community, index) => (
                 <Chip
-                  key={index}
+                  key={community.id}
                   label={community.name}
                   variant="outlined"
                   color="secondary"

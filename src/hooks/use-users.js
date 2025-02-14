@@ -32,16 +32,21 @@ const useUsers = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase.from("users").select("*");
+      const { data, error } = await supabase.from("users_with_details").select(`
+          *,
+          cities_details,
+          communities_details
+        `);
 
       if (error) throw error;
 
       const formattedUsers = data.map((user) => ({
         ...user,
         id: user.id,
+
         permissions: user.permissions || initialUserState.permissions,
-        cities: user.cities || [],
-        communities: user.communities || [],
+        cities: user.cities_details || [],
+        communities: user.communities_details || [],
       }));
 
       setUsers(formattedUsers);
@@ -113,9 +118,9 @@ const useUsers = () => {
       const { data, error } = await supabase
         .from("users")
         .update({
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          contactNumber: userData.contactNumber,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          contact_number: userData.contact_number,
           permissions: userData.permissions,
           cities: userData.cities,
           communities: userData.communities,

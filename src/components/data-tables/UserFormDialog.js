@@ -15,13 +15,14 @@ import {
 } from "@mui/material";
 import { Delete, Key } from "@mui/icons-material";
 import { CityOrCommunityCell } from "./CityOrCommunityCell";
+import JsonViewer from "../util/debug/DebugOutput";
 
 const initialPermissions = {
-  administrator: false,
-  cityManagement: false,
-  communityManagement: false,
-  texting: false,
-  classManagement: false,
+  // administrator: false,
+  // cityManagement: false,
+  // communityManagement: false,
+  // texting: false,
+  // classManagement: false,
 };
 
 export const UserFormDialog = ({
@@ -43,9 +44,9 @@ export const UserFormDialog = ({
 
       // Check if .name exists and split it
       if (newFormData?.name) {
-        const [firstName, lastName] = newFormData.name.split(" ");
-        newFormData.firstName = firstName || "";
-        newFormData.lastName = lastName || "";
+        const [first_name, last_name] = newFormData.name.split(" ");
+        newFormData.first_name = first_name || "";
+        newFormData.last_name = last_name || "";
         delete newFormData.name;
       }
 
@@ -90,6 +91,9 @@ export const UserFormDialog = ({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>{isEditMode ? "Edit User" : "Create User"}</DialogTitle>
+
+      <JsonViewer data={formData} />
+
       <form onSubmit={handleSubmit}>
         <DialogContent>
           <TextField
@@ -111,9 +115,9 @@ export const UserFormDialog = ({
             label="First Name"
             type="text"
             margin="dense"
-            value={formData?.firstName || ""}
+            value={formData?.first_name || ""}
             onChange={(e) =>
-              setFormData({ ...formData, firstName: e.target.value })
+              setFormData({ ...formData, first_name: e.target.value })
             }
           />
           <TextField
@@ -122,9 +126,9 @@ export const UserFormDialog = ({
             label="Last Name"
             type="text"
             margin="dense"
-            value={formData?.lastName || ""}
+            value={formData?.last_name || ""}
             onChange={(e) =>
-              setFormData({ ...formData, lastName: e.target.value })
+              setFormData({ ...formData, last_name: e.target.value })
             }
           />
 
@@ -133,9 +137,9 @@ export const UserFormDialog = ({
             label="Contact Number"
             type="tel"
             margin="dense"
-            value={formData?.contactNumber || ""}
+            value={formData?.contact_number || ""}
             onChange={(e) =>
-              setFormData({ ...formData, contactNumber: e.target.value })
+              setFormData({ ...formData, contact_number: e.target.value })
             }
           />
 
@@ -148,6 +152,7 @@ export const UserFormDialog = ({
               }).map(([key, value]) => (
                 <FormControlLabel
                   key={key}
+                  sx={{ textTransform: "capitalize" }}
                   control={
                     <Checkbox
                       checked={value}
@@ -158,10 +163,7 @@ export const UserFormDialog = ({
                       onChange={() => handlePermissionChange(key)}
                     />
                   }
-                  label={
-                    key.charAt(0).toUpperCase() +
-                    key.slice(1).replace(/([A-Z])/g, " $1")
-                  }
+                  label={key.replace(/_/g, " ")}
                 />
               ))}
             </FormGroup>
