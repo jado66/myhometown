@@ -102,7 +102,7 @@ const AdminDashboardPages = () => {
                     "Manage your cities. Add, remove, or edit city information.",
                   media: "/cities.png",
                   href: rootUrl + "/admin-dashboard/cities",
-                  requiredPermission: "cityManagement",
+                  // requiredPermission: "cityManagement",
                 },
                 {
                   title: "Community Management",
@@ -110,7 +110,7 @@ const AdminDashboardPages = () => {
                     "Manage your communities. Add, remove, or edit community information.",
                   media: "/community.png",
                   href: rootUrl + "/admin-dashboard/communities",
-                  requiredPermission: "communityManagement",
+                  // requiredPermission: "communityManagement",
                 },
                 {
                   title: "Classes and Rolls",
@@ -138,7 +138,7 @@ const AdminDashboardPages = () => {
                     "Send text notifications to your city or community members. ",
                   media: "/text.png",
                   href: rootUrl + "/admin-dashboard/tools/sms",
-                  requiredPermission: "texting",
+                  // requiredPermission: "texting",
                 },
                 // // {
                 //   title: 'Give Butter Campaigns',

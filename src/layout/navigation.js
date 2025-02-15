@@ -21,7 +21,7 @@ export const pages = () => {
         {
           title: "Community Management",
           href: rootUrl + "/admin-dashboard/communities",
-          // requiredPermission: "communityManagement",
+          // requiredPermission: "texting",
         },
       ],
     },
@@ -36,12 +36,12 @@ export const pages = () => {
         {
           title: "Texting",
           href: rootUrl + "/admin-dashboard/tools/sms",
-          requiredPermission: "texting",
+          // requiredPermission: "texting",
         },
         {
           title: "Contact Directory",
           href: rootUrl + "/admin-dashboard/tools/directory",
-          requiredPermission: "texting",
+          // requiredPermission: "texting",
         },
         {
           title: "Classes and Rolls",
