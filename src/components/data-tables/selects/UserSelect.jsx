@@ -2,6 +2,7 @@
 
 import useUsers from "@/hooks/use-users";
 import MultiSelect from "./MultiSelect";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const UserSelect = ({ value, onChange, defaultValue, isMulti = true }) => {
   const { userSelectOptions, hasLoaded } = useUsers();

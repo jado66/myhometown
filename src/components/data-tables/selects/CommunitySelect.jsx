@@ -1,51 +1,50 @@
 "use client";
-import { useCommunities } from "@/hooks/use-communities";
+
 import MultiSelect from "./MultiSelect";
-import JsonViewer from "@/components/util/debug/DebugOutput";
+import Loading from "@/components/util/Loading";
+import { supabase } from "@/util/supabase";
+import { useEffect, useState } from "react";
 
-const CommunitySelect = ({ value, onChange, defaultValue, isMulti }) => {
-  const { communitySelectOptions, hasLoaded, communities } = useCommunities(
-    null,
-    true
-  );
+const CommunitySelect = ({ value, onChange, defaultValue, isMulti = true }) => {
+  const [communitySelectOptions, setCommunitySelectOptions] = useState([]);
 
-  // Transform value to match react-select format if it's not already formatted
-  const formattedValue = value
-    ? Array.isArray(value)
-      ? value.map((v) =>
-          typeof v === "string"
-            ? communitySelectOptions.find((opt) => opt.value === v)
-            : v
-        )
-      : communitySelectOptions.find((opt) => opt.value === value)
-    : null;
+  const [loading, setLoading] = useState(true);
+  const fetchCommunities = async () => {
+    const { data, error } = await supabase.from("communities").select("*");
 
-  // Transform defaultValue similarly
-  const formattedDefaultValue = defaultValue
-    ? Array.isArray(defaultValue)
-      ? defaultValue.map((v) =>
-          typeof v === "string"
-            ? communitySelectOptions.find((opt) => opt.value === v)
-            : v
-        )
-      : communitySelectOptions.find((opt) => opt.value === defaultValue)
-    : null;
+    if (error) {
+      setError("Error fetching communities");
+    } else {
+      setCommunitySelectOptions(
+        data.map((community) => ({
+          value: community.id,
+          label: community.name,
+        }))
+      );
+    }
+  };
 
-  console.log("hasLoaded:", hasLoaded);
-  console.log("communities:", communities);
-  console.log("communitySelectOptions:", communitySelectOptions);
+  useEffect(() => {
+    fetchCommunities().then(() => {
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <>
       <MultiSelect
-        isMulti={isMulti}
         options={communitySelectOptions}
         placeholder="Select a Community"
-        isLoading={!hasLoaded}
-        value={formattedValue}
+        isLoading={loading}
+        value={value}
         onChange={onChange}
-        defaultValue={formattedDefaultValue}
-        direction="down"
+        defaultValue={defaultValue}
+        direction="up"
+        isMulti={isMulti}
       />
     </>
   );

@@ -82,9 +82,9 @@ export const UserProvider = ({ children }) => {
       }
 
       // Set the permissions in the database session
-      await setDatabasePermissions(data.permissions);
+      // await setDatabasePermissions(data.permissions);
       setUser(data);
-      setPermissions(data.permissions);
+      // setPermissions(data.permissions);
       setIsLoading(false);
       return data;
     } catch (error) {

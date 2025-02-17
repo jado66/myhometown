@@ -4,18 +4,13 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  FormControl,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
   Button,
   Box,
   FormLabel,
 } from "@mui/material";
 import { Delete, Key } from "@mui/icons-material";
-import { CityOrCommunityCell } from "./CityOrCommunityCell";
 import JsonViewer from "../util/debug/DebugOutput";
+import UserFormFields from "./UserFormFields";
 
 const initialPermissions = {
   // administrator: false,
@@ -54,33 +49,20 @@ export const UserFormDialog = ({
     }
   }, [open, initialData]);
 
-  const handlePermissionChange = (permission) => {
-    // Ensure we're working with valid permissions object
-    const currentPermissions = formData.permissions || initialPermissions;
-
-    let updatedPermissions = {
-      ...currentPermissions,
-      [permission]: !currentPermissions[permission],
-    };
-
-    // Handle administrator special case
-    if (permission === "administrator" && updatedPermissions[permission]) {
-      Object.keys(updatedPermissions).forEach((key) => {
-        if (key !== "administrator") {
-          updatedPermissions[key] = false;
-        }
-      });
-    }
-
-    // Handle non-administrator permissions
-    if (permission !== "administrator" && updatedPermissions[permission]) {
-      updatedPermissions.administrator = false;
-    }
-
-    setFormData((prevData) => ({
-      ...prevData,
-      permissions: updatedPermissions,
-    }));
+  const handlePermissionChange = (permission) => (event) => {
+    onChange({
+      ...userData,
+      permissions: {
+        administrator:
+          permission === "administrator"
+            ? event.target.checked
+            : userData?.permissions?.administrator || false,
+        texting:
+          permission === "texting"
+            ? event.target.checked
+            : userData?.permissions?.texting || false,
+      },
+    });
   };
 
   const handleSubmit = (e) => {
@@ -96,102 +78,7 @@ export const UserFormDialog = ({
 
       <form onSubmit={handleSubmit}>
         <DialogContent>
-          <TextField
-            required
-            fullWidth
-            label="Email"
-            type="email"
-            margin="dense"
-            value={formData?.email || ""}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
-            disabled={isEditMode}
-          />
-
-          <TextField
-            required
-            fullWidth
-            label="First Name"
-            type="text"
-            margin="dense"
-            value={formData?.first_name || ""}
-            onChange={(e) =>
-              setFormData({ ...formData, first_name: e.target.value })
-            }
-          />
-          <TextField
-            required
-            fullWidth
-            label="Last Name"
-            type="text"
-            margin="dense"
-            value={formData?.last_name || ""}
-            onChange={(e) =>
-              setFormData({ ...formData, last_name: e.target.value })
-            }
-          />
-
-          <TextField
-            fullWidth
-            label="Contact Number"
-            type="tel"
-            margin="dense"
-            value={formData?.contact_number || ""}
-            onChange={(e) =>
-              setFormData({ ...formData, contact_number: e.target.value })
-            }
-          />
-
-          <FormControl component="fieldset" sx={{ mt: 2 }} fullWidth>
-            <FormLabel component="legend">User Permissions</FormLabel>
-            <FormGroup>
-              {Object.entries({
-                ...initialPermissions,
-                ...formData?.permissions,
-              }).map(([key, value]) => (
-                <FormControlLabel
-                  key={key}
-                  sx={{ textTransform: "capitalize" }}
-                  control={
-                    <Checkbox
-                      checked={value}
-                      disabled={
-                        key !== "administrator" &&
-                        formData?.permissions?.administrator
-                      }
-                      onChange={() => handlePermissionChange(key)}
-                    />
-                  }
-                  label={key.replace(/_/g, " ")}
-                />
-              ))}
-            </FormGroup>
-          </FormControl>
-
-          {isEditMode && (
-            <>
-              {formData?.cities?.length > 0 && (
-                <Box sx={{ mt: 2 }}>
-                  <FormLabel component="legend">Cities Managing</FormLabel>
-                  <CityOrCommunityCell
-                    params={{ value: formData.cities }}
-                    type="city"
-                  />
-                </Box>
-              )}
-
-              {formData?.communities?.length > 0 && (
-                <Box sx={{ mt: 2 }}>
-                  <FormLabel component="legend">Communities Managing</FormLabel>
-                  <CityOrCommunityCell
-                    params={{ value: formData.communities }}
-                    type="community"
-                  />
-                </Box>
-              )}
-            </>
-          )}
+          <UserFormFields userData={formData} onChange={setFormData} />
         </DialogContent>
 
         <DialogActions

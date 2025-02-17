@@ -114,28 +114,60 @@ const useUsers = () => {
     setLoading(true);
     setError(null);
 
+    const { data: checkUser, error: checkError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", "909e641b-8926-49ec-b69d-c4e55c367322")
+      .single();
+
+    console.log("Check user result:", checkUser, checkError);
+
     try {
+      console.log("Editing user with ID:", userData.id);
+
+      // Format the permissions object to ensure boolean values
+      const formattedPermissions = {
+        texting: userData.permissions?.texting === true,
+        administrator: userData.permissions?.administrator === true,
+      };
+
+      // Format the communities array to ensure it matches the database schema
+      const formattedCommunities = userData.communities.map(
+        (community) => community.id
+      );
+
+      // Format the cities array to ensure it matches the database schema
+      const formattedCities = userData.cities.map((city) => city.id);
+
+      // Update the user in the database
       const { data, error } = await supabase
         .from("users")
         .update({
           first_name: userData.first_name,
           last_name: userData.last_name,
           contact_number: userData.contact_number,
-          permissions: userData.permissions,
-          cities: userData.cities,
-          communities: userData.communities,
+          permissions: formattedPermissions, // Use formatted permissions
+          cities: formattedCities, // Use formatted cities
+          communities: formattedCommunities, // Use formatted communities
         })
-        .eq("id", userData.id)
-        .select()
-        .single();
+        .eq("id", userData.id) // Ensure this matches the database `id`
+        .select() // Select the updated row
+        .single(); // Ensure only one row is returned
+
+      // If no rows are returned, throw an error
+      if (!data) {
+        throw new Error("No user found with the provided ID.");
+      }
 
       if (error) throw error;
 
+      // Update the local state with the updated user data
       setUsers((prevUsers) =>
         prevUsers.map((u) =>
           u.id === userData.id ? { ...data, id: data.id } : u
         )
       );
+
       toast.success("User updated successfully");
       return { success: true, data };
     } catch (err) {
