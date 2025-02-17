@@ -16,12 +16,12 @@ export const pages = () => {
         {
           title: "City Management",
           href: rootUrl + "/admin-dashboard/cities",
-          // requiredPermission: "cityManagement",
+          requiredPermission: "cityManagement",
         },
         {
           title: "Community Management",
           href: rootUrl + "/admin-dashboard/communities",
-          // requiredPermission: "texting",
+          requiredPermission: "communityManagement",
         },
       ],
     },

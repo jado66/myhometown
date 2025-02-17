@@ -78,28 +78,28 @@ const CommunityDataTable = ({ data, onAddClick, onRowClick }) => {
         header: "City",
         size: columnSizing.city,
       },
-      {
-        accessorKey: "communityOwners",
-        header: "Managers",
-        size: columnSizing.managers,
-        Cell: ({ row }) => {
-          const managers = row.original.communityOwners || [];
+      // {
+      //   accessorKey: "communityOwners",
+      //   header: "Managers",
+      //   size: columnSizing.managers,
+      //   Cell: ({ row }) => {
+      //     const managers = row.original.communityOwners || [];
 
-          return (
-            <Typography variant="body2">
-              {managers.map((manager, index) => (
-                <Chip
-                  key={index}
-                  label={`${manager.firstName} ${manager.lastName}`.trim()}
-                  variant="outlined"
-                  color="primary"
-                  style={{ margin: 2 }}
-                />
-              ))}
-            </Typography>
-          );
-        },
-      },
+      //     return (
+      //       <Typography variant="body2">
+      //         {managers.map((manager, index) => (
+      //           <Chip
+      //             key={index}
+      //             label={`${manager.firstName} ${manager.lastName}`.trim()}
+      //             variant="outlined"
+      //             color="primary"
+      //             style={{ margin: 2 }}
+      //           />
+      //         ))}
+      //       </Typography>
+      //     );
+      //   },
+      // },
 
       {
         accessorKey: "_id",
