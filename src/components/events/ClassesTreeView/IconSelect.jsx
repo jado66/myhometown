@@ -45,6 +45,11 @@ import LoveAndLogicIcon from "@/assets/svg/icons/LoveandLogicIcon";
 import LearningTreeIcon from "@/assets/svg/icons/LearningTreeIcon";
 import EverydayStrongIcon from "@/assets/svg/icons/EverydayStrongIcon";
 import { useState } from "react";
+import SelfDefenseIcon from "@/assets/svg/icons/SelfDefenseIcon";
+import CarIcon from "@/assets/svg/icons/CarIcon";
+import BikeIcon from "@/assets/svg/icons/BikeIcon";
+import WheelsIcon from "@/assets/svg/icons/WheelsIcon";
+import KnitIcon from "@/assets/svg/icons/KnitIcon";
 
 export const ExampleIcons = {
   None: <div style={{ height: "30px", width: "35px" }}> </div>,
@@ -75,6 +80,11 @@ export const ExampleIcons = {
   LoveAndLogicIcon: <LoveAndLogicIcon />,
   LearningTreeIcon: <LearningTreeIcon />,
   EverydayStrongIcon: <EverydayStrongIcon />,
+  SelfDefense: <SelfDefenseIcon />,
+  CarIcon: <CarIcon />,
+  BikeIcon: <BikeIcon />,
+  WheelsIcon: <WheelsIcon />,
+  KnitIcon: <KnitIcon />,
   // Tutoring: <TutoringIcon />,
   // Music: <MusicIcon />,
 
