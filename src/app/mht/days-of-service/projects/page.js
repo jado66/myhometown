@@ -16,10 +16,13 @@ import {
   CircularProgress,
   Alert,
   Checkbox,
+  Tooltip,
 } from "@mui/material";
 import {
   Add as AddIcon,
+  Assignment,
   Delete as DeleteIcon,
+  Report,
   Timeline as TimelineIcon,
 } from "@mui/icons-material";
 import { useLocalStorageProjectForms } from "@/hooks/use-local-storage-project-forms";
@@ -198,6 +201,19 @@ export default function ProjectFormsPage() {
                         )}
                         <IconButton
                           edge="end"
+                          aria-label="generate-report"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toast.info("Coming soon");
+                          }}
+                          sx={{ mr: 1 }}
+                        >
+                          <Tooltip title="Generate Report">
+                            <Assignment />
+                          </Tooltip>
+                        </IconButton>
+                        <IconButton
+                          edge="end"
                           aria-label="delete"
                           onClick={(e) => handleDeleteClick(e, project)}
                           sx={{ mr: 1 }}
@@ -266,6 +282,15 @@ export default function ProjectFormsPage() {
             disabled={isLoading || selectedProjects.length === 0}
           >
             View Project Timelines
+          </Button>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() => toast.info("Coming soon")}
+            startIcon={<Assignment />}
+            disabled={isLoading || selectedProjects.length === 0}
+          >
+            Generate Projects Summary
           </Button>
         </Box>
 

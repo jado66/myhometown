@@ -24,6 +24,8 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  InputAdornment,
+  Alert,
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
@@ -237,31 +239,49 @@ const ProjectForm = () => {
               isMulti={false}
             />
             <TextField
-              label="Project Developer"
+              label="Project Developer(s)"
               fullWidth
               value={formData.projectDeveloper}
               onChange={(e) =>
                 handleInputChange("projectDeveloper", e.target.value)
               }
-              helperText="Name of the person or couple who is developing the project. They will be the main point of contact for the project."
+              helperText="Name of the first person is developing the project. They will be the main point of contact for the project."
             />
             <TextField
-              label="Project Developer Phone Number"
+              label="Project Developer Phone Number 1"
               fullWidth
-              value={formData.projectDeveloperPhone}
+              value={formData.projectDeveloperPhone1}
               onChange={(e) =>
-                handleInputChange("projectDeveloperPhone", e.target.value)
+                handleInputChange("projectDeveloperPhone1", e.target.value)
               }
-              helperText="Phone number of the person or couple who is developing the project."
+              helperText="Phone number of the first person who is developing the project."
             />
             <TextField
-              label="Project Developer Email Address"
+              label="Project Developer Email Address 1 "
               fullWidth
-              value={formData.projectDeveloperEmail}
+              value={formData.projectDeveloperEmail1}
               onChange={(e) =>
-                handleInputChange("projectDeveloperEmail", e.target.value)
+                handleInputChange("projectDeveloperEmail1", e.target.value)
               }
-              helperText="Email address of the person or couple who is developing the project."
+              helperText="Email address of the first person who is developing the project."
+            />
+            <TextField
+              label="Project Developer Phone Number 2"
+              fullWidth
+              value={formData.projectDeveloperPhone2}
+              onChange={(e) =>
+                handleInputChange("projectDeveloperPhone2", e.target.value)
+              }
+              helperText="Phone number of the second person who is developing the project (optional)."
+            />
+            <TextField
+              label="Project Developer Email Address 2"
+              fullWidth
+              value={formData.projectDeveloperEmail2}
+              onChange={(e) =>
+                handleInputChange("projectDeveloperEmail2", e.target.value)
+              }
+              helperText="Email address of the second person or couple who is developing the project (optional)."
             />
             <TextField
               fullWidth
@@ -316,7 +336,7 @@ const ProjectForm = () => {
               Detailed Planning
             </Typography>
             <TextField
-              label="Project Development Couple"
+              label="Resource Couple"
               fullWidth
               value={formData.projectDevelopmentCouple}
               onChange={(e) =>
@@ -325,7 +345,7 @@ const ProjectForm = () => {
             />
 
             <TextField
-              label="Project Development Couple Phone Number (1)"
+              label="Resource Couple Phone Number (1)"
               fullWidth
               value={formData.projectDevelopmentCouplePhone1}
               onChange={(e) =>
@@ -337,7 +357,7 @@ const ProjectForm = () => {
             />
 
             <TextField
-              label="Project Development Couple Email (1)"
+              label="Resource Couple Email (1)"
               fullWidth
               value={formData.projectDevelopmentCoupleEmail1}
               onChange={(e) =>
@@ -349,7 +369,7 @@ const ProjectForm = () => {
             />
 
             <TextField
-              label="Project Development Couple Phone Number (2)"
+              label="Resource Couple Phone Number (2)"
               fullWidth
               value={formData.projectDevelopmentCouplePhone2}
               onChange={(e) =>
@@ -361,7 +381,7 @@ const ProjectForm = () => {
             />
 
             <TextField
-              label="Project Development Couple Email (2)"
+              label="Resource Couple Email (2)"
               fullWidth
               value={formData.projectDevelopmentCoupleEmail2}
               onChange={(e) =>
@@ -422,8 +442,18 @@ const ProjectForm = () => {
               Budget Estimates
             </Typography>
 
+            <Alert severity="info" sx={{ mb: 2 }}>
+              {/* This will dissapear after navigating */}
+              <Typography>
+                Once you enter this budget information and navigate away from
+                this step you will not be able to see this again. Talk to a
+                Resource Developer, or Neighborhood Services Director if this
+                needs to be changed after the fact.
+              </Typography>
+            </Alert>
+
             <TextField
-              label="Resource Budget Description"
+              label="Resource Budget Description "
               fullWidth
               multiline
               rows={4}
@@ -438,7 +468,13 @@ const ProjectForm = () => {
               onChange={(e) =>
                 handleInputChange("budgetEstimates", e.target.value)
               }
+              type="number"
               helperText="Total estimate the cost of the project."
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">$</InputAdornment>
+                ),
+              }}
             />
             <Divider sx={{ my: 1 }} />
 
@@ -460,6 +496,12 @@ const ProjectForm = () => {
               onChange={(e) =>
                 handleInputChange("homeownerAbilityEstimates", e.target.value)
               }
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">$</InputAdornment>
+                ),
+              }}
+              type="number"
               helperText="Total estimate the homeowner's ability to contribute to the project."
             />
           </Box>
@@ -520,7 +562,7 @@ const ProjectForm = () => {
                   </Box>
 
                   <Typography>
-                    <strong>Project Development Couple:</strong>{" "}
+                    <strong>Resource Couple:</strong>{" "}
                     {formData.projectDevelopmentCouple}
                   </Typography>
 
@@ -599,7 +641,7 @@ const ProjectForm = () => {
               </Box>
             </Paper>
 
-            {/* Textfield for project development couple */}
+            {/* Textfield for resource couple */}
 
             {/* Review Confirmation */}
             <FormControl component="fieldset" sx={{ mt: 2 }}>
@@ -615,7 +657,7 @@ const ProjectForm = () => {
                     }
                   />
                 }
-                label="I have reviewed the project information with the project development couple"
+                label="I have reviewed the project information with the resource couple"
               />
             </FormControl>
             <FormControl component="fieldset">
