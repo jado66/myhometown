@@ -11,6 +11,7 @@ import {
 import { Delete, Key } from "@mui/icons-material";
 import JsonViewer from "../util/debug/DebugOutput";
 import UserFormFields from "./UserFormFields";
+import { supabase } from "@/util/supabase";
 
 const initialPermissions = {
   // administrator: false,
@@ -30,40 +31,35 @@ export const UserFormDialog = ({
   loading = false,
 }) => {
   const [formData, setFormData] = useState(initialData);
-  const isEditMode = !!initialData?._id;
+  const isEditMode = !!initialData?.id;
 
   useEffect(() => {
-    if (open) {
-      // Clone the initial data to avoid direct mutation
+    if (open && initialData) {
       let newFormData = { ...initialData };
 
-      // Check if .name exists and split it
-      if (newFormData?.name) {
-        const [first_name, last_name] = newFormData.name.split(" ");
-        newFormData.first_name = first_name || "";
-        newFormData.last_name = last_name || "";
-        delete newFormData.name;
-      }
+      // Fetch city details and populate cities_details
+      if (newFormData.cities) {
+        const fetchCityDetails = async () => {
+          const { data: citiesData, error } = await supabase
+            .from("cities")
+            .select("*")
+            .in("id", newFormData.cities); // Fetch cities with matching IDs
 
-      setFormData(newFormData);
+          if (error) {
+            console.error("Error fetching city details:", error);
+          } else {
+            newFormData.cities_details = citiesData.map((city) => ({
+              value: city.id,
+              label: city.name,
+            }));
+            setFormData(newFormData);
+          }
+        };
+
+        fetchCityDetails();
+      }
     }
   }, [open, initialData]);
-
-  const handlePermissionChange = (permission) => (event) => {
-    onChange({
-      ...userData,
-      permissions: {
-        administrator:
-          permission === "administrator"
-            ? event.target.checked
-            : userData?.permissions?.administrator || false,
-        texting:
-          permission === "texting"
-            ? event.target.checked
-            : userData?.permissions?.texting || false,
-      },
-    });
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -78,7 +74,11 @@ export const UserFormDialog = ({
 
       <form onSubmit={handleSubmit}>
         <DialogContent>
-          <UserFormFields userData={formData} onChange={setFormData} />
+          <UserFormFields
+            userData={formData}
+            onChange={setFormData}
+            isNewUser={!isEditMode}
+          />
         </DialogContent>
 
         <DialogActions

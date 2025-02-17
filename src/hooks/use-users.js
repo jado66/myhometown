@@ -70,27 +70,39 @@ const useUsers = () => {
     setError(null);
 
     try {
-      // First, create the auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: userData.email,
-        password: userData.password, // You'll need to modify your form to include this
+      // Create invitation link for the user
+      const response = await fetch("/api/auth/invite", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: userData.email,
+          firstName: userData.first_name,
+          lastName: userData.last_name,
+        }),
       });
 
-      if (authError) throw authError;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to send invitation");
+      }
 
-      // Then, add the user profile data
+      const { data: inviteData } = await response.json();
+
+      // Add or update the user profile data
       const { data, error: dbError } = await supabase
         .from("users")
-        .insert([
+        .upsert([
           {
-            id: authData.user.id, // Use the auth user ID
+            id: inviteData.user.id,
             email: userData.email,
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            contactNumber: userData.contactNumber,
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+            contact_number: userData.contact_number,
             permissions: userData.permissions,
-            cities: userData.cities,
-            communities: userData.communities,
+            cities: userData.cities?.map((c) => c.id) || [],
+            communities: userData.communities?.map((c) => c.id) || [],
           },
         ])
         .select()
@@ -99,7 +111,7 @@ const useUsers = () => {
       if (dbError) throw dbError;
 
       setUsers((prevUsers) => [...prevUsers, { ...data, id: data.id }]);
-      toast.success("User created successfully");
+      toast.success("User invited successfully");
       return { success: true, data };
     } catch (err) {
       setError(err.message);
@@ -114,14 +126,6 @@ const useUsers = () => {
     setLoading(true);
     setError(null);
 
-    const { data: checkUser, error: checkError } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", "909e641b-8926-49ec-b69d-c4e55c367322")
-      .single();
-
-    console.log("Check user result:", checkUser, checkError);
-
     try {
       console.log("Editing user with ID:", userData.id);
 
@@ -131,14 +135,6 @@ const useUsers = () => {
         administrator: userData.permissions?.administrator === true,
       };
 
-      // Format the communities array to ensure it matches the database schema
-      const formattedCommunities = userData.communities.map(
-        (community) => community.id
-      );
-
-      // Format the cities array to ensure it matches the database schema
-      const formattedCities = userData.cities.map((city) => city.id);
-
       // Update the user in the database
       const { data, error } = await supabase
         .from("users")
@@ -147,8 +143,8 @@ const useUsers = () => {
           last_name: userData.last_name,
           contact_number: userData.contact_number,
           permissions: formattedPermissions, // Use formatted permissions
-          cities: formattedCities, // Use formatted cities
-          communities: formattedCommunities, // Use formatted communities
+          cities: userData.cities.map((c) => c.id), // Use the provided cities
+          communities: userData.communities.map((c) => c.id), // Use the provided communities
         })
         .eq("id", userData.id) // Ensure this matches the database `id`
         .select() // Select the updated row

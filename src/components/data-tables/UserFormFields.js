@@ -32,14 +32,20 @@ const UserFormFields = ({
   const handleCityChange = (selectedCities) => {
     onChange({
       ...userData,
-      cities: selectedCities.map((city) => city.value),
+      cities:
+        selectedCities.map((city) => {
+          return { id: city.value, name: city.label, state: "Utah" };
+        }) || [],
     });
   };
 
   const handleCommunityChange = (selectedCommunities) => {
     onChange({
       ...userData,
-      communities: selectedCommunities.map((community) => community.value),
+      communities:
+        selectedCommunities.map((community) => {
+          return { id: community.value, name: community.label };
+        }) || [],
     });
   };
 
@@ -56,22 +62,6 @@ const UserFormFields = ({
           fullWidth
         />
       </FormControl>
-
-      {isNewUser && (
-        <FormControl fullWidth>
-          <TextField
-            label="Password"
-            type="password"
-            value={userData?.password || ""}
-            onChange={(e) =>
-              onChange({ ...userData, password: e.target.value })
-            }
-            error={!!errors.password}
-            helperText={errors.password}
-            fullWidth
-          />
-        </FormControl>
-      )}
 
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
@@ -152,9 +142,10 @@ const UserFormFields = ({
         <Typography variant="subtitle2" sx={{ mb: 1 }}>
           Cities
         </Typography>
+
         <CitySelect
           value={
-            userData?.cities_details?.map((city) => ({
+            userData?.cities?.map((city) => ({
               value: city.id,
               label: city.name,
             })) || []
@@ -173,7 +164,7 @@ const UserFormFields = ({
         </Typography>
         <CommunitySelect
           value={
-            userData?.communities_details?.map((community) => ({
+            userData?.communities?.map((community) => ({
               value: community.id,
               label: community.name,
             })) || []
