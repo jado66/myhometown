@@ -41,61 +41,67 @@ const ImpersonateUser = () => {
   };
 
   return (
-    <Grid container justifyContent="center" style={{ marginY: "20px" }}>
+    <Grid
+      container
+      justifyContent="center"
+      style={{
+        marginY: "20px",
+        height: "80vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <Grid item xs={12} sm={8} md={6} sx={{ my: 3 }}>
-        <Card>
-          <CardContent>
-            <Typography
-              variant="h5"
-              component="div"
-              gutterBottom
-              textAlign="center"
-            >
-              Current user: {user?.email}
-            </Typography>
+        <Typography
+          variant="h5"
+          component="div"
+          gutterBottom
+          textAlign="center"
+        >
+          Current user: {user?.email}
+        </Typography>
 
-            <Typography
-              variant="h5"
-              component="div"
-              gutterBottom
-              textAlign="center"
-            >
-              Impersonate User
-            </Typography>
+        <Typography
+          variant="h5"
+          component="div"
+          gutterBottom
+          textAlign="center"
+        >
+          Impersonate User
+        </Typography>
 
-            <UserSelect
-              value={newUser}
-              onChange={(value) => setUser(value)}
-              defaultValue={user}
-              isMulti={false}
-            />
+        <UserSelect
+          value={newUser}
+          onChange={(value) => setUser(value)}
+          defaultValue={user}
+          isMulti={false}
+        />
 
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              onClick={handleSubmit}
-              disabled={loading || !newUser}
-              sx={{ mt: 3 }}
-            >
-              {isImpersonating ? "Impersonate " : "Start Impersonating"}{" "}
-              {newUser?.label}
-            </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          onClick={handleSubmit}
+          disabled={loading || !newUser}
+          sx={{ mt: 3 }}
+        >
+          {isImpersonating ? "Impersonate " : "Start Impersonating"}{" "}
+          {newUser?.label}
+        </Button>
 
-            <Divider sx={{ my: 3 }} />
+        <Divider sx={{ my: 3 }} />
 
-            {isImpersonating && (
-              <Button
-                variant="outlined"
-                color="primary"
-                fullWidth
-                onClick={handleStopImpersonation}
-              >
-                Stop Impersonating User
-              </Button>
-            )}
-          </CardContent>
-        </Card>
+        {isImpersonating && (
+          <Button
+            variant="outlined"
+            color="primary"
+            fullWidth
+            onClick={handleStopImpersonation}
+          >
+            Stop Impersonating User
+          </Button>
+        )}
       </Grid>
     </Grid>
   );

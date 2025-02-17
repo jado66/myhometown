@@ -53,7 +53,7 @@ const useUsers = () => {
 
       const selectOptions = formattedUsers.map((user) => ({
         value: user.id,
-        label: `${user.firstName} ${user.lastName}`,
+        label: `${user.first_name} ${user.last_name}`,
         data: user,
       }));
       setUserSelectOptions(selectOptions);
