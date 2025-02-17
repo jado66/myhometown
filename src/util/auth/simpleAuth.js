@@ -21,7 +21,7 @@ export const isAuthenticated = (communityId, isCity = false) => {
     // Check if token is expired (1 month)
     const tokenData = atob(token);
     const timestamp = parseInt(tokenData.split("-")[1]);
-    const oneMonthAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const oneMonthAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
 
     return timestamp > oneMonthAgo;
   } catch (e) {

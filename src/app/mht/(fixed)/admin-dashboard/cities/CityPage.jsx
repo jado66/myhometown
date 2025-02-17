@@ -466,9 +466,10 @@ export function SingleCity({ city, goToEditCity, handleEditCity }) {
                 variant="outlined"
                 color="primary"
                 size="large"
-                href={`/edit/${city.state.toLowerCase()}/${city.name
-                  .toLowerCase()
-                  .replaceAll(/\s/g, "-")}`}
+                href={
+                  process.env.NEXT_PUBLIC_DOMAIN +
+                  `/edit/utah/${city.name.toLowerCase().replaceAll(/\s/g, "-")}`
+                }
               >
                 Edit City Page
               </Button>
@@ -476,10 +477,10 @@ export function SingleCity({ city, goToEditCity, handleEditCity }) {
                 sx={{ mx: "auto", mb: 2 }}
                 variant="outlined"
                 color="primary"
-                size="large"
-                href={`/${city.state.toLowerCase()}/${city.name
-                  .toLowerCase()
-                  .replaceAll(/\s/g, "-")}`}
+                href={
+                  process.env.NEXT_PUBLIC_DOMAIN +
+                  `/utah/${city.name.toLowerCase().replaceAll(/\s/g, "-")}`
+                }
               >
                 View City Page
               </Button>
