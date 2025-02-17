@@ -110,7 +110,20 @@ const useUsers = () => {
 
       if (dbError) throw dbError;
 
-      setUsers((prevUsers) => [...prevUsers, { ...data, id: data.id }]);
+      setUsers((prevUsers) => [
+        ...prevUsers,
+        {
+          ...data,
+          id: data.id,
+          cities: userData.cities,
+          communities: userData.communities,
+          cities_details: userData.cities.map((c) => {
+            return { ...c, state: "Utah" };
+          }), // Use the provided cities
+          communities_details: userData.communities,
+        },
+      ]);
+
       toast.success("User invited successfully");
       return { success: true, data };
     } catch (err) {

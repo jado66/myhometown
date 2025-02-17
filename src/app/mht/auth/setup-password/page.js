@@ -23,13 +23,31 @@ const SetupPasswordPage = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [tokenExpired, setTokenExpired] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+
+    // Check for error parameters in URL
+    const error = searchParams.get("error");
+    const errorCode = searchParams.get("error_code");
+    const errorDescription = searchParams.get("error_description");
+
+    if (error === "access_denied" && errorCode === "otp_expired") {
+      setTokenExpired(true);
+      setError(
+        "Your invitation link has expired. Please request a new invitation from your administrator."
+      );
+    } else if (error) {
+      setError(
+        errorDescription?.replace(/\+/g, " ") ||
+          "Invalid or expired invitation link"
+      );
+    }
+  }, [searchParams]);
 
   const handleTogglePassword = (field) => {
     if (field === "password") {
@@ -81,13 +99,23 @@ const SetupPasswordPage = () => {
         throw new Error(passwordError);
       }
 
-      // Get the token from the URL
-      const token = searchParams.get("token");
-      if (!token) {
-        throw new Error("No recovery token found");
+      // Get current session
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        throw sessionError;
       }
 
-      // Update the password using the recovery token
+      if (!session) {
+        throw new Error(
+          "No active session found. Please try clicking the link from your email again."
+        );
+      }
+
+      // Update the password
       const { error: updateError } = await supabase.auth.updateUser({
         password: password,
       });
@@ -99,6 +127,7 @@ const SetupPasswordPage = () => {
       // Redirect to the admin dashboard
       router.push(process.env.NEXT_PUBLIC_DOMAIN + "/admin-dashboard");
     } catch (error) {
+      console.error("Password setup error:", error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -107,6 +136,62 @@ const SetupPasswordPage = () => {
 
   if (!mounted) {
     return null;
+  }
+
+  // If token is expired, only show the error message and return button
+  if (tokenExpired) {
+    return (
+      <Container component="main" maxWidth="xs">
+        <Box
+          sx={{
+            marginTop: 8,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Paper
+            elevation={3}
+            sx={{
+              padding: 4,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
+            <Box sx={{ mb: 3 }}>
+              <img
+                src="/svgs/Primary_Logo_Black_Text.svg"
+                alt="MyHometown"
+                style={{ height: "60px", width: "auto" }}
+              />
+            </Box>
+
+            <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
+              Link Expired
+            </Typography>
+
+            <Typography color="error" sx={{ mb: 3, textAlign: "center" }}>
+              {error}
+            </Typography>
+
+            <Button
+              variant="contained"
+              onClick={() => router.push(process.env.NEXT_PUBLIC_DOMAIN)}
+              sx={{
+                backgroundColor: "#318d43",
+                "&:hover": {
+                  backgroundColor: "#4ab55f",
+                },
+              }}
+            >
+              Return to Login
+            </Button>
+          </Paper>
+        </Box>
+      </Container>
+    );
   }
 
   return (
@@ -151,9 +236,28 @@ const SetupPasswordPage = () => {
             sx={{ width: "100%" }}
           >
             {error && (
-              <Typography color="error" sx={{ mb: 2 }}>
-                {error}
-              </Typography>
+              <Box sx={{ mb: 3, textAlign: "center" }}>
+                <Typography color="error" sx={{ mb: 2 }}>
+                  {error}
+                </Typography>
+                {tokenExpired && (
+                  <Button
+                    variant="outlined"
+                    onClick={() => router.push(process.env.NEXT_PUBLIC_DOMAIN)}
+                    sx={{
+                      mt: 1,
+                      color: "#318d43",
+                      borderColor: "#318d43",
+                      "&:hover": {
+                        borderColor: "#4ab55f",
+                        backgroundColor: "rgba(49, 141, 67, 0.04)",
+                      },
+                    }}
+                  >
+                    Return to Login
+                  </Button>
+                )}
+              </Box>
             )}
 
             <TextField
