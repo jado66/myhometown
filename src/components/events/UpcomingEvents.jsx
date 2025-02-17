@@ -38,11 +38,16 @@ const UpcomingEvents = ({
 
   // Sort events by start date, then slice array to contain at most maxEvents items
   const sortedEvents = [...events]
-    .filter(
-      (event) =>
-        moment(event.end).isAfter(moment()) && !event.hideOnUpcomingEvents
-    )
-    .sort((a, b) => new Date(a.start) - new Date(b.start))
+    .filter((event) => {
+      const eventEnd = moment(event.end_time); // Fallback to event.end_time if event.end is missing
+      const isAfterToday = eventEnd.isAfter(moment());
+
+      return isAfterToday && !event.hide_on_upcoming_events; // Use the correct field name
+    })
+    .sort(
+      (a, b) =>
+        new Date(a.start || a.start_time) - new Date(b.start || b.start_time)
+    ) // Fallback to start_time if start is missing
     .slice(0, maxEvents);
 
   if (isLoading) {
@@ -110,11 +115,11 @@ const UpcomingEvents = ({
 export default UpcomingEvents;
 
 const UpcomingEventCard = ({ event, dateFormatter, onSelect }) => {
-  const startDateObj = new Date(event.start);
-  const endDateObj = event.end ? new Date(event.end) : null;
+  const startDateObj = new Date(event.start_time);
+  const endDateObj = event.end_time ? new Date(event.end_time) : null;
 
   // Check if they are valid date objects
-  if (isNaN(startDateObj) || (event.end && isNaN(endDateObj))) {
+  if (isNaN(startDateObj) || (event.end_time && isNaN(endDateObj))) {
     return null;
   }
 

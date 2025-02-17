@@ -32,18 +32,15 @@ import { VolunteerSignUps } from "@/components/VolunteerSignUps";
 import { LightBox } from "@/components/LightBox";
 import { MaintenanceMode } from "@/views/supportingPages";
 import { LoadedClassesProvider } from "@/contexts/LoadedClassesProvider";
-import { useSearchParams } from "next/navigation";
-import JsonViewer from "@/components/util/debug/DebugOutput";
 import { useEvents } from "@/hooks/useEvents";
 import MarketingItem from "@/components/community/MarketingItem";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// export const dynamic = "force-dynamic";
+// export const revalidate = 0;
 
 const Page = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params; //TODO change me to stateQuery... VsCode hates renaming folders
   const [selectedImage, setSelectedImage] = useState();
-  const searchParams = useSearchParams(); // Add this hook
 
   const {
     community,

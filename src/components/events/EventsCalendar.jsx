@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useEffect } from "react";
+import React, { useMemo, useCallback, useEffect, useState } from "react";
 import { Calendar, momentLocalizer, Views } from "react-big-calendar";
 import moment from "moment";
 import { Grid, styled, Typography, Card, Box, Button } from "@mui/material";
@@ -66,6 +66,9 @@ const expandRecurringEvent = (event) => {
           // Regular weekly recurrence
           acc.byweekday = value.split(",").map((day) => RRule[day]);
         }
+      } else if (key === "UNTIL") {
+        // Parse the UNTIL date
+        acc.until = new Date(value);
       }
       return acc;
     }, {});
@@ -78,8 +81,10 @@ const expandRecurringEvent = (event) => {
 
     console.log("RRule Options:", ruleOptions); // Debug log
 
-    // Get all occurrences
-    const dates = rrule.all();
+    // Get all occurrences within a reasonable timeframe (e.g., one year from the start date)
+    const endDate =
+      ruleOptions.until || moment(event.start_time).add(1, "year").toDate();
+    const dates = rrule.between(new Date(event.start_time), endDate);
 
     // Create an event instance for each occurrence
     return dates.map((date) => {
@@ -124,6 +129,8 @@ export const EventsCalendar = ({
   startCreatingNewEvent,
   isEdit,
 }) => {
+  const [formattedEvents, setFormattedEvents] = useState([]);
+
   const { defaultDate, views } = useMemo(
     () => ({
       defaultDate: new Date(),
@@ -169,19 +176,44 @@ export const EventsCalendar = ({
     [onSelectEvent]
   );
 
-  // Expand recurring events and format all events
-  const formattedEvents = useMemo(() => {
-    const eventsArray = Array.isArray(events) ? events : [];
-    const allEvents = eventsArray.reduce((acc, event) => {
-      const expandedEvents = expandRecurringEvent({
-        ...event,
-        start: new Date(event.start_time),
-        end: new Date(event.end_time),
-      });
-      return [...acc, ...expandedEvents];
-    }, []);
-    return allEvents;
+  useEffect(() => {
+    if (events) {
+      const startTime = performance.now();
+
+      const eventsArray = Array.isArray(events) ? events : [];
+
+      const allEvents = eventsArray.reduce((acc, event) => {
+        if (!event.recurrence_rule) {
+          return [
+            ...acc,
+            {
+              ...event,
+              start: new Date(event.start_time),
+              end: new Date(event.end_time),
+            },
+          ];
+        }
+
+        const expandedEvents = expandRecurringEvent({
+          ...event,
+          start: new Date(event.start_time),
+          end: new Date(event.end_time),
+        });
+        return [...acc, ...expandedEvents];
+      }, []);
+
+      setFormattedEvents(allEvents);
+
+      const endTime = performance.now();
+
+      console.log(`Event processing took ${endTime - startTime}ms`);
+      console.log(
+        `Processed ${eventsArray.length} original events into ${allEvents.length} total events`
+      );
+    }
   }, [events]);
+
+  // Expand recurring events and format all events
 
   if (isLoading) {
     return <Loading />;
