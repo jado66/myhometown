@@ -65,7 +65,7 @@ function ManagementContent() {
   };
 
   const handleConfirmDelete = async () => {
-    const result = await handleDeleteUser(userToDelete._id);
+    const result = await handleDeleteUser(userToDelete.id);
     if (result.success) {
       setShowConfirmDelete(false);
       setUserToDelete(null);

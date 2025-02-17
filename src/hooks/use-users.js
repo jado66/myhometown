@@ -160,7 +160,18 @@ const useUsers = () => {
       // Update the local state with the updated user data
       setUsers((prevUsers) =>
         prevUsers.map((u) =>
-          u.id === userData.id ? { ...data, id: data.id } : u
+          u.id === userData.id
+            ? {
+                ...data,
+                id: data.id,
+                cities: userData.cities,
+                communities: userData.communities,
+                cities_details: userData.cities.map((c) => {
+                  return { ...c, state: "Utah" };
+                }), // Use the provided cities
+                communities_details: userData.communities,
+              }
+            : u
         )
       );
 

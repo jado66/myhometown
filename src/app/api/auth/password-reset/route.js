@@ -73,7 +73,7 @@ const formattedHtml = (email, resetLink) => {
         </div>
         <div class="content">
           <p>Hello,</p>
-          <p>We received a request to reset the password for your MyHometown account associated with ${email}.</p>
+          <p>We received a request to reset the password for your myHometown account associated with ${email}.</p>
           <p>Click the button below to reset your password. This link will expire in 24 hours.</p>
           <p style="text-align: center;">
             <a href="${resetLink}" class="button" style="color: #ffffff">Reset Your Password</a>
@@ -83,7 +83,7 @@ const formattedHtml = (email, resetLink) => {
         </div>
         <div class="footer">
           <p>This is an automated message, please do not reply to this email.</p>
-          <p>&copy; ${new Date().getFullYear()} MyHometown. All rights reserved.</p>
+          <p>&copy; ${new Date().getFullYear()} myHometown. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -114,7 +114,7 @@ export async function POST(request) {
     // Send the custom formatted email
     const info = await myHometownTransporter.sendMail({
       to: email,
-      subject: "Reset Your MyHometown Password",
+      subject: "Reset Your myHometown Password",
       html: formattedHtml(email, resetLink),
     });
 

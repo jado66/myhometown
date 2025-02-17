@@ -14,7 +14,7 @@ const formattedInviteHtml = (email, firstName, lastName, inviteLink) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Welcome to MyHometown</title>
+      <title>Welcome to myHometown</title>
       <style>
         body {
           font-family: Arial, sans-serif;
@@ -63,11 +63,11 @@ const formattedInviteHtml = (email, firstName, lastName, inviteLink) => {
     <body>
       <div class="container">
         <div class="header">
-          <h1>Welcome to MyHometown!</h1>
+          <h1>Welcome to myHometown!</h1>
         </div>
         <div class="content">
           <p>Hello ${firstName} ${lastName},</p>
-          <p>You've been invited to join MyHometown. To get started, click the button below to set up your account.</p>
+          <p>You've been invited to join myHometown Admin Dashboard. To get started, click the button below to set up your account.</p>
           <p style="text-align: center;">
             <a href="${inviteLink}" class="button" style="color: #ffffff">Set Up Your Account</a>
           </p>
@@ -76,7 +76,7 @@ const formattedInviteHtml = (email, firstName, lastName, inviteLink) => {
         </div>
         <div class="footer">
           <p>This is an automated message, please do not reply to this email.</p>
-          <p>&copy; ${new Date().getFullYear()} MyHometown. All rights reserved.</p>
+          <p>&copy; ${new Date().getFullYear()} myHometown. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -164,7 +164,7 @@ export async function POST(request) {
     // Send our custom formatted invitation email
     const info = await myHometownTransporter.sendMail({
       to: email,
-      subject: "Welcome to MyHometown - Set Up Your Account",
+      subject: "Welcome to myHometown - Set Up Your Account",
       html: formattedInviteHtml(
         email,
         firstName,
