@@ -1144,7 +1144,7 @@ const Page = ({ params }) => {
         {/* <pre>{JSON.stringify(events, null, 4)}</pre> */}
 
         <UpcomingEvents
-          events={communityData.events}
+          events={events}
           maxEvents={5}
           isEdit
           onSelect={onSelectEvent}

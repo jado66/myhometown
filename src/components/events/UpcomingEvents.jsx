@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import Loading from "../util/Loading";
 import moment from "moment";
+import JsonViewer from "../util/debug/DebugOutput";
 
 const UpcomingEvents = ({
   events = [],
@@ -88,6 +89,8 @@ const UpcomingEvents = ({
       >
         Upcoming Events
       </Typography>
+
+      <JsonViewer data={sortedEvents} />
       <List>
         {sortedEvents.map((event, index) => {
           return (
@@ -115,11 +118,11 @@ const UpcomingEvents = ({
 export default UpcomingEvents;
 
 const UpcomingEventCard = ({ event, dateFormatter, onSelect }) => {
-  const startDateObj = new Date(event.start_time);
-  const endDateObj = event.end_time ? new Date(event.end_time) : null;
+  const startDateObj = new Date(event.start);
+  const endDateObj = event.end ? new Date(event.end) : null;
 
   // Check if they are valid date objects
-  if (isNaN(startDateObj) || (event.end_time && isNaN(endDateObj))) {
+  if (isNaN(startDateObj) || (event.end && isNaN(endDateObj))) {
     return null;
   }
 
