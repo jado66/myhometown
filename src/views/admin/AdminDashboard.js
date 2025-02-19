@@ -119,6 +119,13 @@ const AdminDashboardPages = () => {
                   media: "/school.png",
                   href: rootUrl + "/admin-dashboard/classes",
                 },
+                {
+                  title: "Classes and Rolls",
+                  subtitle:
+                    "View your classes and rolls. Take attendance and manage your classes.",
+                  media: "/days-of-service.png",
+                  href: rootUrl + "/admin-dashboard/days-of-service",
+                },
                 // {
                 //   title: "Volunteer Signups",
                 //   subtitle:
