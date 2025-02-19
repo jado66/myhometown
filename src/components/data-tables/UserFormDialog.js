@@ -97,14 +97,14 @@ export const UserFormDialog = ({
               >
                 Delete User
               </Button>
-              <Button
+              {/* <Button
                 onClick={() => onPasswordReset(formData.email)}
                 color="warning"
                 disabled={loading}
                 startIcon={<Key />}
               >
                 Reset Password
-              </Button>
+              </Button> */}
             </Box>
           )}
           <Box>

@@ -383,8 +383,12 @@ export default function ClassList({ community, searchTerm, viewType }) {
     }
   };
 
-  if (!community.classes.length)
-    return <Typography>No classes found for this community</Typography>;
+  if (!community?.classes.length)
+    return (
+      <Typography sx={{ mb: 4 }}>
+        No classes found for this community
+      </Typography>
+    );
 
   return (
     <>

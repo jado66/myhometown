@@ -1,4 +1,5 @@
 "use client";
+import { supabase } from "@/util/supabase";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
@@ -21,6 +22,41 @@ export function useCommunities(userfilter, forDropDownCommunityMenu = false) {
 
     setCommunitySelectOptions(selectOptions);
   }, [communities]);
+
+  async function fetchNewCommunities({ query = null }) {
+    try {
+      let baseQuery = supabase.from("communities").select(`
+        *,
+        cities!communities_city_id_fkey (
+          city_name:name
+        )`);
+
+      // Apply the query if provided
+      if (query) {
+        baseQuery = query(baseQuery);
+      }
+
+      const { data: citiesData, error } = await baseQuery;
+
+      if (error) {
+        throw error;
+      }
+
+      // Remove the nested cities object and flatten the city_name
+      const flattenedData = citiesData?.map((community) => {
+        const { cities, ...rest } = community;
+        return {
+          ...rest,
+          city_name: cities?.city_name,
+        };
+      });
+
+      return { data: flattenedData, error: null };
+    } catch (error) {
+      console.error("Error fetching communities:", error);
+      return { data: null, error };
+    }
+  }
 
   async function fetchCommunitiesByCity(city) {
     const response = await fetch("/api/database/communities/by-city", {
@@ -209,6 +245,7 @@ export function useCommunities(userfilter, forDropDownCommunityMenu = false) {
     handleAddCommunity,
     handleEditCommunity,
     handleDeleteCommunity,
+    fetchNewCommunities,
     getCommunity,
     loading,
     error,

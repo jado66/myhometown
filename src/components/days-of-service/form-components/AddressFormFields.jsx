@@ -65,6 +65,10 @@ const US_STATES = [
 ].sort((a, b) => a.name.localeCompare(b.name));
 
 const isValidZipCode = (zip) => {
+  if (!zip) {
+    return false;
+  }
+
   const cleanZip = zip.replace(/[^\d]/g, "");
   return cleanZip.length === 5 || cleanZip.length === 9;
 };

@@ -1,14 +1,14 @@
-//  use dynamic import with no ssr
-
 import dynamic from "next/dynamic";
 
-// import  ./CommunitySelection.jsx
-const CitySelect = dynamic(() => import("./CitySelection"), {
-  ssr: false,
-});
+const CommunitySelect = dynamic(
+  () => import("@/components/admin/CommunitySelection"),
+  {
+    ssr: false,
+  }
+);
 
 const Page = () => {
-  return <CitySelect />;
+  return <CommunitySelect type={"days-of-service"} />;
 };
 
 export default Page;

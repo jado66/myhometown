@@ -27,6 +27,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Close, Settings } from "@mui/icons-material";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { useDaysOfService } from "@/hooks/useDaysOfService";
 
 const API_BASE_URL = "/api/database/project-forms";
 
@@ -78,13 +79,18 @@ const defaultTasks = [
   },
 ];
 
-export default function ConfigurableStatusTable() {
+export default function ConfigurableStatusTable({ communityId, date }) {
+  const [dayOfService, setDayOfService] = useState(null);
+
+  const { fetchDayOfService } = useDaysOfService();
+
   const searchParams = useSearchParams();
   const router = useRouter();
   const [projects, setProjects] = useState([]);
   const [refresh, setRefresh] = useState(0);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [isProjectsloading, setProjectsLoading] = useState(true);
+  const [isDaysOfServiceLoading, setDaysOfServiceLoading] = useState(true);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editorContent, setEditorContent] = useLocalStorage(
     "editorConfig",
@@ -106,6 +112,35 @@ export default function ConfigurableStatusTable() {
 
   const tableRef = useRef(null);
   const projectColumnRef = useRef(null);
+
+  useEffect(() => {
+    const fetchDays = async () => {
+      try {
+        const { data, error } = await fetchDayOfService(
+          `${communityId}_${date}`
+        );
+
+        if (error) throw error;
+        setDayOfService(data);
+
+        if (data.start_date) {
+          const formattedStartDate = formatDateString(data.start_date);
+          if (formattedStartDate) setStartDate(formattedStartDate);
+        }
+
+        if (data.end_date) {
+          const formattedEndDate = formatDateString(data.end_date);
+          if (formattedEndDate) setEndDate(formattedEndDate);
+        }
+
+        setDaysOfServiceLoading(false);
+      } catch (error) {
+        console.error("Error fetching days of service:", error);
+      }
+    };
+
+    fetchDays();
+  }, [communityId, date]);
 
   // Calculate column widths based on daysToComplete
   const getColumnWidths = useCallback(
@@ -130,7 +165,11 @@ export default function ConfigurableStatusTable() {
       );
 
       // if any columnWidths is less than 32 show a display error
-      if (columnWidths.some((width) => width < 32)) {
+      if (columnWidths.some((width) => width < 0)) {
+        setDisplayError(
+          `The configuration is invalid. There are ${totalDays} days to complete the tasks but some tasks are configured to take longer than that.`
+        );
+      } else if (columnWidths.some((width) => width < 32)) {
         setDisplayError("Some columns are too narrow to display properly");
       } else {
         setDisplayError(null);
@@ -240,7 +279,7 @@ export default function ConfigurableStatusTable() {
     const fetchProjects = async () => {
       const projectIds = searchParams.get("projects")?.split(",") || [];
       if (projectIds.length === 0) {
-        setLoading(false);
+        setProjectsLoading(false);
         setError("No projects selected");
         return;
       }
@@ -253,7 +292,7 @@ export default function ConfigurableStatusTable() {
       } catch (err) {
         setError("Failed to fetch project data");
       } finally {
-        setLoading(false);
+        setProjectsLoading(false);
         const timeout = setTimeout(() => setRefresh((prev) => prev + 1), 1000);
         return () => clearTimeout(timeout);
       }
@@ -263,41 +302,41 @@ export default function ConfigurableStatusTable() {
     // runTests();
   }, [searchParams, getProjectForm]);
 
-  useEffect(() => {
-    const tableElement = tableRef.current;
-    const projectColumnElement = projectColumnRef.current;
+  // useEffect(() => {
+  //   const tableElement = tableRef.current;
+  //   const projectColumnElement = projectColumnRef.current;
 
-    if (!tableElement || !projectColumnElement) return;
+  //   if (!tableElement || !projectColumnElement) return;
 
-    const updateDimensions = () => {
-      const tableWidth = tableElement.getBoundingClientRect().width;
-      const projectColumnWidth =
-        projectColumnElement.getBoundingClientRect().width;
+  //   const updateDimensions = () => {
+  //     const tableWidth = tableElement.getBoundingClientRect().width;
+  //     const projectColumnWidth =
+  //       projectColumnElement.getBoundingClientRect().width;
 
-      const { columnWidths, maxWidthMap } = getColumnWidths(
-        tableWidth,
-        projectColumnWidth
-      );
-      setColumnWidths(columnWidths);
-      setMaxWidthMap(maxWidthMap);
-      setTodayPosition(calculateTodayPosition());
-    };
+  //     const { columnWidths, maxWidthMap } = getColumnWidths(
+  //       tableWidth,
+  //       projectColumnWidth
+  //     );
+  //     setColumnWidths(columnWidths);
+  //     setMaxWidthMap(maxWidthMap);
+  //     setTodayPosition(calculateTodayPosition());
+  //   };
 
-    // Create a ResizeObserver instance
-    const resizeObserver = new ResizeObserver(updateDimensions);
+  //   // Create a ResizeObserver instance
+  //   const resizeObserver = new ResizeObserver(updateDimensions);
 
-    // Observe the table element
-    resizeObserver.observe(tableElement);
+  //   // Observe the table element
+  //   resizeObserver.observe(tableElement);
 
-    // Initial calculation
-    setTimeout(updateDimensions, 5000);
+  //   // Initial calculation
+  //   setTimeout(updateDimensions, 5000);
 
-    // Cleanup observer on unmount
-    return () => {
-      resizeObserver.unobserve(tableElement);
-      resizeObserver.disconnect();
-    };
-  }, [refresh, editorContent]);
+  //   // Cleanup observer on unmount
+  //   return () => {
+  //     resizeObserver.unobserve(tableElement);
+  //     resizeObserver.disconnect();
+  //   };
+  // }, [refresh, editorContent]);
 
   useEffect(() => {
     if (projects.length > 0) {
@@ -317,17 +356,20 @@ export default function ConfigurableStatusTable() {
   }, [projects]);
 
   useEffect(() => {
+    if (isProjectsloading || isDaysOfServiceLoading) {
+      return;
+    }
+
     const updateDimensions = () => {
       if (tableRef.current && projectColumnRef.current) {
         const tableWidth = tableRef.current.getBoundingClientRect().width;
         const projectColumnWidth =
           projectColumnRef.current.getBoundingClientRect().width;
-        const { columnWidths, maxWidthMap } = getColumnWidths(
+        const { columnWidths } = getColumnWidths(
           tableWidth,
           projectColumnWidth
         );
         setColumnWidths(columnWidths);
-        setMaxWidthMap(maxWidthMap);
         setTodayPosition(calculateTodayPosition());
       }
     };
@@ -335,7 +377,12 @@ export default function ConfigurableStatusTable() {
     updateDimensions();
 
     return () => window.removeEventListener("resize", updateDimensions);
-  }, [getColumnWidths, calculateTodayPosition]);
+  }, [
+    getColumnWidths,
+    calculateTodayPosition,
+    isDaysOfServiceLoading,
+    isProjectsloading,
+  ]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -395,14 +442,14 @@ export default function ConfigurableStatusTable() {
 
     // setTimeout and refresh the entire page
     setTimeout(() => {
-      setLoading(true);
+      setProjectsLoading(true);
       window.location.reload();
     }, 5000);
   };
 
   const statusesByGroup = projects.map((project) => getProjectStatus(project));
 
-  if (loading) {
+  if (isProjectsloading || isDaysOfServiceLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
         <CircularProgress />
@@ -425,15 +472,19 @@ export default function ConfigurableStatusTable() {
           type="date"
           label="Start Date"
           value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
           InputLabelProps={{ shrink: true }}
+          InputProps={{
+            readOnly: true,
+          }}
         />
         <TextField
           type="date"
           label="End Date"
           value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
           InputLabelProps={{ shrink: true }}
+          InputProps={{
+            readOnly: true,
+          }}
         />
         <Box sx={{ flex: 1 }} />
         <Tooltip title="Configure Tasks">
@@ -445,8 +496,11 @@ export default function ConfigurableStatusTable() {
 
       <JsonViewer
         data={{
-          maxWidthMap,
+          projects,
+          tasks,
+          statusesByGroup,
           columnWidths,
+          todayPosition,
         }}
       />
 
@@ -747,30 +801,25 @@ export default function ConfigurableStatusTable() {
 function calculateColumnWidths(tasks, availableWidth, totalDays) {
   const pixelsPerDay = availableWidth / totalDays;
 
+  let maxDaysToComplete = 0;
   // Step 1: Create initial map of maximum widths
-  const maxWidthMap = tasks.map((task) =>
-    task.daysToComplete ? task.daysToComplete * pixelsPerDay : null
-  );
+  // const maxWidthMap = tasks.map((task) =>
+  //   task.daysToComplete ? task.daysToComplete * pixelsPerDay : null
+  // );
 
-  // Step 2: Calculate final widths with redistribution
-  const finalWidths = new Array(tasks.length);
+  const maxWidthMap = tasks.map((task) => {
+    if (task.daysToComplete) {
+      const totalDays = task.daysToComplete - maxDaysToComplete;
+      maxDaysToComplete = Math.max(maxDaysToComplete, task.daysToComplete);
 
-  for (let i = 0; i < tasks.length; i++) {
-    if (maxWidthMap[i] !== null) {
-      // This is a specified task
-      if (i === 0) {
-        finalWidths[i] = maxWidthMap[i];
-      } else if (i === tasks.length) {
-        finalWidths[i] = availableWidth - maxWidthMap[i - 1];
-      } else {
-        finalWidths[i] = maxWidthMap[i] - maxWidthMap[i - 1];
-      }
+      return totalDays * pixelsPerDay;
     }
-  }
+    return (totalDays - maxDaysToComplete) * pixelsPerDay;
+  });
 
   // Handle remaining unspecified tasks after last specified task
 
-  return { columnWidths: finalWidths, maxWidthMap };
+  return { columnWidths: maxWidthMap };
 }
 
 function runTests() {
@@ -906,3 +955,24 @@ function runTests() {
 }
 
 // runTests();
+
+const formatDateString = (dateStr) => {
+  // Remove any quotes from the date string
+  const cleanDate = dateStr.replace(/"/g, "");
+
+  // Check if the date is already in the correct format
+  const isCorrectFormat = /^\d{4}-\d{2}-\d{2}$/.test(cleanDate);
+
+  if (isCorrectFormat) {
+    return cleanDate;
+  }
+
+  // If the date is invalid, return null
+  const date = new Date(cleanDate);
+  if (isNaN(date.getTime())) {
+    return null;
+  }
+
+  // Format the date as YYYY-MM-DD
+  return date.toISOString().split("T")[0];
+};

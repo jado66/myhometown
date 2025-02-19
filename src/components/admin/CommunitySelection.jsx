@@ -21,14 +21,10 @@ import {
   AccordionSummary,
   AccordionDetails,
 } from "@mui/material";
-import Link from "next/link";
-import { Search } from "@mui/icons-material";
-import CommunitySelect from "@/components/data-tables/selects/CommunitySelect";
-import JsonViewer from "@/components/util/debug/DebugOutput";
+
 import { useUser } from "@/hooks/use-user";
 import Loading from "@/components/util/Loading";
 import { useCommunities } from "@/hooks/use-communities";
-import BackButton from "@/components/BackButton";
 import {
   authenticateCommunity,
   CommunityIdToPasswordHash,
@@ -45,14 +41,13 @@ const CityIdToPasswordHash = {
   "West Valley City": "WVC6961!",
 };
 
-const CommunitySelectionPage = () => {
+const CommunitySelectionPage = ({ type = "classes" }) => {
   const searchParams = useSearchParams();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCommunity, setSelectedCommunity] = useState(null);
   const [selectedCommunityName, setSelectedCommunityName] = useState("");
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [selectedCity, setSelectedCity] = useState(null);
   const [authError, setAuthError] = useState("");
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState();
@@ -61,6 +56,8 @@ const CommunitySelectionPage = () => {
 
   const [communities, setCommunities] = useState([]);
   const { user, isAdmin } = useUser();
+
+  const route = type === "classes" ? "classes" : "days-of-service";
 
   const router = useRouter();
   const {
@@ -91,12 +88,6 @@ const CommunitySelectionPage = () => {
     }, {});
   }, [communities, searchTerm]);
 
-  // useEffect(() => {
-  //   if (selectedCommunity) {
-  //     router.push(`/classes/${selectedCommunity._id}`);
-  //   }
-  // }, [selectedCommunity]);
-
   useEffect(() => {
     const fetchCommunities = async () => {
       if (user && isAdmin) {
@@ -118,7 +109,7 @@ const CommunitySelectionPage = () => {
   const handleCityClick = (city) => {
     router.push(
       process.env.NEXT_PUBLIC_DOMAIN +
-        `/admin-dashboard/classes?city=${city
+        `/admin-dashboard/${route}?city=${city
           .toLowerCase()
           .replaceAll(" ", "-")}`,
       undefined,
@@ -127,10 +118,12 @@ const CommunitySelectionPage = () => {
   };
 
   const handleCommunityClick = (community) => {
-    if (isAuthenticated(community._id)) {
+    const isDaysOfService = type === "days-of-service";
+
+    if (isAuthenticated(community._id, false, isDaysOfService)) {
       router.push(
         process.env.NEXT_PUBLIC_DOMAIN +
-          `/admin-dashboard//classes/${community._id}`
+          `/admin-dashboard/${route}/${community._id}`
       );
     } else {
       setSelectedCommunity(community);
@@ -142,14 +135,18 @@ const CommunitySelectionPage = () => {
   };
 
   const handleAuthSubmit = () => {
-    if (authenticateCommunity(selectedCommunity._id, password)) {
+    const isDaysOfService = type === "days-of-service";
+
+    if (
+      authenticateCommunity(selectedCommunity._id, password, isDaysOfService)
+    ) {
       setShowAuthDialog(false);
       setPassword("");
       setAuthenticated(city);
 
       router.push(
         process.env.NEXT_PUBLIC_DOMAIN +
-          `/admin-dashboard//classes/${selectedCommunity._id}`
+          `/admin-dashboard/${route}/${selectedCommunity._id}`
       );
     } else {
       setAuthError("Incorrect password");
@@ -164,25 +161,16 @@ const CommunitySelectionPage = () => {
   return (
     <>
       <Box sx={{ p: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Select a Community to View Classes
+        <Typography
+          variant="h4"
+          component="h1"
+          gutterBottom
+          sx={{ textTransform: "capitalize" }}
+        >
+          Select a City to View {type.replace(/-/g, " ")}
         </Typography>
 
         {/* <JsonViewer data={{ user, groupedCommunities, authenticated }} /> */}
-
-        {/* {!isAdmin && (
-          <Button
-            variant="contained"
-            // get rid of the url params
-            onClick={() =>
-              router.push(
-                process.env.NEXT_PUBLIC_DOMAIN + `/admin-dashboard/classes`
-              )
-            }
-          >
-            Back
-          </Button>
-        )} */}
 
         {(groupedCommunities && Object.keys(groupedCommunities).length) > 0 ? (
           Object.entries(groupedCommunities).map(([city, cityCommunities]) => (
@@ -212,6 +200,7 @@ const CommunitySelectionPage = () => {
                     <CommunityCard
                       community={community}
                       handleCommunityClick={handleCommunityClick}
+                      type={type}
                     />
                   </Grid>
                 ))}
@@ -268,29 +257,34 @@ const CommunitySelectionPage = () => {
               <AccordionDetails>
                 <>
                   {/* foreach key in a object */}
-                  {Object.keys(CommunityIdToPasswordHash).map((community) => (
-                    <Typography key={city}>
-                      {CommunityIdToPasswordHash[community].name}:{" "}
-                      <Typography
-                        component="span"
-                        sx={{
-                          color: "#318d43",
-                          fontWeight: "bold",
-                          cursor: "pointer",
-                        }}
-                        // copy password to clipboard
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            CommunityIdToPasswordHash[community].password
-                          );
-                          toast.success("Password copied to clipboard");
-                        }}
-                      >
-                        {" "}
-                        {CommunityIdToPasswordHash[community].password}
+                  {Object.keys(CommunityIdToPasswordHash).map((community) => {
+                    const password =
+                      type === "days-of-service"
+                        ? "d-" + CommunityIdToPasswordHash[community].password
+                        : CommunityIdToPasswordHash[community].password;
+
+                    return (
+                      <Typography key={city}>
+                        {CommunityIdToPasswordHash[community].name}:{" "}
+                        <Typography
+                          component="span"
+                          sx={{
+                            color: "#318d43",
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                          }}
+                          // copy password to clipboard
+                          onClick={() => {
+                            navigator.clipboard.writeText(password);
+                            toast.success("Password copied to clipboard");
+                          }}
+                        >
+                          {" "}
+                          {password}
+                        </Typography>
                       </Typography>
-                    </Typography>
-                  ))}
+                    );
+                  })}
                 </>
               </AccordionDetails>
             </Accordion>
@@ -338,7 +332,7 @@ const CommunitySelectionPage = () => {
   );
 };
 
-const CommunityCard = ({ community, handleCommunityClick }) => (
+const CommunityCard = ({ community, handleCommunityClick, type }) => (
   <Card
     sx={{
       cursor: "pointer",
@@ -356,43 +350,15 @@ const CommunityCard = ({ community, handleCommunityClick }) => (
     onClick={() => handleCommunityClick(community)}
   >
     <CardContent>
-      <Typography variant="h6" align="center">
-        {community.name} Classes
+      <Typography
+        variant="h6"
+        align="center"
+        sx={{ textTransform: "capitalize" }}
+      >
+        {community.name} {type === "classes" && "Classes"}
       </Typography>
     </CardContent>
   </Card>
 );
 
 export default CommunitySelectionPage;
-{
-  /* <Dialog open={showCodeDialog} onClose={() => setShowCodeDialog(false)}>
-  <DialogTitle>Enter Access Code</DialogTitle>
-  <DialogContent>
-    <TextField
-      autoFocus
-      margin="dense"
-      label="Access Code"
-      type="password"
-      fullWidth
-      value={entryCode}
-      onChange={(e) => setEntryCode(e.target.value)}
-    />
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => setShowCodeDialog(false)}>Cancel</Button>
-    <Button onClick={handleCodeSubmit} variant="contained">
-      Submit
-    </Button>
-  </DialogActions>
-</Dialog> */
-}
-
-// const handleCodeSubmit = () => {
-//   if (entryCode === "1234") {
-//     router.push(`/classes/${selectedCommunity._id}`);
-//   } else {
-//     setEntryCode("");
-//     setShowCodeDialog(false);
-//     router.push("/classes");
-//   }
-// };

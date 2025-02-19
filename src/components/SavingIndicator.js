@@ -16,7 +16,7 @@ const SavingIndicator = () => {
       // When saving completes, wait 1 second before hiding
       timeoutId = setTimeout(() => {
         setShowIndicator(false);
-      }, 500); // Adjust this delay as needed
+      }, 2000); // Adjust this delay as needed
     }
 
     return () => {

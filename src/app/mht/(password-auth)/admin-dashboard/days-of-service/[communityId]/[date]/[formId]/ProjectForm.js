@@ -34,19 +34,18 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { useProjectForm } from "@/contexts/ProjectFormProvider";
 import Loading from "@/components/util/Loading";
-import AddressFormFields from "./form-components/AddressFormFields";
+import AddressFormFields from "@/components/days-of-service/form-components/AddressFormFields";
 import CommunitySelect from "@/components/data-tables/selects/CommunitySelect";
-import TaskTable from "./form-components/TaskTable";
+import TaskTable from "@/components/days-of-service/form-components/TaskTable";
 import { ExpandMore, Info } from "@mui/icons-material";
-import EmailPreviewDialog from "./EmailPreviewDialog";
+import EmailPreviewDialog from "@/components/days-of-service/EmailPreviewDialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { ProjectResources } from "./ProjectResources";
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
-import { date } from "yup/lib/locale";
 
-const ProjectForm = () => {
+const ProjectForm = ({ formId, date, communityId }) => {
   const [collaboratorEmail, setCollaboratorEmail] = useState("");
   const [collaboratorMessage, setCollaboratorMessage] = useState("");
   const [fromName, setFromName] = useLocalStorage(
@@ -65,6 +64,7 @@ const ProjectForm = () => {
     handleInputChange,
     isInitialLoading,
     addCollaborator,
+    community,
   } = useProjectForm();
 
   const steps = [
@@ -142,8 +142,11 @@ const ProjectForm = () => {
   // Replace local handlers with context handlers
   const handleNext = () => {
     // scroll to top of page
-    window.scrollTo(0, 0);
-
+    //  scroll to id="project-form-page"
+    const projectFormPage = document.getElementById("project-form-page");
+    if (projectFormPage) {
+      projectFormPage.scrollIntoView({ behavior: "smooth" });
+    }
     if (activeStep < steps.length - 1) {
       setActiveStep(activeStep + 1);
     }
@@ -220,91 +223,100 @@ const ProjectForm = () => {
             </Typography>
 
             {/* Date for day of service */}
-            <FormControl component="fieldset" sx={{ mt: 2 }}>
-              <FormLabel component="legend">Date of Service</FormLabel>
 
-              <TextField
-                type="date"
-                fullWidth
-                value={formData.dateOfService}
-                onChange={(e) =>
-                  handleInputChange("dateOfService", e.target.value)
-                }
-              />
-            </FormControl>
-
-            <CommunitySelect
-              value={formData.community}
-              onChange={handleCommunityChange}
-              isMulti={false}
-            />
             <TextField
+              type="date"
+              fullWidth
+              label="Day Of Service Date"
+              value={date ? new Date(date).toISOString().split("T")[0] : null}
+              InputProps={{
+                readOnly: true,
+              }}
+            />
+
+            <TextField
+              label="Community"
+              fullWidth
+              value={`${community?.city_name || ""} - ${community?.name || ""}`}
+              InputProps={{
+                readOnly: true,
+              }}
+              sx={{
+                color: "text.muted",
+              }}
+            />
+
+            <Divider sx={{ my: 1 }} />
+
+            <ProjectTextField
               label="Project Developer(s)"
               fullWidth
-              value={formData.projectDeveloper}
+              value={formData.project_developer}
               onChange={(e) =>
-                handleInputChange("projectDeveloper", e.target.value)
+                handleInputChange("project_developer", e.target.value)
               }
               helperText="Name of the first person is developing the project. They will be the main point of contact for the project."
             />
-            <TextField
+            <ProjectTextField
               label="Project Developer Phone Number 1"
               fullWidth
-              value={formData.projectDeveloperPhone1}
+              value={formData.project_developer_phone1}
               onChange={(e) =>
-                handleInputChange("projectDeveloperPhone1", e.target.value)
+                handleInputChange("project_developer_phone1", e.target.value)
               }
               helperText="Phone number of the first person who is developing the project."
             />
-            <TextField
+            <ProjectTextField
               label="Project Developer Email Address 1 "
               fullWidth
-              value={formData.projectDeveloperEmail1}
+              value={formData.project_developer_email1}
               onChange={(e) =>
-                handleInputChange("projectDeveloperEmail1", e.target.value)
+                handleInputChange("project_developer_email1", e.target.value)
               }
               helperText="Email address of the first person who is developing the project."
             />
-            <TextField
+            <ProjectTextField
               label="Project Developer Phone Number 2"
               fullWidth
-              value={formData.projectDeveloperPhone2}
+              value={formData.project_developer_phone2}
               onChange={(e) =>
-                handleInputChange("projectDeveloperPhone2", e.target.value)
+                handleInputChange("project_developer_phone2", e.target.value)
               }
               helperText="Phone number of the second person who is developing the project (optional)."
             />
-            <TextField
+            <ProjectTextField
               label="Project Developer Email Address 2"
               fullWidth
-              value={formData.projectDeveloperEmail2}
+              value={formData.project_developer_email2}
               onChange={(e) =>
-                handleInputChange("projectDeveloperEmail2", e.target.value)
+                handleInputChange("project_developer_email2", e.target.value)
               }
               helperText="Email address of the second person or couple who is developing the project (optional)."
             />
-            <TextField
+            <ProjectTextField
               fullWidth
               placeholder="Short description of the project"
-              value={formData.projectId}
-              onChange={(e) => handleInputChange("projectId", e.target.value)}
+              value={formData.project_id}
+              onChange={(e) => handleInputChange("project_id", e.target.value)}
             />
             <Divider sx={{ my: 2 }} />
-            <TextField
+            <ProjectTextField
               label="Property Owner"
               fullWidth
-              value={formData.propertyOwner}
+              value={formData.property_owner}
               onChange={(e) =>
-                handleInputChange("propertyOwner", e.target.value)
+                handleInputChange("property_owner", e.target.value)
               }
             />
-            <TextField
+            <ProjectTextField
               label="Phone Number"
               fullWidth
-              value={formData.phoneNumber}
-              onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
+              value={formData.phone_number}
+              onChange={(e) =>
+                handleInputChange("phone_number", e.target.value)
+              }
             />
-            <TextField
+            <ProjectTextField
               label="Email"
               fullWidth
               value={formData.email}
@@ -318,8 +330,10 @@ const ProjectForm = () => {
               fullWidth
               multiline
               rows={4}
-              value={formData.workSummary}
-              onChange={(e) => handleInputChange("workSummary", e.target.value)}
+              value={formData.work_summary}
+              onChange={(e) =>
+                handleInputChange("work_summary", e.target.value)
+              }
             />
           </Box>
         );
@@ -338,19 +352,19 @@ const ProjectForm = () => {
             <TextField
               label="Resource Couple"
               fullWidth
-              value={formData.projectDevelopmentCouple}
+              value={formData.project_development_couple}
               onChange={(e) =>
-                handleInputChange("projectDevelopmentCouple", e.target.value)
+                handleInputChange("project_development_couple", e.target.value)
               }
             />
 
             <TextField
               label="Resource Couple Phone Number (1)"
               fullWidth
-              value={formData.projectDevelopmentCouplePhone1}
+              value={formData.project_development_couple_phone1}
               onChange={(e) =>
                 handleInputChange(
-                  "projectDevelopmentCouplePhone1",
+                  "project_development_couple_phone1",
                   e.target.value
                 )
               }
@@ -359,10 +373,10 @@ const ProjectForm = () => {
             <TextField
               label="Resource Couple Email (1)"
               fullWidth
-              value={formData.projectDevelopmentCoupleEmail1}
+              value={formData.project_development_couple_email1}
               onChange={(e) =>
                 handleInputChange(
-                  "projectDevelopmentCoupleEmail1",
+                  "project_development_couple_email1",
                   e.target.value
                 )
               }
@@ -371,10 +385,10 @@ const ProjectForm = () => {
             <TextField
               label="Resource Couple Phone Number (2)"
               fullWidth
-              value={formData.projectDevelopmentCouplePhone2}
+              value={formData.project_development_couple_phone2}
               onChange={(e) =>
                 handleInputChange(
-                  "projectDevelopmentCouplePhone2",
+                  "project_development_couple_phone2",
                   e.target.value
                 )
               }
@@ -383,10 +397,10 @@ const ProjectForm = () => {
             <TextField
               label="Resource Couple Email (2)"
               fullWidth
-              value={formData.projectDevelopmentCoupleEmail2}
+              value={formData.project_development_couple_email2}
               onChange={(e) =>
                 handleInputChange(
-                  "projectDevelopmentCoupleEmail2",
+                  "project_development_couple_email2",
                   e.target.value
                 )
               }
@@ -397,9 +411,9 @@ const ProjectForm = () => {
               fullWidth
               multiline
               rows={4}
-              value={formData.preferredRemedies}
+              value={formData.preferred_remedies}
               onChange={(e) =>
-                handleInputChange("preferredRemedies", e.target.value)
+                handleInputChange("preferred_remedies", e.target.value)
               }
             />
             <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
@@ -429,9 +443,9 @@ const ProjectForm = () => {
                 type="number"
                 min={0}
                 fullWidth
-                value={formData.volunteersNeeded}
+                value={formData.volunteers_needed}
                 onChange={(e) =>
-                  handleInputChange("volunteersNeeded", e.target.value)
+                  handleInputChange("volunteers_needed", e.target.value)
                 }
                 helperText="Enter the number of total volunteers needed for the entire project."
               />
@@ -464,9 +478,9 @@ const ProjectForm = () => {
             <TextField
               label="Resource Budget Estimates"
               fullWidth
-              value={formData.budgetEstimates}
+              value={formData.budget_estimates}
               onChange={(e) =>
-                handleInputChange("budgetEstimates", e.target.value)
+                handleInputChange("budget_estimates", e.target.value)
               }
               type="number"
               helperText="Total estimate the cost of the project."
@@ -483,18 +497,18 @@ const ProjectForm = () => {
               fullWidth
               multiline
               rows={4}
-              value={formData.homeownerAbility}
+              value={formData.homeowner_ability}
               onChange={(e) =>
-                handleInputChange("homeownerAbility", e.target.value)
+                handleInputChange("homeowner_ability", e.target.value)
               }
               helperText="Describe the homeowner's ability to contribute to the project. Include monetary resources."
             />
             <TextField
               label="Homeowner's Ability Estimates"
               fullWidth
-              value={formData.homeownerAbilityEstimates}
+              value={formData.homeowner_ability_estimates}
               onChange={(e) =>
-                handleInputChange("homeownerAbilityEstimates", e.target.value)
+                handleInputChange("homeowner_ability_estimates", e.target.value)
               }
               InputProps={{
                 startAdornment: (
@@ -520,10 +534,10 @@ const ProjectForm = () => {
                   <Box display="flex" alignItems="center" gap={1}>
                     <Typography>
                       <strong>Project Developer:</strong>{" "}
-                      {formData.projectDeveloper}
+                      {formData.project_developer}
                     </Typography>
                     <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
-                      <Tooltip title={formData.projectDeveloperPhone} arrow>
+                      <Tooltip title={formData.project_developer_phone} arrow>
                         <IconButton
                           color="primary"
                           aria-label="phone number"
@@ -532,7 +546,7 @@ const ProjectForm = () => {
                           onClick={() => {
                             // copy to navigator clipboard
                             navigator.clipboard.writeText(
-                              formData.projectDeveloperPhone
+                              formData.project_developer_phone
                             );
                             toast.success("Phone number copied to clipboard");
                           }}
@@ -541,7 +555,7 @@ const ProjectForm = () => {
                         </IconButton>
                       </Tooltip>
 
-                      <Tooltip title={formData.projectDeveloperEmail} arrow>
+                      <Tooltip title={formData.project_developer_email} arrow>
                         <IconButton
                           color="primary"
                           aria-label="email address"
@@ -550,7 +564,7 @@ const ProjectForm = () => {
                           onClick={() => {
                             // copy to navigator clipboard
                             navigator.clipboard.writeText(
-                              formData.projectDeveloperEmail
+                              formData.project_developer_email
                             );
                             toast.success("Email copied to clipboard");
                           }}
@@ -563,11 +577,11 @@ const ProjectForm = () => {
 
                   <Typography>
                     <strong>Resource Couple:</strong>{" "}
-                    {formData.projectDevelopmentCouple}
+                    {formData.project_development_couple}
                   </Typography>
 
                   <Typography>
-                    <strong>Property Owner:</strong> {formData.propertyOwner}
+                    <strong>Property Owner:</strong> {formData.property_owner}
                   </Typography>
                 </Box>
               </Box>
@@ -579,12 +593,13 @@ const ProjectForm = () => {
                 </Typography>
                 <Box sx={{ pl: 2 }}>
                   <Typography>
-                    {formData.addressStreet1}
-                    {formData.addressStreet2 && `, ${formData.addressStreet2}`}
+                    {formData.address_street1}
+                    {formData.address_street2 &&
+                      `, ${formData.address_street2}`}
                   </Typography>
                   <Typography>
-                    {formData.addressCity}, {formData.addressState}{" "}
-                    {formData.addressZipCode}
+                    {formData.address_city}, {formData.address_state}{" "}
+                    {formData.address_zip_code}
                   </Typography>
                 </Box>
               </Box>
@@ -595,7 +610,7 @@ const ProjectForm = () => {
                   Work Summary
                 </Typography>
                 <Box sx={{ pl: 2 }}>
-                  <Typography>{formData.workSummary}</Typography>
+                  <Typography>{formData.work_summary}</Typography>
                 </Box>
               </Box>
 
@@ -605,7 +620,7 @@ const ProjectForm = () => {
                   Preferred Remedies
                 </Typography>
                 <Box sx={{ pl: 2 }}>
-                  <Typography>{formData.preferredRemedies}</Typography>
+                  <Typography>{formData.preferred_remedies}</Typography>
                 </Box>
               </Box>
 
@@ -648,10 +663,10 @@ const ProjectForm = () => {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={formData.reviewCompletedWithCouple}
+                    checked={formData.review_completed_with_couple}
                     onChange={(e) =>
                       handleInputChange(
-                        "reviewCompletedWithCouple",
+                        "review_completed_with_couple",
                         e.target.checked
                       )
                     }
@@ -664,10 +679,10 @@ const ProjectForm = () => {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={formData.reviewCompletedWithHomeowner}
+                    checked={formData.review_completed_with_homeowner}
                     onChange={(e) =>
                       handleInputChange(
-                        "reviewCompletedWithHomeowner",
+                        "review_completed_with_homeowner",
                         e.target.checked
                       )
                     }
@@ -683,8 +698,10 @@ const ProjectForm = () => {
               multiline
               rows={4}
               fullWidth
-              value={formData.reviewNotes || ""}
-              onChange={(e) => handleInputChange("reviewNotes", e.target.value)}
+              value={formData.review_notes || ""}
+              onChange={(e) =>
+                handleInputChange("review_notes", e.target.value)
+              }
               placeholder="Note any issues or concerns that need to be addressed"
             />
           </Box>
@@ -699,18 +716,18 @@ const ProjectForm = () => {
                 <TextField
                   label="Partner Stake"
                   fullWidth
-                  value={formData.partnerStake}
+                  value={formData.partner_stake}
                   onChange={(e) =>
-                    handleInputChange("partnerStake", e.target.value)
+                    handleInputChange("partner_stake", e.target.value)
                   }
                 />
 
                 <TextField
                   label="Partner Stake Liaison"
                   fullWidth
-                  value={formData.partnerStakeLiaison}
+                  value={formData.partner_stake_liaison}
                   onChange={(e) =>
-                    handleInputChange("partnerStakeLiaison", e.target.value)
+                    handleInputChange("partner_stake_liaison", e.target.value)
                   }
                 />
 
@@ -719,10 +736,10 @@ const ProjectForm = () => {
                   <TextField
                     label="Partner Stake Liaison Phone"
                     fullWidth
-                    value={formData.partnerStakeLiaisonPhone}
+                    value={formData.partner_stake_liaison_phone}
                     onChange={(e) =>
                       handleInputChange(
-                        "partnerStakeLiaisonPhone",
+                        "partner_stake_liaison_phone",
                         e.target.value
                       )
                     }
@@ -731,10 +748,10 @@ const ProjectForm = () => {
                   <TextField
                     label="Partner Stake Liaison Email"
                     fullWidth
-                    value={formData.partnerStakeLiaisonEmail}
+                    value={formData.partner_stake_liaison_email}
                     onChange={(e) =>
                       handleInputChange(
-                        "partnerStakeLiaisonEmail",
+                        "partner_stake_liaison_email",
                         e.target.value
                       )
                     }
@@ -747,18 +764,18 @@ const ProjectForm = () => {
                   // parnter ward
                   label="Partner Ward"
                   fullWidth
-                  value={formData.partnerWard}
+                  value={formData.partner_ward}
                   onChange={(e) =>
-                    handleInputChange("partnerWard", e.target.value)
+                    handleInputChange("partner_ward", e.target.value)
                   }
                 />
 
                 <TextField
                   label="Partner Ward Liaison(s)"
                   fullWidth
-                  value={formData.partnerWardLiaison}
+                  value={formData.partner_ward_liaison}
                   onChange={(e) =>
-                    handleInputChange("partnerWardLiaison", e.target.value)
+                    handleInputChange("partner_ward_liaison", e.target.value)
                   }
                 />
 
@@ -767,10 +784,10 @@ const ProjectForm = () => {
                   <TextField
                     label="Partner Ward Liaison Phone"
                     fullWidth
-                    value={formData.partnerWardLiaisonPhone}
+                    value={formData.partner_ward_liaison_phone}
                     onChange={(e) =>
                       handleInputChange(
-                        "partnerWardLiaisonPhone1",
+                        "partner_ward_liaison_phone1",
                         e.target.value
                       )
                     }
@@ -779,10 +796,10 @@ const ProjectForm = () => {
                   <TextField
                     label="Partner Ward Liaison Email"
                     fullWidth
-                    value={formData.partnerWardLiaisonEmail}
+                    value={formData.partner_ward_liaison_email}
                     onChange={(e) =>
                       handleInputChange(
-                        "partnerWardLiaisonEmail1",
+                        "partner_ward_liaison_email1",
                         e.target.value
                       )
                     }
@@ -793,10 +810,10 @@ const ProjectForm = () => {
                   <TextField
                     label="Partner Ward Liaison Phone 2 (Optional)"
                     fullWidth
-                    value={formData.partnerWardLiaisonPhone2}
+                    value={formData.partner_ward_liaison_phone2}
                     onChange={(e) =>
                       handleInputChange(
-                        "partnerWardLiaisonPhone2",
+                        "partner_ward_liaison_phone2",
                         e.target.value
                       )
                     }
@@ -808,7 +825,7 @@ const ProjectForm = () => {
                     value={formData.partnerWardLiaisonEmail2}
                     onChange={(e) =>
                       handleInputChange(
-                        "partnerWardLiaisonEmail2",
+                        "partner_ward_liaison_email2",
                         e.target.value
                       )
                     }
@@ -822,10 +839,10 @@ const ProjectForm = () => {
                   fullWidth
                   control={
                     <Checkbox
-                      checked={formData.partnerStakeContacted}
+                      checked={formData.partner_stake_contacted}
                       onChange={(e) =>
                         handleInputChange(
-                          "partnerStakeContacted",
+                          "partner_stake_contacted",
                           e.target.checked
                         )
                       }
@@ -838,10 +855,10 @@ const ProjectForm = () => {
                   fullWidth
                   control={
                     <Checkbox
-                      checked={formData.partnerWardContacted}
+                      checked={formData.partner_ward_contacted}
                       onChange={(e) =>
                         handleInputChange(
-                          "partnerWardContacted",
+                          "partner_ward_contacted",
                           e.target.checked
                         )
                       }
@@ -858,10 +875,10 @@ const ProjectForm = () => {
                   fullWidth
                   control={
                     <Checkbox
-                      checked={formData.siteVisitDoneWithResourceCouple}
+                      checked={formData.site_visit_done_with_resource_couple}
                       onChange={(e) =>
                         handleInputChange(
-                          "siteVisitDoneWithResourceCouple",
+                          "site_visitDoneWithResourceCouple",
                           e.target.checked
                         )
                       }
@@ -998,11 +1015,26 @@ const ProjectForm = () => {
 
   return (
     <>
-      <Card sx={{ margin: "auto" }}>
+      <Card sx={{ margin: "auto", p: 1, position: "relative" }}>
         <CardContent>
           <Typography variant="h4" sx={{ mt: 1, mb: 3, textAlign: "center" }}>
             Days of Service Project Form
           </Typography>
+
+          <Box
+            sx={{
+              position: "absolute",
+              top: "0",
+              right: "0",
+              p: 1,
+            }}
+          >
+            <Tooltip title={"ID:" + formData.id}>
+              <IconButton color="primary" size="small">
+                <Info />
+              </IconButton>
+            </Tooltip>
+          </Box>
 
           <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
             {steps.map((step, index) => (
@@ -1038,120 +1070,142 @@ const ProjectForm = () => {
           </Box>
         </CardContent>
       </Card>
-      <Box sx={{ borderTop: 1, borderColor: "divider", mt: 4, pt: 4 }}>
-        <Typography variant="h6" gutterBottom>
-          Email Invitation to Collaborate
-        </Typography>
+      <Card sx={{ margin: "auto", mt: 4, p: 1 }}>
+        <CardContent>
+          <Box sx={{}}>
+            <Typography variant="h6" gutterBottom>
+              Email Invitation to Collaborate
+            </Typography>
 
-        <EmailPreviewDialog
-          open={showEmailDialog}
-          onClose={() => setShowEmailDialog(false)}
-          email={collaboratorEmail}
-          message={collaboratorMessage}
-          fromName={fromName}
-        />
+            <EmailPreviewDialog
+              open={showEmailDialog}
+              onClose={() => setShowEmailDialog(false)}
+              email={collaboratorEmail}
+              message={collaboratorMessage}
+              fromName={fromName}
+            />
 
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-            alignItems: "stretch",
-          }}
-        >
-          <TextField
-            label="Your Name"
-            fullWidth
-            value={fromName}
-            onChange={(e) => setFromName(e.target.value)}
-          />
-
-          <TextField
-            label="Collaborator's Email"
-            helperText="Enter the email of the person, or persons, you want to collaborate with (separate multiple emails with a comma)"
-            fullWidth
-            value={collaboratorEmail}
-            onChange={(e) => setCollaboratorEmail(e.target.value)}
-            sx={{ flexGrow: 1 }}
-          />
-          <TextField
-            label="Message"
-            multiline
-            rows={4} // Adjust the 'rows' property as needed
-            fullWidth
-            value={collaboratorMessage}
-            onChange={(e) => setCollaboratorMessage(e.target.value)}
-            sx={{ flexGrow: 1 }}
-          />
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
-            <Button
-              color="primary"
-              variant="outlined"
-              fullWidth
-              onClick={(e) => {
-                e.preventDefault();
-                setShowEmailDialog(true);
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+                alignItems: "stretch",
               }}
             >
-              View Preview of Email
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              onClick={handleSendCollaborationEmail}
-              disabled={
-                !collaboratorEmail ||
-                isSending ||
-                !fromName ||
-                !collaboratorMessage
-              }
-            >
-              {isSending ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Send Link"
-              )}
-            </Button>
-          </Box>
-        </Box>
+              <TextField
+                label="Your Name"
+                fullWidth
+                value={fromName}
+                onChange={(e) => setFromName(e.target.value)}
+              />
 
-        {formData.collaborators && (
-          <Box sx={{ mt: 4 }}>
-            <Accordion>
-              <AccordionSummary
-                expandIcon={<ExpandMore />}
-                aria-controls="collaboration-history-content"
-                id="collaboration-history-header"
+              <TextField
+                label="Collaborator's Email"
+                helperText="Enter the email of the person, or persons, you want to collaborate with (separate multiple emails with a comma)"
+                fullWidth
+                value={collaboratorEmail}
+                onChange={(e) => setCollaboratorEmail(e.target.value)}
+                sx={{ flexGrow: 1 }}
+              />
+              <TextField
+                label="Message"
+                multiline
+                rows={4} // Adjust the 'rows' property as needed
+                fullWidth
+                value={collaboratorMessage}
+                onChange={(e) => setCollaboratorMessage(e.target.value)}
+                sx={{ flexGrow: 1 }}
+              />
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 2,
+                }}
               >
-                <Typography variant="h6">Collaboration History</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  {formData.collaborators.map((collaborator, index) => (
-                    <Paper key={index} sx={{ p: 2 }}>
-                      <Typography variant="subtitle1">
-                        {collaborator.email} -{" "}
-                        {new Date(collaborator.date).toLocaleDateString()}
-                      </Typography>
-                      <Typography>{collaborator.message}</Typography>
-                    </Paper>
-                  ))}
-                </Box>
-              </AccordionDetails>
-            </Accordion>
+                <Button
+                  color="primary"
+                  variant="outlined"
+                  fullWidth
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowEmailDialog(true);
+                  }}
+                >
+                  View Preview of Email
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  onClick={handleSendCollaborationEmail}
+                  disabled={
+                    !collaboratorEmail ||
+                    isSending ||
+                    !fromName ||
+                    !collaboratorMessage
+                  }
+                >
+                  {isSending ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    "Send Link"
+                  )}
+                </Button>
+              </Box>
+            </Box>
+
+            {formData.collaborators && (
+              <Box sx={{ mt: 4 }}>
+                <Accordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMore />}
+                    aria-controls="collaboration-history-content"
+                    id="collaboration-history-header"
+                  >
+                    <Typography variant="h6">Collaboration History</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Box
+                      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+                    >
+                      {formData.collaborators.map((collaborator, index) => (
+                        <Paper key={index} sx={{ p: 2 }}>
+                          <Typography variant="subtitle1">
+                            {collaborator.email} -{" "}
+                            {new Date(collaborator.date).toLocaleDateString()}
+                          </Typography>
+                          <Typography>{collaborator.message}</Typography>
+                        </Paper>
+                      ))}
+                    </Box>
+                  </AccordionDetails>
+                </Accordion>
+              </Box>
+            )}
           </Box>
-        )}
-      </Box>
+        </CardContent>
+      </Card>
     </>
   );
 };
 
 export default ProjectForm;
+
+const ProjectTextField = ({ label, value, onChange, ...props }) => {
+  return (
+    <TextField
+      label={label}
+      fullWidth
+      value={value}
+      onChange={onChange}
+      {...props}
+      variant="outlined"
+      InputLabelProps={{
+        shrink: value ? true : false,
+      }}
+    />
+  );
+};

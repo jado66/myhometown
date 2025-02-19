@@ -216,7 +216,7 @@ export const UserProvider = ({ children }) => {
         user,
         authUser,
         isLoading,
-        isAdmin: user?.role === "Admin",
+        isAdmin: user?.permissions?.administrator,
         impersonateUser,
         stopImpersonation,
         isImpersonating,

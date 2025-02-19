@@ -8,13 +8,21 @@ export const generateCityAuthToken = (city) => {
   return btoa(`${city}-${Date.now()}`);
 };
 
-export const isAuthenticated = (communityId, isCity = false) => {
+export const isAuthenticated = (
+  communityId,
+  isCity = false,
+  isDaysOfService = false
+) => {
   if (isCity) {
     const token = localStorage.getItem(`cityAuth_${communityId}`);
     if (!token) return false;
   }
 
-  const token = localStorage.getItem(`communityAuth_${communityId}`);
+  const localStorageKey = isDaysOfService
+    ? `communityAuth_${communityId}_daysOfService`
+    : `communityAuth_${communityId}`;
+
+  const token = localStorage.getItem(localStorageKey);
   if (!token) return false;
 
   try {
@@ -109,10 +117,27 @@ export const authenticateCity = (city, password) => {
   return false;
 };
 
-export const authenticateCommunity = (communityId, password) => {
+export const authenticateCommunity = (
+  communityId,
+  password,
+  isDaysOfService = false
+) => {
+  // if days of service, ensure the password starts with a d- and remove it
+  if (isDaysOfService) {
+    if (password.startsWith("d-")) {
+      password = password.substring(2);
+    } else {
+      return false;
+    }
+  }
+
   if (CommunityIdToPasswordHash[communityId].password === password) {
-    const token = generateAuthToken(communityId);
-    localStorage.setItem(`communityAuth_${communityId}`, token);
+    const token = generateAuthToken(communityId, isDaysOfService);
+    const localStorageKey = isDaysOfService
+      ? `communityAuth_${communityId}_daysOfService`
+      : `communityAuth_${communityId}`;
+
+    localStorage.setItem(localStorageKey, token);
     return true;
   }
   return false;

@@ -1,14 +1,14 @@
 "use client";
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
-import AppBar from '@mui/material/AppBar';
-import Container from '@/components/util/Container';
-import { Topbar, Sidebar, Footer } from './components';
-import { pages } from '../navigation';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
+import AppBar from "@mui/material/AppBar";
+import Container from "@/components/util/Container";
+import { Topbar, Sidebar, Footer } from "./components";
+import { pages } from "../navigation";
 
 const FixedLayout = ({
   children,
@@ -18,7 +18,7 @@ const FixedLayout = ({
   paletteType,
 }) => {
   const theme = useTheme();
-  const isMd = useMediaQuery(theme.breakpoints.up('md'), {
+  const isMd = useMediaQuery(theme.breakpoints.up("md"), {
     defaultMatches: true,
   });
   const [openSidebar, setOpenSidebar] = useState(false);
@@ -32,15 +32,15 @@ const FixedLayout = ({
   };
 
   return (
-    <Box height="100%" overflow="hidden" width="100%" display='flex'>
+    <Box height="100%" overflow="hidden" width="100%" display="flex">
       <AppBar
-        position={'fixed'}
+        position={"fixed"}
         sx={{
           backgroundColor: theme.palette.background.paper,
         }}
         elevation={0}
       >
-        <Container paddingY={{ xs: 1 / 2, sm: 1 }} maxWidth={{ md: '100%' }}>
+        <Container paddingY={{ xs: 1 / 2, sm: 1 }} maxWidth={{ md: "100%" }}>
           <Topbar
             onSidebarOpen={handleSidebarOpen}
             themeMode={themeMode}
@@ -54,22 +54,28 @@ const FixedLayout = ({
       <Sidebar
         onClose={handleSidebarClose}
         open={openSidebar}
-        variant={isMd ? 'permanent' : 'temporary'}
+        variant={isMd ? "permanent" : "temporary"}
         pages={pages}
       />
-      <main style={{display:'flex', flexDirection:'column'}}>
+      <main style={{ display: "flex", flexDirection: "column" }}>
         <Box height={{ xs: 56, sm: 64 }} />
         <Box
           display="flex"
           flex="1 1 auto"
           overflow="hidden"
-          paddingLeft={{ md: '256px' }}
+          paddingLeft={{ md: "256px" }}
         >
           <Box display="flex" flex="1 1 auto" overflow="hidden">
-            <Box flex="1 1 auto" display='flex' flexDirection='column' overflow="auto" sx={{height:'auto'}}>
+            <Box
+              flex="1 1 auto"
+              display="flex"
+              flexDirection="column"
+              overflow="auto"
+              sx={{ height: "auto" }}
+            >
               {children}
               <Divider />
-              <Container paddingY={4} sx={{height:'auto'}}>
+              <Container paddingY={4} sx={{ height: "auto" }}>
                 <Footer />
               </Container>
             </Box>
