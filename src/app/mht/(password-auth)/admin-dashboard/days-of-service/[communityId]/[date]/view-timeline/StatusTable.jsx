@@ -21,16 +21,26 @@ import {
   Alert,
   Menu,
   MenuItem,
+  Breadcrumbs,
+  Typography,
 } from "@mui/material";
 import Editor from "@monaco-editor/react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Close, Settings } from "@mui/icons-material";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import {
+  ArrowForwardIos,
+  Close,
+  NavigateNext,
+  Settings,
+} from "@mui/icons-material";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
 
 import availableFields from "./AvailableFields";
+import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
+import { validateProjectFields } from "./validateFields";
 import { toast } from "react-toastify";
+import Link from "next/link";
 
 const API_BASE_URL = "/api/database/project-forms";
 
@@ -90,7 +100,6 @@ export default function ConfigurableStatusTable({ communityId, date }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [projects, setProjects] = useState([]);
-  const [refresh, setRefresh] = useState(0);
   const [error, setError] = useState(null);
   const [isProjectsloading, setProjectsLoading] = useState(true);
   const [isDaysOfServiceLoading, setDaysOfServiceLoading] = useState(true);
@@ -99,6 +108,7 @@ export default function ConfigurableStatusTable({ communityId, date }) {
     "editorConfig",
     JSON.stringify(defaultTasks, null, 2)
   );
+
   const [tasks, setTasks] = useState(null);
   const [displayError, setDisplayError] = useState(null);
 
@@ -302,8 +312,6 @@ export default function ConfigurableStatusTable({ communityId, date }) {
         setError("Failed to fetch project data");
       } finally {
         setProjectsLoading(false);
-        const timeout = setTimeout(() => setRefresh((prev) => prev + 1), 1000);
-        return () => clearTimeout(timeout);
       }
     };
 
@@ -372,16 +380,23 @@ export default function ConfigurableStatusTable({ communityId, date }) {
 
   const getProjectStatus = (project) => {
     return tasks.map((task) => {
-      const completedFields = task.fields.filter((field) =>
-        Boolean(project[field])
-      ).length;
-      const totalFields = task.fields.length;
+      const statuses = validateProjectFields(
+        project,
+        task.fields,
+        availableFields
+      );
 
-      if (completedFields === totalFields) {
+      // If all fields are done, the task is done
+      if (statuses.every((status) => status === "done")) {
         return "done";
-      } else if (completedFields > 0) {
+      }
+      // If any fields are in progress or done, the task is in progress
+      if (
+        statuses.some((status) => status === "progress" || status === "done")
+      ) {
         return "progress";
       }
+      // Otherwise, not started
       return "none";
     });
   };
@@ -423,6 +438,8 @@ export default function ConfigurableStatusTable({ communityId, date }) {
 
   return (
     <Box sx={{ width: "100%", p: 4 }}>
+      <DosBreadcrumbs dayOfService={dayOfService} date={date} />
+
       <Box sx={{ display: "flex", gap: 2, mb: 4 }}>
         <TextField
           type="date"
@@ -435,7 +452,7 @@ export default function ConfigurableStatusTable({ communityId, date }) {
         />
         <TextField
           type="date"
-          label="End Date"
+          label="Day of Service Date"
           value={endDate}
           InputLabelProps={{ shrink: true }}
           InputProps={{
@@ -449,24 +466,17 @@ export default function ConfigurableStatusTable({ communityId, date }) {
           </IconButton>
         </Tooltip>
       </Box>
-
       <JsonViewer
         data={{
-          projects,
-          tasks,
-          statusesByGroup,
-          columnWidths,
-          todayPosition,
+          dayOfService,
         }}
       />
-
       {/* Full width box */}
       {displayError && (
         <Box sx={{ width: "100%", mb: 2 }}>
           <Alert severity="error">{displayError}</Alert>
         </Box>
       )}
-
       <Box sx={{ position: "relative" }} ref={tableRef} id="tableRef">
         {todayPosition > 0 && (
           <Box
@@ -627,7 +637,6 @@ export default function ConfigurableStatusTable({ communityId, date }) {
           </Table>
         </TableContainer>
       </Box>
-
       <Box sx={{ display: "flex", justifyContent: "center", gap: 1, mt: 4 }}>
         {[
           { status: "done", label: "Completed", color: "#188D4E" },
@@ -652,7 +661,6 @@ export default function ConfigurableStatusTable({ communityId, date }) {
           </Box>
         ))}
       </Box>
-
       <Dialog
         open={isEditorOpen}
         onClose={() => setIsEditorOpen(false)}

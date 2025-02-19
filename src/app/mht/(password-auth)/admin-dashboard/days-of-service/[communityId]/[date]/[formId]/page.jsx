@@ -7,8 +7,18 @@ export default function ProjectPage({ params }) {
   const { formId, date, communityId } = params;
 
   return (
-    <ProjectFormProvider formId={formId} date={date} communityId={communityId}>
-      <ProjectFormsPage formId={formId} date={date} communityId={communityId} />
-    </ProjectFormProvider>
+    <>
+      <ProjectFormProvider
+        formId={formId}
+        date={date}
+        communityId={communityId}
+      >
+        <ProjectFormsPage
+          formId={formId}
+          date={date}
+          communityId={communityId}
+        />
+      </ProjectFormProvider>
+    </>
   );
 }

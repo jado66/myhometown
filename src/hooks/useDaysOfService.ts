@@ -50,13 +50,33 @@ export const useDaysOfService = () => {
 
       const { data, error: supabaseError } = await supabase
         .from("days_of_service")
-        .select()
+        .select(
+          `
+              *,
+              cities!city_id (
+                city_name:name
+              ),
+              communities!community_id (
+                community_name:name
+              )
+            `
+        )
         .eq("id", id)
         .single();
 
       if (supabaseError) throw supabaseError;
 
-      return { data, error: null };
+      const flattenedData = {
+        ...data,
+        city_name: data.cities?.city_name,
+        community_name: data.communities?.community_name,
+      };
+
+      // Remove the nested objects
+      delete flattenedData.cities;
+      delete flattenedData.communities;
+
+      return { data: flattenedData, error: null };
     } catch (err) {
       const message = err instanceof Error ? err.message : "An error occurred";
       setError(message);

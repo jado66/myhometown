@@ -26,6 +26,7 @@ import moment from "moment";
 import { Close, Edit, EditCalendar } from "@mui/icons-material";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
 import Loading from "@/components/util/Loading";
+import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
 
 const CityIdToPasswordHash = {
   provo: "Provo6940!",
@@ -151,15 +152,16 @@ const CommunitySelectionPage = ({ params }) => {
 
   return (
     <Box sx={{ p: 4 }}>
+      <DosBreadcrumbs communityData={community} />
       <Typography
         variant="h4"
         gutterBottom
         sx={{ textTransform: "capitalize", mb: 5 }}
       >
-        {community.name} Days of Service
+        {community.city_name} - {community.name} Days of Service
       </Typography>
 
-      {/* <JsonViewer data={daysOfService} /> */}
+      <JsonViewer data={community} />
 
       <Typography variant="h6" color="primary" gutterBottom sx={{ mb: 5 }}>
         Select a Day of Service to view or create projects

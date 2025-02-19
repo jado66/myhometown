@@ -33,10 +33,14 @@ import { supabase } from "@/util/supabase";
 import { useCommunities } from "@/hooks/use-communities";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { useDaysOfServiceProjects } from "@/hooks/useDaysOfServiceProjects";
+import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
+import { useDaysOfService } from "@/hooks/useDaysOfService";
 
 export default function ProjectFormsPage({ params }) {
   const { date, communityId } = params;
 
+  const [dayOfService, setDayOfService] = useState();
+  const [daysOfServiceLoading, setDaysOfServiceLoading] = useState(true);
   const [cityId, setCityId] = useState();
   const [projects, setProjects] = useState([]);
 
@@ -44,7 +48,28 @@ export default function ProjectFormsPage({ params }) {
 
   const [isLoading, setIsLoading] = useState(true);
 
+  const { fetchDayOfService } = useDaysOfService();
+
   const { fetchProjectsByDaysOfServiceId, error } = useDaysOfServiceProjects();
+
+  useEffect(() => {
+    const fetchDays = async () => {
+      try {
+        const { data, error } = await fetchDayOfService(
+          `${communityId}_${date}`
+        );
+
+        if (error) throw error;
+        setDayOfService(data);
+
+        setDaysOfServiceLoading(false);
+      } catch (error) {
+        console.error("Error fetching days of service:", error);
+      }
+    };
+
+    fetchDays();
+  }, [communityId, date]);
 
   useEffect(() => {
     if (communityId) {
@@ -85,7 +110,8 @@ export default function ProjectFormsPage({ params }) {
 
   const handleProjectClick = (id) => {
     router.push(
-      process.env.NEXT_PUBLIC_DOMAIN + `/days-of-service/projects/${id}`
+      process.env.NEXT_PUBLIC_DOMAIN +
+        `/admin-dashboard/days-of-service/${communityId}/${date}/${id}`
     );
   };
 
@@ -173,183 +199,180 @@ export default function ProjectFormsPage({ params }) {
   };
 
   return (
-    <Container>
-      <Box sx={{ py: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Project Forms
-        </Typography>
+    <Box sx={{ p: 4 }}>
+      <DosBreadcrumbs dayOfService={dayOfService} date={date} />
+      <Typography variant="h4" component="h1" gutterBottom>
+        {dayOfService?.name || "Day of Service"} Projects for {date}
+      </Typography>
 
-        <Paper
-          elevation={2}
-          sx={{
-            height: "calc(100vh - 200px)",
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          {isLoading ? (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                flex: 1,
-              }}
-            >
-              <CircularProgress />
-            </Box>
-          ) : error ? (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                flex: 1,
-                p: 3,
-              }}
-            >
-              <Alert severity="error">{error}</Alert>
-            </Box>
-          ) : projects.length === 0 ? (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                flex: 1,
-                p: 3,
-                textAlign: "center",
-              }}
-            >
-              <Typography color="text.secondary">
-                No projects yet. Click the button below to create your first
-                project.
-              </Typography>
-            </Box>
-          ) : (
-            <List sx={{ flex: 1, overflow: "auto" }}>
-              {projects
-                .sort(
-                  (a, b) => new Date(b.createdTime) - new Date(a.createdTime)
-                )
-                .map((project) => (
-                  <ListItem
-                    key={project.id}
-                    divider
-                    disablePadding
-                    secondaryAction={
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        {project.finishedTime && (
-                          <Chip
-                            label="Completed"
-                            color="success"
-                            size="small"
-                            sx={{ mr: 2 }}
-                          />
-                        )}
-                        <IconButton
-                          edge="end"
-                          aria-label="generate-report"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toast.info("Coming soon");
-                          }}
-                          sx={{ mr: 1 }}
-                        >
-                          <Tooltip title="Generate Report">
-                            <Assignment />
-                          </Tooltip>
-                        </IconButton>
-                        <IconButton
-                          edge="end"
-                          aria-label="delete"
-                          onClick={(e) => handleDeleteClick(e, project)}
-                          sx={{ mr: 1 }}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Box>
-                    }
-                  >
-                    <Checkbox
-                      checked={selectedProjects.includes(project.id)}
-                      onChange={(e) => handleCheckboxChange(e, project.id)}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <ListItemButton
-                      onClick={() => handleProjectClick(project.id)}
-                    >
-                      <ListItemText
-                        primary={getProjectTitle(project)}
-                        secondary={
-                          <>
-                            <Typography
-                              component="span"
-                              variant="body2"
-                              color="text.primary"
-                            >
-                              {project.propertyOwner && project.address && (
-                                <>
-                                  {project.address}
-                                  <br />
-                                </>
-                              )}
-                            </Typography>
-                            Created: {formatDate(project.createdTime)}
-                            {project.lastUpdated &&
-                              project.lastUpdated !== project.createdTime &&
-                              ` • Updated: ${formatDate(project.lastUpdated)}`}
-                          </>
-                        }
-                        secondaryTypographyProps={{
-                          style: { whiteSpace: "pre-line" },
+      <Paper
+        elevation={2}
+        sx={{
+          height: "calc(100vh - 500px)",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {isLoading ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flex: 1,
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              flex: 1,
+              p: 3,
+            }}
+          >
+            <Alert severity="error">{error}</Alert>
+          </Box>
+        ) : projects.length === 0 ? (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              flex: 1,
+              p: 3,
+              textAlign: "center",
+            }}
+          >
+            <Typography color="text.secondary">
+              No projects yet. Click the button below to create your first
+              project.
+            </Typography>
+          </Box>
+        ) : (
+          <List sx={{ flex: 1, overflow: "auto" }}>
+            {projects
+              .sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime))
+              .map((project) => (
+                <ListItem
+                  key={project.id}
+                  divider
+                  disablePadding
+                  secondaryAction={
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      {project.finishedTime && (
+                        <Chip
+                          label="Completed"
+                          color="success"
+                          size="small"
+                          sx={{ mr: 2 }}
+                        />
+                      )}
+                      <IconButton
+                        edge="end"
+                        aria-label="generate-report"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toast.info("Coming soon");
                         }}
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-            </List>
-          )}
-        </Paper>
+                        sx={{ mr: 1 }}
+                      >
+                        <Tooltip title="Generate Report">
+                          <Assignment />
+                        </Tooltip>
+                      </IconButton>
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        onClick={(e) => handleDeleteClick(e, project)}
+                        sx={{ mr: 1 }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
+                  }
+                >
+                  <Checkbox
+                    checked={selectedProjects.includes(project.id)}
+                    onChange={(e) => handleCheckboxChange(e, project.id)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <ListItemButton
+                    onClick={() => handleProjectClick(project.id)}
+                  >
+                    <ListItemText
+                      primary={getProjectTitle(project)}
+                      secondary={
+                        <>
+                          <Typography
+                            component="span"
+                            variant="body2"
+                            color="text.primary"
+                          >
+                            {project.propertyOwner && project.address && (
+                              <>
+                                {project.address}
+                                <br />
+                              </>
+                            )}
+                          </Typography>
+                          Created: {formatDate(project.createdTime)}
+                          {project.lastUpdated &&
+                            project.lastUpdated !== project.createdTime &&
+                            ` • Updated: ${formatDate(project.lastUpdated)}`}
+                        </>
+                      }
+                      secondaryTypographyProps={{
+                        style: { whiteSpace: "pre-line" },
+                      }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+          </List>
+        )}
+      </Paper>
 
-        <Box sx={{ mt: 2, display: "flex", justifyContent: "center", gap: 2 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleNewProject}
-            startIcon={<AddIcon />}
-            disabled={isLoading}
-          >
-            New Project
-          </Button>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={handleViewTimelines}
-            startIcon={<TimelineIcon />}
-            disabled={isLoading || selectedProjects.length === 0}
-          >
-            View Project Timelines
-          </Button>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={() => toast.info("Coming soon")}
-            startIcon={<Assignment />}
-            disabled={isLoading || selectedProjects.length === 0}
-          >
-            Generate Projects Summary
-          </Button>
-        </Box>
-
-        <AskYesNoDialog
-          open={deleteDialogOpen}
-          title="Confirm Delete"
-          description="Are you sure you want to delete this project? This will be deleted for everyone."
-          onConfirm={handleConfirmDelete}
-          onCancel={handleCancelDelete}
-          onClose={handleCancelDelete}
-        />
+      <Box sx={{ mt: 2, display: "flex", justifyContent: "center", gap: 2 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleNewProject}
+          startIcon={<AddIcon />}
+          disabled={isLoading}
+        >
+          New Project
+        </Button>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={handleViewTimelines}
+          startIcon={<TimelineIcon />}
+          disabled={isLoading || selectedProjects.length === 0}
+        >
+          View Project Timelines
+        </Button>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={() => toast.info("Coming soon")}
+          startIcon={<Assignment />}
+          disabled={isLoading || selectedProjects.length === 0}
+        >
+          Generate Projects Summary
+        </Button>
       </Box>
-    </Container>
+
+      <AskYesNoDialog
+        open={deleteDialogOpen}
+        title="Confirm Delete"
+        description="Are you sure you want to delete this project? This will be deleted for everyone."
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        onClose={handleCancelDelete}
+      />
+    </Box>
   );
 }
