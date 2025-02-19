@@ -40,7 +40,7 @@ import availableFields from "./AvailableFields";
 import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
 import { validateProjectFields } from "./validateFields";
 import { toast } from "react-toastify";
-import Link from "next/link";
+import DayOfServiceCard from "./DayOfServiceCard";
 
 const API_BASE_URL = "/api/database/project-forms";
 
@@ -440,37 +440,18 @@ export default function ConfigurableStatusTable({ communityId, date }) {
     <Box sx={{ width: "100%", p: 4 }}>
       <DosBreadcrumbs dayOfService={dayOfService} date={date} />
 
-      <Box sx={{ display: "flex", gap: 2, mb: 4 }}>
-        <TextField
-          type="date"
-          label="Start Date"
-          value={startDate}
-          InputLabelProps={{ shrink: true }}
-          InputProps={{
-            readOnly: true,
-          }}
-        />
-        <TextField
-          type="date"
-          label="Day of Service Date"
-          value={endDate}
-          InputLabelProps={{ shrink: true }}
-          InputProps={{
-            readOnly: true,
-          }}
-        />
+      <Box sx={{ display: "flex", gap: 2, mb: 4, position: "relative" }}>
+        <DayOfServiceCard dayOfService={dayOfService} />
         <Box sx={{ flex: 1 }} />
-        <Tooltip title="Configure Tasks">
-          <IconButton onClick={() => setIsEditorOpen(true)} size="small">
-            <Settings />
-          </IconButton>
-        </Tooltip>
+        <Box sx={{ position: "absolute", right: 5 }}>
+          <Tooltip title="Configure Tasks">
+            <IconButton onClick={() => setIsEditorOpen(true)} size="small">
+              <Settings />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
-      <JsonViewer
-        data={{
-          dayOfService,
-        }}
-      />
+
       {/* Full width box */}
       {displayError && (
         <Box sx={{ width: "100%", mb: 2 }}>
