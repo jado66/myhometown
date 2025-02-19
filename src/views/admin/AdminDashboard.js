@@ -120,7 +120,7 @@ const AdminDashboardPages = () => {
                   href: rootUrl + "/admin-dashboard/classes",
                 },
                 {
-                  title: "Classes and Rolls",
+                  title: "Days of Service",
                   subtitle:
                     "View your classes and rolls. Take attendance and manage your classes.",
                   media: "/days-of-service.png",
