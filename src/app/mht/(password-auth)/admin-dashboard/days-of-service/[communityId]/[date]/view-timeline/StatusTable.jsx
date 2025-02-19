@@ -29,53 +29,56 @@ import JsonViewer from "@/components/util/debug/DebugOutput";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
 
+import availableFields from "./AvailableFields";
+import { toast } from "react-toastify";
+
 const API_BASE_URL = "/api/database/project-forms";
 
 const defaultTasks = [
   {
     id: "Find Projects",
     name: "Find and Determine Project",
-    fields: ["materialsProcured"],
-    daysToComplete: 28,
+    fields: ["materials_procured"],
+    daysBeforeDue: 42,
   },
   {
     id: "DOS - 6w",
     name: "Project Review & Ready",
-    fields: ["called811"],
+    fields: ["called_811"],
 
-    daysToComplete: 35,
+    daysBeforeDue: 35,
   },
   {
     id: "DOS - 5w",
     name: "Budget Approval",
     fields: ["budget"],
 
-    daysToComplete: 42,
+    daysBeforeDue: 28,
   },
   {
     id: "DOS - 4w",
     name: "Homeowner Ability",
-    fields: ["homeownerAbility"],
+    fields: ["homeowner_ability"],
 
-    daysToComplete: 49,
+    daysBeforeDue: 21,
   },
   {
     id: "DOS - 3w",
     name: "Hosts assigned and trained",
-    fields: ["preferredRemedies"],
+    fields: ["preferred_remedies"],
 
-    daysToComplete: 56,
+    daysBeforeDue: 14,
   },
   {
     id: "DOS - 2w",
     name: "Meetings with Hosts and Homeowner",
-    fields: ["preferredRemedies"],
-    daysToComplete: 63,
+    fields: ["preferred_remedies"],
+    daysBeforeDue: 7,
   },
   {
     id: "DOS - 1w",
     name: "Materials, Blue Stake, and Dumpsters ",
-    fields: ["isAddressVerified"],
+    fields: ["is_address_verified"],
   },
 ];
 
@@ -102,7 +105,8 @@ export default function ConfigurableStatusTable({ communityId, date }) {
   const [stagedEditorContent, setStagedEditorContent] = useState(editorContent);
 
   const [editorError, setEditorError] = useState(null);
-  const [availableFields, setAvailableFields] = useState([]);
+  const [anchorEl, setAnchorEl] = useState(null);
+
   const [showAvailableFields, setShowAvailableFields] = useState(false);
   const [startDate, setStartDate] = useState("2025-01-31");
   const [endDate, setEndDate] = useState("2025-04-11");
@@ -142,7 +146,7 @@ export default function ConfigurableStatusTable({ communityId, date }) {
     fetchDays();
   }, [communityId, date]);
 
-  // Calculate column widths based on daysToComplete
+  // Calculate column widths based on daysBeforeDue
   const getColumnWidths = useCallback(
     (containerWidth, projectColumnWidth) => {
       if (!containerWidth || !projectColumnWidth) {
@@ -188,6 +192,11 @@ export default function ConfigurableStatusTable({ communityId, date }) {
     } catch (err) {
       setEditorError(err.message);
     }
+  };
+
+  const handleResetConfig = () => {
+    setStagedEditorContent(JSON.stringify(defaultTasks, null, 2));
+    setEditorError(null);
   };
 
   const handleSaveConfig = () => {
@@ -301,59 +310,6 @@ export default function ConfigurableStatusTable({ communityId, date }) {
     fetchProjects();
     // runTests();
   }, [searchParams, getProjectForm]);
-
-  // useEffect(() => {
-  //   const tableElement = tableRef.current;
-  //   const projectColumnElement = projectColumnRef.current;
-
-  //   if (!tableElement || !projectColumnElement) return;
-
-  //   const updateDimensions = () => {
-  //     const tableWidth = tableElement.getBoundingClientRect().width;
-  //     const projectColumnWidth =
-  //       projectColumnElement.getBoundingClientRect().width;
-
-  //     const { columnWidths, maxWidthMap } = getColumnWidths(
-  //       tableWidth,
-  //       projectColumnWidth
-  //     );
-  //     setColumnWidths(columnWidths);
-  //     setMaxWidthMap(maxWidthMap);
-  //     setTodayPosition(calculateTodayPosition());
-  //   };
-
-  //   // Create a ResizeObserver instance
-  //   const resizeObserver = new ResizeObserver(updateDimensions);
-
-  //   // Observe the table element
-  //   resizeObserver.observe(tableElement);
-
-  //   // Initial calculation
-  //   setTimeout(updateDimensions, 5000);
-
-  //   // Cleanup observer on unmount
-  //   return () => {
-  //     resizeObserver.unobserve(tableElement);
-  //     resizeObserver.disconnect();
-  //   };
-  // }, [refresh, editorContent]);
-
-  useEffect(() => {
-    if (projects.length > 0) {
-      const firstProject = projects[0];
-      const excludeFields = [
-        "id",
-        "displayName",
-        "_id",
-        "createdAt",
-        "updatedAt",
-      ];
-      const fields = Object.keys(firstProject).filter(
-        (key) => !excludeFields.includes(key)
-      );
-      setAvailableFields(fields.sort());
-    }
-  }, [projects]);
 
   useEffect(() => {
     if (isProjectsloading || isDaysOfServiceLoading) {
@@ -592,8 +548,8 @@ export default function ConfigurableStatusTable({ communityId, date }) {
                   >
                     <Tooltip
                       title={`${task.name}${
-                        task.daysToComplete
-                          ? ` (${task.daysToComplete} days)`
+                        task.daysBeforeDue
+                          ? ` (${task.daysBeforeDue} days)`
                           : ""
                       }`}
                       arrow
@@ -717,43 +673,43 @@ export default function ConfigurableStatusTable({ communityId, date }) {
         </DialogTitle>
         <DialogContent>
           <Box sx={{ mb: 2, mt: 1 }}>
-            <Button
-              id="fields-button"
-              aria-controls={showAvailableFields ? "fields-menu" : undefined}
-              aria-haspopup="true"
-              aria-expanded={showAvailableFields ? "true" : undefined}
-              onClick={() => setShowAvailableFields(!showAvailableFields)}
-              fullWidth
-              variant="outlined"
-              sx={{
-                justifyContent: "flex-start",
-                color: "text.primary",
-                opacity: 1,
-              }}
-            >
-              Available Fields
-            </Button>
             <Menu
               id="fields-menu"
               open={showAvailableFields}
-              onClose={() => setShowAvailableFields(false)}
+              anchorEl={anchorEl}
+              onClose={() => {
+                setShowAvailableFields(false);
+                setAnchorEl(null);
+              }}
               MenuListProps={{
                 "aria-labelledby": "fields-button",
               }}
               anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
-              }}
-              transformOrigin={{
                 vertical: "top",
                 horizontal: "left",
               }}
+              transformOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+              }}
             >
-              {availableFields.map((field) => (
-                <MenuItem key={field} sx={{ minWidth: "100%" }}>
-                  {field}
-                </MenuItem>
-              ))}
+              {availableFields
+                .sort((a, b) => a.column_name.localeCompare(b.column_name))
+                .map((field) => (
+                  <MenuItem
+                    key={field.column_name}
+                    sx={{ minWidth: "100%" }}
+                    onClick={() => {
+                      // copy to clipboard
+                      navigator.clipboard.writeText(field.column_name);
+                      toast.success("Field copied to clipboard");
+                      setAnchorEl(null);
+                      setShowAvailableFields(false);
+                    }}
+                  >
+                    {field.column_name}
+                  </MenuItem>
+                ))}
             </Menu>
           </Box>
 
@@ -775,7 +731,36 @@ export default function ConfigurableStatusTable({ communityId, date }) {
             </Box>
           )}
         </DialogContent>
-        <DialogActions>
+        <DialogActions
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 1,
+            p: 2,
+          }}
+        >
+          <Button onClick={handleResetConfig} variant="outlined">
+            Reset Configuration
+          </Button>
+          <Button
+            id="fields-button"
+            aria-controls={showAvailableFields ? "fields-menu" : undefined}
+            aria-haspopup="true"
+            aria-expanded={showAvailableFields ? "true" : undefined}
+            onClick={(event) => {
+              setAnchorEl(event.currentTarget);
+              setShowAvailableFields(true);
+            }}
+            variant="outlined"
+            sx={{
+              justifyContent: "flex-start",
+              color: "text.primary",
+              opacity: 1,
+            }}
+          >
+            Available Fields
+          </Button>
+          <Box sx={{ flex: 1 }} />
           <Button onClick={resetEditor}>Cancel</Button>
           <Button
             onClick={handleSaveConfig}
@@ -798,30 +783,31 @@ export default function ConfigurableStatusTable({ communityId, date }) {
  * @param {number} totalDays - Total number of days in the timeline.
  * @returns {Array} - Array of column widths.
  */
+
 function calculateColumnWidths(tasks, availableWidth, totalDays) {
   const pixelsPerDay = availableWidth / totalDays;
+  const columnWidths = [];
 
-  let maxDaysToComplete = 0;
-  // Step 1: Create initial map of maximum widths
-  // const maxWidthMap = tasks.map((task) =>
-  //   task.daysToComplete ? task.daysToComplete * pixelsPerDay : null
-  // );
+  let totalDaysAccountedFor = 0;
 
-  const maxWidthMap = tasks.map((task) => {
-    if (task.daysToComplete) {
-      const totalDays = task.daysToComplete - maxDaysToComplete;
-      maxDaysToComplete = Math.max(maxDaysToComplete, task.daysToComplete);
+  for (let i = 0; i < tasks.length; i++) {
+    const currentTask = tasks[i];
+    const nextTask = tasks[i + 1];
 
-      return totalDays * pixelsPerDay;
-    }
-    return (totalDays - maxDaysToComplete) * pixelsPerDay;
-  });
+    // Calculate the difference in daysBeforeDue
+    const daysToAccomplishThisTask =
+      totalDays - (currentTask.daysBeforeDue || 0);
+    const daysToDisplay = daysToAccomplishThisTask - totalDaysAccountedFor;
 
-  // Handle remaining unspecified tasks after last specified task
+    totalDaysAccountedFor += daysToDisplay;
 
-  return { columnWidths: maxWidthMap };
+    // Calculate the width for this column
+    const width = daysToDisplay * pixelsPerDay;
+    columnWidths.push(width);
+  }
+
+  return { columnWidths };
 }
-
 function runTests() {
   const testCases = [
     {
@@ -830,10 +816,10 @@ function runTests() {
       totalDays: 100,
       // pixelsPerDay = 800 / 100 = 8
       tasks: [
-        { id: "A", daysToComplete: 5 }, // 5*8 = 40
+        { id: "A", daysBeforeDue: 5 }, // 5*8 = 40
         { id: "B" }, // ?
         { id: "C" }, // ?
-        { id: "D", daysToComplete: 50 }, // (50 * 8 = 400) - 40 = 360 split between B, C, and D so 120 each
+        { id: "D", daysBeforeDue: 50 }, // (50 * 8 = 400) - 40 = 360 split between B, C, and D so 120 each
         { id: "E" }, // whatever is left - 800 - 400 = 400
       ],
       expectedInitialPass: [40, null, null, 400, null],
@@ -841,10 +827,10 @@ function runTests() {
       expected: [40, 120, 120, 120, 400],
     },
     {
-      name: "All Tasks Have daysToComplete",
+      name: "All Tasks Have daysBeforeDue",
       tasks: [
-        { id: "A", daysToComplete: 10 }, // 10 * 20 = 200
-        { id: "B", daysToComplete: 20 }, // 20 * 20 = 400
+        { id: "A", daysBeforeDue: 10 }, // 10 * 20 = 200
+        { id: "B", daysBeforeDue: 20 }, // 20 * 20 = 400
         { id: "C" }, // 1000 - 400 = 600
       ],
       availableWidth: 1000,
@@ -854,7 +840,7 @@ function runTests() {
       expected: [200, 200, 600],
     },
     {
-      name: "No Tasks Have daysToComplete",
+      name: "No Tasks Have daysBeforeDue",
       tasks: [{ id: "A" }, { id: "B" }, { id: "C" }],
       availableWidth: 900,
       totalDays: 30,
@@ -865,9 +851,9 @@ function runTests() {
     {
       name: "Mixed Tasks",
       tasks: [
-        { id: "A", daysToComplete: 15 }, // 300
-        { id: "B" }, // no daysToComplete so wait to calculate
-        { id: "C", daysToComplete: 25 }, // Ends at (25 * 20 = 500) and 500 - 300 = 200. B and C need widths so 200 / 2 = 100 for each
+        { id: "A", daysBeforeDue: 15 }, // 300
+        { id: "B" }, // no daysBeforeDue so wait to calculate
+        { id: "C", daysBeforeDue: 25 }, // Ends at (25 * 20 = 500) and 500 - 300 = 200. B and C need widths so 200 / 2 = 100 for each
         { id: "D" }, // 1000 - 500 = 500
       ],
       availableWidth: 1000,
@@ -883,47 +869,47 @@ function runTests() {
           id: "Find Projects",
           name: "Find and Determine Project",
           fields: ["materialsProcured"],
-          daysToComplete: 28,
+          daysBeforeDue: 28,
         },
         {
           id: "DOS - 6w",
           name: "Project Review & Ready",
           fields: ["called811"],
 
-          daysToComplete: 35,
+          daysBeforeDue: 35,
         },
         {
           id: "DOS - 5w",
           name: "Budget Approval",
           fields: ["budget"],
 
-          daysToComplete: 42,
+          daysBeforeDue: 42,
         },
         {
           id: "DOS - 4w",
           name: "Homeowner Ability",
           fields: ["homeownerAbility"],
 
-          daysToComplete: 49,
+          daysBeforeDue: 49,
         },
         {
           id: "DOS - 3w",
           name: "Hosts assigned and trained",
           fields: ["preferredRemedies"],
 
-          daysToComplete: 56,
+          daysBeforeDue: 56,
         },
         {
           id: "DOS - 2w",
           name: "Meetings with Hosts and Homeowner",
           fields: ["preferredRemedies"],
-          daysToComplete: 63,
+          daysBeforeDue: 63,
         },
         {
           id: "DOS - 1w",
           name: "Materials, Blue Stake, and Dumpsters ",
           fields: ["isAddressVerified"],
-          daysToComplete: 70,
+          daysBeforeDue: 70,
         },
       ],
       availableWidth: 1000,
