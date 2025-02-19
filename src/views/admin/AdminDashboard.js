@@ -122,7 +122,7 @@ const AdminDashboardPages = () => {
                 {
                   title: "Days of Service",
                   subtitle:
-                    "View your classes and rolls. Take attendance and manage your classes.",
+                    "View and manage your days of service. Track your projects and volunteers.",
                   media: "/days-of-service.png",
                   href: rootUrl + "/admin-dashboard/days-of-service",
                 },
