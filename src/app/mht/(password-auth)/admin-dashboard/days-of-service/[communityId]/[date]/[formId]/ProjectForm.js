@@ -251,6 +251,17 @@ const ProjectForm = ({ formId, date, communityId }) => {
             {/* Date for day of service */}
 
             <ProjectTextField
+              fullWidth
+              label="Project Name"
+              value={formData.project_name}
+              key="project_name"
+              onChange={(e) =>
+                handleInputChange("project_name", e.target.value)
+              }
+              helperText="Name of the project. This will be used to identify the project in the system."
+            />
+
+            <ProjectTextField
               type="date"
               fullWidth
               label="Day Of Service Date"
@@ -281,7 +292,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
               onChange={(e) =>
                 handleInputChange("project_developer", e.target.value)
               }
-              helperText="Name of the first person is developing the project. They will be the main point of contact for the project."
+              helperText="Name of the person(s) is developing the project. They will be the main point of contact for the project."
             />
             <ProjectTextField
               label="Project Developer Phone Number 1"
@@ -416,6 +427,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
             <ProjectTextField
               label="Resource Couple Phone Number (2)"
               fullWidth
+              key="project_development_couple_phone2"
               value={formData.project_development_couple_phone2}
               onChange={(e) =>
                 handleInputChange(

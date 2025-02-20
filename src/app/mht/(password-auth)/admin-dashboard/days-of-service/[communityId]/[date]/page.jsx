@@ -24,6 +24,7 @@ import {
   Add as AddIcon,
   Assignment,
   Delete as DeleteIcon,
+  Pin,
   Report,
   Timeline as TimelineIcon,
 } from "@mui/icons-material";
@@ -215,15 +216,22 @@ export default function ProjectFormsPage({ params }) {
       month: "short",
       day: "numeric",
       year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
     });
   };
 
   const getProjectTitle = (project) => {
-    if (project.propertyOwner) return project.propertyOwner;
-    if (project.address) return project.address;
-    return `Project ${project.id.slice(0, 8)}...`;
+    let projectTitle = "";
+
+    if (project.project_name) projectTitle += project.project_name;
+
+    if (project.project_development_couple)
+      projectTitle += ` -  Resource Couple: ${project.project_development_couple}`;
+
+    if (!projectTitle) {
+      return `Project ${project.id.slice(0, 8)}...`;
+    }
+
+    return projectTitle;
   };
 
   return (
@@ -232,6 +240,8 @@ export default function ProjectFormsPage({ params }) {
       <Typography variant="h4" component="h1" gutterBottom>
         {dayOfService?.name || "Day of Service"} Projects for {date}
       </Typography>
+
+      <JsonViewer data={projects} />
 
       <Paper
         elevation={2}
@@ -282,7 +292,7 @@ export default function ProjectFormsPage({ params }) {
         ) : (
           <List sx={{ flex: 1, overflow: "auto" }}>
             {projects
-              .sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime))
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
               .map((project) => (
                 <ListItem
                   key={project.id}
@@ -339,17 +349,22 @@ export default function ProjectFormsPage({ params }) {
                             variant="body2"
                             color="text.primary"
                           >
-                            {project.propertyOwner && project.address && (
-                              <>
-                                {project.address}
-                                <br />
-                              </>
-                            )}
+                            {project.address_street1 &&
+                              project.address_city && (
+                                <>
+                                  {project.address_street1}
+                                  {project.address_street2 && (
+                                    <>{`, ${project.address_street2}`}</>
+                                  )}
+                                  {`, ${project.address_city}`}
+                                  <br />
+                                </>
+                              )}
                           </Typography>
-                          Created: {formatDate(project.createdTime)}
-                          {project.lastUpdated &&
-                            project.lastUpdated !== project.createdTime &&
-                            ` • Updated: ${formatDate(project.lastUpdated)}`}
+                          Created: {formatDate(project.created_at)}
+                          {project.updated_at &&
+                            project.updated_at !== project.created_at &&
+                            ` • Updated: ${formatDate(project.updated_at)}`}
                           {project.status && (
                             <>
                               <Chip
