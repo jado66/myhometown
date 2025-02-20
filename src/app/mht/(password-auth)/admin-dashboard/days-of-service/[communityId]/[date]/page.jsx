@@ -48,14 +48,15 @@ export default function ProjectFormsPage({ params }) {
 
   const [isLoading, setIsLoading] = useState(true);
 
-  const { fetchDayOfService } = useDaysOfService();
+  const { fetchDayOfServiceByShortId } = useDaysOfService();
 
-  const { fetchProjectsByDaysOfServiceId, error } = useDaysOfServiceProjects();
+  const { fetchProjectsByDaysOfServiceId, deleteProject, error } =
+    useDaysOfServiceProjects();
 
   useEffect(() => {
     const fetchDays = async () => {
       try {
-        const { data, error } = await fetchDayOfService(
+        const { data, error } = await fetchDayOfServiceByShortId(
           `${communityId}_${date}`
         );
 
@@ -72,7 +73,7 @@ export default function ProjectFormsPage({ params }) {
   }, [communityId, date]);
 
   useEffect(() => {
-    if (communityId) {
+    if (dayOfService) {
       // get from supabase communities table .cityId
       const fetchCityId = async () => {
         const { data, error } = await fetchNewCommunities({
@@ -91,16 +92,14 @@ export default function ProjectFormsPage({ params }) {
 
     if (communityId && date) {
       const fetchProjects = async () => {
-        const data = await fetchProjectsByDaysOfServiceId(
-          `${communityId}_${date}`
-        );
+        const data = await fetchProjectsByDaysOfServiceId(dayOfService?.id);
 
         setProjects(data);
         setIsLoading(false);
       };
       fetchProjects();
     }
-  }, [communityId]);
+  }, [dayOfService]);
 
   const router = useRouter();
 
@@ -132,22 +131,15 @@ export default function ProjectFormsPage({ params }) {
   const handleConfirmDelete = async () => {
     if (projectToDelete) {
       try {
-        const response = await fetch(
-          `/api/database/project-forms/${projectToDelete.id}`,
-          { method: "DELETE" }
-        );
-
-        if (!response.ok && response.status !== 404) {
-          throw new Error("Failed to delete project");
-        }
-
         deleteProject(projectToDelete.id);
         setDeleteDialogOpen(false);
         setProjectToDelete(null);
         setSelectedProjects((prev) =>
           prev.filter((id) => id !== projectToDelete.id)
         );
-        toast.success("Project deleted successfully");
+        setProjects((prev) =>
+          prev.filter((project) => project.id !== projectToDelete.id)
+        );
       } catch (error) {
         console.error("Error deleting project:", error);
       }

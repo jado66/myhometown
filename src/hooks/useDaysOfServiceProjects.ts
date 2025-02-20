@@ -1,19 +1,29 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { supabase } from "@/util/supabase";
+import { useDaysOfService } from "./useDaysOfService";
 
 export const useDaysOfServiceProjects = () => {
   const [loading, setLoading] = useState(true);
+
+  const { fetchDayOfServiceByShortId } = useDaysOfService();
 
   const addProject = async (
     newId: string,
     community_id: string,
     city_id: string,
-    daysOfServiceId: string,
+    daysOfServiceShortId: string,
     user: any
   ) => {
     setLoading(true);
     try {
+      const { data: dayOfService, error: dos_error } =
+        await fetchDayOfServiceByShortId(daysOfServiceShortId);
+
+      if (dos_error) throw dos_error;
+
+      const daysOfServiceId = dayOfService?.id;
+
       const projectData = {
         community_id: community_id,
         city_id: city_id,
@@ -33,7 +43,7 @@ export const useDaysOfServiceProjects = () => {
 
       if (error) throw error;
 
-      toast.success("Project saved successfully");
+      toast.success("Project created successfully");
     } catch (error) {
       toast.error("Failed to save project");
     } finally {
@@ -101,11 +111,30 @@ export const useDaysOfServiceProjects = () => {
     }
   };
 
+  const deleteProject = async (projectId: string) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("days_of_service_project_forms")
+        .delete()
+        .eq("id", projectId);
+
+      if (error) throw error;
+
+      toast.success("Project deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete project");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     addProject,
     fetchProjectsByCommunityId,
     fetchProjectsByCityId,
     fetchProjectsByDaysOfServiceId,
+    deleteProject,
   };
 };

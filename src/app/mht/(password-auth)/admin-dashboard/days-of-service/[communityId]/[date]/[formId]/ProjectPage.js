@@ -15,14 +15,14 @@ import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
 
 const ProjectFormPage = ({ formId, date, communityId }) => {
   const [dayOfService, setDayOfService] = useState(null);
-  const { fetchDayOfService } = useDaysOfService();
+  const { fetchDayOfServiceByShortId } = useDaysOfService();
 
   const { formData } = useProjectForm();
 
   useEffect(() => {
     const fetchDays = async () => {
       try {
-        const { data, error } = await fetchDayOfService(
+        const { data, error } = await fetchDayOfServiceByShortId(
           `${communityId}_${date}`
         );
 
@@ -59,13 +59,14 @@ const ProjectFormPage = ({ formId, date, communityId }) => {
         >
           <DosBreadcrumbs
             dayOfService={dayOfService}
-            date="03-31-2025"
+            date={date}
             projectName={formData?.project_name}
             sx={{
               bgcolor: "white",
               display: "flex",
               justifyContent: "center",
             }}
+            isProjectView
           />
         </Container>
         <Container maxWidth="lg" sx={{}}>

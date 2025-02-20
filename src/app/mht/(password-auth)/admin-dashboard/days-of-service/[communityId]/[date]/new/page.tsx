@@ -7,6 +7,8 @@ import { CircularProgress, Box, Typography } from "@mui/material";
 import { useDaysOfServiceProjectForm } from "@/hooks/useDaysOfServiceProjectForms";
 import { useDaysOfServiceProjects } from "@/hooks/useDaysOfServiceProjects";
 import { useUser } from "@/hooks/use-user";
+import { useDaysOfService } from "@/hooks/useDaysOfService";
+import { toast } from "react-toastify";
 
 interface NewProjectPageProps {
   params: {
@@ -28,9 +30,18 @@ export default function NewProjectPage({ params }: NewProjectPageProps) {
   const days_of_service_id = `${community_id}_${date}`;
 
   const { addProject } = useDaysOfServiceProjects();
+  const { fetchDayOfServiceByShortId } = useDaysOfService();
 
   useEffect(() => {
     const createAndRedirect = async () => {
+      let daysOfService = await fetchDayOfServiceByShortId(days_of_service_id);
+
+      if (daysOfService.error) {
+        console.error("Error fetching days of service:", daysOfService.error);
+        toast.error("Failed to fetch days of service");
+        return;
+      }
+
       try {
         if (!city_id) {
           throw new Error("City ID is required");
@@ -41,7 +52,7 @@ export default function NewProjectPage({ params }: NewProjectPageProps) {
           newId,
           community_id,
           city_id,
-          `${community_id}_${date}`,
+          days_of_service_id,
           user
         );
 
@@ -50,7 +61,7 @@ export default function NewProjectPage({ params }: NewProjectPageProps) {
 
         // Redirect to the project form page with all necessary IDs
         router.push(
-          `/${rootUrl}/admin-dashboard/days-of-service/${community_id}/${date}/${newId}`
+          `${rootUrl}/admin-dashboard/days-of-service/${community_id}/${date}/${newId}`
         );
       } catch (error) {
         console.error("Error creating new project:", error);

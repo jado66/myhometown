@@ -27,6 +27,7 @@ import { Close, Edit, EditCalendar } from "@mui/icons-material";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
 import Loading from "@/components/util/Loading";
 import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
+import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 
 const CityIdToPasswordHash = {
   provo: "Provo6940!",
@@ -95,15 +96,11 @@ const CommunitySelectionPage = ({ params }) => {
   };
 
   const handleDeleteDay = async (id) => {
-    if (
-      window.confirm("Are you sure you want to delete this day of service?")
-    ) {
-      try {
-        await deleteDayOfService(id);
-        setDaysOfService((prev) => prev.filter((day) => day.id !== id));
-      } catch (error) {
-        console.error("Error deleting day of service:", error);
-      }
+    try {
+      await deleteDayOfService(id);
+      setDaysOfService((prev) => prev.filter((day) => day.id !== id));
+    } catch (error) {
+      console.error("Error deleting day of service:", error);
     }
 
     setSelectedServiceDay(null);
@@ -142,7 +139,7 @@ const CommunitySelectionPage = ({ params }) => {
   const handleDaysOfServiceCardClick = (day) => {
     router.push(
       process.env.NEXT_PUBLIC_DOMAIN +
-        `/admin-dashboard/days-of-service/${day.id.replaceAll("_", "/")}`
+        `/admin-dashboard/days-of-service/${day.short_id.replaceAll("_", "/")}`
     );
   };
 
@@ -335,6 +332,7 @@ const ServiceDayDialog = ({
   });
 
   const [isLoading, setIsLoading] = React.useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
 
   const { addDayOfService, updateDayOfService } = useDaysOfService();
 
@@ -471,7 +469,7 @@ const ServiceDayDialog = ({
           }}
         >
           <Button
-            onClick={() => handleDeleteDay(initialData?.id)}
+            onClick={() => setShowDeleteDialog(true)}
             color="error"
             disabled={isLoading}
             variant="outlined"
@@ -490,6 +488,16 @@ const ServiceDayDialog = ({
           </Button>
         </DialogActions>
       </form>
+      <AskYesNoDialog
+        open={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        title="Delete Day of Service?"
+        description="Are you sure you want to delete this day of service? This will also delete all projects associated with this day. This action cannot be undone."
+        onConfirm={() => {
+          handleDeleteDay(initialData?.id);
+          setShowDeleteDialog(false);
+        }}
+      />
     </Dialog>
   );
 };

@@ -1,83 +1,110 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Breadcrumbs, Typography } from "@mui/material";
+import { Breadcrumbs, Typography, SxProps, Theme } from "@mui/material";
 import { NavigateNext } from "@mui/icons-material";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const DosBreadcrumbs = ({
+interface CommunityData {
+  city_name: string;
+  name: string;
+  community_id: string;
+}
+
+interface DayOfService {
+  city_name: string;
+  community_name: string;
+  community_id: string;
+  name?: string;
+}
+
+interface DosBreadcrumbsProps {
+  dayOfService?: DayOfService;
+  communityData?: CommunityData;
+  date?: string;
+  projectName?: string;
+  sx?: SxProps<Theme>;
+  isProjectView?: boolean;
+}
+
+const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
   dayOfService,
   communityData,
   date,
   projectName,
+  isProjectView,
   sx,
 }) => {
   const pathname = usePathname();
+  const isDev = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev";
+  const basePrefix = isDev ? "/mht" : "";
   const pathnames = pathname
     ? pathname
         .split("/")
         .filter(Boolean)
-        .filter((path) => path !== "mht")
+        .filter((path) => path !== "mht") // Remove 'mht' from path segments
     : [];
 
-  const isProjectView = pathnames[pathnames.length - 1]?.includes("-");
-  const projectId = isProjectView ? pathnames[pathnames.length - 1] : null;
-
-  const generateBreadcrumbsData = () => {
-    // Base structure that's always present
+  const generateBreadcrumbsData = (): string[] => {
     const base = ["Admin Dashboard", "Days of Service"];
 
-    // If we have community data
     if (communityData) {
       base.push(`${communityData.city_name} - ${communityData.name}`);
     } else if (dayOfService) {
-      // Fallback to dayOfService data if communityData isn't provided
       base.push(`${dayOfService.city_name} - ${dayOfService.community_name}`);
     }
 
-    // If we have a day of service
     if (dayOfService && date) {
       base.push(`${dayOfService.name || ""} ${date}`);
 
-      // Add "View Timeline" only if we're at that path specifically
       if (pathnames.includes("view-timeline") && !isProjectView) {
         base.push("View Timeline");
       }
 
-      // Add project name or ID if we're at project level
       if (isProjectView) {
-        base.push(projectName || `Project Form`);
+        base.push(projectName || "Project Form");
       }
     }
 
     return base;
   };
 
-  const [pathTitles, setPathTitles] = useState(generateBreadcrumbsData());
+  const [pathTitles, setPathTitles] = useState<string[]>(
+    generateBreadcrumbsData()
+  );
 
   useEffect(() => {
     setPathTitles(generateBreadcrumbsData());
   }, [dayOfService, communityData, date, pathname, projectName]);
 
-  const generateHref = (index) => {
+  const generateHref = (index: number): string => {
     const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || "";
     const communityId =
       communityData?.community_id || dayOfService?.community_id;
 
-    // Map the breadcrumb index to the corresponding URL path
+    // Construct the URL with optional dev prefix
+    const getUrl = (segments: string[]): string => {
+      return `${baseUrl}/${segments.join("/")}`;
+    };
+
     switch (index) {
       case 0: // Admin Dashboard
-        return `${baseUrl}/admin-dashboard`;
+        return getUrl(["admin-dashboard"]);
       case 1: // Days of Service
-        return `${baseUrl}/admin-dashboard/days-of-service`;
+        return getUrl(["admin-dashboard", "days-of-service"]);
       case 2: // Community Level
         if (communityId) {
-          return `${baseUrl}/admin-dashboard/days-of-service/${communityId}`;
+          return getUrl(["admin-dashboard", "days-of-service", communityId]);
         }
         return pathname;
       case 3: // Day of Service Level
         if (communityId && date) {
-          return `${baseUrl}/admin-dashboard/days-of-service/${communityId}/${date}`;
+          return getUrl([
+            "admin-dashboard",
+            "days-of-service",
+            communityId,
+            date,
+          ]);
         }
         return pathname;
       case 4: // View Timeline or Project
@@ -85,7 +112,13 @@ const DosBreadcrumbs = ({
           if (isProjectView) {
             return pathname; // Current project URL
           } else {
-            return `${baseUrl}/admin-dashboard/days-of-service/${communityId}/${date}/view-timeline`;
+            return getUrl([
+              "admin-dashboard",
+              "days-of-service",
+              communityId,
+              date,
+              "view-timeline",
+            ]);
           }
         }
         return pathname;
