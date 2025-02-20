@@ -18,6 +18,8 @@ import {
   Checkbox,
   Tooltip,
 } from "@mui/material";
+import { v4 as uuidv4 } from "uuid";
+
 import {
   Add as AddIcon,
   Assignment,
@@ -35,14 +37,19 @@ import JsonViewer from "@/components/util/debug/DebugOutput";
 import { useDaysOfServiceProjects } from "@/hooks/useDaysOfServiceProjects";
 import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
+import { useUser } from "@/hooks/use-user";
 
 export default function ProjectFormsPage({ params }) {
   const { date, communityId } = params;
+
+  const { user } = useUser();
 
   const [dayOfService, setDayOfService] = useState();
   const [daysOfServiceLoading, setDaysOfServiceLoading] = useState(true);
   const [cityId, setCityId] = useState();
   const [projects, setProjects] = useState([]);
+
+  const [creatingProject, setCreatingProject] = useState(false);
 
   const { fetchNewCommunities } = useCommunities();
 
@@ -50,7 +57,7 @@ export default function ProjectFormsPage({ params }) {
 
   const { fetchDayOfServiceByShortId } = useDaysOfService();
 
-  const { fetchProjectsByDaysOfServiceId, deleteProject, error } =
+  const { fetchProjectsByDaysOfServiceId, deleteProject, error, addProject } =
     useDaysOfServiceProjects();
 
   useEffect(() => {
@@ -114,12 +121,41 @@ export default function ProjectFormsPage({ params }) {
     );
   };
 
-  const handleNewProject = () => {
-    const url =
-      process.env.NEXT_PUBLIC_DOMAIN +
-      `/admin-dashboard/days-of-service/${communityId}/${date}/new?cityId=${cityId}`;
+  const handleNewProject = async () => {
+    if (error) {
+      console.error("Error fetching days of service:", error);
+      toast.error("Failed to fetch days of service");
+      return;
+    }
 
-    router.push(url);
+    setCreatingProject(true);
+
+    try {
+      if (!dayOfService.city_id) {
+        throw new Error("City ID is required");
+      }
+
+      const newId = uuidv4();
+      await addProject(
+        newId,
+        dayOfService.community_id,
+        dayOfService.city_id,
+        `${communityId}_${date}`,
+        user
+      );
+
+      // Wait for 1.5 seconds
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Redirect to the project form page with all necessary IDs
+      router.push(
+        `${process.env.NEXT_PUBLIC_DOMAIN}/admin-dashboard/days-of-service/${communityId}/${date}/${newId}`
+      );
+    } catch (error) {
+      console.error("Error creating new project:", error);
+    } finally {
+      setCreatingProject(false);
+    }
   };
 
   const handleDeleteClick = (e, project) => {
@@ -333,9 +369,9 @@ export default function ProjectFormsPage({ params }) {
           color="primary"
           onClick={handleNewProject}
           startIcon={<AddIcon />}
-          disabled={isLoading}
+          disabled={isLoading || creatingProject}
         >
-          New Project
+          {creatingProject ? "Creating Project..." : "New Project"}
         </Button>
         <Button
           variant="outlined"

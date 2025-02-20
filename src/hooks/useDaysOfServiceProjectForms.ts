@@ -121,7 +121,6 @@ export const useDaysOfServiceProjectForm = ({
         const projectData = {
           ...data,
           community_id: communityId,
-          days_of_service_id: daysOfServiceId,
           updated_by: user?.id,
         };
 

@@ -65,10 +65,10 @@ const Map = ({ themeMode = "light" }) => {
               </Typography>
               <Typography variant={"subtitle1"}>
                 <a
-                  href="mailto:Info@CitiesStrong.com"
+                  href="mailto:Info@CitiesStrong.org"
                   style={{ textDecoration: "none", color: "black" }}
                 >
-                  Info@CitiesStrong.com
+                  Info@CitiesStrong.org
                 </a>
               </Typography>
             </Grid>

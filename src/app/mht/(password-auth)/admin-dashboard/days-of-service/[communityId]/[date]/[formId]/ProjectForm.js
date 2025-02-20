@@ -218,6 +218,8 @@ const ProjectForm = ({ formId, date, communityId }) => {
             </Typography>
             <Divider sx={{ mt: 2 }} />
 
+            <JsonViewer data={formData} />
+
             <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
               Project Information
             </Typography>
