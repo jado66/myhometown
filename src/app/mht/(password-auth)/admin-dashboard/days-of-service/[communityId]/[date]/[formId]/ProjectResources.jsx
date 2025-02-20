@@ -11,7 +11,6 @@ import {
   Box,
   Divider,
 } from "@mui/material";
-import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export function ProjectResources({
   formData,
@@ -57,6 +56,19 @@ export function ProjectResources({
     handleInputChange(fieldName, newItems);
   };
 
+  // Helper function to normalize items to an array
+  const normalizeItems = (items) => {
+    if (Array.isArray(items)) return items;
+    if (typeof items === "string") {
+      try {
+        return JSON.parse(items); // Parse stringified arrays like "[\"shovel\"]"
+      } catch (e) {
+        return []; // Fallback to empty array if parsing fails
+      }
+    }
+    return []; // Fallback for undefined, null, or other types
+  };
+
   return (
     <>
       {sections.map((section, sectionIndex) => (
@@ -67,15 +79,14 @@ export function ProjectResources({
               {section.title}
             </Typography>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-              {section.items &&
-                section.items.map((item, index) => (
-                  <Chip
-                    key={index}
-                    label={item}
-                    onDelete={() => handleDelete(section.category, index)}
-                    size="small"
-                  />
-                ))}
+              {normalizeItems(section.items).map((item, index) => (
+                <Chip
+                  key={index}
+                  label={item}
+                  onDelete={() => handleDelete(section.category, index)}
+                  size="small"
+                />
+              ))}
               <TextField
                 size="small"
                 variant="outlined"

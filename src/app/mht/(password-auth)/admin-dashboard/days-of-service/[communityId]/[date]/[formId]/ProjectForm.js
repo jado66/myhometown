@@ -44,8 +44,11 @@ import JsonViewer from "@/components/util/debug/DebugOutput";
 import { ProjectResources } from "./ProjectResources";
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
+import { useRouter } from "next/navigation";
 
 const ProjectForm = ({ formId, date, communityId }) => {
+  const router = useRouter();
+
   const [collaboratorEmail, setCollaboratorEmail] = useState("");
   const [collaboratorMessage, setCollaboratorMessage] = useState("");
   const [fromName, setFromName] = useLocalStorage(
@@ -64,7 +67,9 @@ const ProjectForm = ({ formId, date, communityId }) => {
     handleInputChange,
     isInitialLoading,
     addCollaborator,
+    finishProject,
     community,
+    saveProject,
   } = useProjectForm();
 
   const steps = [
@@ -137,6 +142,25 @@ const ProjectForm = ({ formId, date, communityId }) => {
       // Clear the input
       e.target.value = "";
     }
+  };
+
+  const saveAndExit = () => {
+    // Save the form data
+    saveProject();
+    // Redirect to the dashboard
+
+    router.push(
+      process.env.NEXT_PUBLIC_DOMAIN +
+        `/admin-dashboard/days-of-service/${communityId}/${date}`
+    );
+  };
+
+  const handleFinish = () => {
+    finishProject();
+    router.push(
+      process.env.NEXT_PUBLIC_DOMAIN +
+        `/admin-dashboard/days-of-service/${communityId}/${date}`
+    );
   };
 
   // Replace local handlers with context handlers
@@ -226,7 +250,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
 
             {/* Date for day of service */}
 
-            <TextField
+            <ProjectTextField
               type="date"
               fullWidth
               label="Day Of Service Date"
@@ -236,7 +260,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
               }}
             />
 
-            <TextField
+            <ProjectTextField
               label="Community"
               fullWidth
               value={`${community?.city_name || ""} - ${community?.name || ""}`}
@@ -271,6 +295,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
             <ProjectTextField
               label="Project Developer Email Address 1 "
               fullWidth
+              key="project_developer_email1"
               value={formData.project_developer_email1}
               onChange={(e) =>
                 handleInputChange("project_developer_email1", e.target.value)
@@ -287,6 +312,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
               helperText="Phone number of the second person who is developing the project (optional)."
             />
             <ProjectTextField
+              key="project_developer_email2"
               label="Project Developer Email Address 2"
               fullWidth
               value={formData.project_developer_email2}
@@ -327,7 +353,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
             <Divider sx={{ my: 2 }} />
             <AddressFormFields />
             <Divider sx={{ my: 2 }} />
-            <TextField
+            <ProjectTextField
               label="Work Summary"
               fullWidth
               multiline
@@ -351,17 +377,19 @@ const ProjectForm = ({ formId, date, communityId }) => {
             <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
               Detailed Planning
             </Typography>
-            <TextField
+            <ProjectTextField
               label="Resource Couple"
               fullWidth
               value={formData.project_development_couple}
+              key="project_development_couple"
               onChange={(e) =>
                 handleInputChange("project_development_couple", e.target.value)
               }
             />
 
-            <TextField
+            <ProjectTextField
               label="Resource Couple Phone Number (1)"
+              key="project_development_couple_phone1"
               fullWidth
               value={formData.project_development_couple_phone1}
               onChange={(e) =>
@@ -372,8 +400,9 @@ const ProjectForm = ({ formId, date, communityId }) => {
               }
             />
 
-            <TextField
+            <ProjectTextField
               label="Resource Couple Email (1)"
+              key="project_development_couple_email1"
               fullWidth
               value={formData.project_development_couple_email1}
               onChange={(e) =>
@@ -384,7 +413,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
               }
             />
 
-            <TextField
+            <ProjectTextField
               label="Resource Couple Phone Number (2)"
               fullWidth
               value={formData.project_development_couple_phone2}
@@ -396,9 +425,10 @@ const ProjectForm = ({ formId, date, communityId }) => {
               }
             />
 
-            <TextField
+            <ProjectTextField
               label="Resource Couple Email (2)"
               fullWidth
+              key={"project_development_couple_email2"}
               value={formData.project_development_couple_email2}
               onChange={(e) =>
                 handleInputChange(
@@ -408,7 +438,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
               }
             />
 
-            <TextField
+            <ProjectTextField
               label="Preferred Remedies"
               fullWidth
               multiline
@@ -438,9 +468,9 @@ const ProjectForm = ({ formId, date, communityId }) => {
 
             <Divider sx={{ my: 1 }} />
 
-            {/* Textfield number for manpower # of people needed */}
+            {/* ProjectTextField number for manpower # of people needed */}
             <Box sx={{ mt: 3 }}>
-              <TextField
+              <ProjectTextField
                 label="Number of Volunteers Needed"
                 type="number"
                 min={0}
@@ -468,7 +498,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
               </Typography>
             </Alert>
 
-            <TextField
+            <ProjectTextField
               label="Resource Budget Description "
               fullWidth
               multiline
@@ -477,7 +507,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
               onChange={(e) => handleInputChange("budget", e.target.value)}
               helperText="Describe the budget for the project. Include any costs that will be incurred by the project developer or the homeowner."
             />
-            <TextField
+            <ProjectTextField
               label="Resource Budget Estimates"
               fullWidth
               value={formData.budget_estimates}
@@ -486,6 +516,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
               }
               type="number"
               helperText="Total estimate the cost of the project."
+              hasInputAdornment
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">$</InputAdornment>
@@ -494,7 +525,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
             />
             <Divider sx={{ my: 1 }} />
 
-            <TextField
+            <ProjectTextField
               label="Homeowner's Ability Description"
               fullWidth
               multiline
@@ -505,13 +536,14 @@ const ProjectForm = ({ formId, date, communityId }) => {
               }
               helperText="Describe the homeowner's ability to contribute to the project. Include monetary resources."
             />
-            <TextField
+            <ProjectTextField
               label="Homeowner's Ability Estimates"
               fullWidth
               value={formData.homeowner_ability_estimates}
               onChange={(e) =>
                 handleInputChange("homeowner_ability_estimates", e.target.value)
               }
+              hasInputAdornment
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">$</InputAdornment>
@@ -538,13 +570,12 @@ const ProjectForm = ({ formId, date, communityId }) => {
                       <strong>Project Developer:</strong>{" "}
                       {formData.project_developer}
                     </Typography>
-                    <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+                    <Stack direction="row" spacing={2}>
                       <Tooltip title={formData.project_developer_phone} arrow>
                         <IconButton
                           color="primary"
                           aria-label="phone number"
                           size="small"
-                          sx={{ border: 1, borderColor: "primary.main" }}
                           onClick={() => {
                             // copy to navigator clipboard
                             navigator.clipboard.writeText(
@@ -553,7 +584,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
                             toast.success("Phone number copied to clipboard");
                           }}
                         >
-                          <PhoneIcon />
+                          <PhoneIcon size="small" />
                         </IconButton>
                       </Tooltip>
 
@@ -562,7 +593,6 @@ const ProjectForm = ({ formId, date, communityId }) => {
                           color="primary"
                           aria-label="email address"
                           size="small"
-                          sx={{ border: 1, borderColor: "primary.main" }}
                           onClick={() => {
                             // copy to navigator clipboard
                             navigator.clipboard.writeText(
@@ -577,14 +607,86 @@ const ProjectForm = ({ formId, date, communityId }) => {
                     </Stack>
                   </Box>
 
-                  <Typography>
-                    <strong>Resource Couple:</strong>{" "}
-                    {formData.project_development_couple}
-                  </Typography>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Typography>
+                      <strong>Resource Couple:</strong>{" "}
+                      {formData.project_development_couple}
+                    </Typography>
+                    <Stack direction="row" spacing={2}>
+                      <Tooltip
+                        title={formData.project_development_couple_phone}
+                        arrow
+                      >
+                        <IconButton
+                          color="primary"
+                          aria-label="phone number"
+                          size="small"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              formData.project_development_couple_phone
+                            );
+                            toast.success("Phone number copied to clipboard");
+                          }}
+                        >
+                          <PhoneIcon size="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip
+                        title={formData.project_development_couple_email}
+                        arrow
+                      >
+                        <IconButton
+                          color="primary"
+                          aria-label="email address"
+                          size="small"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              formData.project_development_couple_email
+                            );
+                            toast.success("Email copied to clipboard");
+                          }}
+                        >
+                          <EmailIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
+                  </Box>
 
-                  <Typography>
-                    <strong>Property Owner:</strong> {formData.property_owner}
-                  </Typography>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Typography>
+                      <strong>Property Owner:</strong> {formData.property_owner}
+                    </Typography>
+                    <Stack direction="row" spacing={2}>
+                      <Tooltip title={formData.phone_number} arrow>
+                        <IconButton
+                          color="primary"
+                          aria-label="phone number"
+                          size="small"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              formData.phone_number
+                            );
+                            toast.success("Phone number copied to clipboard");
+                          }}
+                        >
+                          <PhoneIcon size="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title={formData.email} arrow>
+                        <IconButton
+                          color="primary"
+                          aria-label="email address"
+                          size="small"
+                          onClick={() => {
+                            navigator.clipboard.writeText(formData.email);
+                            toast.success("Email copied to clipboard");
+                          }}
+                        >
+                          <EmailIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
+                  </Box>
                 </Box>
               </Box>
 
@@ -658,7 +760,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
               </Box>
             </Paper>
 
-            {/* Textfield for resource couple */}
+            {/* ProjectTextField for resource couple */}
 
             {/* Review Confirmation */}
             <FormControl component="fieldset" sx={{ mt: 2 }}>
@@ -694,8 +796,8 @@ const ProjectForm = ({ formId, date, communityId }) => {
               />
             </FormControl>
 
-            {/* Issues or Concerns Section */}
-            <TextField
+            {/* ProjectTextField or Concerns Section */}
+            <ProjectTextField
               label="Issues or Concerns (Optional)"
               multiline
               rows={4}
@@ -715,7 +817,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
             <Paper sx={{ p: 3 }}>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {/* Input Stake */}
-                <TextField
+                <ProjectTextField
                   label="Partner Stake"
                   fullWidth
                   value={formData.partner_stake}
@@ -724,7 +826,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
                   }
                 />
 
-                <TextField
+                <ProjectTextField
                   label="Partner Stake Liaison"
                   fullWidth
                   value={formData.partner_stake_liaison}
@@ -735,9 +837,10 @@ const ProjectForm = ({ formId, date, communityId }) => {
 
                 {/* Gather phone and email from partner stake liaison */}
                 <Box sx={{ display: "flex", gap: 2 }}>
-                  <TextField
+                  <ProjectTextField
                     label="Partner Stake Liaison Phone"
                     fullWidth
+                    key="partner_stake_liaison_phone"
                     value={formData.partner_stake_liaison_phone}
                     onChange={(e) =>
                       handleInputChange(
@@ -747,9 +850,10 @@ const ProjectForm = ({ formId, date, communityId }) => {
                     }
                   />
 
-                  <TextField
+                  <ProjectTextField
                     label="Partner Stake Liaison Email"
                     fullWidth
+                    key="partner_stake_liaison_email"
                     value={formData.partner_stake_liaison_email}
                     onChange={(e) =>
                       handleInputChange(
@@ -762,17 +866,19 @@ const ProjectForm = ({ formId, date, communityId }) => {
 
                 <Divider sx={{ my: 2 }} />
 
-                <TextField
+                <ProjectTextField
                   // parnter ward
                   label="Partner Ward"
                   fullWidth
                   value={formData.partner_ward}
+                  key="partner_ward"
                   onChange={(e) =>
                     handleInputChange("partner_ward", e.target.value)
                   }
                 />
 
-                <TextField
+                <ProjectTextField
+                  key="partner_ward_liaison"
                   label="Partner Ward Liaison(s)"
                   fullWidth
                   value={formData.partner_ward_liaison}
@@ -783,10 +889,11 @@ const ProjectForm = ({ formId, date, communityId }) => {
 
                 {/* Gather phone and email from partner ward liaison */}
                 <Box sx={{ display: "flex", gap: 2 }}>
-                  <TextField
+                  <ProjectTextField
+                    key="partner_ward_liaison_phone1"
                     label="Partner Ward Liaison Phone"
                     fullWidth
-                    value={formData.partner_ward_liaison_phone}
+                    value={formData.partner_ward_liaison_phone1}
                     onChange={(e) =>
                       handleInputChange(
                         "partner_ward_liaison_phone1",
@@ -795,10 +902,11 @@ const ProjectForm = ({ formId, date, communityId }) => {
                     }
                   />
 
-                  <TextField
+                  <ProjectTextField
                     label="Partner Ward Liaison Email"
                     fullWidth
-                    value={formData.partner_ward_liaison_email}
+                    key="partner_ward_liaison_email1"
+                    value={formData.partner_ward_liaison_email1}
                     onChange={(e) =>
                       handleInputChange(
                         "partner_ward_liaison_email1",
@@ -809,9 +917,10 @@ const ProjectForm = ({ formId, date, communityId }) => {
                 </Box>
 
                 <Box sx={{ display: "flex", gap: 2 }}>
-                  <TextField
+                  <ProjectTextField
                     label="Partner Ward Liaison Phone 2 (Optional)"
                     fullWidth
+                    key="partner_ward_liaison_phone2"
                     value={formData.partner_ward_liaison_phone2}
                     onChange={(e) =>
                       handleInputChange(
@@ -821,10 +930,11 @@ const ProjectForm = ({ formId, date, communityId }) => {
                     }
                   />
 
-                  <TextField
+                  <ProjectTextField
                     label="Partner Ward Liaison Email 2 (Optional)"
                     fullWidth
-                    value={formData.partnerWardLiaisonEmail2}
+                    key="partner_ward_liaison_email2"
+                    value={formData.partner_ward_liaison_email2}
                     onChange={(e) =>
                       handleInputChange(
                         "partner_ward_liaison_email2",
@@ -880,7 +990,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
                       checked={formData.site_visit_done_with_resource_couple}
                       onChange={(e) =>
                         handleInputChange(
-                          "site_visitDoneWithResourceCouple",
+                          "site_visit_done_with_resource_couple",
                           e.target.checked
                         )
                       }
@@ -895,10 +1005,10 @@ const ProjectForm = ({ formId, date, communityId }) => {
                   fullWidth
                   control={
                     <Checkbox
-                      checked={formData.siteVisitDoneWithHost}
+                      checked={formData.site_visit_done_with_host}
                       onChange={(e) =>
                         handleInputChange(
-                          "siteVisitDoneWithHost",
+                          "site_visit_done_with_host",
                           e.target.checked
                         )
                       }
@@ -911,10 +1021,10 @@ const ProjectForm = ({ formId, date, communityId }) => {
                   fullWidth
                   control={
                     <Checkbox
-                      checked={formData.siteVisitDoneWithPartner}
+                      checked={formData.site_visit_done_with_partner}
                       onChange={(e) =>
                         handleInputChange(
-                          "siteVisitDoneWithPartner",
+                          "site_visit_done_with_partner",
                           e.target.checked
                         )
                       }
@@ -939,10 +1049,10 @@ const ProjectForm = ({ formId, date, communityId }) => {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={formData.materialsProcured}
+                        checked={formData.materials_procured}
                         onChange={(e) =>
                           handleInputChange(
-                            "materialsProcured",
+                            "materials_procured",
                             e.target.checked
                           )
                         }
@@ -954,9 +1064,9 @@ const ProjectForm = ({ formId, date, communityId }) => {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={formData.toolsArranged}
+                        checked={formData.tools_arranged}
                         onChange={(e) =>
-                          handleInputChange("toolsArranged", e.target.checked)
+                          handleInputChange("tools_arranged", e.target.checked)
                         }
                       />
                     }
@@ -966,9 +1076,12 @@ const ProjectForm = ({ formId, date, communityId }) => {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={formData.materialsOnSite}
+                        checked={formData.materials_on_site}
                         onChange={(e) =>
-                          handleInputChange("materialsOnSite", e.target.checked)
+                          handleInputChange(
+                            "materials_on_site",
+                            e.target.checked
+                          )
                         }
                       />
                     }
@@ -978,9 +1091,9 @@ const ProjectForm = ({ formId, date, communityId }) => {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={formData.called811}
+                        checked={formData.called_811}
                         onChange={(e) =>
-                          handleInputChange("called811", e.target.checked)
+                          handleInputChange("called_811", e.target.checked)
                         }
                       />
                     }
@@ -989,10 +1102,10 @@ const ProjectForm = ({ formId, date, communityId }) => {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={formData.dumpsterRequested}
+                        checked={formData.dumpster_requested}
                         onChange={(e) =>
                           handleInputChange(
-                            "dumpsterRequested",
+                            "dumpster_requested",
                             e.target.checked
                           )
                         }
@@ -1040,8 +1153,36 @@ const ProjectForm = ({ formId, date, communityId }) => {
 
           <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
             {steps.map((step, index) => (
-              <Step key={index}>
-                <StepLabel>{step.label}</StepLabel>
+              <Step
+                key={index}
+                onClick={() => setActiveStep(index)}
+                sx={{
+                  cursor: "pointer",
+                  "&:hover": {
+                    // Add hover effects for the entire step
+                    transition: "background-color 0.2s ease-in-out", // Smooth transition
+                  },
+                }}
+              >
+                <StepLabel
+                  sx={{
+                    cursor: "pointer",
+                    "&:hover": {
+                      "& .MuiStepIcon-root": {
+                        color: "secondary.main", // Change to any color you want
+                      },
+                      // Add hover effects specifically for the label
+                      color: "primary.main", // Changes text to your theme's primary color
+                      "& .MuiStepLabel-label": {
+                        fontWeight: 500, // Slightly bolder text
+                      },
+                    },
+                    // Ensure smooth color transition
+                    transition: "color 0.2s ease-in-out",
+                  }}
+                >
+                  {step.label}
+                </StepLabel>
               </Step>
             ))}
           </Stepper>
@@ -1061,13 +1202,25 @@ const ProjectForm = ({ formId, date, communityId }) => {
             >
               Back
             </Button>
+            <Box sx={{ flexGrow: 1 }} />
+            {activeStep === steps.length - 1 && (
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={saveAndExit}
+                sx={{ mx: 1 }}
+              >
+                Save and Exit
+              </Button>
+            )}
             <Button
               variant="contained"
               color="primary"
-              onClick={handleNext}
-              disabled={activeStep === steps.length - 1}
+              onClick={
+                activeStep === steps.length - 1 ? handleFinish : handleNext
+              }
             >
-              Next
+              {activeStep === steps.length - 1 ? "Finish Project" : "Next"}
             </Button>
           </Box>
         </CardContent>
@@ -1095,14 +1248,14 @@ const ProjectForm = ({ formId, date, communityId }) => {
                 alignItems: "stretch",
               }}
             >
-              <TextField
+              <ProjectTextField
                 label="Your Name"
                 fullWidth
                 value={fromName}
                 onChange={(e) => setFromName(e.target.value)}
               />
 
-              <TextField
+              <ProjectTextField
                 label="Collaborator's Email"
                 helperText="Enter the email of the person, or persons, you want to collaborate with (separate multiple emails with a comma)"
                 fullWidth
@@ -1110,7 +1263,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
                 onChange={(e) => setCollaboratorEmail(e.target.value)}
                 sx={{ flexGrow: 1 }}
               />
-              <TextField
+              <ProjectTextField
                 label="Message"
                 multiline
                 rows={4} // Adjust the 'rows' property as needed
@@ -1196,7 +1349,13 @@ const ProjectForm = ({ formId, date, communityId }) => {
 
 export default ProjectForm;
 
-const ProjectTextField = ({ label, value, onChange, ...props }) => {
+const ProjectTextField = ({
+  label,
+  value,
+  onChange,
+  hasInputAdornment,
+  ...props
+}) => {
   return (
     <TextField
       label={label}
@@ -1207,6 +1366,7 @@ const ProjectTextField = ({ label, value, onChange, ...props }) => {
       variant="outlined"
       InputLabelProps={{
         shrink: value ? true : false,
+        sx: { ml: hasInputAdornment ? 2 : 0 },
       }}
     />
   );

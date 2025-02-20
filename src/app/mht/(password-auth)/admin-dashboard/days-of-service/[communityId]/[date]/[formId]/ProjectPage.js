@@ -1,15 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Container, Box } from "@mui/material";
-import { Typography, Paper } from "@mui/material";
-import { Gavel } from "@mui/icons-material";
-import {
-  ProjectFormProvider,
-  useProjectForm,
-} from "@/contexts/ProjectFormProvider";
+
+import { useProjectForm } from "@/contexts/ProjectFormProvider";
 import ProjectForm from "./ProjectForm";
 import SavingIndicator from "@/components/SavingIndicator";
-import JsonViewer from "@/components/util/debug/DebugOutput";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
 import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
 
@@ -28,8 +23,6 @@ const ProjectFormPage = ({ formId, date, communityId }) => {
 
         if (error) throw error;
         setDayOfService(data);
-
-        setDaysOfServiceLoading(false);
       } catch (error) {
         console.error("Error fetching days of service:", error);
       }

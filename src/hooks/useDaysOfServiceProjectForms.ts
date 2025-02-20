@@ -120,7 +120,6 @@ export const useDaysOfServiceProjectForm = ({
       try {
         const projectData = {
           ...data,
-          community_id: communityId,
           updated_by: user?.id,
         };
 
@@ -139,6 +138,7 @@ export const useDaysOfServiceProjectForm = ({
         // toast.success("Project saved successfully");
       } catch (error) {
         toast.error("Failed to save project");
+        console.error("Failed to save project", error);
       } finally {
         setIsSaving(false);
       }
@@ -187,6 +187,16 @@ export const useDaysOfServiceProjectForm = ({
     debouncedSave(newFormData);
   };
 
+  const handleMultipleInputChange = (inputs) => {
+    const newFormData = {
+      ...formData,
+      ...inputs,
+    };
+
+    setFormData(newFormData);
+    debouncedSave(newFormData);
+  };
+
   const addCollaborator = (collaborator: {
     email: string;
     from: string;
@@ -199,36 +209,37 @@ export const useDaysOfServiceProjectForm = ({
     }));
   };
 
-  const saveProject = async (newId?: string) => {
+  const finishProject = async () => {
+    saveProject(true);
+  };
+
+  const saveProject = async (isFinished: boolean = false) => {
     setIsSaving(true);
     try {
       const projectData = {
         ...formData,
         community_id: communityId,
-        days_of_service_id: daysOfServiceId,
         updated_by: user?.id,
       };
 
-      if (!projectId) {
-        projectData.created_by = user?.id;
-        if (newId) {
-          projectData.id = newId;
-        }
+      if (isFinished) {
+        projectData.status = "completed";
       }
 
-      const { error } = projectId
-        ? await supabase
-            .from("days_of_service_project_forms")
-            .update(projectData)
-            .eq("id", projectId)
-        : await supabase
-            .from("days_of_service_project_forms")
-            .insert([projectData]);
+      if (!projectId) {
+        projectData.created_by = user?.id;
+      }
+
+      const { error } = await supabase
+        .from("days_of_service_project_forms")
+        .update(projectData)
+        .eq("id", projectId);
 
       if (error) throw error;
 
       toast.success("Project saved successfully");
     } catch (error) {
+      console.error("Failed to save project", error);
       toast.error("Failed to save project");
     } finally {
       setIsSaving(false);
@@ -239,9 +250,12 @@ export const useDaysOfServiceProjectForm = ({
     activeStep,
     setActiveStep,
     formData,
+    setFormData,
     handleInputChange,
+    handleMultipleInputChange,
     addCollaborator,
     saveProject,
+    finishProject,
     isLoading,
     isSaving,
   };

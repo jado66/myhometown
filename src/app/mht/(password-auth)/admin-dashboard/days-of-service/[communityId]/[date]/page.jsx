@@ -350,6 +350,20 @@ export default function ProjectFormsPage({ params }) {
                           {project.lastUpdated &&
                             project.lastUpdated !== project.createdTime &&
                             ` • Updated: ${formatDate(project.lastUpdated)}`}
+                          {project.status && (
+                            <>
+                              <Chip
+                                label={project.status}
+                                color="success"
+                                size="small"
+                                sx={{
+                                  mr: 2,
+                                  textTransform: "capitalize",
+                                  ml: 3,
+                                }}
+                              />
+                            </>
+                          )}
                         </>
                       }
                       secondaryTypographyProps={{

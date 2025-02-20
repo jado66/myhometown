@@ -20,17 +20,21 @@ export function ProjectFormProvider({ children, formId, date, communityId }) {
     activeStep,
     setActiveStep,
     formData,
+    setFormData, // Explicitly destructure setFormData from the hook
     handleInputChange,
     addCollaborator,
     saveProject,
+    finishProject,
+    handleMultipleInputChange,
     isLoading,
-    isSaving,
+    isSaving: isSavingProject,
   } = useDaysOfServiceProjectForm({
     projectId: formId,
     communityId,
     daysOfServiceId: `${communityId}_${date}`,
   });
 
+  const [isSaving, setIsSaving] = useState(false);
   const [community, setCommunity] = useState(null);
   const [isInitialLoading, setIsInitialLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -70,15 +74,14 @@ export function ProjectFormProvider({ children, formId, date, communityId }) {
       }
       const data = await response.json();
 
-      // Remove _id and timestamps from the data before setting state
       const { _id, createdAt, updatedAt, ...formData } = data;
 
       const address = [
-        formData.addressStreet1,
-        formData.addressStreet2,
-        formData.addressCity,
-        formData.addressState,
-        formData.addressZipCode,
+        formData.address_street1,
+        formData.address_street2,
+        formData.address_city,
+        formData.address_state,
+        formData.address_zip_code,
       ]
         .filter(Boolean)
         .join(", ");
@@ -88,12 +91,13 @@ export function ProjectFormProvider({ children, formId, date, communityId }) {
         address,
       };
 
+      // Assuming updateProject is defined elsewhere or should be updateProjectForm
       updateProject(formId, localStorageDetails);
 
-      console.log("Retrieved form data:", formData); // Debug log
+      console.log("Retrieved form data:", formData);
       return formData;
     } catch (err) {
-      console.error("Error fetching project form:", err); // Debug log
+      console.error("Error fetching project form:", err);
       setError(err.message);
       return null;
     }
@@ -135,36 +139,20 @@ export function ProjectFormProvider({ children, formId, date, communityId }) {
     [updateProjectForm]
   );
 
-  const handleImmediateSave = useCallback(
-    async (data) => {
-      if (data.id) {
-        setIsSaving(true);
-        try {
-          await updateProjectForm(data.id, data);
-        } finally {
-          setIsSaving(false);
-        }
-      }
-    },
-    [updateProjectForm]
-  );
-
   const handleAddressValidated = useCallback(
     (validatedAddress) => {
-      setFormData((prev) => {
-        const newData = { ...prev, ...validatedAddress };
-        if (
-          validatedAddress.addressStreet1 &&
-          validatedAddress.addressCity &&
-          validatedAddress.addressState &&
-          validatedAddress.addressZipCode
-        ) {
-          handleImmediateSave(newData);
-        }
-        return newData;
-      });
+      // Check if all required address fields are present
+      if (
+        validatedAddress.address_street1 &&
+        validatedAddress.address_city &&
+        validatedAddress.address_state &&
+        validatedAddress.address_zip_code
+      ) {
+        // Call handleMultipleInputChange to update formData with validated address
+        handleMultipleInputChange(validatedAddress);
+      }
     },
-    [handleImmediateSave]
+    [handleMultipleInputChange] // Dependency should be the function used
   );
 
   const initializeProjectForm = useCallback(async (formId) => {
@@ -172,13 +160,9 @@ export function ProjectFormProvider({ children, formId, date, communityId }) {
 
     try {
       const data = await getProjectForm(formId);
-      console.log("Initializing with data:", data); // Debug log
+      console.log("Initializing with data:", data);
       if (data) {
-        setFormData((prev) => {
-          console.log("Previous form data:", prev); // Debug log
-          console.log("Setting new form data:", JSON.stringify(data, null, 4)); // Debug log
-          return data;
-        });
+        setFormData(data); // Use setFormData directly
         if (data.homeownerAbility) setActiveStep(4);
         else if (data.specificTasks) setActiveStep(3);
         else if (data.canHelp !== null) setActiveStep(2);
@@ -188,24 +172,8 @@ export function ProjectFormProvider({ children, formId, date, communityId }) {
       } else {
         const newProject = {
           id: formId,
-          addressStreet1: "",
-          addressStreet2: "",
-          addressCity: "",
-          addressState: null,
-          addressZipCode: "",
-          propertyOwner: "",
-          phoneNumber: "",
-          area: "",
-          violations: "",
-          remedies: "",
-          isResolved: null,
-          canHelp: null,
-          preferredRemedies: "",
-          specificTasks: "",
-          budget: "",
-          homeownerAbility: "",
         };
-        const createdProject = await createProjectForm(newProject);
+        const createdProject = await createProjectForm(newProject); // Assuming this creates if not exists
         if (createdProject) {
           setFormData(createdProject);
           setActiveStep(0);
@@ -219,16 +187,6 @@ export function ProjectFormProvider({ children, formId, date, communityId }) {
     return false;
   }, []);
 
-  // useEffect(() => {
-  //   if (formId && formId !== "new" && !hasInitialized) {
-  //     setIsInitialLoading(true);
-  //     initializeProjectForm(formId).then((success) => {
-  //     //   setHasInitialized(success);
-  //     //   setIsInitialLoading(false);
-  //     });
-  //   }
-  // }, [formId, hasInitialized, initializeProjectForm]);
-
   useEffect(() => {
     return () => {
       debouncedSave.cancel();
@@ -239,9 +197,11 @@ export function ProjectFormProvider({ children, formId, date, communityId }) {
     activeStep,
     setActiveStep,
     formData,
+    setFormData, // Include setFormData in the context value
     handleInputChange,
+    saveProject,
     isInitialLoading,
-    isSaving,
+    isSaving: isSavingProject || isSaving,
     error,
     initializeProjectForm,
     addressValidation,
@@ -249,6 +209,7 @@ export function ProjectFormProvider({ children, formId, date, communityId }) {
     handleAddressValidated,
     getProjectForm,
     community,
+    finishProject,
     updateProjectForm,
     addCollaborator,
   };

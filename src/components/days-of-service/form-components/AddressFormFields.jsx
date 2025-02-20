@@ -73,6 +73,19 @@ const isValidZipCode = (zip) => {
   return cleanZip.length === 5 || cleanZip.length === 9;
 };
 
+const toCamelCase = (str) => {
+  return str.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase());
+};
+
+const snakeToCamelCase = (obj) => {
+  if (!obj || typeof obj !== "object") return obj;
+  return Object.keys(obj).reduce((acc, key) => {
+    const camelKey = toCamelCase(key);
+    acc[camelKey] = obj[key];
+    return acc;
+  }, {});
+};
+
 const AddressFormFields = () => {
   const {
     formData,
@@ -81,6 +94,17 @@ const AddressFormFields = () => {
     setAddressValidation,
     handleAddressValidated,
   } = useProjectForm();
+
+  const mapToCamelCase = (data) => ({
+    addressStreet1: data.address_street1 || "",
+    addressStreet2: data.address_street2 || "",
+    addressCity: data.address_city || "",
+    addressState: data.address_state || "",
+    addressZipCode: data.address_zip_code || "",
+    isAddressVerified: data.is_address_verified || false,
+  });
+
+  const mappedFormData = mapToCamelCase(formData);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [suggestedAddress, setSuggestedAddress] = useState(null);
@@ -93,12 +117,13 @@ const AddressFormFields = () => {
     : null;
 
   const handleInputChange = (field, value) => {
-    // Reset validation states when any address field changes
+    // Convert back to snake_case when updating formData
+    const snakeField = field.replace(/([A-Z])/g, "_$1").toLowerCase();
     if (field.startsWith("address")) {
       setIsAddressAccepted(false);
       setKeepOriginal(false);
       setSuggestedAddress(null);
-      contextHandleInputChange("isAddressVerified", false);
+      contextHandleInputChange("is_address_verified", false);
       setAddressValidation((prev) => ({
         ...prev,
         isValid: false,
@@ -107,7 +132,6 @@ const AddressFormFields = () => {
       }));
     }
 
-    // Handle ZIP code formatting and validation
     if (field === "addressZipCode") {
       const cleanZip = value.replace(/[^\d]/g, "").slice(0, 9);
       const formattedZip =
@@ -115,7 +139,6 @@ const AddressFormFields = () => {
           ? `${cleanZip.slice(0, 5)}-${cleanZip.slice(5)}`
           : cleanZip;
 
-      // Add immediate validation for ZIP code
       if (
         cleanZip.length > 0 &&
         cleanZip.length !== 5 &&
@@ -131,14 +154,14 @@ const AddressFormFields = () => {
         }));
       }
 
-      contextHandleInputChange(field, formattedZip);
+      contextHandleInputChange("address_zip_code", formattedZip);
     } else {
-      contextHandleInputChange(field, value);
+      contextHandleInputChange(snakeField, value);
     }
   };
 
   const handleSuggestionAccept = (address) => {
-    handleAddressValidated({ ...address, isAddressVerified: true });
+    handleAddressValidated({ ...address, is_address_verified: true });
     setIsAddressAccepted(true);
     setKeepOriginal(false);
     setDialogOpen(false);
@@ -162,16 +185,14 @@ const AddressFormFields = () => {
   const handleRecheckAddress = () => {
     setIsAddressAccepted(false);
     setKeepOriginal(false);
-    contextHandleInputChange("isAddressVerified", false);
+    contextHandleInputChange("is_address_verified", false);
     validateAddress();
   };
 
   const validateAddress = async () => {
-    // Reset suggested address when validating
     setSuggestedAddress(null);
 
-    // Validate ZIP code format first
-    if (!isValidZipCode(formData.addressZipCode)) {
+    if (!isValidZipCode(formData.address_zip_code)) {
       setAddressValidation({
         isChecking: false,
         isValid: false,
@@ -183,12 +204,11 @@ const AddressFormFields = () => {
       return;
     }
 
-    // Skip validation if required fields are missing
     if (
-      !formData.addressStreet1 ||
-      !formData.addressCity ||
-      !formData.addressState ||
-      !formData.addressZipCode
+      !formData.address_street1 ||
+      !formData.address_city ||
+      !formData.address_state ||
+      !formData.address_zip_code
     ) {
       return;
     }
@@ -201,11 +221,11 @@ const AddressFormFields = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           address: {
-            street1: formData.addressStreet1,
-            street2: formData.addressStreet2,
-            city: formData.addressCity,
-            state: formData.addressState,
-            zipCode: formData.addressZipCode,
+            street1: formData.address_street1,
+            street2: formData.address_street2,
+            city: formData.address_city,
+            state: formData.address_state,
+            zipCode: formData.address_zip_code,
           },
         }),
       });
@@ -214,19 +234,19 @@ const AddressFormFields = () => {
 
       if (response.ok && data.valid) {
         if (data.standardized) {
-          // Address needs standardization - show dialog
-          setSuggestedAddress(data.standardized);
+          // Convert snake_case to camelCase
+          const standardizedCamelCase = snakeToCamelCase(data.standardized);
+          setSuggestedAddress(standardizedCamelCase);
           setDialogOpen(true);
           setAddressValidation({
             isChecking: false,
             errors: {},
-            isValid: false, // Keep as false until explicitly verified
+            isValid: false,
           });
         } else {
-          // Address is already in correct format - mark as verified
           setIsAddressAccepted(true);
           setKeepOriginal(false);
-          contextHandleInputChange("isAddressVerified", true);
+          contextHandleInputChange("is_address_verified", true);
           setAddressValidation({
             isChecking: false,
             errors: {},
@@ -257,17 +277,17 @@ const AddressFormFields = () => {
 
   useEffect(() => {
     // Skip validation if address is already verified
-    if (!formData.isAddressVerified && !isAddressAccepted && !keepOriginal) {
+    if (!formData.is_address_verified && !isAddressAccepted && !keepOriginal) {
       const debounceTimeout = setTimeout(validateAddress, 500);
       return () => clearTimeout(debounceTimeout);
     }
   }, [
-    formData.addressStreet1,
-    formData.addressStreet2,
-    formData.addressCity,
-    formData.addressState,
-    formData.addressZipCode,
-    formData.isAddressVerified,
+    formData.address_street1,
+    formData.address_street2,
+    formData.address_city,
+    formData.address_state,
+    formData.address_zip_code,
+    formData.is_address_verified,
     isAddressAccepted,
     keepOriginal,
   ]);
@@ -301,12 +321,12 @@ const AddressFormFields = () => {
       );
     }
 
-    if (formData.isAddressVerified && addressValidation.isValid) {
+    if (formData.is_address_verified && addressValidation.isValid) {
       return <Alert severity="success">This is a verified address</Alert>;
     }
 
     // Show warning for any unverified address (including valid but unconfirmed addresses)
-    if (!formData.isAddressVerified && formData.addressStreet1) {
+    if (!formData.is_address_verified && formData.address_street1) {
       return (
         <Alert
           severity="warning"
@@ -337,7 +357,7 @@ const AddressFormFields = () => {
             label="Street Address"
             required
             fullWidth
-            value={formData.addressStreet1}
+            value={mappedFormData.addressStreet1}
             onChange={(e) =>
               handleInputChange("addressStreet1", e.target.value)
             }
@@ -350,7 +370,7 @@ const AddressFormFields = () => {
           <TextField
             label="Apartment, suite, etc. (optional)"
             fullWidth
-            value={formData.addressStreet2}
+            value={mappedFormData.addressStreet2}
             onChange={(e) =>
               handleInputChange("addressStreet2", e.target.value)
             }
@@ -362,7 +382,7 @@ const AddressFormFields = () => {
             label="City"
             required
             fullWidth
-            value={formData.addressCity}
+            value={mappedFormData.addressCity}
             onChange={(e) => handleInputChange("addressCity", e.target.value)}
             error={!!addressValidation.errors.city}
             helperText={addressValidation.errors.city}
@@ -373,7 +393,11 @@ const AddressFormFields = () => {
           <Autocomplete
             options={US_STATES}
             getOptionLabel={(option) => option.name}
-            value={currentState}
+            value={
+              US_STATES.find(
+                (state) => state.code === mappedFormData.addressState
+              ) || null
+            }
             onChange={(event, newValue) => {
               handleInputChange(
                 "addressState",
@@ -397,12 +421,11 @@ const AddressFormFields = () => {
             label="ZIP Code"
             required
             fullWidth
-            value={formData.addressZipCode}
+            value={mappedFormData.addressZipCode}
             onChange={(e) =>
               handleInputChange("addressZipCode", e.target.value)
             }
             error={!!addressValidation.errors.zipCode}
-            // helperText={addressValidation.errors.zipCode}
             inputProps={{ maxLength: 10 }}
           />
         </Grid>
@@ -413,7 +436,7 @@ const AddressFormFields = () => {
       <AddressSuggestionDialog
         open={dialogOpen}
         onClose={handleKeepOriginal}
-        currentAddress={formData}
+        currentAddress={mappedFormData}
         suggestedAddress={suggestedAddress}
         onAccept={handleSuggestionAccept}
       />

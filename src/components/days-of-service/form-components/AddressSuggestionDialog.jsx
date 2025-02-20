@@ -9,6 +9,19 @@ import {
   Box,
 } from "@mui/material";
 
+// TODO this only works the first time the dialog is opened
+
+// Helper function to convert camelCase to snake_case
+const toSnakeCase = (str) =>
+  str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+
+const camelToSnakeCase = (obj) =>
+  Object.keys(obj).reduce((acc, key) => {
+    const snakeKey = toSnakeCase(key);
+    acc[snakeKey] = obj[key];
+    return acc;
+  }, {});
+
 const AddressSuggestionDialog = ({
   open,
   onClose,
@@ -84,6 +97,12 @@ const AddressSuggestionDialog = ({
     </Typography>
   );
 
+  // Convert suggestedAddress to snake_case before passing to onAccept
+  const handleAccept = () => {
+    const snakeCaseSuggestedAddress = camelToSnakeCase(suggestedAddress);
+    onAccept(snakeCaseSuggestedAddress);
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Verify Address</DialogTitle>
@@ -120,7 +139,7 @@ const AddressSuggestionDialog = ({
           Keep Original
         </Button>
         <Button
-          onClick={() => onAccept(suggestedAddress)}
+          onClick={handleAccept} // Use the new handler
           variant="contained"
           color="primary"
         >
