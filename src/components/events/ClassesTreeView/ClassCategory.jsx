@@ -182,9 +182,16 @@ export const ClassCategory = ({
     if (typeof window !== "undefined") {
       const hash = window.location.hash.replace("#class-", "");
 
+      if (hash === "#crc-classes") {
+        return;
+      }
+
       if (hash) {
+        if (!category.classes || Array.isArray(!category.classes)) {
+          return;
+        }
         // Find the class with matching ID
-        const matchingClass = category.classes.find((classObj) => {
+        const matchingClass = category?.classes.find((classObj) => {
           return makeUrlSafeString(classObj.title).trim() == hash.trim();
         });
 
