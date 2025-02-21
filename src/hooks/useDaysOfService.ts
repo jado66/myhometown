@@ -12,6 +12,9 @@ interface DayOfService {
   community_id: string;
   created_at: string;
   updated_at: string;
+  short_id: string;
+  partner_stakes?: string[]; // Array of strings
+  partner_wards?: string[]; // Array of strings
 }
 
 interface CreateDayOfService {
@@ -20,6 +23,8 @@ interface CreateDayOfService {
   name?: string;
   city_id: string;
   community_id: string;
+  partner_stakes?: string[]; // Optional array of strings
+  partner_wards?: string[]; // Optional array of strings
 }
 
 interface UpdateDayOfService {
@@ -27,10 +32,11 @@ interface UpdateDayOfService {
   start_date?: string;
   end_date?: string;
   short_id: string;
-
   name?: string;
   city_id?: string;
   community_id?: string;
+  partner_stakes?: string[]; // Optional array of strings
+  partner_wards?: string[]; // Optional array of strings
 }
 
 const generateDayOfServiceId = (
@@ -74,7 +80,6 @@ export const useDaysOfService = () => {
         community_name: data.communities?.community_name,
       };
 
-      // Remove the nested objects
       delete flattenedData.cities;
       delete flattenedData.communities;
 
@@ -115,7 +120,6 @@ export const useDaysOfService = () => {
         community_name: data.communities?.community_name,
       };
 
-      // Remove the nested objects
       delete flattenedData.cities;
       delete flattenedData.communities;
 
@@ -159,7 +163,6 @@ export const useDaysOfService = () => {
         setIsLoading(true);
         setError(null);
 
-        // Generate the custom ID
         const id = generateDayOfServiceId(
           newDayOfService.community_id,
           newDayOfService.end_date
@@ -172,7 +175,6 @@ export const useDaysOfService = () => {
           .single();
 
         if (supabaseError) {
-          // Check if it's a unique constraint violation
           if (supabaseError.code === "23505") {
             toast.error(
               "A day of service already exists for this community on this date"
@@ -200,14 +202,12 @@ export const useDaysOfService = () => {
         setIsLoading(true);
         setError(null);
 
-        // If start_date is being updated, we need to generate a new ID
         if (updates.end_date && updates.community_id) {
           const newId = generateDayOfServiceId(
             updates.community_id,
             updates.end_date
           );
 
-          // Only update ID if it's different
           if (newId !== id) {
             updates = { ...updates, short_id: newId };
           }
@@ -251,16 +251,15 @@ export const useDaysOfService = () => {
         setIsLoading(true);
         setError(null);
 
-        // Delete dependent records and get the count
         const { error: projectFormsError, count: deletedFormsCount } =
           await supabase
             .from("days_of_service_project_forms")
             .delete()
             .eq("days_of_service_id", id)
-            .select() // Add this to get the count of deleted rows
+            .select()
             .then((response) => ({
               error: response.error,
-              count: response.data?.length ?? 0, // Count the returned rows
+              count: response.data?.length ?? 0,
             }));
 
         if (projectFormsError) {
@@ -269,7 +268,6 @@ export const useDaysOfService = () => {
           );
         }
 
-        // Delete the main record
         const { error: supabaseError } = await supabase
           .from("days_of_service")
           .delete()
@@ -281,7 +279,6 @@ export const useDaysOfService = () => {
           );
         }
 
-        // Toast with the count of deleted forms
         toast.success(
           `Day of service deleted successfully. Removed ${deletedFormsCount} related project form${
             deletedFormsCount === 1 ? "" : "s"
@@ -297,8 +294,8 @@ export const useDaysOfService = () => {
         setIsLoading(false);
       }
     },
-    [supabase, setIsLoading, setError, toast] // Added toast to dependencies
-  ); // Added dependencies
+    [supabase, setIsLoading, setError, toast]
+  );
 
   return {
     addDayOfService,

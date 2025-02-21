@@ -92,7 +92,7 @@ const AdminDashboardPages = () => {
                   title: "User Management",
                   subtitle:
                     "Add, remove, or edit users and their roles to manage who can access your city or community.",
-                  media: "/users.png",
+                  media: "/admin-icons/User Management.svg",
                   href: rootUrl + "/admin-dashboard/manage-users",
                   requiredPermission: "admin",
                 },
@@ -100,7 +100,7 @@ const AdminDashboardPages = () => {
                   title: "City Management",
                   subtitle:
                     "Manage your cities. Add, remove, or edit city information.",
-                  media: "/cities.png",
+                  media: "/admin-icons/City Management.svg",
                   href: rootUrl + "/admin-dashboard/cities",
                   // requiredPermission: "cityManagement",
                 },
@@ -108,7 +108,7 @@ const AdminDashboardPages = () => {
                   title: "Community Management",
                   subtitle:
                     "Manage your communities. Add, remove, or edit community information.",
-                  media: "/community.png",
+                  media: "/admin-icons/Community Management.svg",
                   href: rootUrl + "/admin-dashboard/communities",
                   // requiredPermission: "communityManagement",
                 },
@@ -116,14 +116,14 @@ const AdminDashboardPages = () => {
                   title: "Classes and Rolls",
                   subtitle:
                     "View your classes and rolls. Take attendance and manage your classes.",
-                  media: "/school.png",
+                  media: "/admin-icons/Classes and Rolls.svg",
                   href: rootUrl + "/admin-dashboard/classes",
                 },
                 {
                   title: "Days of Service",
                   subtitle:
                     "View and manage your days of service. Track your projects and volunteers.",
-                  media: "/days-of-service.png",
+                  media: "/admin-icons/Days of Service.svg",
                   href: rootUrl + "/admin-dashboard/days-of-service",
                 },
                 // {
@@ -143,7 +143,7 @@ const AdminDashboardPages = () => {
                   title: "Text (SMS) Communications",
                   subtitle:
                     "Send text notifications to your city or community members. ",
-                  media: "/text.png",
+                  media: "/admin-icons/Text SMS Communications.svg",
                   href: rootUrl + "/admin-dashboard/tools/sms",
                   // requiredPermission: "texting",
                 },
