@@ -58,8 +58,13 @@ export default function ProjectFormsPage({ params }) {
 
   const { fetchDayOfServiceByShortId } = useDaysOfService();
 
-  const { fetchProjectsByDaysOfServiceId, deleteProject, error, addProject } =
-    useDaysOfServiceProjects();
+  const {
+    fetchProjectsByDaysOfServiceId,
+    deleteProject,
+    error,
+    addProject,
+    generateReports,
+  } = useDaysOfServiceProjects();
 
   useEffect(() => {
     const fetchDays = async () => {
@@ -234,6 +239,29 @@ export default function ProjectFormsPage({ params }) {
     return projectTitle;
   };
 
+  const handleGenerateSingleReport = async (e, projectId) => {
+    e.stopPropagation();
+    try {
+      await generateReports("single", projectId);
+    } catch (error) {
+      console.error("Error generating report:", error);
+      toast.error("Failed to generate project report");
+    }
+  };
+
+  const handleGenerateDayOfServiceReport = async () => {
+    if (!dayOfService?.id) {
+      toast.error("Day of Service ID not available");
+      return;
+    }
+    try {
+      await generateReports("multiple", dayOfService.id, "daysOfServiceId");
+    } catch (error) {
+      console.error("Error generating day of service report:", error);
+      toast.error("Failed to generate day of service report");
+    }
+  };
+
   return (
     <Box sx={{ p: 4 }}>
       <DosBreadcrumbs dayOfService={dayOfService} date={date} />
@@ -300,20 +328,12 @@ export default function ProjectFormsPage({ params }) {
                   disablePadding
                   secondaryAction={
                     <Box sx={{ display: "flex", alignItems: "center" }}>
-                      {project.finishedTime && (
-                        <Chip
-                          label="Completed"
-                          color="success"
-                          size="small"
-                          sx={{ mr: 2 }}
-                        />
-                      )}
                       <IconButton
                         edge="end"
                         aria-label="generate-report"
                         onClick={(e) => {
                           e.stopPropagation();
-                          toast.info("Coming soon");
+                          handleGenerateSingleReport(e, project.id);
                         }}
                         sx={{ mr: 1 }}
                       >
@@ -414,9 +434,9 @@ export default function ProjectFormsPage({ params }) {
         <Button
           variant="outlined"
           color="primary"
-          onClick={() => toast.info("Coming soon")}
+          onClick={handleGenerateDayOfServiceReport}
           startIcon={<Assignment />}
-          disabled={isLoading || selectedProjects.length === 0}
+          // disabled={isLoading || selectedProjects.length === 0}
         >
           Generate Projects Summary
         </Button>
