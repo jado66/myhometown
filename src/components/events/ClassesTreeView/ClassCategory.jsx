@@ -91,14 +91,14 @@ export const ClassCategory = ({
   const isEditing = editingCategoryId === category.id;
 
   const handleDuplicateClass = async (classId) => {
-    const newClassData = await loadClass(classId);
+    const { _id, ...rest } = await loadClass(classId);
     const duplicatedData = {
-      ...newClassData,
-      title: `${newClassData.title} (Copy)`,
+      ...rest,
+      title: `${rest.title} (Copy)`,
       id: undefined,
       signupForm: {
-        formConfig: newClassData.signupForm?.formConfig || {},
-        fieldOrder: newClassData.signupForm?.fieldOrder || [],
+        formConfig: rest.signupForm?.formConfig || {},
+        fieldOrder: rest.signupForm?.fieldOrder || [],
       },
     };
     setDuplicatedClassData(duplicatedData);
