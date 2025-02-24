@@ -2,6 +2,18 @@ import { supabase } from "@/util/supabase";
 import { useCallback, useState } from "react";
 import moment from "moment";
 import { toast } from "react-toastify";
+import { v4 as uuidv4 } from "uuid";
+
+interface PartnerStake {
+  id: string;
+  name: string;
+  liaison_name_1?: string | null;
+  liaison_email_1?: string | null;
+  liaison_phone_1?: string | null;
+  liaison_name_2?: string | null;
+  liaison_email_2?: string | null;
+  liaison_phone_2?: string | null;
+}
 
 interface DayOfService {
   id: string;
@@ -13,8 +25,8 @@ interface DayOfService {
   created_at: string;
   updated_at: string;
   short_id: string;
-  partner_stakes?: string[]; // Array of strings
-  partner_wards?: string[]; // Array of strings
+  partner_stakes?: PartnerStake[]; // Now a JSONB array
+  partner_wards?: string[];
 }
 
 interface CreateDayOfService {
@@ -23,8 +35,8 @@ interface CreateDayOfService {
   name?: string;
   city_id: string;
   community_id: string;
-  partner_stakes?: string[]; // Optional array of strings
-  partner_wards?: string[]; // Optional array of strings
+  partner_stakes?: PartnerStake[];
+  partner_wards?: string[];
 }
 
 interface UpdateDayOfService {
@@ -35,8 +47,8 @@ interface UpdateDayOfService {
   name?: string;
   city_id?: string;
   community_id?: string;
-  partner_stakes?: string[]; // Optional array of strings
-  partner_wards?: string[]; // Optional array of strings
+  partner_stakes?: PartnerStake[];
+  partner_wards?: string[];
 }
 
 const generateDayOfServiceId = (
@@ -144,7 +156,7 @@ export const useDaysOfService = () => {
 
         if (supabaseError) throw supabaseError;
 
-        return { data, error: null };
+        return { data, error: null }; // partner_stakes is already JSONB, no parsing needed
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "An error occurred";
@@ -174,14 +186,7 @@ export const useDaysOfService = () => {
           .select()
           .single();
 
-        if (supabaseError) {
-          if (supabaseError.code === "23505") {
-            toast.error(
-              "A day of service already exists for this community on this date"
-            );
-          }
-          throw supabaseError;
-        }
+        if (supabaseError) throw supabaseError;
 
         return data as DayOfService;
       } catch (err) {
@@ -207,10 +212,7 @@ export const useDaysOfService = () => {
             updates.community_id,
             updates.end_date
           );
-
-          if (newId !== id) {
-            updates = { ...updates, short_id: newId };
-          }
+          if (newId !== id) updates = { ...updates, short_id: newId };
         }
 
         const { data, error: supabaseError } = await supabase
@@ -220,17 +222,7 @@ export const useDaysOfService = () => {
           .select()
           .single();
 
-        if (supabaseError) {
-          if (supabaseError.code === "23505") {
-            toast.error(
-              "A day of service already exists for this community on this date"
-            );
-            throw new Error(
-              "A day of service already exists for this community on this date"
-            );
-          }
-          throw supabaseError;
-        }
+        if (supabaseError) throw supabaseError;
 
         return data as DayOfService;
       } catch (err) {
@@ -245,65 +237,117 @@ export const useDaysOfService = () => {
     []
   );
 
-  const deleteDayOfService = useCallback(
-    async (id: string) => {
+  const deleteDayOfService = useCallback(async (id: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const { error: projectFormsError, count: deletedFormsCount } =
+        await supabase
+          .from("days_of_service_project_forms")
+          .delete()
+          .eq("days_of_service_id", id)
+          .select()
+          .then((response) => ({
+            error: response.error,
+            count: response.data?.length ?? 0,
+          }));
+
+      if (projectFormsError) throw projectFormsError;
+
+      const { error: supabaseError } = await supabase
+        .from("days_of_service")
+        .delete()
+        .eq("id", id);
+
+      if (supabaseError) throw supabaseError;
+
+      toast.success(
+        `Day of service deleted successfully. Removed ${deletedFormsCount} related project forms.`
+      );
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "An error occurred";
+      setError(message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const addPartnerToDayOfService = useCallback(
+    async (
+      id: string,
+      type: "stake" | "ward",
+      value: PartnerStake | string // Stake is now an object, ward is still a string
+    ) => {
       try {
         setIsLoading(true);
         setError(null);
 
-        const { error: projectFormsError, count: deletedFormsCount } =
-          await supabase
-            .from("days_of_service_project_forms")
-            .delete()
-            .eq("days_of_service_id", id)
-            .select()
-            .then((response) => ({
-              error: response.error,
-              count: response.data?.length ?? 0,
-            }));
-
-        if (projectFormsError) {
-          throw new Error(
-            `Failed to delete related project forms: ${projectFormsError.message}`
-          );
-        }
-
-        const { error: supabaseError } = await supabase
+        const { data: currentData, error: fetchError } = await supabase
           .from("days_of_service")
-          .delete()
-          .eq("id", id);
+          .select("partner_stakes, partner_wards, short_id")
+          .eq("id", id)
+          .single();
 
-        if (supabaseError) {
-          throw new Error(
-            `Failed to delete day of service: ${supabaseError.message}`
-          );
+        if (fetchError) throw fetchError;
+
+        if (type === "stake") {
+          const currentStakes = (currentData.partner_stakes ||
+            []) as PartnerStake[];
+          const stakeValue = value as PartnerStake;
+          if (currentStakes.some((stake) => stake.name === stakeValue.name)) {
+            return { data: currentData, error: null }; // Stake already exists
+          }
+          const newStake = { id: uuidv4(), ...stakeValue };
+          const updatedStakes = [...currentStakes, newStake];
+          const { data, error: updateError } = await supabase
+            .from("days_of_service")
+            .update({ partner_stakes: updatedStakes })
+            .eq("id", id)
+            .select()
+            .single();
+
+          if (updateError) throw updateError;
+          toast.success(`Added "${stakeValue.name}" to partner stakes`);
+          return { data, error: null };
+        } else if (type === "ward") {
+          const currentWards = currentData.partner_wards || [];
+          const wardValue = value as string;
+          if (currentWards.includes(wardValue))
+            return { data: currentData, error: null };
+          const updatedWards = [...currentWards, wardValue];
+          const { data, error: updateError } = await supabase
+            .from("days_of_service")
+            .update({ partner_wards: updatedWards })
+            .eq("id", id)
+            .select()
+            .single();
+
+          if (updateError) throw updateError;
+          toast.success(`Added "${wardValue}" to partner wards`);
+          return { data, error: null };
         }
-
-        toast.success(
-          `Day of service deleted successfully. Removed ${deletedFormsCount} related project form${
-            deletedFormsCount === 1 ? "" : "s"
-          }.`
-        );
-        return true;
       } catch (err) {
         const message =
-          err instanceof Error ? err.message : "An unknown error occurred";
+          err instanceof Error ? err.message : "An error occurred";
         setError(message);
+        toast.error(`Failed to add partner: ${message}`);
         throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    [supabase, setIsLoading, setError, toast]
+    []
   );
 
   return {
     addDayOfService,
     updateDayOfService,
     deleteDayOfService,
-    fetchDayOfService,
     fetchDaysOfServiceByCommunity,
-    fetchDayOfServiceByShortId,
+    addPartnerToDayOfService,
     isLoading,
     error,
   };

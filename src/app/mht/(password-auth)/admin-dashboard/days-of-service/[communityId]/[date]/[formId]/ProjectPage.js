@@ -1,35 +1,15 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Container, Box } from "@mui/material";
 
 import { useProjectForm } from "@/contexts/ProjectFormProvider";
 import ProjectForm from "./ProjectForm";
 import SavingIndicator from "@/components/SavingIndicator";
-import { useDaysOfService } from "@/hooks/useDaysOfService";
 import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
-const ProjectFormPage = ({ formId, date, communityId }) => {
-  const [dayOfService, setDayOfService] = useState(null);
-  const { fetchDayOfServiceByShortId } = useDaysOfService();
-
+const ProjectFormPage = ({ formId, date, communityId, dayOfService }) => {
   const { formData } = useProjectForm();
-
-  useEffect(() => {
-    const fetchDays = async () => {
-      try {
-        const { data, error } = await fetchDayOfServiceByShortId(
-          `${communityId}_${date}`
-        );
-
-        if (error) throw error;
-        setDayOfService(data);
-      } catch (error) {
-        console.error("Error fetching days of service:", error);
-      }
-    };
-
-    fetchDays();
-  }, [communityId, date]);
 
   return (
     <>

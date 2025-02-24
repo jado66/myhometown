@@ -11,11 +11,18 @@ import { useDaysOfServiceProjectForm } from "@/hooks/useDaysOfServiceProjectForm
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { Box } from "@mui/material";
 import { useCommunities } from "@/hooks/use-communities";
+import { useDaysOfService } from "@/hooks/useDaysOfService";
 
 const API_BASE_URL = "/api/database/project-forms";
 const ProjectFormContext = createContext();
 
-export function ProjectFormProvider({ children, formId, date, communityId }) {
+export function ProjectFormProvider({
+  children,
+  formId,
+  date,
+  communityId,
+  dayOfService,
+}) {
   const {
     activeStep,
     setActiveStep,
@@ -31,8 +38,20 @@ export function ProjectFormProvider({ children, formId, date, communityId }) {
   } = useDaysOfServiceProjectForm({
     projectId: formId,
     communityId,
-    daysOfServiceId: `${communityId}_${date}`,
   });
+
+  const { addPartnerToDayOfService } = useDaysOfService();
+
+  const handleSelectChange = async (field, newValue) => {
+    const value = newValue ? newValue.value : "";
+    handleInputChange(field, value);
+
+    // If a new value is created, add it to the days_of_service
+    if (newValue && newValue.__isNew__) {
+      const type = field === "partner_stake" ? "stake" : "ward";
+      await addPartnerToDayOfService(dayOfService.id, type, value);
+    }
+  };
 
   const [isSaving, setIsSaving] = useState(false);
   const [community, setCommunity] = useState(null);
@@ -44,6 +63,16 @@ export function ProjectFormProvider({ children, formId, date, communityId }) {
     isChecking: false,
     errors: {},
   });
+
+  const stakeOptions = (dayOfService?.partner_stakes || []).map((stake) => ({
+    value: stake,
+    label: stake,
+  }));
+
+  const wardOptions = (dayOfService?.partner_wards || []).map((ward) => ({
+    value: ward,
+    label: ward,
+  }));
 
   const { fetchNewCommunities } = useCommunities();
 
@@ -202,6 +231,7 @@ export function ProjectFormProvider({ children, formId, date, communityId }) {
     saveProject,
     isInitialLoading,
     isSaving: isSavingProject || isSaving,
+    handleSelectChange,
     error,
     initializeProjectForm,
     addressValidation,
@@ -212,6 +242,8 @@ export function ProjectFormProvider({ children, formId, date, communityId }) {
     finishProject,
     updateProjectForm,
     addCollaborator,
+    stakeOptions,
+    wardOptions,
   };
 
   return (

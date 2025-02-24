@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Chip,
   Button,
   IconButton,
   Divider,
@@ -23,11 +24,13 @@ import { FormResponseTable } from "@/components/FormResponseTable";
 
 import moment from "moment";
 
-import { Close, Edit, EditCalendar } from "@mui/icons-material";
+import { Close, Edit, EditCalendar, Delete } from "@mui/icons-material";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
+import { useDaysOfServiceProjects } from "@/hooks/useDaysOfServiceProjects";
 import Loading from "@/components/util/Loading";
 import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
+import { toast } from "react-toastify";
 
 const CityIdToPasswordHash = {
   provo: "Provo6940!",
@@ -323,62 +326,198 @@ const ServiceDayDialog = ({
   fetchDays,
   handleDeleteDay,
 }) => {
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = useState({
     name: "",
-    start_date: moment().format("MM-DD-YYYY"),
-    end_date: moment().format("MM-DD-YYYY"),
+    start_date: moment().format("YYYY-MM-DD"),
+    end_date: moment().format("YYYY-MM-DD"),
     city_id: cityId,
     community_id: communityId,
+    partner_stakes: [],
+    partner_wards: [],
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteStakeWardDialog, setDeleteStakeWardDialog] = useState({
+    open: false,
+    type: null, // 'stake' or 'ward'
+    value: null,
+  });
+  const [newStake, setNewStake] = useState({
+    id: "",
+    name: "",
+    liaison_name_1: null,
+    liaison_email_1: null,
+    liaison_phone_1: null,
+    liaison_name_2: null,
+    liaison_email_2: null,
+    liaison_phone_2: null,
   });
 
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
-
-  const { addDayOfService, updateDayOfService } = useDaysOfService();
+  const { addDayOfService, updateDayOfService, addPartnerToDayOfService } =
+    useDaysOfService();
+  const { fetchProjectsByDaysOfServiceId } = useDaysOfServiceProjects();
 
   React.useEffect(() => {
     if (initialData) {
-      setFormData((prev) => ({
-        ...prev,
+      // Parse partner_stakes if it contains stringified JSON
+      const parsedPartnerStakes = (initialData.partner_stakes || []).map(
+        (stake) => {
+          if (typeof stake === "string") {
+            try {
+              return JSON.parse(stake);
+            } catch (e) {
+              console.error("Failed to parse stake:", stake, e);
+              return { id: "", name: stake }; // Fallback if parsing fails
+            }
+          }
+          return stake;
+        }
+      );
+
+      setFormData({
         name: initialData.name || "",
         start_date: moment(initialData.start_date).format("YYYY-MM-DD"),
         end_date: moment(initialData.end_date).format("YYYY-MM-DD"),
-      }));
+        city_id: cityId,
+        community_id: communityId,
+        partner_stakes: parsedPartnerStakes,
+        partner_wards: initialData.partner_wards || [],
+      });
     } else {
-      setFormData((prev) => ({
-        ...prev,
+      setFormData({
         name: "",
-        start_date: null,
-        end_date: null,
-      }));
+        start_date: moment().format("YYYY-MM-DD"),
+        end_date: moment().format("YYYY-MM-DD"),
+        city_id: cityId,
+        community_id: communityId,
+        partner_stakes: [],
+        partner_wards: [],
+      });
     }
-  }, [initialData, open]);
+  }, [initialData, open, cityId, communityId]);
 
   const handleSubmit = async (e) => {
-    setIsLoading(true);
     e.preventDefault();
+    setIsLoading(true);
     try {
       if (initialData?.id) {
         await updateDayOfService({
           id: initialData.id,
+          short_id: initialData.short_id,
           ...formData,
         });
-        fetchDays();
       } else {
-        await addDayOfService({
-          ...formData,
-        });
-        fetchDays();
+        await addDayOfService(formData);
       }
-      onClose();
+      fetchDays();
+      onClose(true);
     } catch (error) {
       console.error("Error saving day of service:", error);
+      toast.error("Failed to save day of service");
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
+  };
+
+  const handleAddStake = async () => {
+    if (!newStake.name.trim() || !initialData?.id) return;
+    try {
+      await addPartnerToDayOfService(initialData.id, "stake", newStake);
+      setNewStake({
+        id: "",
+        name: "",
+        liaison_name_1: null,
+        liaison_email_1: null,
+        liaison_phone_1: null,
+        liaison_name_2: null,
+        liaison_email_2: null,
+        liaison_phone_2: null,
+      });
+      fetchDays();
+    } catch (error) {
+      console.error("Error adding stake:", error);
+      toast.error("Failed to add stake");
+    }
+  };
+
+  const handleDeleteStakeOrWard = async (type, value) => {
+    const { inUse, projectsUsingIt } = await checkIfStakeOrWardInUse(
+      type,
+      value
+    );
+
+    if (inUse) {
+      const projectsList = projectsUsingIt
+        .map(
+          (project) =>
+            `• Project ${project.project_name || "Unnamed"} (ID: ${project.id})`
+        )
+        .join("\n");
+      toast.error(
+        <div>
+          <p>Cannot delete because it is used by the following project(s):</p>
+          <pre style={{ marginTop: "8px", whiteSpace: "pre-wrap" }}>
+            {projectsList}
+          </pre>
+        </div>,
+        { autoClose: 8000 }
+      );
+      setDeleteStakeWardDialog({ open: false, type: null, value: null });
+      return;
+    }
+
+    const updatedArray =
+      type === "stake"
+        ? formData.partner_stakes.filter((stake) => stake.id !== value.id)
+        : formData.partner_wards.filter((ward) => ward !== value);
+
+    const updateData = {
+      id: initialData.id,
+      short_id: initialData.short_id,
+      [type === "stake" ? "partner_stakes" : "partner_wards"]: updatedArray,
+    };
+
+    try {
+      setIsLoading(true);
+      await updateDayOfService(updateData);
+      setFormData((prev) => ({
+        ...prev,
+        [type === "stake" ? "partner_stakes" : "partner_wards"]: updatedArray,
+      }));
+      toast.success(
+        `"${type === "stake" ? value.name : value}" deleted successfully`
+      );
+      fetchDays();
+    } catch (error) {
+      console.error(`Error deleting ${type}:`, error);
+      toast.error(
+        `Failed to delete "${type === "stake" ? value.name : value}"`
+      );
+    } finally {
+      setIsLoading(false);
+      setDeleteStakeWardDialog({ open: false, type: null, value: null });
+    }
+  };
+
+  const checkIfStakeOrWardInUse = async (type, value) => {
+    if (!initialData?.id) return { inUse: false, projectsUsingIt: [] };
+    const projects = await fetchProjectsByDaysOfServiceId(initialData.id);
+    if (!projects) return { inUse: false, projectsUsingIt: [] };
+
+    const projectsUsingIt = projects.filter((project) => {
+      if (type === "stake") {
+        return project.partner_stake_id === value.id; // Assuming projects use stake ID
+      } else if (type === "ward") {
+        return project.partner_ward === value;
+      }
+      return false;
+    });
+
+    return { inUse: projectsUsingIt.length > 0, projectsUsingIt };
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={() => onClose(false)} maxWidth="md" fullWidth>
       <form onSubmit={handleSubmit}>
         <DialogTitle>
           <Box
@@ -391,26 +530,13 @@ const ServiceDayDialog = ({
             <span>
               {initialData ? "Edit Day of Service" : "New Day of Service"}
             </span>
-            <IconButton
-              onClick={onClose}
-              size="small"
-              sx={{ width: 24, height: 24 }}
-            >
-              <Close sx={{ width: 16, height: 16 }} />
+            <IconButton onClick={() => onClose(false)} size="small">
+              <Close />
             </IconButton>
           </Box>
         </DialogTitle>
         <DialogContent>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 3,
-              pt: 2,
-            }}
-          >
-            <JsonViewer data={formData} />
-
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3, pt: 2 }}>
             <TextField
               label="Name (Optional)"
               value={formData.name}
@@ -419,7 +545,6 @@ const ServiceDayDialog = ({
               }
               fullWidth
             />
-
             <TextField
               label="Start Date"
               type="date"
@@ -430,7 +555,6 @@ const ServiceDayDialog = ({
               fullWidth
               InputLabelProps={{ shrink: true }}
             />
-
             <TextField
               label="End Date (Day of Service)"
               type="date"
@@ -441,43 +565,200 @@ const ServiceDayDialog = ({
               fullWidth
               InputLabelProps={{ shrink: true }}
             />
-
             {initialData && (
-              <Box
-                sx={{
-                  typography: "body2",
-                  color: "text.secondary",
-                  mt: 2,
-                }}
-              >
-                <Box component="p" sx={{ mb: 1 }}>
-                  Created:{" "}
-                  {moment(initialData.created_at).format("MMMM D, YYYY h:mm A")}
+              <>
+                {/* Partner Stakes */}
+                <Box>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Partner Stakes / Organizations
+                  </Typography>
+                  {formData.partner_stakes.length > 0 ? (
+                    formData.partner_stakes.map((stake) => (
+                      <Box key={stake.id || stake.name} sx={{ mb: 2 }}>
+                        <Chip
+                          label={stake.name}
+                          onDelete={() =>
+                            setDeleteStakeWardDialog({
+                              open: true,
+                              type: "stake",
+                              value: stake,
+                            })
+                          }
+                          deleteIcon={<Delete />}
+                          sx={{ mr: 1 }}
+                        />
+                        <Typography variant="body2" color="text.secondary">
+                          Liaison 1: {stake.liaison_name_1 || "N/A"} (
+                          {stake.liaison_email_1 || "N/A"},{" "}
+                          {stake.liaison_phone_1 || "N/A"})
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Liaison 2: {stake.liaison_name_2 || "N/A"} (
+                          {stake.liaison_email_2 || "N/A"},{" "}
+                          {stake.liaison_phone_2 || "N/A"})
+                        </Typography>
+                      </Box>
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No partner stakes/organizations added yet.
+                    </Typography>
+                  )}
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="subtitle2">Add New Stake</Typography>
+                    <TextField
+                      label="Stake Name"
+                      value={newStake.name}
+                      onChange={(e) =>
+                        setNewStake({ ...newStake, name: e.target.value })
+                      }
+                      fullWidth
+                      sx={{ mb: 2 }}
+                    />
+                    <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                      <TextField
+                        label="Liaison Name 1"
+                        value={newStake.liaison_name_1 || ""}
+                        onChange={(e) =>
+                          setNewStake({
+                            ...newStake,
+                            liaison_name_1: e.target.value || null,
+                          })
+                        }
+                        size="small"
+                      />
+                      <TextField
+                        label="Email 1"
+                        value={newStake.liaison_email_1 || ""}
+                        onChange={(e) =>
+                          setNewStake({
+                            ...newStake,
+                            liaison_email_1: e.target.value || null,
+                          })
+                        }
+                        size="small"
+                      />
+                      <TextField
+                        label="Phone 1"
+                        value={newStake.liaison_phone_1 || ""}
+                        onChange={(e) =>
+                          setNewStake({
+                            ...newStake,
+                            liaison_phone_1: e.target.value || null,
+                          })
+                        }
+                        size="small"
+                      />
+                    </Box>
+                    <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                      <TextField
+                        label="Liaison Name 2"
+                        value={newStake.liaison_name_2 || ""}
+                        onChange={(e) =>
+                          setNewStake({
+                            ...newStake,
+                            liaison_name_2: e.target.value || null,
+                          })
+                        }
+                        size="small"
+                      />
+                      <TextField
+                        label="Email 2"
+                        value={newStake.liaison_email_2 || ""}
+                        onChange={(e) =>
+                          setNewStake({
+                            ...newStake,
+                            liaison_email_2: e.target.value || null,
+                          })
+                        }
+                        size="small"
+                      />
+                      <TextField
+                        label="Phone 2"
+                        value={newStake.liaison_phone_2 || ""}
+                        onChange={(e) =>
+                          setNewStake({
+                            ...newStake,
+                            liaison_phone_2: e.target.value || null,
+                          })
+                        }
+                        size="small"
+                      />
+                    </Box>
+                    <Button
+                      onClick={handleAddStake}
+                      variant="contained"
+                      size="small"
+                    >
+                      Add Stake
+                    </Button>
+                  </Box>
                 </Box>
-                <Box component="p">
-                  Last Updated:{" "}
-                  {moment(initialData.updated_at).format("MMMM D, YYYY h:mm A")}
+
+                {/* Partner Wards */}
+                <Box>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Partner Wards / Groups
+                  </Typography>
+                  {formData.partner_wards.length > 0 ? (
+                    formData.partner_wards.map((ward) => (
+                      <Chip
+                        key={ward}
+                        label={ward}
+                        onDelete={() =>
+                          setDeleteStakeWardDialog({
+                            open: true,
+                            type: "ward",
+                            value: ward,
+                          })
+                        }
+                        deleteIcon={<Delete />}
+                        sx={{ mr: 1, mb: 1 }}
+                      />
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No partner wards/groups added yet.
+                    </Typography>
+                  )}
                 </Box>
-              </Box>
+
+                <Divider sx={{ my: 2 }} />
+                <Box
+                  sx={{ typography: "body2", color: "text.secondary", mt: 2 }}
+                >
+                  <Box component="p" sx={{ mb: 1 }}>
+                    Created:{" "}
+                    {moment(initialData.created_at).format(
+                      "MMMM D, YYYY h:mm A"
+                    )}
+                  </Box>
+                  <Box component="p">
+                    Last Updated:{" "}
+                    {moment(initialData.updated_at).format(
+                      "MMMM D, YYYY h:mm A"
+                    )}
+                  </Box>
+                </Box>
+              </>
             )}
           </Box>
         </DialogContent>
-        <DialogActions
-          sx={{
-            px: 3,
-            pb: 3,
-          }}
-        >
-          <Button
-            onClick={() => setShowDeleteDialog(true)}
-            color="error"
-            disabled={isLoading}
-            variant="outlined"
-          >
-            Delete
-          </Button>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          {initialData && (
+            <Button
+              onClick={() => setShowDeleteDialog(true)}
+              color="error"
+              disabled={isLoading}
+              variant="outlined"
+            >
+              Delete Day
+            </Button>
+          )}
           <Box sx={{ flex: "1 1 auto" }} />
-          <Button onClick={onClose}>Cancel</Button>
+          <Button onClick={() => onClose(false)} disabled={isLoading}>
+            Cancel
+          </Button>
           <Button
             type="submit"
             variant="contained"
@@ -488,6 +769,7 @@ const ServiceDayDialog = ({
           </Button>
         </DialogActions>
       </form>
+
       <AskYesNoDialog
         open={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
@@ -497,6 +779,31 @@ const ServiceDayDialog = ({
           handleDeleteDay(initialData?.id);
           setShowDeleteDialog(false);
         }}
+      />
+
+      <AskYesNoDialog
+        open={deleteStakeWardDialog.open}
+        onClose={() =>
+          setDeleteStakeWardDialog({ open: false, type: null, value: null })
+        }
+        title={`Delete ${
+          deleteStakeWardDialog.type === "stake" ? "Stake" : "Ward"
+        }?`}
+        description={`Are you sure you want to delete "${
+          deleteStakeWardDialog.type === "stake"
+            ? deleteStakeWardDialog.value?.name
+            : deleteStakeWardDialog.value
+        }" from the ${
+          deleteStakeWardDialog.type === "stake"
+            ? "partner stakes"
+            : "partner wards"
+        } list? This action cannot be undone if no projects are using it.`}
+        onConfirm={() =>
+          handleDeleteStakeOrWard(
+            deleteStakeWardDialog.type,
+            deleteStakeWardDialog.value
+          )
+        }
       />
     </Dialog>
   );

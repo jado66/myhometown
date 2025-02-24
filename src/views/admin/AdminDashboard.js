@@ -162,8 +162,8 @@ const AdminDashboardPages = () => {
                   <AdminDashboardCard item={item} i={i} />
                 </PermissionGuard>
               ))}
-              <Divider sx={{ my: 2, width: "100%" }} />
-              <GetApp />
+              {/* <Divider sx={{ my: 2, width: "100%" }} />
+              <GetApp /> */}
             </Grid>
           </Box>
         </Container>

@@ -98,13 +98,11 @@ export interface ProjectFormData {
 interface UseProjectFormProps {
   projectId?: string;
   communityId: string;
-  daysOfServiceId: string;
 }
 
 export const useDaysOfServiceProjectForm = ({
   projectId,
   communityId,
-  daysOfServiceId,
 }: UseProjectFormProps) => {
   const [activeStep, setActiveStep] = useState(0);
   const [formData, setFormData] = useState<ProjectFormData>(
@@ -143,7 +141,7 @@ export const useDaysOfServiceProjectForm = ({
         setIsSaving(false);
       }
     }, 1500), // Wait 1.5 seconds after the last change before saving
-    [projectId, communityId, daysOfServiceId, user?.id]
+    [projectId, communityId, user?.id]
   );
 
   useEffect(() => {
@@ -176,6 +174,8 @@ export const useDaysOfServiceProjectForm = ({
       setIsLoading(false);
     }
   };
+
+  const handlePartnerChange = (parnterType: string, value: string) => {};
 
   const handleInputChange = (field: keyof ProjectFormData, value: any) => {
     const newFormData = {
