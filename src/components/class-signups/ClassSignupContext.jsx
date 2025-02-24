@@ -437,20 +437,38 @@ export function ClassSignupProvider({
   };
 
   const handleBulkFieldUpdate = (desiredFields) => {
-    // Create a new config with only the desired fields
-    const newConfig = {};
+    // Separate structural elements from the current formConfig
+    const currentStructuralElements = Object.keys(formConfig).reduce(
+      (acc, key) => {
+        if (!AVAILABLE_FIELDS[key]) {
+          // If the key isn't in AVAILABLE_FIELDS, it's a structural element
+          acc[key] = formConfig[key];
+        }
+        return acc;
+      },
+      {}
+    );
+
+    // Create a new config with only the desired fields from AVAILABLE_FIELDS
+    const newFieldConfig = {};
     desiredFields.forEach((field) => {
       if (AVAILABLE_FIELDS[field]) {
-        // If field exists in current config, keep its current settings
-        newConfig[field] = formConfig[field] || {
+        // If field exists in current config, keep its current settings; otherwise, use default
+        newFieldConfig[field] = formConfig[field] || {
           ...AVAILABLE_FIELDS[field],
           visible: true,
         };
       }
     });
 
-    setFormConfig(newConfig);
-    setFieldOrder(desiredFields);
+    // Combine structural elements with the new field config
+    const updatedConfig = {
+      ...currentStructuralElements,
+      ...newFieldConfig,
+    };
+
+    setFormConfig(updatedConfig);
+    setFieldOrder(desiredFields.filter((field) => updatedConfig[field])); // Ensure fieldOrder only includes fields present in updatedConfig
   };
 
   const handleRemoveField = (fieldToRemove) => {
