@@ -19,6 +19,7 @@ import { IconSelect } from "@/components/events/ClassesTreeView/IconSelect";
 import { useImageUpload } from "@/hooks/use-upload-image";
 import { ClassMeetings } from "../ClassMeetings";
 import { useClassSignup } from "../ClassSignupContext";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export function ClassDescriptionEditor({ CategorySelectOptions, isEdit }) {
   const { classConfig, handleClassConfigChange, errors, fieldOrder } =
@@ -30,6 +31,8 @@ export function ClassDescriptionEditor({ CategorySelectOptions, isEdit }) {
 
   return (
     <Stack spacing={3} sx={{ py: 2 }}>
+      <JsonViewer data={classConfig} />
+
       {/* <pre>{JSON.stringify(classConfig, null, 4)}</pre> */}
       <Typography variant="h6">Class Description</Typography>
 

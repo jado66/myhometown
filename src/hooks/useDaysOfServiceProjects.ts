@@ -118,6 +118,33 @@ export const useDaysOfServiceProjects = () => {
     }
   };
 
+  const fetchProjectsByDaysOfStakeId = async (
+    stakeId: string,
+    summaryOnly = false
+  ) => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("days_of_service_project_forms")
+        .select(
+          summaryOnly
+            ? "id, status, project_name, project_development_couple, address_street1, address_street2, address_city, created_at, updated_at"
+            : "*"
+        )
+        .eq("stake_id", stakeId);
+
+      if (error) throw error;
+
+      if (data) {
+        return data;
+      }
+    } catch (error) {
+      toast.error("Failed to load projects");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const deleteProject = async (projectId: string) => {
     setLoading(true);
     try {
@@ -203,6 +230,7 @@ export const useDaysOfServiceProjects = () => {
     fetchProjectsByCommunityId,
     fetchProjectsByCityId,
     fetchProjectsByDaysOfServiceId,
+    fetchProjectsByDaysOfStakeId,
     deleteProject,
   };
 };

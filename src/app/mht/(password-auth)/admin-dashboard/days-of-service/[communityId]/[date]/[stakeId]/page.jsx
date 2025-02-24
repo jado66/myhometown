@@ -41,7 +41,7 @@ import { useDaysOfService } from "@/hooks/useDaysOfService";
 import { useUser } from "@/hooks/use-user";
 
 export default function ProjectFormsPage({ params }) {
-  const { date, communityId } = params;
+  const { stakeId, communityId, date } = params;
 
   const { user } = useUser();
 
@@ -59,7 +59,7 @@ export default function ProjectFormsPage({ params }) {
   const { fetchDayOfServiceByShortId } = useDaysOfService();
 
   const {
-    fetchProjectsByDaysOfServiceId,
+    fetchProjectsByDaysOfStakeId,
     deleteProject,
     error,
     addProject,
@@ -105,7 +105,7 @@ export default function ProjectFormsPage({ params }) {
 
     if (communityId && date) {
       const fetchProjects = async () => {
-        const data = await fetchProjectsByDaysOfServiceId(dayOfService?.id);
+        const data = await fetchProjectsByDaysOfStakeId(stakeId);
 
         setProjects(data);
         setIsLoading(false);
@@ -302,22 +302,7 @@ export default function ProjectFormsPage({ params }) {
           >
             <Alert severity="error">{error}</Alert>
           </Box>
-        ) : projects.length === 0 ? (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              flex: 1,
-              p: 3,
-              textAlign: "center",
-            }}
-          >
-            <Typography color="text.secondary">
-              No projects yet. Click the button below to create your first
-              project.
-            </Typography>
-          </Box>
-        ) : (
+        ) : projects?.length >= 1 ? (
           <List sx={{ flex: 1, overflow: "auto" }}>
             {projects
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -409,6 +394,21 @@ export default function ProjectFormsPage({ params }) {
                 </ListItem>
               ))}
           </List>
+        ) : (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              flex: 1,
+              p: 3,
+              textAlign: "center",
+            }}
+          >
+            <Typography color="text.secondary">
+              No projects yet. Click the button below to create your first
+              project.
+            </Typography>
+          </Box>
         )}
       </Paper>
 
