@@ -88,20 +88,23 @@ const CommunitySelectionPage = ({ params }) => {
       // Parse partner_stakes for each day
       const parsedData = data.map((day) => ({
         ...day,
-        partner_stakes: day.partner_stakes
-          .map((stake) => {
-            try {
-              return JSON.parse(stake);
-            } catch (e) {
-              console.error("Error parsing stake:", stake, e);
-              return null;
-            }
-          })
-          .filter(Boolean), // Remove any null values from parsing errors
+        partner_stakes: Array.isArray(day.partner_stakes)
+          ? day.partner_stakes
+              .map((stake) => {
+                try {
+                  return typeof stake === "string" ? JSON.parse(stake) : stake;
+                } catch (e) {
+                  console.error("Error parsing stake:", stake, e);
+                  return null;
+                }
+              })
+              .filter(Boolean) // Remove any null values from parsing errors
+          : [], // Set to empty array if partner_stakes is null or undefined
       }));
 
       setDaysOfService(parsedData);
     } catch (error) {
+      console.log(error);
       console.error("Error fetching days of service:", error);
     }
   }, [communityId, fetchDaysOfServiceByCommunity]);
