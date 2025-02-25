@@ -1,7 +1,4 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -18,92 +15,82 @@ import {
   Alert,
   TableSortLabel,
   InputAdornment,
-  Select,
-  MenuItem,
 } from "@mui/material";
 import {
   Edit as EditIcon,
   Save as SaveIcon,
   Close as CloseIcon,
   Add as AddIcon,
+  FileUpload as FileUploadIcon,
+  FileDownload as FileDownloadIcon,
   Delete,
   Search as SearchIcon,
 } from "@mui/icons-material";
-import { useUserContacts } from "@/hooks/useUserContacts";
-import { supabase } from "@/util/supabase";
+import Creatable from "react-select/creatable";
+import { components } from "react-select";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
-import { useUser } from "@/hooks/use-user";
-
-import ContactFormDialog from "./ContactFormDialog";
-import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const Directory = () => {
-  const { user } = useUser();
-
-  const userId = user?.id;
-  const userCommunities = user?.communities;
-  const userCities = user?.cities;
-
-  const {
-    addContact,
-    updateContact,
-    deleteContact,
-    contacts,
-    loading,
-    error: contactsError,
-  } = useUserContacts(userId, userCommunities, userCities);
-
-  const [error, setError] = useState(null);
-  const [communities, setCommunities] = useState([]);
-  const [cities, setCities] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  const [groups, setGroups] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({
-    first_name: "",
-    middle_name: "",
-    last_name: "",
+    firstName: "",
+    middleName: "",
+    lastName: "",
     phone: "",
     email: "",
-    owner_id: "",
-    owner_type: "user",
-    visibility: true,
+    groups: [],
   });
-  const [formDialog, setFormDialog] = useState({
-    open: false,
-    initialData: null,
-  });
+  const [error, setError] = useState("");
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
     contactId: null,
     contactName: "",
   });
-  const [orderBy, setOrderBy] = useState("last_name");
+  const [isNewContact, setIsNewContact] = useState(false);
+
+  // Add new state for sorting and searching
+  const [orderBy, setOrderBy] = useState("lastName");
   const [order, setOrder] = useState("asc");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredContacts, setFilteredContacts] = useState([]);
 
-  useEffect(() => {
-    // fetchContacts();
-    fetchCommunities();
-    fetchCities();
-  }, []);
+  // Existing useEffects for localStorage...
 
+  // Add new useEffect for filtering and sorting contacts
   useEffect(() => {
     let filtered = [...contacts];
 
+    // Apply search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (contact) =>
-          contact.first_name.toLowerCase().includes(query) ||
-          contact.last_name.toLowerCase().includes(query) ||
+          contact.firstName.toLowerCase().includes(query) ||
+          contact.lastName.toLowerCase().includes(query) ||
           contact.email.toLowerCase().includes(query) ||
-          contact.phone.includes(query)
+          contact.phone.includes(query) ||
+          contact.groups.some((g) => g.label.toLowerCase().includes(query))
       );
     }
 
+    // Apply sorting
     filtered.sort((a, b) => {
-      const aValue = a[orderBy]?.toString().toLowerCase() ?? "";
-      const bValue = b[orderBy]?.toString().toLowerCase() ?? "";
+      let aValue = a[orderBy]?.toString().toLowerCase() ?? "";
+      let bValue = b[orderBy]?.toString().toLowerCase() ?? "";
+
+      // Special handling for groups
+      if (orderBy === "groups") {
+        aValue = a.groups
+          .map((g) => g.label)
+          .join(", ")
+          .toLowerCase();
+        bValue = b.groups
+          .map((g) => g.label)
+          .join(", ")
+          .toLowerCase();
+      }
 
       if (order === "asc") {
         return aValue.localeCompare(bValue);
@@ -113,28 +100,6 @@ const Directory = () => {
 
     setFilteredContacts(filtered);
   }, [contacts, searchQuery, orderBy, order]);
-
-  const fetchCommunities = async () => {
-    const { data, error } = await supabase
-      .from("communities")
-      .select("id, name");
-
-    if (error) {
-      setError("Error fetching communities");
-    } else {
-      setCommunities(data);
-    }
-  };
-
-  const fetchCities = async () => {
-    const { data, error } = await supabase.from("cities").select("id, name");
-
-    if (error) {
-      setError("Error fetching cities");
-    } else {
-      setCities(data);
-    }
-  };
 
   const handleSort = (property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -152,63 +117,299 @@ const Directory = () => {
     </TableSortLabel>
   );
 
-  const handleOpenAddDialog = () => {
-    setFormDialog({
-      open: true,
-      initialData: {
-        owner_id: userId,
-        owner_type: "user",
-        visibility: true,
-      },
-    });
-  };
+  const importContacts = (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
 
-  const handleOpenEditDialog = (contact) => {
-    alert(JSON.stringify(contact));
-    setFormDialog({
-      open: true,
-      initialData: { ...contact },
-    });
-  };
+    reader.onload = (e) => {
+      const content = e.target.result;
+      const lines = content.split("\n").filter((line) => line.trim());
+      const errors = [];
+      const importedContacts = [];
 
-  const handleCloseFormDialog = () => {
-    setFormDialog({
-      open: false,
-      initialData: null,
-    });
-    setError(null);
-  };
+      // Get and normalize headers
+      const headers = lines[0].split(",").map((header) => {
+        const normalized = normalizeHeader(header.trim());
+        if (
+          ![
+            "firstName",
+            "lastName",
+            "middleName",
+            "email",
+            "phone",
+            "groups",
+          ].includes(normalized)
+        ) {
+          errors.push(`Unknown column header: ${header.trim()}`);
+        }
+        return normalized;
+      });
 
-  const handleSubmitForm = async (formData) => {
-    try {
-      if (formData.id) {
-        // Editing existing contact
-        const { error } = await updateContact(formData.id, formData);
-        if (error) throw new Error(error);
-      } else {
-        // Adding new contact
-        const { error } = await addContact(formData);
-        if (error) throw new Error(error);
+      // Check for required headers
+      const requiredHeaders = ["firstName", "lastName", "phone"];
+      const missingHeaders = requiredHeaders.filter(
+        (header) => !headers.includes(header)
+      );
+      if (missingHeaders.length > 0) {
+        setError(`Missing required columns: ${missingHeaders.join(", ")}`);
+        return;
       }
-      handleCloseFormDialog();
-    } catch (err) {
-      setError(err.message);
+
+      // Process each line
+      lines.slice(1).forEach((line, index) => {
+        const values = line.split(",").map((val) => val.trim());
+        if (values.length !== headers.length) {
+          errors.push(`Line ${index + 2}: Invalid number of columns`);
+          return;
+        }
+
+        // Create contact object using header mapping
+        const contact = {
+          id: Date.now() + Math.random(),
+          firstName: "",
+          middleName: "",
+          lastName: "",
+          phone: "",
+          email: "",
+          groups: [],
+        };
+
+        // Map values to correct fields
+        headers.forEach((header, i) => {
+          if (header === "groups") {
+            const groupsArray = values[i].split(";").filter(Boolean);
+            contact.groups = groupsArray.map((group) => {
+              const newGroup = createOption(group.trim());
+              // Add to global groups if not exists
+              if (!groups.some((g) => g.value === newGroup.value)) {
+                setGroups((prevGroups) => [...prevGroups, newGroup]);
+              }
+              return newGroup;
+            });
+          } else if (header === "phone") {
+            contact[header] = formatPhoneNumber(values[i]);
+          } else {
+            contact[header] = values[i];
+          }
+        });
+
+        // Validate the contact
+        if (!contact.firstName || !contact.lastName || !contact.phone) {
+          errors.push(`Line ${index + 2}: Missing required fields`);
+          return;
+        }
+
+        // Check for duplicate phone numbers
+        const isDuplicatePhone =
+          contacts.some((c) => c.phone === contact.phone) ||
+          importedContacts.some((c) => c.phone === contact.phone);
+
+        if (isDuplicatePhone) {
+          errors.push(
+            `Line ${index + 2}: Duplicate phone number ${contact.phone}`
+          );
+          return;
+        }
+
+        importedContacts.push(contact);
+      });
+
+      if (errors.length > 0) {
+        setError(`Import errors:\n${errors.join("\n")}`);
+      }
+
+      if (importedContacts.length > 0) {
+        setContacts([...contacts, ...importedContacts]);
+      }
+    };
+
+    reader.readAsText(file);
+  };
+
+  const normalizeHeader = (header) => {
+    // Remove special characters and spaces, convert to lowercase
+    const normalized = header.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    // Map various possible header names to standard format
+    const headerMap = {
+      firstname: "firstName",
+      first: "firstName",
+      fname: "firstName",
+      middlename: "middleName",
+      middle: "middleName",
+      mname: "middleName",
+      lastname: "lastName",
+      last: "lastName",
+      lname: "lastName",
+      surname: "lastName",
+      email: "email",
+      emailaddress: "email",
+      mail: "email",
+      phone: "phone",
+      phonenumber: "phone",
+      telephone: "phone",
+      tel: "phone",
+      mobile: "phone",
+      group: "groups",
+      groups: "groups",
+      category: "groups",
+      categories: "groups",
+      tags: "groups",
+    };
+
+    return headerMap[normalized] || normalized;
+  };
+
+  // Load both contacts and groups from localStorage
+  useEffect(() => {
+    const savedContacts = JSON.parse(localStorage.getItem("contacts")) || [];
+    const savedGroups = JSON.parse(localStorage.getItem("groups")) || [];
+    setContacts(savedContacts);
+    setGroups(savedGroups);
+  }, []);
+
+  // Save contacts to localStorage
+  useEffect(() => {
+    localStorage.setItem("contacts", JSON.stringify(contacts));
+  }, [contacts]);
+
+  // Save groups to localStorage
+  useEffect(() => {
+    localStorage.setItem("groups", JSON.stringify(groups));
+  }, [groups]);
+
+  const validateContact = (contact, contactId = null) => {
+    if (!contact.firstName.trim()) {
+      setError("First name is required");
+      return false;
+    }
+    if (!contact.lastName.trim()) {
+      setError("Last name is required");
+      return false;
+    }
+    if (!contact.phone.trim()) {
+      setError("Phone number is required");
+      return false;
+    }
+
+    // Check for duplicate phone numbers
+    const isDuplicatePhone = contacts.some(
+      (c) => c.phone === contact.phone.trim() && c.id !== contactId
+    );
+    if (isDuplicatePhone) {
+      setError("This phone number is already in use");
+      return false;
+    }
+
+    return true;
+  };
+
+  const getFullName = (contact) => {
+    return [contact.firstName, contact.middleName, contact.lastName]
+      .filter(Boolean)
+      .join(" ");
+  };
+
+  const startEditing = (contact) => {
+    setEditingId(contact.id);
+    setEditForm({
+      firstName: contact.firstName,
+      middleName: contact.middleName,
+      lastName: contact.lastName,
+      phone: contact.phone,
+      email: contact.email,
+      groups: contact.groups,
+    });
+    setError("");
+    setIsNewContact(false);
+  };
+
+  const cancelEditing = () => {
+    if (isNewContact) {
+      // Remove the newly created contact if canceling a new contact creation
+      setContacts(contacts.filter((c) => c.id !== editingId));
+    }
+    setEditingId(null);
+    setEditForm({
+      firstName: "",
+      middleName: "",
+      lastName: "",
+      phone: "",
+      email: "",
+      groups: [],
+    });
+    setError("");
+    setIsNewContact(false);
+  };
+
+  const saveEdit = (id) => {
+    if (!validateContact(editForm, id)) {
+      return;
+    }
+
+    const updatedContacts = contacts.map((contact) =>
+      contact.id === id
+        ? {
+            ...contact,
+            ...editForm,
+          }
+        : contact
+    );
+
+    // Update contacts first
+    setContacts(updatedContacts);
+
+    // Then clean up unused groups based on the updated contacts
+    const updatedGroups = cleanupUnusedGroups(updatedContacts);
+    setGroups(updatedGroups);
+
+    setEditingId(null);
+    setError("");
+  };
+
+  const addNewContact = () => {
+    const newContact = {
+      id: Date.now(),
+      firstName: "",
+      middleName: "",
+      lastName: "",
+      phone: "",
+      email: "",
+      groups: [],
+    };
+    setContacts([...contacts, newContact]);
+    startEditing(newContact);
+    setIsNewContact(true);
+  };
+
+  const handleGroupChange = (editingId, selectedGroups) => {
+    setEditForm({ ...editForm, groups: selectedGroups });
+
+    // Add any new groups to the global groups list
+    const newGroups = selectedGroups.filter(
+      (group) => !groups.some((g) => g.value === group.value)
+    );
+
+    if (newGroups.length > 0) {
+      setGroups([...groups, ...newGroups]);
     }
   };
+
+  const createOption = (label) => ({
+    label,
+    value: label.toLowerCase().replace(/\W/g, ""),
+  });
 
   const handleDeleteClick = (contact) => {
     setDeleteDialog({
       open: true,
       contactId: contact.id,
-      contactName: `${contact.first_name} ${contact.last_name}`,
+      contactName: getFullName(contact),
     });
   };
 
-  const handleDeleteConfirm = async () => {
-    const { error } = await deleteContact(deleteDialog.contactId);
-    if (error) {
-      setError(`Error deleting contact: ${error}`);
-    }
+  const handleDeleteConfirm = () => {
+    setContacts(contacts.filter((c) => c.id !== deleteDialog.contactId));
     setDeleteDialog({
       open: false,
       contactId: null,
@@ -224,13 +425,150 @@ const Directory = () => {
     });
   };
 
-  if (loading) return <div>Loading contacts...</div>;
-  if (error) return <div>Error loading contacts: {error.message}</div>;
+  const formatPhoneNumber = (phone) => {
+    // Remove all non-numeric characters
+    const cleaned = phone.replace(/\D/g, "");
+
+    // Check if it's a valid length (assuming US numbers for this example)
+    // You might want to adjust this based on your needs
+    if (cleaned.length < 10) return cleaned;
+
+    // Format as (XXX) XXX-XXXX if 10 digits
+    if (cleaned.length === 10) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(
+        6
+      )}`;
+    }
+
+    // If longer than 10 digits, keep original formatting
+    return cleaned;
+  };
+
+  const cleanupUnusedGroups = (currentContacts) => {
+    // Get all groups currently in use by any contact
+    const usedGroupValues = new Set(
+      currentContacts.flatMap((contact) =>
+        contact.groups.map((group) => group.value)
+      )
+    );
+
+    // Filter out any groups that aren't being used
+    return groups.filter((group) => usedGroupValues.has(group.value));
+  };
+
+  const exportContacts = () => {
+    const header = "First Name,Middle Name,Last Name,Phone,Email,Groups\n";
+    const csv = contacts
+      .map(
+        (contact) =>
+          `${contact.firstName},${contact.middleName},${contact.lastName},${
+            contact.phone
+          },${contact.email},${contact.groups.map((g) => g.label).join(";")}`
+      )
+      .join("\n");
+    const blob = new Blob([header + csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", "contacts.csv");
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const selectStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      minWidth: "200px",
+      minHeight: "32px",
+      borderColor: state.isFocused ? "#318D43" : provided.borderColor, // Change the border color when focused
+      boxShadow: state.isFocused ? `0 0 0 1px #318D43` : provided.boxShadow, // Optional: Add a box-shadow for better focus visibility
+      "&:hover": {
+        borderColor: "#318D43", // Change the hover border color
+      },
+    }),
+    menu: (provided) => ({
+      ...provided,
+      position: "absolute",
+      width: "100%",
+      zIndex: 9999,
+      marginTop: 0,
+      backgroundColor: "white",
+      border: "1px solid #e2e8f0",
+      borderRadius: "6px",
+      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+      overflow: "hidden",
+    }),
+    menuList: (provided) => ({
+      ...provided,
+      padding: "4px",
+      fontSize: "14px",
+    }),
+    option: (provided, { isFocused, isSelected }) => ({
+      ...provided,
+      fontSize: "14px",
+      backgroundColor: isFocused ? "#f7fafc" : isSelected ? "#e2e8f0" : "white",
+      color: "#2d3748",
+      padding: "8px",
+      "&:active": {
+        backgroundColor: "#e2e8f0",
+      },
+    }),
+    menuPortal: (provided) => ({
+      ...provided,
+      zIndex: 9999,
+    }),
+  };
+
+  const selectComponents = {
+    // Reverse the menu so it displays upwards
+    MenuList: ({ children, ...props }) => (
+      <components.MenuList
+        {...props}
+        style={{
+          padding: "4px",
+          fontSize: "14px", // Smaller font size
+        }}
+      >
+        {React.Children.toArray(children).reverse()}
+      </components.MenuList>
+    ),
+    // Move create option to top
+    Menu: ({ children, ...props }) => {
+      const { options, createOption } = props.selectProps;
+      return (
+        <components.Menu
+          {...props}
+          style={{
+            backgroundColor: "white",
+            border: "1px solid #e2e8f0",
+            borderRadius: "6px",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+            overflow: "hidden",
+          }}
+        >
+          {createOption && (
+            <div
+              style={{
+                padding: "4px 8px",
+                borderBottom: "1px solid #e2e8f0",
+                fontSize: "14px", // Smaller font size
+              }}
+            >
+              {createOption}
+            </div>
+          )}
+          {children}
+        </components.Menu>
+      );
+    },
+  };
 
   return (
     <Paper sx={{ width: "100%", p: 3 }}>
-      {/* <JsonViewer data={formDialog} /> */}
-
       <Box
         sx={{
           display: "flex",
@@ -240,16 +578,44 @@ const Directory = () => {
         }}
       >
         <Typography variant="h5">Directory</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleOpenAddDialog}
-          size="small"
-        >
-          Add Contact
-        </Button>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <input
+            accept=".csv"
+            style={{ display: "none" }}
+            id="import-file"
+            type="file"
+            onChange={importContacts}
+          />
+          <label htmlFor="import-file">
+            <Button
+              variant="contained"
+              component="span"
+              startIcon={<FileUploadIcon />}
+              size="small"
+            >
+              Import CSV
+            </Button>
+          </label>
+          <Button
+            variant="contained"
+            startIcon={<FileDownloadIcon />}
+            onClick={exportContacts}
+            size="small"
+          >
+            Export CSV
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={addNewContact}
+            size="small"
+          >
+            Add Contact
+          </Button>
+        </Box>
       </Box>
 
+      {/* Add Search Box */}
       <Box sx={{ mb: 2 }}>
         <TextField
           fullWidth
@@ -272,17 +638,12 @@ const Directory = () => {
           <TableHead>
             <TableRow>
               <TableCell>
-                {renderSortLabel("first_name", "First Name")}
+                {renderSortLabel("firstName", "First Name")}
               </TableCell>
-              <TableCell>{renderSortLabel("last_name", "Last Name")}</TableCell>
+              <TableCell>{renderSortLabel("lastName", "Last Name")}</TableCell>
               <TableCell>{renderSortLabel("phone", "Phone")}</TableCell>
               <TableCell>{renderSortLabel("email", "Email")}</TableCell>
-              <TableCell>
-                {renderSortLabel("owner_type", "Owner Type")}
-              </TableCell>
-              <TableCell>
-                {renderSortLabel("visibility", "Visibility")}
-              </TableCell>
+              <TableCell>{renderSortLabel("groups", "Groups")}</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -292,32 +653,50 @@ const Directory = () => {
                 <TableCell>
                   {editingId === contact.id ? (
                     <TextField
-                      value={editForm.first_name}
+                      value={editForm.firstName}
                       onChange={(e) =>
-                        setEditForm({ ...editForm, first_name: e.target.value })
+                        setEditForm({ ...editForm, firstName: e.target.value })
+                      }
+                      size="small"
+                      fullWidth
+                      error={error && error.includes("First name")}
+                      required
+                    />
+                  ) : (
+                    contact.firstName
+                  )}
+                </TableCell>
+                {/* <TableCell>
+                  {editingId === contact.id ? (
+                    <TextField
+                      value={editForm.middleName}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, middleName: e.target.value })
                       }
                       size="small"
                       fullWidth
                     />
                   ) : (
-                    contact.first_name
+                    contact.middleName
                   )}
-                </TableCell>
+                </TableCell> */}
                 <TableCell>
                   {editingId === contact.id ? (
                     <TextField
-                      value={editForm.last_name}
+                      value={editForm.lastName}
                       onChange={(e) =>
-                        setEditForm({ ...editForm, last_name: e.target.value })
+                        setEditForm({ ...editForm, lastName: e.target.value })
                       }
                       size="small"
                       fullWidth
+                      error={error && error.includes("Last name")}
+                      required
                     />
                   ) : (
-                    contact.last_name
+                    contact.lastName
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ whiteSpace: "nowrap" }}>
                   {editingId === contact.id ? (
                     <TextField
                       value={editForm.phone}
@@ -326,6 +705,8 @@ const Directory = () => {
                       }
                       size="small"
                       fullWidth
+                      error={error && error.includes("Phone")}
+                      required
                     />
                   ) : (
                     contact.phone
@@ -347,39 +728,22 @@ const Directory = () => {
                 </TableCell>
                 <TableCell>
                   {editingId === contact.id ? (
-                    <Select
-                      value={editForm.owner_type}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, owner_type: e.target.value })
+                    <Creatable
+                      isMulti
+                      value={editForm.groups}
+                      options={groups}
+                      onChange={(newGroups) =>
+                        handleGroupChange(contact.id, newGroups)
                       }
-                      size="small"
-                      fullWidth
-                    >
-                      <MenuItem value="user">User</MenuItem>
-                      <MenuItem value="community">Community</MenuItem>
-                      <MenuItem value="city">City</MenuItem>
-                    </Select>
+                      styles={selectStyles}
+                      components={selectComponents}
+                      menuPortalTarget={document.body}
+                      noOptionsMessage={() => "Type to create new group"}
+                      menuPosition="fixed"
+                      placeholder="Select or create groups"
+                    />
                   ) : (
-                    contact.owner_type
-                  )}
-                </TableCell>
-                <TableCell>
-                  {editingId === contact.id ? (
-                    <Select
-                      value={editForm.visibility}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, visibility: e.target.value })
-                      }
-                      size="small"
-                      fullWidth
-                    >
-                      <MenuItem value={true}>Visible</MenuItem>
-                      <MenuItem value={false}>Hidden</MenuItem>
-                    </Select>
-                  ) : contact.visibility ? (
-                    "Visible"
-                  ) : (
-                    "Hidden"
+                    contact.groups.map((g) => g.label).join(", ")
                   )}
                 </TableCell>
                 <TableCell align="right">
@@ -412,7 +776,7 @@ const Directory = () => {
                     >
                       <IconButton
                         size="small"
-                        onClick={() => handleOpenEditDialog(contact)}
+                        onClick={() => startEditing(contact)}
                         color="primary"
                       >
                         <EditIcon />
@@ -428,22 +792,25 @@ const Directory = () => {
                 </TableCell>
               </TableRow>
             ))}
+
+            {/* Add me a total */}
+            <TableRow>
+              <TableCell colSpan={2}>
+                <strong>Total:</strong>
+              </TableCell>
+              <TableCell>
+                <strong>{contacts.length}</strong>
+              </TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </TableContainer>
 
       {error && (
-        <Alert severity="error" sx={{ mt: 2 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
-
-      <ContactFormDialog
-        open={formDialog.open}
-        onClose={handleCloseFormDialog}
-        onSubmit={handleSubmitForm}
-        initialData={formDialog.initialData}
-      />
 
       <AskYesNoDialog
         open={deleteDialog.open}
