@@ -342,11 +342,125 @@ export const useDaysOfService = () => {
     []
   );
 
+  const updatePartnerStakeInDayOfService = useCallback(
+    async (dayId: string, updatedStake: PartnerStake) => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const { data: currentData, error: fetchError } = await supabase
+          .from("days_of_service")
+          .select("partner_stakes, short_id")
+          .eq("id", dayId)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        // Parse stakes if they're strings
+        const parsedStakes = (currentData.partner_stakes || [])
+          .map((stake) => {
+            try {
+              return typeof stake === "string" ? JSON.parse(stake) : stake;
+            } catch (e) {
+              console.error("Error parsing stake:", stake, e);
+              return null;
+            }
+          })
+          .filter(Boolean);
+
+        // Update the matching stake
+        const updatedStakes = parsedStakes.map((stake) =>
+          stake.id === updatedStake.id ? updatedStake : stake
+        );
+
+        const { data, error: updateError } = await supabase
+          .from("days_of_service")
+          .update({ partner_stakes: updatedStakes })
+          .eq("id", dayId)
+          .select()
+          .single();
+
+        if (updateError) throw updateError;
+
+        toast.success("Stake updated successfully");
+        return { data, error: null };
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "An error occurred";
+        setError(message);
+        toast.error(`Failed to update stake: ${message}`);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  const removePartnerStakeFromDayOfService = useCallback(
+    async (dayId: string, stakeId: string) => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const { data: currentData, error: fetchError } = await supabase
+          .from("days_of_service")
+          .select("partner_stakes, short_id")
+          .eq("id", dayId)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        // Parse the JSON strings into objects
+        const parsedStakes = (currentData.partner_stakes || [])
+          .map((stake) => {
+            try {
+              return typeof stake === "string" ? JSON.parse(stake) : stake;
+            } catch (e) {
+              console.error("Error parsing stake:", stake, e);
+              return null;
+            }
+          })
+          .filter(Boolean);
+
+        // Filter out the stake with the matching ID
+        const updatedStakes = parsedStakes.filter(
+          (stake) => stake.id !== stakeId
+        );
+
+        const { data, error: updateError } = await supabase
+          .from("days_of_service")
+          .update({ partner_stakes: updatedStakes })
+          .eq("id", dayId)
+          .select()
+          .single();
+
+        if (updateError) throw updateError;
+
+        toast.success("Stake removed successfully");
+        return { data, error: null };
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "An error occurred";
+        setError(message);
+        toast.error(`Failed to remove stake: ${message}`);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
   return {
     addDayOfService,
     updateDayOfService,
     deleteDayOfService,
+    removePartnerStakeFromDayOfService,
     fetchDaysOfServiceByCommunity,
+    fetchDayOfServiceByShortId,
+    fetchDayOfService,
+    updatePartnerStakeInDayOfService,
     addPartnerToDayOfService,
     isLoading,
     error,

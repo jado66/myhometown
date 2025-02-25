@@ -33,6 +33,7 @@ const ProjectFormPage = ({ formId, date, communityId, dayOfService }) => {
           <DosBreadcrumbs
             dayOfService={dayOfService}
             date={date}
+            stakeId={formData?.partner_stake_id}
             projectName={formData?.project_name}
             sx={{
               bgcolor: "white",

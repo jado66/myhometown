@@ -4,6 +4,7 @@ import { Breadcrumbs, Typography, SxProps, Theme } from "@mui/material";
 import { NavigateNext } from "@mui/icons-material";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import moment from "moment";
 
 interface CommunityData {
   city_name: string;
@@ -25,6 +26,7 @@ interface DosBreadcrumbsProps {
   projectName?: string;
   sx?: SxProps<Theme>;
   isProjectView?: boolean;
+  stakeId?: string;
 }
 
 const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
@@ -33,6 +35,7 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
   date,
   projectName,
   isProjectView,
+  stakeId,
   sx,
 }) => {
   const pathname = usePathname();
@@ -46,16 +49,28 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
     : [];
 
   const generateBreadcrumbsData = (): string[] => {
-    const base = ["Admin Dashboard", "Days of Service"];
+    // alert("dayOfService: " + JSON.stringify(dayOfService?.partner_stakes));
+
+    const stake = dayOfService?.partner_stakes?.find(
+      (stake) => stake.id === stakeId
+    );
+
+    const base = [];
 
     if (communityData) {
       base.push(`${communityData.city_name} - ${communityData.name}`);
     } else if (dayOfService) {
-      base.push(`${dayOfService.city_name} - ${dayOfService.community_name}`);
+      base.push(
+        `${dayOfService.city_name} - ${dayOfService.community_name} Community`
+      );
     }
 
     if (dayOfService && date) {
-      base.push(`${dayOfService.name || ""} ${date}`);
+      base.push(
+        `${dayOfService.name || moment(date).format("dddd, MMMM Do, YYYY")} - ${
+          stake?.name
+        } `
+      );
 
       if (pathnames.includes("view-timeline") && !isProjectView) {
         base.push("View Timeline");
@@ -75,7 +90,7 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
 
   useEffect(() => {
     setPathTitles(generateBreadcrumbsData());
-  }, [dayOfService, communityData, date, pathname, projectName]);
+  }, [dayOfService, communityData, date, pathname, projectName, stakeId]);
 
   const generateHref = (index: number): string => {
     const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || "";
@@ -88,26 +103,31 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
     };
 
     switch (index) {
-      case 0: // Admin Dashboard
-        return getUrl(["admin-dashboard"]);
-      case 1: // Days of Service
-        return getUrl(["admin-dashboard", "days-of-service"]);
-      case 2: // Community Level
+      // case 0: // Admin Dashboard
+      //   return getUrl(["admin-dashboard"]);
+      // case 1: // Days of Service
+      //   return getUrl(["admin-dashboard", "days-of-service"]);
+      case 0: // Community Level
         if (communityId) {
           return getUrl(["admin-dashboard", "days-of-service", communityId]);
         }
         return pathname;
-      case 3: // Day of Service Level
+      case 1: // Day of Service Level
         if (communityId && date) {
-          return getUrl([
+          // Modified to include /stake/{stakeId} if stakeId exists
+          const segments = [
             "admin-dashboard",
             "days-of-service",
             communityId,
             date,
-          ]);
+          ];
+          if (stakeId) {
+            segments.push("stake", stakeId);
+          }
+          return getUrl(segments);
         }
         return pathname;
-      case 4: // View Timeline or Project
+      case 2: // View Timeline or Project
         if (communityId && date) {
           if (isProjectView) {
             return pathname; // Current project URL

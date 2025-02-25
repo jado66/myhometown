@@ -13,6 +13,7 @@ export const useDaysOfServiceProjects = () => {
     community_id: string,
     city_id: string,
     daysOfServiceShortId: string,
+    partner_stake_id: string,
     user: any
   ) => {
     setLoading(true);
@@ -28,6 +29,7 @@ export const useDaysOfServiceProjects = () => {
         community_id: community_id,
         city_id: city_id,
         days_of_service_id: daysOfServiceId,
+        partner_stake_id: partner_stake_id,
         updated_by: user?.id,
         created_by: user?.id, // Only set on creation
       };
@@ -131,7 +133,7 @@ export const useDaysOfServiceProjects = () => {
             ? "id, status, project_name, project_development_couple, address_street1, address_street2, address_city, created_at, updated_at"
             : "*"
         )
-        .eq("stake_id", stakeId);
+        .eq("partner_stake_id", stakeId);
 
       if (error) throw error;
 

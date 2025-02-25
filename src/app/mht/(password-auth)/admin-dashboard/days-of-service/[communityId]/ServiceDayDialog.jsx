@@ -137,20 +137,6 @@ const ServiceDayDialog = ({
               fullWidth
               InputLabelProps={{ shrink: true }}
             />
-            <StakesSection
-              stakes={formData.partner_stakes}
-              onStakesChange={(newStakes) =>
-                setFormData({ ...formData, partner_stakes: newStakes })
-              }
-              dayOfServiceId={initialData?.id}
-            />
-            <WardsSection
-              wards={formData.partner_wards}
-              onWardsChange={(newWards) =>
-                setFormData({ ...formData, partner_wards: newWards })
-              }
-              dayOfServiceId={initialData?.id}
-            />
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
@@ -187,6 +173,7 @@ const ServiceDayDialog = ({
           handleDeleteDay(initialData?.id);
           setShowDeleteDialog(false);
         }}
+        onCancel={() => setShowDeleteDialog(false)}
       />
     </Dialog>
   );

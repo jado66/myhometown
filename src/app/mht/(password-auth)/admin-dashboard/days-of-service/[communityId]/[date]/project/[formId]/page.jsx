@@ -18,8 +18,22 @@ export default function ProjectPage({ params }) {
           `${communityId}_${date}`
         );
 
+        const parsedData = {
+          ...data,
+          partner_stakes: data.partner_stakes
+            .map((stake) => {
+              try {
+                return JSON.parse(stake);
+              } catch (e) {
+                console.error("Error parsing stake:", stake, e);
+                return null;
+              }
+            })
+            .filter(Boolean), // Remove any null values from parsing errors
+        };
+
         if (error) throw error;
-        setDayOfService(data);
+        setDayOfService(parsedData);
       } catch (error) {
         console.error("Error fetching days of service:", error);
       }

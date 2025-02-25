@@ -24,6 +24,13 @@ const Step1 = ({ date }) => {
         onChange={(e) => handleInputChange("project_name", e.target.value)}
       />
       <ProjectTextField
+        label="Project Short Description"
+        key="project_short_description"
+        value={formData.project_id}
+        onChange={(e) => handleInputChange("project_id", e.target.value)}
+        inputProps={{ maxLength: 60 }}
+      />
+      <ProjectTextField
         type="date"
         label="Day Of Service Date"
         value={date ? new Date(date).toISOString().split("T")[0] : null}
