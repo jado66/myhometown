@@ -37,6 +37,7 @@ import {
   Edit,
   Email,
   ExpandMore,
+  LocationOn,
   Phone,
   Timeline as TimelineIcon,
 } from "@mui/icons-material";
