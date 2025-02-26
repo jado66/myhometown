@@ -189,95 +189,112 @@ export default function ClassRollTable({ classData, show, onClose }) {
     }
 
     return (
-      <Box
-        sx={{
-          position: "relative",
-        }}
-      >
-        <Typography variant="h6" sx={{ mt: 4 }}>
-          Attendance Table
-        </Typography>
-        <ExportButton
-          classData={classData}
-          dates={dates}
-          nameFields={nameFields}
-          localAttendance={localAttendance}
-        />
+      <Box sx={{ position: "relative" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexDirection: { xs: "column", sm: "row" },
+            mb: 2,
+          }}
+        >
+          <Typography variant="h6" sx={{ mt: 4 }}>
+            Attendance Table
+          </Typography>
+          <ExportButton
+            classData={classData}
+            dates={dates}
+            nameFields={nameFields}
+            localAttendance={localAttendance}
+          />
+        </Box>
+
         <TableContainer
           component={Paper}
           sx={{
-            mt: 4,
+            mt: 2,
+            maxHeight: { xs: "70vh", sm: "80vh" },
             overflowX: "auto",
+            overflowY: "auto",
             "& .MuiTableCell-root": {
               whiteSpace: "nowrap",
+              padding: { xs: "4px", sm: "8px" },
+              borderRight: "1px solid rgba(224, 224, 224, 1)",
             },
           }}
         >
           <Table
             sx={{
-              minWidth: 650,
-              "& .sticky-column": {
-                position: "sticky",
-                left: 0,
-                background: "white",
-                zIndex: 1,
-                borderRight: "1px solid rgba(224, 224, 224, 1)",
-                "&:after": {
-                  content: '""',
-                  position: "absolute",
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: 1,
-                },
-              },
-              "& .sticky-column-1": {
-                left: 200,
-              },
-              "& .sticky-column-2": {
-                left: 400,
-              },
+              minWidth: { xs: "auto", sm: 650 },
             }}
           >
             <TableHead>
               <TableRow>
-                {nameFields.map((field, index) => (
+                <TableCell
+                  sx={{
+                    minWidth: { xs: 120, sm: 200 },
+                    fontSize: { xs: "0.8rem", sm: "1rem" },
+                    position: "sticky",
+                    left: 0,
+                    background: "white",
+                    zIndex: 2,
+                  }}
+                >
+                  Name
+                </TableCell>
+                {dates.map((date, index) => (
                   <TableCell
-                    key={field.key}
+                    key={date}
+                    align="center"
                     sx={{
-                      minWidth: 200,
+                      minWidth: { xs: 60, sm: 80 },
+                      fontSize: { xs: "0.7rem", sm: "1rem" },
+                      position: "sticky",
+                      right: {
+                        xs: (dates.length - index - 1) * 60,
+                        sm: (dates.length - index - 1) * 80,
+                      },
+                      background: "white",
+                      zIndex: 1,
                     }}
-                    className={`sticky-column ${
-                      index > 0 ? `sticky-column-${index}` : ""
-                    }`}
-                  ></TableCell>
-                ))}
-                {dates.map((date) => (
-                  <TableCell key={date} align="center" sx={{ minWidth: 100 }}>
-                    {moment(date).format("dddd")}
+                  >
+                    {moment(date).format("ddd")}
                   </TableCell>
                 ))}
               </TableRow>
               <TableRow>
-                {nameFields.map((field, index) => (
-                  <TableCell
-                    key={field.key}
-                    sx={{
-                      minWidth: 200,
-                    }}
-                    className={`sticky-column ${
-                      index > 0 ? `sticky-column-${index}` : ""
-                    }`}
-                    rowSpan={2}
-                  >
-                    {field.label}
-                  </TableCell>
-                ))}
-                {dates.map((date) => {
+                <TableCell
+                  sx={{
+                    minWidth: { xs: 120, sm: 200 },
+                    fontSize: { xs: "0.8rem", sm: "1rem" },
+                    position: "sticky",
+                    left: 0,
+                    background: "white",
+                    zIndex: 2,
+                  }}
+                >
+                  {/* Empty cell for alignment */}
+                </TableCell>
+                {dates.map((date, index) => {
                   const [year, month, day] = date.split("-");
                   return (
-                    <TableCell key={date} align="center" sx={{ minWidth: 100 }}>
-                      {`${month}/${day}/${year.slice(-2)}`}
+                    <TableCell
+                      key={date}
+                      align="center"
+                      sx={{
+                        minWidth: { xs: 60, sm: 80 },
+                        fontSize: { xs: "0.7rem", sm: "1rem" },
+                        position: "sticky",
+                        right: {
+                          xs: (dates.length - index - 1) * 60,
+                          sm: (dates.length - index - 1) * 80,
+                        },
+                        background: "white",
+                        zIndex: 1,
+                      }}
+                    >
+                      {`${month}/${day}`}
                     </TableCell>
                   );
                 })}
@@ -286,18 +303,34 @@ export default function ClassRollTable({ classData, show, onClose }) {
             <TableBody>
               {classData.signups.map((signup, index) => (
                 <TableRow key={index}>
-                  {nameFields.map((field, fieldIndex) => (
+                  <TableCell
+                    sx={{
+                      fontSize: { xs: "0.8rem", sm: "1rem" },
+                      position: "sticky",
+                      left: 0,
+                      background: "white",
+                      zIndex: 2,
+                    }}
+                  >
+                    {`${signup.firstName || ""} ${
+                      signup.lastName || ""
+                    }`.trim()}
+                  </TableCell>
+                  {dates.map((date, dateIndex) => (
                     <TableCell
-                      key={field.key}
-                      className={`sticky-column ${
-                        fieldIndex > 0 ? `sticky-column-${fieldIndex}` : ""
-                      }`}
+                      key={date}
+                      align="center"
+                      sx={{
+                        minWidth: { xs: 60, sm: 80 },
+                        position: "sticky",
+                        right: {
+                          xs: (dates.length - dateIndex - 1) * 60,
+                          sm: (dates.length - dateIndex - 1) * 80,
+                        },
+                        background: "white",
+                        zIndex: 1,
+                      }}
                     >
-                      {signup[field.key] || ""}
-                    </TableCell>
-                  ))}
-                  {dates.map((date) => (
-                    <TableCell key={date} align="center">
                       <Checkbox
                         checked={localAttendance[signup.id]?.[date] || false}
                         onChange={(e) =>
@@ -307,6 +340,7 @@ export default function ClassRollTable({ classData, show, onClose }) {
                             e.target.checked
                           )
                         }
+                        size="small"
                       />
                     </TableCell>
                   ))}
@@ -321,14 +355,22 @@ export default function ClassRollTable({ classData, show, onClose }) {
 
   return (
     <>
+      return (
       <Dialog
         open={show}
         onClose={handleClose}
         maxWidth="xl"
         fullWidth
-        PaperProps={{ sx: { p: 2 } }}
+        PaperProps={{
+          sx: {
+            p: { xs: 1, sm: 2 }, // Reduced padding on mobile
+            m: { xs: 0, sm: "auto" }, // Remove margins on mobile
+            width: { xs: "100%", sm: "auto" }, // Full width on mobile
+            height: { xs: "100%", sm: "auto" }, // Full height on mobile
+          },
+        }}
       >
-        <DialogTitle>
+        <DialogTitle sx={{ p: { xs: 1, sm: 2 } }}>
           {classData?.title} Class Roll
           <IconButton
             aria-label="close"
@@ -343,13 +385,12 @@ export default function ClassRollTable({ classData, show, onClose }) {
             <Close />
           </IconButton>
         </DialogTitle>
-        <Box p={2}>
+        <Box p={{ xs: 1, sm: 2 }}>
           {classData && <ClassPreview classData={classData} noBanner />}
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ my: { xs: 1, sm: 2 } }} />
           {renderContent()}
         </Box>
       </Dialog>
-
       <Snackbar
         open={isSaving}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
