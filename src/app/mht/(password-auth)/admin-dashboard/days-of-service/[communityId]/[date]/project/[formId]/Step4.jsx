@@ -8,14 +8,18 @@ import {
   Checkbox,
   useTheme,
   FormHelperText,
+  Typography,
+  Tooltip,
+  IconButton,
+  Stack,
 } from "@mui/material";
 import CreatableSelect from "react-select/creatable";
 import { useProjectForm } from "@/contexts/ProjectFormProvider";
 import ProjectTextField from "./ProjectTextField";
 import { components } from "react-select";
-import { InfoSharp } from "@mui/icons-material";
-import { PriorityHigh } from "@mui/icons-material";
-import { WarningAmber } from "@mui/icons-material";
+import { Email, Phone, WarningAmber } from "@mui/icons-material";
+import JsonViewer from "@/components/util/debug/DebugOutput";
+import { toast } from "react-toastify";
 
 const Step4 = () => {
   const theme = useTheme();
@@ -23,9 +27,13 @@ const Step4 = () => {
     formData,
     handleInputChange,
     handleSelectChange,
-    stakeOptions,
-    wardOptions,
+
+    dayOfService,
   } = useProjectForm();
+
+  const partner_stake = dayOfService.partner_stakes.find(
+    (stake) => stake.id === formData.partner_stake_id
+  );
 
   const customStyles = {
     control: (base) => ({
@@ -81,86 +89,210 @@ const Step4 = () => {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <Paper sx={{ p: 3 }}>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <label>Partner Ward</label>
-          <FormControl fullWidth>
-            <CreatableSelect
-              options={wardOptions}
-              value={
-                formData.partner_ward
-                  ? {
-                      value: formData.partner_ward,
-                      label: formData.partner_ward,
-                    }
-                  : null
-              }
-              onChange={(newValue) =>
-                handleSelectChange("partner_ward", newValue)
-              }
-              placeholder="Select or type a new ward..."
-              formatCreateLabel={(inputValue) => `Add "${inputValue}"`}
-              styles={customStyles}
-              components={{
-                MenuList: (props) => (
-                  <CustomMenuList {...props} menuType="ward" />
-                ),
-              }}
-              noOptionsMessage="Type to create a new option"
-            />
-            <FormHelperText
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                py: 1,
-                fontSize: "16px",
-                color: "red",
-              }}
-            >
-              <WarningAmber sx={{ mr: 1 }} />
-              Please ensure that the name of the Ward is accurate as these
-              options are shared across all projects associated with this Day Of
-              Service.
-            </FormHelperText>
-          </FormControl>
-          <ProjectTextField
-            label="Partner Ward Liaison(s)"
-            value={formData.partner_ward_liaison}
-            onChange={(e) =>
-              handleInputChange("partner_ward_liaison", e.target.value)
-            }
-          />
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <ProjectTextField
-              label="Partner Ward Liaison Phone"
-              value={formData.partner_ward_liaison_phone1}
-              onChange={(e) =>
-                handleInputChange("partner_ward_liaison_phone1", e.target.value)
-              }
-            />
-            <ProjectTextField
-              label="Partner Ward Liaison Email"
-              value={formData.partner_ward_liaison_email1}
-              onChange={(e) =>
-                handleInputChange("partner_ward_liaison_email1", e.target.value)
-              }
-            />
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Partner Stake and Ward Information
+        </Typography>
+        <Box sx={{ pl: 2 }}>
+          <Box>
+            <Typography>
+              <strong>Partner Stake:</strong> {partner_stake.name}
+            </Typography>
           </Box>
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <ProjectTextField
-              label="Partner Ward Liaison Phone 2 (Optional)"
-              value={formData.partner_ward_liaison_phone2}
-              onChange={(e) =>
-                handleInputChange("partner_ward_liaison_phone2", e.target.value)
-              }
-            />
-            <ProjectTextField
-              label="Partner Ward Liaison Email 2 (Optional)"
-              value={formData.partner_ward_liaison_email2}
-              onChange={(e) =>
-                handleInputChange("partner_ward_liaison_email2", e.target.value)
-              }
-            />
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography>
+              <strong>Stake Liaison:</strong>{" "}
+              {partner_stake.liaison_name_1
+                ? partner_stake.liaison_name_1
+                : "No Assigned Stake Liaison. This can be added on the Days of Service page."}
+            </Typography>
+            <Stack direction="row" spacing={2}>
+              {partner_stake.liaison_phone_1 && (
+                <Tooltip title={partner_stake.liaison_phone_1} arrow>
+                  <IconButton
+                    color="primary"
+                    size="small"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        partner_stake.liaison_phone_1
+                      );
+                      toast.success(
+                        `Phone number copied to clipboard: ${partner_stake.liaison_phone_1}`
+                      );
+                    }}
+                  >
+                    <Phone />
+                  </IconButton>
+                </Tooltip>
+              )}
+              {partner_stake.liaison_email_1 && (
+                <Tooltip title={partner_stake.liaison_email_1} arrow>
+                  <IconButton
+                    color="primary"
+                    size="small"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        partner_stake.liaison_email_1
+                      );
+                      toast.success(
+                        `Email copied to clipboard: ${partner_stake.liaison_email_1}`
+                      );
+                    }}
+                  >
+                    <Email />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Stack>
           </Box>
+          {partner_stake.liaison_name_2 && (
+            <Box display="flex" alignItems="center" gap={1}>
+              <Typography>
+                <strong>Stake Liaison 2:</strong> {partner_stake.liaison_name_2}
+              </Typography>
+              <Stack direction="row" spacing={2}>
+                {partner_stake.liaison_phone_2 && (
+                  <Tooltip title={partner_stake.liaison_phone_2} arrow>
+                    <IconButton
+                      color="primary"
+                      size="small"
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          partner_stake.liaison_phone_1
+                        );
+                        toast.success(
+                          `Phone number copied to clipboard: ${partner_stake.liaison_phone_2}`
+                        );
+                      }}
+                    >
+                      <Phone />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                {partner_stake.liaison_email_2 && (
+                  <Tooltip title={partner_stake.liaison_email_2} arrow>
+                    <IconButton
+                      color="primary"
+                      size="small"
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          partner_stake.liaison_email_1
+                        );
+                        toast.success(
+                          `Email copied to clipboard: ${partner_stake.liaison_email_2}`
+                        );
+                      }}
+                    >
+                      <Email />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </Stack>
+            </Box>
+          )}
+          <Divider sx={{ my: 2 }} />
+          <Box>
+            <Typography>
+              <strong>Partner Ward:</strong>{" "}
+              {formData.partner_ward
+                ? formData.partner_ward
+                : "No Assigned Partner Ward. This can be added on the projects page"}
+            </Typography>
+          </Box>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography>
+              <strong>Ward Liaison:</strong>{" "}
+              {formData.partner_ward_liaison
+                ? formData.partner_ward_liaison
+                : "No Assigned Ward Liaison. This can be added on the projects page"}
+            </Typography>
+            <Stack direction="row" spacing={2}>
+              <Tooltip title={formData.partner_ward_liaison_phone1} arrow>
+                <IconButton
+                  color="primary"
+                  size="small"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      formData.partner_ward_liaison_phone1
+                    );
+                    toast.success(
+                      `Phone number copied to clipboard: ${formData.partner_ward_liaison_phone1}`
+                    );
+                  }}
+                >
+                  <Phone />
+                </IconButton>
+              </Tooltip>
+              {formData.partner_ward_liaison_email1 && (
+                <Tooltip title={formData.partner_ward_liaison_email1} arrow>
+                  <IconButton
+                    color="primary"
+                    size="small"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        formData.partner_ward_liaison_email1
+                      );
+                      toast.success(
+                        `Email copied to clipboard: ${formData.partner_ward_liaison_email1}`
+                      );
+                    }}
+                  >
+                    <Email />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Stack>
+          </Box>
+          {formData.partner_ward_liaison2 && (
+            <Box display="flex" alignItems="center" gap={1}>
+              <Stack direction="row" spacing={2}>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Typography>
+                    <strong>Ward Liaison 2:</strong>{" "}
+                    {formData.partner_ward_liaison2}
+                  </Typography>
+                  <Stack direction="row" spacing={2}>
+                    <Tooltip title={formData.partner_ward_liaison_phone2} arrow>
+                      <IconButton
+                        color="primary"
+                        size="small"
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            formData.partner_ward_liaison_phone2
+                          );
+                          toast.success(
+                            `Phone number copied to clipboard: ${formData.partner_ward_liaison_phone2}`
+                          );
+                        }}
+                      >
+                        <Phone />
+                      </IconButton>
+                    </Tooltip>
+                    {formData.partner_ward_liaison_email2 && (
+                      <Tooltip
+                        title={formData.partner_ward_liaison_email2}
+                        arrow
+                      >
+                        <IconButton
+                          color="primary"
+                          size="small"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              formData.partner_ward_liaison_email2
+                            );
+                            toast.success(
+                              `Email copied to clipboard: ${formData.partner_ward_liaison_email2}`
+                            );
+                          }}
+                        >
+                          <Email />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Stack>
+                </Box>
+              </Stack>
+            </Box>
+          )}
         </Box>
 
         <Divider sx={{ my: 2 }} />

@@ -224,6 +224,7 @@ export function ProjectFormProvider({
 
   const value = {
     activeStep,
+    dayOfService,
     setActiveStep,
     formData,
     setFormData, // Include setFormData in the context value

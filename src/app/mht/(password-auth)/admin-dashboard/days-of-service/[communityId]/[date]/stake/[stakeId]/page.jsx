@@ -385,7 +385,6 @@ export default function ProjectFormsPage({ params }) {
       <Paper
         elevation={2}
         sx={{
-          height: "calc(100vh - 500px)",
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
@@ -418,7 +417,7 @@ export default function ProjectFormsPage({ params }) {
             {projects
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
               .map((project) => (
-                <Grid item xs={12} sm={6} md={4} key={project.id}>
+                <Grid item xs={12} sm={6} lg={6} key={project.id}>
                   <Card
                     sx={{
                       cursor: "pointer",
