@@ -8,6 +8,11 @@ export const generateCityAuthToken = (city) => {
   return btoa(`${city}-${Date.now()}`);
 };
 
+export const generateBudgetAuthToken = () => {
+  // Simple token generation - in practice you'd want something more secure
+  return btoa(`budgetAccess-${Date.now()}`);
+};
+
 export const isAuthenticated = (
   communityId,
   isCity = false,
@@ -115,6 +120,31 @@ export const authenticateCity = (city, password) => {
     return true;
   }
   return false;
+};
+
+export const authenticateBudgetAccess = (password) => {
+  if (password === "ba1562") {
+    const token = generateBudgetAuthToken();
+    localStorage.setItem(`budgetAccess`, token);
+    return true;
+  }
+  return false;
+};
+
+export const isAuthenticatedBudget = () => {
+  const token = localStorage.getItem(`budgetAccess`);
+  if (!token) return false;
+
+  try {
+    // Check if token is expired (1 month)
+    const tokenData = atob(token);
+    const timestamp = parseInt(tokenData.split("-")[1]);
+    const oneMonthAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
+
+    return timestamp > oneMonthAgo;
+  } catch (e) {
+    return false;
+  }
 };
 
 export const authenticateCommunity = (

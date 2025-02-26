@@ -104,6 +104,7 @@ const Step2 = () => {
         <ProjectTextField
           label="Number of Volunteers Needed"
           type="number"
+          key="volunteers_needed"
           min={0}
           value={formData.volunteers_needed}
           onChange={(e) =>
@@ -111,57 +112,6 @@ const Step2 = () => {
           }
         />
       </Box>
-
-      <Divider sx={{ my: 2 }} />
-      <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
-        Budget Estimates
-      </Typography>
-      <Alert severity="info" sx={{ mb: 2 }}>
-        <Typography>
-          Once you enter this budget information and navigate away from this
-          step you will not be able to see this again. Talk to a Resource
-          Developer, or Neighborhood Services Director if this needs to be
-          changed after the fact.
-        </Typography>
-      </Alert>
-      <ProjectTextField
-        label="Resource Budget Description"
-        multiline
-        rows={4}
-        value={formData.budget}
-        onChange={(e) => handleInputChange("budget", e.target.value)}
-      />
-      <ProjectTextField
-        label="Resource Budget Estimates"
-        type="number"
-        value={formData.budget_estimates}
-        onChange={(e) => handleInputChange("budget_estimates", e.target.value)}
-        hasInputAdornment
-        InputProps={{
-          startAdornment: <InputAdornment position="start">$</InputAdornment>,
-        }}
-      />
-      <Divider sx={{ my: 1 }} />
-
-      <ProjectTextField
-        label="Homeowner's Ability Description"
-        multiline
-        rows={4}
-        value={formData.homeowner_ability}
-        onChange={(e) => handleInputChange("homeowner_ability", e.target.value)}
-      />
-      <ProjectTextField
-        label="Homeowner's Ability Estimates"
-        type="number"
-        value={formData.homeowner_ability_estimates}
-        onChange={(e) =>
-          handleInputChange("homeowner_ability_estimates", e.target.value)
-        }
-        hasInputAdornment
-        InputProps={{
-          startAdornment: <InputAdornment position="start">$</InputAdornment>,
-        }}
-      />
     </Box>
   );
 };

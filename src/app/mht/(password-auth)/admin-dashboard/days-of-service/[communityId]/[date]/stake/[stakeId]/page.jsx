@@ -91,6 +91,9 @@ export default function ProjectFormsPage({ params }) {
     setPartnerWardData({
       partner_ward: project.partner_ward || "",
       partner_ward_liaison: project.partner_ward_liaison || "",
+      partner_ward_liaison2: project.partner_ward_liaison2 || "",
+      partner_ward_liaison_title: project.partner_ward_liaison_title || "",
+      partner_ward_liaison_title2: project.partner_ward_liaison_title2 || "",
       partner_ward_liaison_phone1: project.partner_ward_liaison_phone1 || "",
       partner_ward_liaison_email1: project.partner_ward_liaison_email1 || "",
       partner_ward_liaison_phone2: project.partner_ward_liaison_phone2 || "",
@@ -485,9 +488,13 @@ export default function ProjectFormsPage({ params }) {
                       sx={{ pb: 0, pl: 6 }}
                     />
 
-                    <CardContent sx={{ pt: 5, flex: 1 }}>
+                    <CardContent sx={{ pt: 2, flex: 1 }}>
                       {project.project_id && (
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ mb: 3 }}
+                        >
                           {project.project_id}
                         </Typography>
                       )}
@@ -543,42 +550,78 @@ export default function ProjectFormsPage({ params }) {
 
                           <Divider sx={{ my: 2 }} />
 
-                          {project.partner_ward_liaison && (
-                            <Typography variant="body2" color="text.secondary">
-                              Ward Liaison 1: {project.partner_ward_liaison}
-                            </Typography>
-                          )}
-                          {project.partner_ward_liaison_phone1 && (
-                            <Typography variant="body2" color="text.secondary">
-                              Email: {project.partner_ward_liaison_phone1}
-                            </Typography>
-                          )}
-                          {project.partner_ward_liaison_email2 && (
-                            <Typography variant="body2" color="text.secondary">
-                              Phone: {project.partner_ward_liaison_email2}
-                            </Typography>
-                          )}
+                          <Grid container spacing={2}>
+                            {/* Left column - First liaison */}
+                            <Grid item xs={12} md={6}>
+                              <Box sx={{ p: 1 }}>
+                                {project.partner_ward_liaison && (
+                                  <Typography variant="h6" gutterBottom>
+                                    Liaison 1 {project.partner_ward_liaison}
+                                  </Typography>
+                                )}
+                                {project.partner_ward_liaison_title && (
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
+                                    Title: {project.partner_ward_liaison_title}
+                                  </Typography>
+                                )}
+                                {project.partner_ward_liaison_phone1 && (
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
+                                    Email: {project.partner_ward_liaison_email1}
+                                  </Typography>
+                                )}
+                                {project.partner_ward_liaison_email2 && (
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
+                                    Phone: {project.partner_ward_liaison_phone1}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Grid>
 
-                          {project.partner_ward_liaison1 &&
-                            partner_ward_liaison.partner_ward_liaison2 && (
-                              <Divider sx={{ my: 1.5 }} />
-                            )}
+                            {/* Right column - Second liaison */}
+                            <Grid item xs={12} md={6}>
+                              <Box sx={{ p: 1 }}>
+                                {project.partner_ward_liaison2 && (
+                                  <Typography variant="h6" gutterBottom>
+                                    Liaison 2 {project.partner_ward_liaison2}
+                                  </Typography>
+                                )}
 
-                          {project.liaison_name_2 && (
-                            <Typography variant="body2" color="text.secondary">
-                              Liaison 2: {project.liaison_name_2}
-                            </Typography>
-                          )}
-                          {project.liaison_email_2 && (
-                            <Typography variant="body2" color="text.secondary">
-                              Email: {project.liaison_email_2}
-                            </Typography>
-                          )}
-                          {project.liaison_phone_2 && (
-                            <Typography variant="body2" color="text.secondary">
-                              Phone: {project.liaison_phone_2}
-                            </Typography>
-                          )}
+                                {project.partner_ward_liaison_title2 && (
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
+                                    Title: {project.partner_ward_liaison_title2}
+                                  </Typography>
+                                )}
+                                {project.partner_ward_liaison_email2 && (
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
+                                    Email: {project.partner_ward_liaison_email2}
+                                  </Typography>
+                                )}
+                                {project.partner_ward_liaison_phone2 && (
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
+                                    Phone: {project.partner_ward_liaison_phone2}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Grid>
+                          </Grid>
 
                           {project.address_street1 && project.address_city && (
                             <Box sx={{ mt: 2 }}>
@@ -692,7 +735,7 @@ export default function ProjectFormsPage({ params }) {
         open={partnerWardDialogOpen}
         onClose={() => setPartnerWardDialogOpen(false)}
       >
-        <DialogTitle>Edit Partner Ward Information</DialogTitle>
+        <DialogTitle>Edit Partner Ward/Group Information</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             <Grid container spacing={2} alignItems="stretch">
@@ -701,7 +744,7 @@ export default function ProjectFormsPage({ params }) {
                 <TextField
                   autoFocus
                   margin="dense"
-                  label="Partner Ward"
+                  label="Partner Ward/Group"
                   fullWidth
                   value={partnerWardData.partner_ward}
                   onChange={(e) =>
@@ -729,12 +772,24 @@ export default function ProjectFormsPage({ params }) {
               <Grid item xs={12} sm={5.8}>
                 <TextField
                   margin="dense"
-                  label="Ward Liaison"
+                  label="Liaison Name 1"
                   fullWidth
                   value={partnerWardData.partner_ward_liaison}
                   onChange={(e) =>
                     handlePartnerWardChange(
                       "partner_ward_liaison",
+                      e.target.value
+                    )
+                  }
+                />
+                <TextField
+                  margin="dense"
+                  label="Liaison Title 1"
+                  fullWidth
+                  value={partnerWardData.partner_ward_liaison_title}
+                  onChange={(e) =>
+                    handlePartnerWardChange(
+                      "partner_ward_liaison_title",
                       e.target.value
                     )
                   }
@@ -802,12 +857,24 @@ export default function ProjectFormsPage({ params }) {
               <Grid item xs={12} sm={5.8}>
                 <TextField
                   margin="dense"
-                  label="Ward Liaison 2 (Optional)"
+                  label="Liaison Name 2 (Optional)"
                   fullWidth
                   value={partnerWardData.partner_ward_liaison2}
                   onChange={(e) =>
                     handlePartnerWardChange(
                       "partner_ward_liaison2",
+                      e.target.value
+                    )
+                  }
+                />
+                <TextField
+                  margin="dense"
+                  label="Liaison Title 2 (Optional)"
+                  fullWidth
+                  value={partnerWardData.partner_ward_liaison_title2}
+                  onChange={(e) =>
+                    handlePartnerWardChange(
+                      "partner_ward_liaison_title2",
                       e.target.value
                     )
                   }

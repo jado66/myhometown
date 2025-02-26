@@ -12,7 +12,7 @@ import JsonViewer from "@/components/util/debug/DebugOutput";
 import { Box } from "@mui/material";
 import { useCommunities } from "@/hooks/use-communities";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
-
+import { isAuthenticatedBudget } from "@/util/auth/simpleAuth";
 const API_BASE_URL = "/api/database/project-forms";
 const ProjectFormContext = createContext();
 
@@ -22,12 +22,13 @@ export function ProjectFormProvider({
   date,
   communityId,
   dayOfService,
+  isBudgetAdmin,
 }) {
   const {
     activeStep,
     setActiveStep,
     formData,
-    setFormData, // Explicitly destructure setFormData from the hook
+    setFormData,
     handleInputChange,
     addCollaborator,
     saveProject,
@@ -58,6 +59,13 @@ export function ProjectFormProvider({
   const [isInitialLoading, setIsInitialLoading] = useState(false);
   const [error, setError] = useState(null);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [isBudgetAuthenticated, setIsBudgetAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const authenticated = isAuthenticatedBudget();
+    setIsBudgetAuthenticated(authenticated);
+  }, []);
+
   const [addressValidation, setAddressValidation] = useState({
     isValid: false,
     isChecking: false,
@@ -95,41 +103,7 @@ export function ProjectFormProvider({
   };
 
   const getProjectForm = useCallback(async (formId) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/${formId}`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to fetch project form");
-      }
-      const data = await response.json();
-
-      const { _id, createdAt, updatedAt, ...formData } = data;
-
-      const address = [
-        formData.address_street1,
-        formData.address_street2,
-        formData.address_city,
-        formData.address_state,
-        formData.address_zip_code,
-      ]
-        .filter(Boolean)
-        .join(", ");
-
-      const localStorageDetails = {
-        propertyOwner: formData.propertyOwner,
-        address,
-      };
-
-      // Assuming updateProject is defined elsewhere or should be updateProjectForm
-      updateProject(formId, localStorageDetails);
-
-      console.log("Retrieved form data:", formData);
-      return formData;
-    } catch (err) {
-      console.error("Error fetching project form:", err);
-      setError(err.message);
-      return null;
-    }
+    console.log("Get project is deprecated");
   }, []);
 
   const updateProjectForm = useCallback(async (formId, updateData) => {
@@ -184,37 +158,56 @@ export function ProjectFormProvider({
     [handleMultipleInputChange] // Dependency should be the function used
   );
 
-  const initializeProjectForm = useCallback(async (formId) => {
-    if (!formId || formId === "new") return false;
-
-    try {
-      const data = await getProjectForm(formId);
-      console.log("Initializing with data:", data);
-      if (data) {
-        setFormData(data); // Use setFormData directly
-        if (data.homeownerAbility) setActiveStep(4);
-        else if (data.specificTasks) setActiveStep(3);
-        else if (data.canHelp !== null) setActiveStep(2);
-        else if (data.isResolved !== null) setActiveStep(1);
-        else setActiveStep(0);
-        return true;
-      } else {
-        const newProject = {
-          id: formId,
-        };
-        const createdProject = await createProjectForm(newProject); // Assuming this creates if not exists
-        if (createdProject) {
-          setFormData(createdProject);
-          setActiveStep(0);
-          addProject(formId);
-          return true;
-        }
-      }
-    } catch (error) {
-      setError(error.message);
+  const checkAndHideBudget = useCallback(() => {
+    if (
+      !isBudgetAdmin &&
+      (formData.budget_estimates || formData.homeowner_ability)
+    ) {
+      const updatedFormData = {
+        ...formData,
+        budget_hidden: true,
+      };
+      handleInputChange("budget_hidden", true);
+      setFormData(updatedFormData);
+      // Save the hidden state to the database
     }
-    return false;
-  }, []);
+  }, [formData, isBudgetAdmin, setFormData, updateProjectForm, formId]);
+
+  const initializeProjectForm = useCallback(
+    async (formId) => {
+      if (!formId || formId === "new") return false;
+
+      try {
+        const data = await getProjectForm(formId);
+        console.log("Initializing with data:", data);
+        if (data) {
+          setFormData(data); // Use setFormData directly
+
+          if (data.homeownerAbility) setActiveStep(4);
+          else if (data.specificTasks) setActiveStep(3);
+          else if (data.canHelp !== null) setActiveStep(2);
+          else if (data.isResolved !== null) setActiveStep(1);
+          else setActiveStep(0);
+          return true;
+        } else {
+          const newProject = {
+            id: formId,
+          };
+          const createdProject = await createProjectForm(newProject); // Assuming this creates if not exists
+          if (createdProject) {
+            setFormData(createdProject);
+            setActiveStep(0);
+            addProject(formId);
+            return true;
+          }
+        }
+      } catch (error) {
+        setError(error.message);
+      }
+      return false;
+    },
+    [isBudgetAdmin]
+  );
 
   useEffect(() => {
     return () => {
@@ -234,6 +227,7 @@ export function ProjectFormProvider({
     isSaving: isSavingProject || isSaving,
     handleSelectChange,
     error,
+    checkAndHideBudget,
     initializeProjectForm,
     addressValidation,
     setAddressValidation,
@@ -245,6 +239,7 @@ export function ProjectFormProvider({
     addCollaborator,
     stakeOptions,
     wardOptions,
+    isBudgetHidden: !(isBudgetAuthenticated || !formData.budget_hidden),
   };
 
   return (

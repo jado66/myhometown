@@ -11,7 +11,15 @@ import {
   IconButton,
   Divider,
 } from "@mui/material";
-import { ExpandMore, Edit, EditCalendar } from "@mui/icons-material";
+import {
+  ExpandMore,
+  Edit,
+  EditCalendar,
+  Lock,
+  Visibility,
+  VisibilityOff,
+  LockOpen,
+} from "@mui/icons-material";
 import moment from "moment";
 import { useCommunities } from "@/hooks/use-communities";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
@@ -28,8 +36,13 @@ import {
   AccordionSummary,
   AccordionDetails,
 } from "@mui/material";
+import {
+  authenticateBudgetAccess,
+  isAuthenticatedBudget,
+} from "@/util/auth/simpleAuth";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import JsonViewer from "@/components/util/debug/DebugOutput";
+import { toast } from "react-toastify";
 
 const CommunitySelectionPage = ({ params }) => {
   const router = useRouter();
@@ -43,6 +56,13 @@ const CommunitySelectionPage = ({ params }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [stakeToDelete, setStakeToDelete] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  const [showSpecialAccessDialog, setShowSpecialAccessDialog] = useState(false);
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const [currentStake, setCurrentStake] = useState({
     name: "",
@@ -61,6 +81,11 @@ const CommunitySelectionPage = ({ params }) => {
     updatePartnerStakeInDayOfService,
     removePartnerStakeFromDayOfService,
   } = useDaysOfService();
+
+  useEffect(() => {
+    const authenticated = isAuthenticatedBudget();
+    setIsAuthenticated(authenticated);
+  }, []);
 
   useEffect(() => {
     if (!communityId) return;
@@ -139,6 +164,20 @@ const CommunitySelectionPage = ({ params }) => {
       setDaysOfService((prev) => prev.filter((day) => day.id !== id));
     } catch (error) {
       console.error("Error deleting day of service:", error);
+    }
+  };
+
+  const handleAuthSubmit = () => {
+    const isAuthenticated = authenticateBudgetAccess(password);
+
+    if (isAuthenticated) {
+      setShowSpecialAccessDialog(false);
+      setPassword("");
+      setAuthError("");
+      toast.success("Access granted. You can now view the budget estimates.");
+      setIsAuthenticated(true);
+    } else {
+      setAuthError("Invalid password. Please try again.");
     }
   };
 
@@ -244,204 +283,274 @@ const CommunitySelectionPage = ({ params }) => {
   return (
     <Box sx={{ p: 4 }}>
       <DosBreadcrumbs communityData={community} />
-      <Typography
-        variant="h4"
-        gutterBottom
-        sx={{ textTransform: "capitalize", mb: 5 }}
-      >
-        {community.city_name} - {community.name} Days of Service
-      </Typography>
 
-      <Typography variant="h6" color="primary" gutterBottom sx={{ mb: 5 }}>
-        {daysOfService.length === 0 &&
-          "No Days of Service have been created yet. Please create a new Day of Service to get started."}
-      </Typography>
+      <Box sx={{ position: "relative" }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{ textTransform: "capitalize", mb: 5 }}
+        >
+          {community.city_name} - {community.name} Days of Service
+        </Typography>
+        <Box sx={{ position: "absolute", top: 0, right: 0, zIndex: 1 }}>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() => {
+              if (isAuthenticated) {
+                toast.info("You are already authenticated.");
+                return;
+              }
+              setShowSpecialAccessDialog(true);
+            }}
+          >
+            {isAuthenticated ? (
+              <LockOpen sx={{ mr: 1 }} />
+            ) : (
+              <Lock sx={{ mr: 1 }} />
+            )}
+            {isAuthenticated ? "Budget Access Granted" : "Budget Access"}
+          </Button>
+        </Box>
 
-      <JsonViewer data={daysOfService} />
+        <Typography variant="h6" color="primary" gutterBottom sx={{ mb: 5 }}>
+          {daysOfService.length === 0 &&
+            "No Days of Service have been created yet. Please create a new Day of Service to get started."}
+        </Typography>
 
-      {daysOfService
-        .sort((a, b) => new Date(a.end_date) - new Date(b.end_date))
-        .map((day, index) => (
-          <Box key={day.id} sx={{ mb: 4 }}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 2,
-              }}
-            >
-              <Typography variant="h5" color="primary">
-                {day.name || "Day of Service"} -{" "}
-                {moment(day.end_date).format("dddd, MMMM Do, YYYY")}
-              </Typography>
-              <Button
-                onClick={() => handleEditDay(day)}
+        <JsonViewer data={daysOfService} />
+
+        {daysOfService
+          .sort((a, b) => new Date(a.end_date) - new Date(b.end_date))
+          .map((day, index) => (
+            <Box key={day.id} sx={{ mb: 4 }}>
+              <Box
                 sx={{
-                  bgcolor: "primary.main",
-                  color: "white",
-                  "&:hover": { bgcolor: "primary.dark" },
-                  ml: 2,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
                 }}
               >
-                <EditCalendar sx={{ mr: 1 }} /> Edit Day of Service
-              </Button>
-            </Box>
+                <Typography variant="h5" color="primary">
+                  {day.name || "Day of Service"} -{" "}
+                  {moment(day.end_date).format("dddd, MMMM Do, YYYY")}
+                </Typography>
+                <Button
+                  onClick={() => handleEditDay(day)}
+                  sx={{
+                    bgcolor: "primary.main",
+                    color: "white",
+                    "&:hover": { bgcolor: "primary.dark" },
+                    ml: 2,
+                  }}
+                >
+                  <EditCalendar sx={{ mr: 1 }} /> Edit Day of Service
+                </Button>
+              </Box>
 
-            <Typography variant="h6" gutterBottom sx={{ my: 2, ml: 2 }}>
-              {day.partner_stakes.length === 0
-                ? "Please add a partner stake/organization to this day of service."
-                : "Manage the projects   for your partner stakes/organizations."}
-            </Typography>
-            <Grid container spacing={3} sx={{ ml: 0 }}>
-              {day.partner_stakes.map((stake) => (
-                <Grid item xs={12} sm={6} md={4} key={stake.id}>
-                  <Card
-                    sx={{
-                      cursor: "pointer",
-                      "&:hover": { boxShadow: 6 },
-                      position: "relative",
-                    }}
-                    onClick={() => handlePartnerStakeClick(day, stake)}
-                  >
-                    <IconButton
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditStake(day.id, stake);
-                      }}
+              <Typography variant="h6" gutterBottom sx={{ my: 2, ml: 2 }}>
+                {day.partner_stakes.length === 0
+                  ? "Please add a partner stake/organization to this day of service."
+                  : "Manage the projects   for your partner stakes/organizations."}
+              </Typography>
+              <Grid container spacing={3} sx={{ ml: 0 }}>
+                {day.partner_stakes.map((stake) => (
+                  <Grid item xs={12} sm={6} md={4} key={stake.id}>
+                    <Card
                       sx={{
-                        position: "absolute",
-                        top: 8,
-                        right: 8,
-                        color: "primary.main",
+                        cursor: "pointer",
+                        "&:hover": { boxShadow: 6 },
+                        position: "relative",
                       }}
+                      onClick={() => handlePartnerStakeClick(day, stake)}
                     >
-                      <Edit />
-                    </IconButton>
-                    <CardContent>
-                      {/* <Typography variant="h6">ID: {stake.id}</Typography> */}
-                      <Typography variant="h6" sx={{ ml: 2 }}>
-                        {stake.name}
-                      </Typography>
-                      <Divider sx={{ my: 2 }} />
-                      <Accordion
-                        square
-                        elevation={0}
-                        onClick={(e) => e.stopPropagation()}
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditStake(day.id, stake);
+                        }}
+                        sx={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          color: "primary.main",
+                        }}
                       >
-                        <AccordionSummary
-                          expandIcon={<ExpandMore />}
-                          sx={{
-                            px: 1,
-                            py: 1,
-                            "& .Mui-expanded": {
-                              my: 0,
-                            },
-                            "& .MuiAccordionSummary-content": {
-                              margin: 0,
-                            },
-                          }}
+                        <Edit />
+                      </IconButton>
+                      <CardContent>
+                        {/* <Typography variant="h6">ID: {stake.id}</Typography> */}
+                        <Typography variant="h6" sx={{ ml: 2 }}>
+                          {stake.name}
+                        </Typography>
+                        <Divider sx={{ my: 2 }} />
+                        <Accordion
+                          square
+                          elevation={0}
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <Grid item xs={7}>
-                            <Button
-                              variant="outlined"
-                              color="primary"
-                              sx={{ mt: 1 }}
-                              onClick={(e) => {
-                                handlePartnerStakeClick(day, stake);
-                                e.stopPropagation();
-                              }}
-                            >
-                              View Projects
-                            </Button>
-                          </Grid>
-                          <Typography
-                            variant="h6"
-                            sx={{ fontSize: "16px !important;" }}
+                          <AccordionSummary
+                            expandIcon={<ExpandMore />}
+                            sx={{
+                              px: 1,
+                              py: 1,
+                              "& .Mui-expanded": {
+                                my: 0,
+                              },
+                              "& .MuiAccordionSummary-content": {
+                                margin: 0,
+                              },
+                            }}
                           >
-                            Stake/Organization Information
-                          </Typography>
-                        </AccordionSummary>
-                        <AccordionDetails
-                          sx={{ px: 2, pt: 2, pb: 1, flexDirection: "column" }}
-                        >
-                          {stake.liaison_name_1 && (
-                            <Typography variant="body2" color="text.secondary">
-                              Liaison 1: {stake.liaison_name_1}
+                            <Grid item xs={7}>
+                              <Button
+                                variant="outlined"
+                                color="primary"
+                                sx={{ mt: 1 }}
+                                onClick={(e) => {
+                                  handlePartnerStakeClick(day, stake);
+                                  e.stopPropagation();
+                                }}
+                              >
+                                View Projects
+                              </Button>
+                            </Grid>
+                            <Typography
+                              variant="h6"
+                              sx={{ fontSize: "16px !important;" }}
+                            >
+                              Stake/Organization Information
                             </Typography>
-                          )}
-                          {stake.liaison_email_1 && (
-                            <Typography variant="body2" color="text.secondary">
-                              Email: {stake.liaison_email_1}
-                            </Typography>
-                          )}
-                          {stake.liaison_phone_1 && (
-                            <Typography variant="body2" color="text.secondary">
-                              Phone: {stake.liaison_phone_1}
-                            </Typography>
-                          )}
+                          </AccordionSummary>
+                          <AccordionDetails
+                            sx={{
+                              px: 2,
+                              pt: 2,
+                              pb: 1,
+                              flexDirection: "column",
+                            }}
+                          >
+                            <Grid container spacing={2}>
+                              {/* Left column - First liaison */}
+                              <Grid item xs={12} md={6}>
+                                <Box sx={{ p: 1 }}>
+                                  {stake.liaison_name_1 && (
+                                    <Typography variant="h6" gutterBottom>
+                                      Liaison 1: {stake.liaison_name_1}
+                                    </Typography>
+                                  )}
+                                  {stake.partner_stake_liaison_title_1 && (
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
+                                      Title:{" "}
+                                      {stake.partner_stake_liaison_title_1}
+                                    </Typography>
+                                  )}
+                                  {stake.liaison_email_1 && (
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
+                                      Email: {stake.liaison_email_1}
+                                    </Typography>
+                                  )}
+                                  {stake.liaison_phone_1 && (
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
+                                      Phone: {stake.liaison_phone_1}
+                                    </Typography>
+                                  )}
+                                </Box>
+                              </Grid>
 
-                          {stake.liaison_name_1 && stake.liaison_name_2 && (
-                            <Divider sx={{ my: 1.5 }} />
-                          )}
+                              {/* Right column - Second liaison */}
+                              <Grid item xs={12} md={6}>
+                                <Box sx={{ p: 1 }}>
+                                  {stake.liaison_name_2 && (
+                                    <Typography variant="h6" gutterBottom>
+                                      Liaison 2: {stake.liaison_name_2}
+                                    </Typography>
+                                  )}
+                                  {stake.partner_stake_liaison_title_2 && (
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
+                                      Title:{" "}
+                                      {stake.partner_stake_liaison_title_2}
+                                    </Typography>
+                                  )}
+                                  {stake.liaison_email_2 && (
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
+                                      Email: {stake.liaison_email_2}
+                                    </Typography>
+                                  )}
+                                  {stake.liaison_phone_2 && (
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
+                                      Phone: {stake.liaison_phone_2}
+                                    </Typography>
+                                  )}
+                                </Box>
+                              </Grid>
+                            </Grid>
 
-                          {stake.liaison_name_2 && (
-                            <Typography variant="body2" color="text.secondary">
-                              Liaison 2: {stake.liaison_name_2}
-                            </Typography>
-                          )}
-                          {stake.liaison_email_2 && (
-                            <Typography variant="body2" color="text.secondary">
-                              Email: {stake.liaison_email_2}
-                            </Typography>
-                          )}
-                          {stake.liaison_phone_2 && (
-                            <Typography variant="body2" color="text.secondary">
-                              Phone: {stake.liaison_phone_2}
-                            </Typography>
-                          )}
+                            {/* Show message if no details */}
+                            {!stake.liaison_name_1 && !stake.liaison_name_2 && (
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                No contact information details available. Please
+                                click edit to add details.
+                              </Typography>
+                            )}
+                          </AccordionDetails>
+                        </Accordion>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
 
-                          {/* Show message if no details */}
-                          {!stake.liaison_name_1 && !stake.liaison_name_2 && (
-                            <Typography variant="body2" color="text.secondary">
-                              No contact information details available. Please
-                              click edit to add details.
-                            </Typography>
-                          )}
-                        </AccordionDetails>
-                      </Accordion>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
+              <Button
+                variant="contained"
+                color="secondary"
+                sx={{ mt: 4, ml: 2 }}
+                onClick={() => handleOpenAddStakeDialog(day.id)}
+              >
+                Add Partner Stake / Organization
+              </Button>
 
-            <Button
-              variant="contained"
-              color="secondary"
-              sx={{ mt: 4, ml: 2 }}
-              onClick={() => handleOpenAddStakeDialog(day.id)}
-            >
-              Add Partner Stake / Organization
-            </Button>
+              {index !== daysOfService.length - 1 && (
+                <Divider sx={{ my: 3, width: "100%" }} />
+              )}
+            </Box>
+          ))}
 
-            {index !== daysOfService.length - 1 && (
-              <Divider sx={{ my: 3, width: "100%" }} />
-            )}
-          </Box>
-        ))}
+        {daysOfService.length !== 0 && (
+          <Divider sx={{ my: 3, width: "100%" }} />
+        )}
 
-      {daysOfService.length !== 0 && <Divider sx={{ my: 3, width: "100%" }} />}
-
-      <Button
-        variant="contained"
-        color="primary"
-        sx={{ mt: 4 }}
-        onClick={handleCreateNewDay}
-      >
-        Create New Day Of Service
-      </Button>
-
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ mt: 4 }}
+          onClick={handleCreateNewDay}
+        >
+          Create New Day Of Service
+        </Button>
+      </Box>
       <ServiceDayDialog
         open={showServiceDayDialog}
         onClose={handleServiceDayDialogClose}
@@ -457,7 +566,11 @@ const CommunitySelectionPage = ({ params }) => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Add New Partner Stake / Organization</DialogTitle>
+        <DialogTitle>
+          {currentStake.id
+            ? `Edit Stake / Organization: ${currentStake.name}`
+            : "Add New Stake / Organization"}
+        </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             <Grid container spacing={2} alignItems="stretch">
@@ -504,6 +617,20 @@ const CommunitySelectionPage = ({ params }) => {
                     })
                   }
                 />
+                <TextField
+                  margin="dense"
+                  label="Liaison Title 1"
+                  key="liaison_title_1"
+                  fullWidth
+                  value={currentStake.partner_stake_liaison_title_1}
+                  onChange={(e) =>
+                    setCurrentStake({
+                      ...currentStake,
+                      partner_stake_liaison_title_1: e.target.value,
+                    })
+                  }
+                />
+
                 <TextField
                   margin="dense"
                   label="Liaison Email 1"
@@ -579,6 +706,19 @@ const CommunitySelectionPage = ({ params }) => {
                 />
                 <TextField
                   margin="dense"
+                  label="Liaison Title 2 (Optional)"
+                  key="liaison_title_2"
+                  fullWidth
+                  value={currentStake.partner_stake_liaison_title_2}
+                  onChange={(e) =>
+                    setCurrentStake({
+                      ...currentStake,
+                      partner_stake_liaison_title_2: e.target.value,
+                    })
+                  }
+                />
+                <TextField
+                  margin="dense"
                   label="Liaison Email 2 (Optional)"
                   fullWidth
                   value={currentStake.liaison_email_2}
@@ -626,6 +766,63 @@ const CommunitySelectionPage = ({ params }) => {
             disabled={!currentStake.name.trim() || isSaving}
           >
             {currentStake.id ? "Update" : "Add"} Stake
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={showSpecialAccessDialog}
+        onClose={() => setShowSpecialAccessDialog(false)}
+      >
+        <DialogTitle>Enter the Budget Access Password</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            fullWidth
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            error={!!authError}
+            helperText={
+              authError ||
+              "If you need a password please contact your Neighborhood Services Director."
+            }
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                handleAuthSubmit();
+              }
+            }}
+            InputProps={{
+              endAdornment: (
+                <IconButton
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  edge="end"
+                >
+                  {
+                    // Show/hide password icon
+                    showPassword ? <VisibilityOff /> : <Visibility />
+                  }
+                </IconButton>
+              ),
+
+              sx: { pr: 2 },
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setShowSpecialAccessDialog(false);
+              setPassword("");
+              setAuthError("");
+            }}
+          >
+            Cancel
+          </Button>
+          <Button onClick={handleAuthSubmit} variant="contained">
+            Submit
           </Button>
         </DialogActions>
       </Dialog>

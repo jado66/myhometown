@@ -20,6 +20,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  IconButton,
 } from "@mui/material";
 
 import { useUser } from "@/hooks/use-user";
@@ -30,7 +31,7 @@ import {
   CommunityIdToPasswordHash,
   isAuthenticated,
 } from "@/util/auth/simpleAuth";
-import { ExpandMore } from "@mui/icons-material";
+import { ExpandMore, Visibility, VisibilityOff } from "@mui/icons-material";
 import { toast } from "react-toastify";
 
 const CityIdToPasswordHash = {
@@ -49,6 +50,7 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
   const [selectedCommunityName, setSelectedCommunityName] = useState("");
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [authError, setAuthError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState();
 
@@ -299,7 +301,7 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
               autoFocus
               margin="dense"
               label="Password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               fullWidth
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -309,6 +311,21 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
                 if (e.key === "Enter") {
                   handleAuthSubmit();
                 }
+              }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      edge="end"
+                    >
+                      {
+                        // Show/hide password icon
+                        showPassword ? <VisibilityOff /> : <Visibility />
+                      }
+                    </IconButton>
+                  </InputAdornment>
+                ),
               }}
             />
           </DialogContent>

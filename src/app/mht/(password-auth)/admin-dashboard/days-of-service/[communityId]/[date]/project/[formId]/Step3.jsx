@@ -10,18 +10,24 @@ import {
   Stack,
   Tooltip,
   IconButton,
+  FormHelperText,
+  Button,
 } from "@mui/material";
 import { useProjectForm } from "@/contexts/ProjectFormProvider";
 import ProjectTextField from "./ProjectTextField";
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import { toast } from "react-toastify";
+import HomeOwnerEmailSection from "./HomeOwnerEmailSection";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const Step3 = () => {
   const { formData, handleInputChange } = useProjectForm();
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <JsonViewer data={formData} />
+
       <Paper sx={{ p: 3 }}>
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle1" color="primary">
@@ -200,6 +206,29 @@ const Step3 = () => {
         </Box>
       </Paper>
 
+      {/*  Host */}
+      <Typography variant="h6" sx={{ mt: 3 }}>
+        Host Information
+      </Typography>
+      <ProjectTextField
+        label="Host Name"
+        value={formData.host_name}
+        key="host_name"
+        onChange={(e) => handleInputChange("host_name", e.target.value)}
+      />
+      <ProjectTextField
+        label="Host Phone Number"
+        value={formData.host_phone}
+        key="host_phone"
+        onChange={(e) => handleInputChange("host_phone", e.target.value)}
+      />
+      <ProjectTextField
+        label="Host Email"
+        value={formData.host_email}
+        key="host_email"
+        onChange={(e) => handleInputChange("host_email", e.target.value)}
+      />
+
       <FormControl component="fieldset" sx={{ mt: 2 }}>
         <FormControlLabel
           control={
@@ -232,6 +261,51 @@ const Step3 = () => {
           label="I have reviewed the project information with the homeowner"
         />
       </FormControl>
+
+      <Divider sx={{ my: 2 }} />
+
+      <Typography variant="h6">Review Project Assignment</Typography>
+
+      {!formData.signature_text && <HomeOwnerEmailSection />}
+
+      <FormControl component="fieldset">
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={formData.signature_text}
+              // readonly
+              disabled
+            />
+          }
+          // readonly
+          sx={{
+            "& .MuiFormControlLabel-label.Mui-disabled": {
+              color: "text.primary", // Keeps the label text in the normal color
+            },
+          }}
+          label="The home owner has reviewed the project information and signed the release form"
+        />
+        {!formData.signature_text && (
+          <FormHelperText>
+            Once the homeowner has signed the release form this box will be
+            checked
+          </FormHelperText>
+        )}
+      </FormControl>
+
+      {formData && formData.signature_image && (
+        <Box sx={{ mt: 2, display: "flex" }}>
+          <img
+            src={formData.signature_image}
+            alt="Homeowner Signature"
+            style={{
+              maxWidth: "200px",
+              maxHeight: "60px",
+              padding: "4px",
+            }}
+          />
+        </Box>
+      )}
 
       <ProjectTextField
         label="Issues or Concerns (Optional)"

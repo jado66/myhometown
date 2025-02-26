@@ -27,7 +27,7 @@ const Step5 = () => {
                   }
                 />
               }
-              label="Have the materials been procured (i.e. materials, dumpster)?"
+              label="Have the materials been ordered?"
             />
             <FormControlLabel
               control={
@@ -60,7 +60,7 @@ const Step5 = () => {
                   }
                 />
               }
-              label="Have we called 811 and ordered Blue Flags if needed?"
+              label="Have the Neighborhood Services Directors requested called Blue Stakes?"
             />
             <FormControlLabel
               control={
@@ -71,7 +71,7 @@ const Step5 = () => {
                   }
                 />
               }
-              label="Has a dumpster been requested from the city?"
+              label="Have the Neighborhood Services Directors requested a dumpster from the city?"
             />
           </FormControl>
         </Box>

@@ -156,8 +156,6 @@ export const useDaysOfServiceProjects = () => {
         .eq("id", projectId);
 
       if (error) throw error;
-
-      toast.success("Project deleted successfully");
     } catch (error) {
       toast.error("Failed to delete project");
     } finally {
