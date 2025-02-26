@@ -103,7 +103,6 @@ export async function POST(request) {
       email: to,
       token: accessToken,
       is_used: false,
-      form_id: formId,
     });
 
     if (tokenError) {

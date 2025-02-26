@@ -38,6 +38,7 @@ const HomeOwnerEmailSection = () => {
           body: JSON.stringify({
             propertyOwner: formData.property_owner,
             to: formData.email,
+            formId: formData.id,
           }),
         }
       );
@@ -48,15 +49,15 @@ const HomeOwnerEmailSection = () => {
         addCollaborator({
           email: formData.email,
           date: new Date(),
-          type: "homeowner",
+          type: "property-owner",
         });
       } else {
         const { error } = await response.json();
         throw new Error(error || "Failed to send email");
       }
     } catch (error) {
-      console.error("Error sending homeowner email:", error);
-      toast.error("Failed to send homeowner email. Please try again.");
+      console.error("Error sending property owner email:", error);
+      toast.error("Failed to send property owner email. Please try again.");
     } finally {
       setIsSending(false);
     }
@@ -129,11 +130,19 @@ const HomeOwnerEmailSection = () => {
               )}
             </Button>
           </Grid>
+          {(!formData.email || !formData.property_owner) && (
+            <Grid item xs={12} sm={12}>
+              <Typography variant="subtitle" color="error">
+                *Please fill out the Property Owner and Property Owner&apos;s
+                Email fields in Step 1 before sending an email.
+              </Typography>
+            </Grid>
+          )}
         </Grid>
       </Box>
 
       {formData.collaborators &&
-        formData.collaborators.some((c) => c.type === "homeowner") && (
+        formData.collaborators.some((c) => c.type === "property-owner") && (
           <Box sx={{ mt: 3 }}>
             <Divider sx={{ my: 2 }} />
             <Accordion
@@ -151,13 +160,15 @@ const HomeOwnerEmailSection = () => {
                 sx={{ pl: 0, pr: 1 }}
               >
                 <Typography variant="subtitle1" color="primary">
-                  Homeowner Email History
+                  Property Owner Email History
                 </Typography>
               </AccordionSummary>
               <AccordionDetails sx={{ px: 0 }}>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   {formData.collaborators
-                    .filter((collaborator) => collaborator.type === "homeowner")
+                    .filter(
+                      (collaborator) => collaborator.type === "property-owner"
+                    )
                     .map((collaborator, index) => (
                       <Paper key={index} variant="outlined" sx={{ p: 2 }}>
                         <Typography variant="body2">

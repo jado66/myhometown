@@ -262,9 +262,26 @@ const Step3 = () => {
         />
       </FormControl>
 
+      <ProjectTextField
+        label="Issues or Concerns (Optional)"
+        multiline
+        rows={4}
+        value={formData.review_notes || ""}
+        onChange={(e) => handleInputChange("review_notes", e.target.value)}
+        placeholder="Note any issues or concerns that need to be addressed"
+      />
+
       <Divider sx={{ my: 2 }} />
 
-      <Typography variant="h6">Review Project Assignment</Typography>
+      <Typography variant="h6">Property Owner Release Information</Typography>
+
+      {!formData.signature_text && (
+        <Typography variant="subtitle1" color="primary">
+          The property owner has not yet signed the liability release form.
+          Click on &quot;Send Email&quot; to send the release form to the
+          property owner for signature.
+        </Typography>
+      )}
 
       {!formData.signature_text && <HomeOwnerEmailSection />}
 
@@ -283,12 +300,16 @@ const Step3 = () => {
               color: "text.primary", // Keeps the label text in the normal color
             },
           }}
-          label="The home owner has reviewed the project information and signed the release form"
+          label="The home owner has reviewed and signed the liability release form"
         />
         {!formData.signature_text && (
-          <FormHelperText>
-            Once the homeowner has signed the release form this box will be
-            checked
+          <FormHelperText
+            sx={{
+              fontSize: "1rem",
+            }}
+          >
+            Once the property owner has signed the liability release form this
+            box will be checked
           </FormHelperText>
         )}
       </FormControl>
@@ -306,15 +327,6 @@ const Step3 = () => {
           />
         </Box>
       )}
-
-      <ProjectTextField
-        label="Issues or Concerns (Optional)"
-        multiline
-        rows={4}
-        value={formData.review_notes || ""}
-        onChange={(e) => handleInputChange("review_notes", e.target.value)}
-        placeholder="Note any issues or concerns that need to be addressed"
-      />
     </Box>
   );
 };
