@@ -44,15 +44,6 @@ const Footer = () => {
                 Home
               </Link>
             </Box>
-            <Box marginTop={1} marginRight={2}>
-              <Button
-                variant="outlined"
-                component="a"
-                href={rootUrl + "/admin-dashboard"}
-              >
-                Admin Login
-              </Button>
-            </Box>
           </Box>
         </Box>
       </Grid>

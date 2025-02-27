@@ -67,7 +67,7 @@ const formattedHtml = ({ propertyOwner, url }) => {
         <p>You've been requested to review and sign the property owner release form, please click the button below:</p>
     
         <p></p>
-        <a href="${url}" class="button" style="display: inline-block; padding: 12px 24px; background-color: #188d4e; color: #ffffff !important; text-decoration: none; border-radius: 6px; margin-top: 20px; font-family: Arial, sans-serif;">Property owner Release Form</a>
+        <a href="${url}" class="button" style="display: inline-block; padding: 12px 24px; background-color: #188d4e; color: #ffffff !important; text-decoration: none; border-radius: 6px; margin-top: 20px; font-family: Arial, sans-serif;">Property Owner Release Form</a>
 
         <div class="divider"></div>
         

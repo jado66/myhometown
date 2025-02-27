@@ -1,7 +1,7 @@
 export const executiveCommittee = [
   {
     name: "Dan England",
-    position: "Chairman",
+    position: "Chairman of the Board",
     avatar: "/images/board/Dan England.jpg",
     bio: `Dan is the Chairman and Owner of C. R. England, Inc., a leading nationwide trucking
 company. He has served as the Past Chairman of the American Trucking Association
@@ -12,7 +12,7 @@ since 2017. He is also a corporate contributor and volunteer for the Utah Food B
   },
   {
     name: "Scott Sorensen",
-    position: "President / CEO",
+    position: "President/Chairman of the Board / CEO",
     avatar: "/images/board/ScottSorensen.jpg",
     bio: `Scott is the Managing Director at Sorensen Capital, LLC. He has held leadership roles
 as President and Board Member at Thatcher Company and Ivanti Software, as well as
@@ -25,7 +25,7 @@ and church service, including the My Hometown initiative, with his wife Marge.`,
   },
   {
     name: "Kent Bowman",
-    position: "Vice President",
+    position: "Chief Operating Officer",
     avatar: "/images/board/Kent Bowman.jpeg",
     bio: `Kent is a former Managing Partner and Audit and Transactional Advisory Partner at
 Arthur Andersen LLP and Tanner LLC, and a former Audit and Business Advisory
@@ -38,16 +38,30 @@ Farsi-speaking refugees for My Home Town.`,
   },
   {
     name: "Mark Durham",
-    position: "Vice President",
+    position: "Chief Communications Officer",
     avatar: "/images/board/Mark Durham.jpg",
     bio: `Mark is the Chairman and Founder of Durham Brands, a prominent consumer products
-company serving major retailers. He also serves as the Utah Director of My Hometown.
-Mark previously chaired the Global Supply Chain Department Advisory Board at
-Brigham Young University's Marriott School of Management. He is deeply committed to
-community transformation, saying, "I love seeing our cities transformed as local
-residents provide leadership to transform living conditions and lives by helping to teach
-skills in our My Hometown Community Resource Centers."`,
+company serving major retailers in the United States. Mark previously chaired the Global
+Supply Chain Department Advisory Board at Brigham Young University&#39;s Marriott School
+of Management. Mark has been committed for many years to community revitalization
+efforts in Utah. He helped to begin the MyHometown Initiative to revitalize cities along
+the Wasatch Front and was its Utah Director from 2019 to 2024.`,
   },
+  {
+    name: "A. Scott Anderson",
+    title: "Vice Chairman",
+    avatar: "/images/board/Scott Anderson.jpg",
+    bio: `A. Scott Anderson concluded a highly successful 33-year career at Zions
+Bank in April 2024, retiring after more than 25 years as president and CEO.
+He remains actively involved as non-executive chair of the Zions Bank
+Advisory Board. Under his leadership, Zions Bank experienced significant
+growth, expanding its assets from approximately $6 billion to nearly $23
+billion. A Salt Lake City native, Scott joined the bank in 1990, rising to the
+role of CEO in 1998. He is a dedicated community leader, serving on
+numerous boards of civic, business, and nonprofit organizations. Scott
+earned degrees from Columbia University and Johns Hopkins University.`,
+  },
+
   //   {
   //     name: "Steve Petersen",
   //     position: "Vice President",
@@ -62,7 +76,7 @@ skills in our My Hometown Community Resource Centers."`,
   //   },
   {
     name: "Ted Hill",
-    position: "Treasurer",
+    position: "Chief Financial Officer",
     avatar: "/images/board/Ted Hill.jpg",
     bio: `Ted is a retired partner of Eide Bailly LLP, a regional accounting and business
 consulting firm, where he formerly served as the partner-in-charge of the Utah offices.
@@ -110,6 +124,7 @@ specializing in development, land use, and transactional law. Nicole is passiona
 giving back to the community and continues to make significant contributions in her
 field.`,
   },
+
   {
     name: "David R. Johnson",
     avatar: "/images/board/David Johnson.jpg",
@@ -142,6 +157,29 @@ Salt Lake City, recognizing the need for Hispanic grocery options. Eli is deeply
 committed to community service, focusing on education and personal development
 initiatives for children. As CEO, she prioritizes team development, promoting from
 within, and ensuring equal representation of women in management roles.`,
+  },
+  {
+    name: "Nathan Savage",
+    avatar: "/images/board/Nathan Savage.jpg",
+    bio: `Nathan is an accomplished business leader with a distinguished career. He
+served 27 years in executive leadership at Savage Companies and currently
+serves on its board. He also serves on the board of EnviroServe, where he was
+President and CEO. Nathan is an Adjunct Professor at the BYU Marriott School
+of Business and chairs the Utah Valley University Foundation Board. He is active
+in church and community service with his wife, Shannon. Nathan holds degrees
+from Brigham Young University and West Virginia University.`,
+  },
+  {
+    name: "Rob Campbell",
+    avatar: "/images/board/Rob Campbell.jpg",
+    bio: `Rob Campbell brings a wealth of leadership experience from his tenure as Chair
+and CEO of Wheeler Machinery Co., the prominent Caterpillar Tractor distributor.
+He is a graduate of the University of Utah, with degrees in business finance and
+management. Rob currently leads the RLC Family Foundation as board chair and
+has contributed his expertise to various boards, including the David Eccles School
+of Business National Advisory Council, the Cooperative Association of Tractor
+Dealers, and Durham Brands. He and his wife, Lisa, are dedicated parents of seven
+children.`,
   },
   {
     name: "Dr. Ann Millner",

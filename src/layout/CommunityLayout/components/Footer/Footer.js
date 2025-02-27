@@ -30,31 +30,6 @@ const Footer = () => {
           © Copyright myHometown Utah 2024
         </Typography>
       </Grid>
-      <Grid
-        item
-        md={4}
-        xs={12}
-        display="flex"
-        justifyContent={{ md: "flex-end", xs: "center" }}
-        sx={{ order: { md: 3, xs: 2 } }}
-      >
-        <Button
-          variant="outlined"
-          component="a"
-          sx={{ textTransform: "uppercase", borderRadius: 5, mr: 2 }}
-          href={rootUrl + "/admin-dashboard"}
-        >
-          Teacher Login
-        </Button>
-        <Button
-          variant="outlined"
-          component="a"
-          sx={{ textTransform: "uppercase", borderRadius: 5 }}
-          href={rootUrl + "/admin-dashboard"}
-        >
-          Admin Login
-        </Button>
-      </Grid>
     </Grid>
   );
 };

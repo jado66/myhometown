@@ -133,9 +133,19 @@ const SidebarNav = ({ pages, onClose }) => {
       </Box>
 
       <Box>
-        <Button variant="outlined" fullWidth onClick={handleLogOut}>
-          Log Out
-        </Button>
+        {user ? (
+          <Button variant="outlined" fullWidth onClick={handleLogOut}>
+            Log Out
+          </Button>
+        ) : (
+          <Button
+            variant="outlined"
+            fullWidth
+            href={process.env.NEXT_PUBLIC_DOMAIN + "/auth/login"}
+          >
+            Admin Log In
+          </Button>
+        )}
       </Box>
     </Box>
   );

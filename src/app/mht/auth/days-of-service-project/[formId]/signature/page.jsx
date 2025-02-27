@@ -253,7 +253,8 @@ const TermsOfServicePage = ({ params }) => {
 
           <Card variant="outlined" sx={{ mb: 3 }}>
             <CardHeader
-              title="Sample Volunteer Release Form"
+              title="MY HOMETOWN INITIATIVE
+AUTHORIZATION AND HOLD HARMLESS"
               titleTypographyProps={{ variant: "h6" }}
               sx={{ bgcolor: "#f5f5f5", pb: 1, color: "error" }}
             />
@@ -277,6 +278,18 @@ const TermsOfServicePage = ({ params }) => {
               }}
             >
               <Typography variant="body2" paragraph>
+                MY HOMETOWN INITIATIVE aims to strengthen our community by
+                assisting in the cleaning, repair, beautification, and
+                rehabilitation of existing owner-occupied housing. As a property
+                owner, I agree to accept the volunteer services of West Valley
+                City, its volunteers, and partners in connection with this
+                program. I agree that volunteers and other representatives of
+                the city or its partners may come onto my property, provide
+                labor, and otherwise assist me with my property, which is
+                commonly known as
+              </Typography>
+
+              <Typography variant="body2" paragraph>
                 <strong>Name:</strong>{" "}
                 {signature || "__________________________"}
                 <br />
@@ -284,42 +297,35 @@ const TermsOfServicePage = ({ params }) => {
               </Typography>
 
               <Typography variant="body2" paragraph>
-                I, {signature || "__________________________"}, certify that I
-                am the owner of the property described herein. I hereby give
-                permission to volunteers to work on my property for the purpose
-                of yard maintenance, gardening, landscaping, and related outdoor
-                activities.
+                I further agree to hold harmless the volunteers, West Valley
+                City, and its partners (together with all their employees,
+                members, officers, partners and directors) in connection with
+                any services or work performed by them relating to this program,
+                which may include but are not limited to, clean up,
+                improvements, repairs, consultation, technical advice, financial
+                counseling, loan processing, property inspection, mentoring,
+                tutoring, and other related activities.
               </Typography>
 
               <Typography variant="body2" paragraph>
-                I understand that these volunteers are not professional
-                landscapers or contractors working for profit, and no warranty
-                is made as to the quality of work done. The volunteers will
-                perform tasks such as lawn mowing, weeding, planting, tree/shrub
-                trimming, leaf removal, and general yard cleanup.
-              </Typography>
-
-              <Typography variant="body2" paragraph>
-                In consideration of the volunteer services to be rendered to me
-                or on my property by the volunteers, I, the undersigned, release
-                and agree to indemnify and hold harmless volunteers, whether
-                separately incorporated or not, including but not limited to
-                Annual Conferences, and their members, officers, directors,
-                executives, administrators, pastors, clergy, faculty,
-                administrators, employees, representative, insurers, reinsurers
-                and/or self-insurance administrators, assigns and/or
-                representatives (hereafter collectively referred to as "the
-                Releasees") from any and all claims, liability, damages, injury
-                (including but not limited to physical and/or mental injury
-                and/or death and/or property damage), delay or irregularity
-                related to the aforementioned volunteer yard work services.
+                I recognize that all services and work are provided “as is,”
+                with NO WARRANTIES WHATSOEVER except as expressly agreed by the
+                service provider in writing.
               </Typography>
 
               <Typography variant="body2">
-                This release covers all rights and causes of action of every
-                kind, nature and description, which the undersigned ever had,
-                now has, and, but for this release, may have. This release binds
-                the undersigned and their heirs, representatives and assignees.
+                Photographic Release. I understand and agree that before, during
+                and after the services and work provided as stated herein, I or
+                my home and property may be photographed and/or videotaped by
+                West Valley City or its representatives and partners for
+                internal and/or promotional use. I hereby grant permission and
+                convey to West Valley City and its representatives and partners,
+                all right, title, and interest, including but not limited to,
+                any royalties, proceeds, or other benefits, in any and all such
+                photographs or recordings, and consent to such parties’ use of
+                my name, image, likeness, and voice in perpetuity, in any medium
+                or format, for any publicity, without further compensation or
+                permission.
               </Typography>
             </CardContent>
           </Card>
@@ -382,3 +388,18 @@ const TermsOfServicePage = ({ params }) => {
 };
 
 export default TermsOfServicePage;
+
+// MY HOMETOWN INITIATIVE
+// AUTHORIZATION AND HOLD HARMLESS
+
+//  MY HOMETOWN INITIATIVE aims to strengthen our community by assisting in the cleaning, repair, beautification, and rehabilitation of existing owner-occupied housing.
+// As a property owner, I agree to accept the volunteer services of West Valley City, its volunteers, and partners in connection with this program. I agree that volunteers and other representatives of the city or its partners may come onto my property, provide labor, and otherwise assist me with my property, which is commonly known as:
+
+// Name:
+// Property Address:
+
+// I further agree to hold harmless the volunteers, West Valley City, and its partners (together with all their employees, members, officers, partners and directors) in connection with any services or work performed by them relating to this program, which may include but are not limited to, clean up, improvements, repairs, consultation, technical advice, financial counseling, loan processing, property inspection, mentoring, tutoring, and other related activities.
+
+// I  recognize  that  all  services  and  work  are  provided  “as  is,”  with NO  WARRANTIES WHATSOEVER except as expressly agreed by the service provider in writing.
+
+// Photographic Release. I understand and agree that before, during and after the services and work provided as stated herein, I or my home and property may be photographed and/or videotaped by West Valley City or its representatives and partners for internal and/or promotional use. I hereby grant permission and convey to West Valley City and its representatives and partners, all right, title, and interest, including but not limited to, any royalties, proceeds, or other benefits, in any and all such photographs or recordings, and consent to such parties’ use of my name, image, likeness, and voice in perpetuity, in any medium or format, for any publicity, without further compensation or permission.
