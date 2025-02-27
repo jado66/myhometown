@@ -407,6 +407,12 @@ export default function ProjectFormsPage({ params }) {
         dayOfService={dayOfService}
         date={date}
         stakeId={stakeId}
+        sx={{
+          justifyContent: {
+            xs: "center",
+            sm: "flex-start",
+          },
+        }}
       />
 
       {isMobile ? (
@@ -494,7 +500,9 @@ export default function ProjectFormsPage({ params }) {
                       height: "100%",
                       display: "flex",
                       flexDirection: "column",
+                      backgroundColor: theme.palette.grey[50],
                     }}
+                    variant="outlined"
                     onClick={() => handleProjectClick(project.id)}
                   >
                     <Box
@@ -551,11 +559,24 @@ export default function ProjectFormsPage({ params }) {
                       {/* Dropdown menu button for small screens */}
                       {isSmallScreen && (
                         <>
+                          {project.volunteers_needed &&
+                            project.volunteers_needed > 0 && (
+                              <Typography
+                                variant="body2"
+                                sx={{ display: "flex", alignItems: "center" }}
+                              >
+                                <Group sx={{ mr: 1 }} size="small" />
+                                {project.volunteers_needed} Volunteers
+                              </Typography>
+                            )}
                           <IconButton
                             aria-label="more-actions"
                             aria-controls={`action-menu-${project.id}`}
                             aria-haspopup="true"
-                            onClick={(e) => handleMenuClick(e, project.id)}
+                            onClick={(e) => {
+                              handleMenuClick(e, project.id);
+                              e.stopPropagation();
+                            }}
                           >
                             <MoreVertIcon />
                           </IconButton>
@@ -574,22 +595,6 @@ export default function ProjectFormsPage({ params }) {
                               "aria-labelledby": `action-button-${project.id}`,
                             }}
                           >
-                            <MenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                console.log("Volunteers needed clicked");
-                                handleMenuClose(project.id);
-                              }}
-                            >
-                              <Box
-                                sx={{ display: "flex", alignItems: "center" }}
-                              >
-                                <Group sx={{ mr: 1 }} />
-                                <Typography variant="body2">
-                                  {project.volunteers_needed} Volunteers Needed
-                                </Typography>
-                              </Box>
-                            </MenuItem>
                             <MenuItem
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -624,9 +629,9 @@ export default function ProjectFormsPage({ params }) {
                       sx={{
                         pb: 0,
                         pl: { xs: 6, sm: 4, md: 6 },
-                        pt: { xs: 2.5, sm: 3, md: 0 },
+                        pt: { xs: 2.5, sm: 3, md: 2 },
                         "& .MuiCardHeader-title": {
-                          fontSize: { xs: "0.9rem", sm: "1rem", md: "1.25rem" },
+                          fontSize: { xs: "0.9rem", sm: "1rem", md: "1.5rem" },
                           whiteSpace: "nowrap",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
@@ -686,7 +691,7 @@ export default function ProjectFormsPage({ params }) {
                               fontSize: {
                                 xs: "0.75rem",
                                 sm: "1rem",
-                                md: "1.25rem",
+                                md: "1rem",
                               },
                             }}
                           >

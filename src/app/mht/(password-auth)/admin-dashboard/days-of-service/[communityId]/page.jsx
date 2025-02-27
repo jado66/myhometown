@@ -10,6 +10,8 @@ import {
   Button,
   IconButton,
   Divider,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import {
   ExpandMore,
@@ -63,6 +65,10 @@ const CommunitySelectionPage = ({ params }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const theme = useTheme();
+
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [currentStake, setCurrentStake] = useState({
     name: "",
@@ -281,18 +287,337 @@ const CommunitySelectionPage = ({ params }) => {
   }
 
   return (
-    <Box sx={{ p: 4 }}>
+    <Box
+      sx={{
+        p: {
+          xs: 1,
+          sm: 4,
+        },
+        mt: 4,
+      }}
+    >
       <DosBreadcrumbs communityData={community} />
 
       <Box sx={{ position: "relative" }}>
         <Typography
           variant="h4"
           gutterBottom
-          sx={{ textTransform: "capitalize", mb: 5 }}
+          sx={{
+            textTransform: "capitalize",
+            mb: 4,
+            textAlign: { xs: "center", sm: "left" },
+          }}
         >
           {community.city_name} - {community.name} Days of Service
         </Typography>
-        <Box sx={{ position: "absolute", top: 0, right: 0, zIndex: 1 }}>
+
+        <Divider sx={{ mb: 2 }} />
+
+        {!isSmallScreen && (
+          <Box sx={{ position: "absolute", top: 0, right: 0, zIndex: 1 }}>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => {
+                if (isAuthenticated) {
+                  toast.info("You are already authenticated.");
+                  return;
+                }
+                setShowSpecialAccessDialog(true);
+              }}
+            >
+              {isAuthenticated ? (
+                <LockOpen sx={{ mr: 1 }} />
+              ) : (
+                <Lock sx={{ mr: 1 }} />
+              )}
+              {isAuthenticated ? "Budget Access Granted" : "Budget Access"}
+            </Button>
+          </Box>
+        )}
+        <Typography variant="h6" color="primary" gutterBottom sx={{ mb: 5 }}>
+          {daysOfService.length === 0 &&
+            "No Days of Service have been created yet. Please create a new Day of Service to get started."}
+        </Typography>
+
+        {/* <JsonViewer data={daysOfService} /> */}
+
+        {daysOfService
+          .sort((a, b) => new Date(a.end_date) - new Date(b.end_date))
+          .map((day, index) => (
+            <Card
+              key={day.id}
+              sx={{
+                backgroundColor: "grey.50",
+                mb: 4,
+                p: {
+                  xs: 2,
+                  sm: 4,
+                },
+              }}
+              variant="outlined"
+            >
+              <Box key={day.id} sx={{ mb: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 2,
+                  }}
+                >
+                  {isSmallScreen ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        flexDirection: "column",
+                        flexGrow: 1,
+                      }}
+                    >
+                      <Typography variant="h5" color="primary">
+                        {day.name || "Day of Service"}
+                      </Typography>
+                      <Typography variant="subtitle" color="primary">
+                        {moment(day.end_date).format("ddd, MM/DD/yy")}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Typography variant="h5" color="primary">
+                      {day.name || "Day of Service"} -{" "}
+                      {moment(day.end_date).format("dddd, MMMM Do, YYYY")}
+                    </Typography>
+                  )}
+
+                  <Button
+                    onClick={() => handleEditDay(day)}
+                    sx={{
+                      bgcolor: "primary.main",
+                      color: "white",
+                      "&:hover": { bgcolor: "primary.dark" },
+                      ml: 2,
+                      px: 1,
+                    }}
+                  >
+                    <EditCalendar sx={{ mr: 1 }} />
+                    {isSmallScreen ? "Edit" : "Edit Day of Service"}
+                  </Button>
+                </Box>
+
+                <Divider sx={{ mb: 2, mx: 1 }} />
+
+                <Typography variant="h6" gutterBottom sx={{ my: 2, ml: 2 }}>
+                  {day.partner_stakes.length === 0
+                    ? "Please add a partner stake/organization to this day of service."
+                    : "Manage the projects   for your partner stakes/organizations."}
+                </Typography>
+                <Grid
+                  container
+                  columnSpacing={{
+                    xs: 0,
+                    md: 3,
+                  }}
+                  rowSpacing={2}
+                  sx={{ ml: 0 }}
+                >
+                  {day.partner_stakes.map((stake) => (
+                    <Grid item xs={12} sm={6} key={stake.id}>
+                      <Card
+                        sx={{
+                          cursor: "pointer",
+                          "&:hover": { boxShadow: 6 },
+                          position: "relative",
+                        }}
+                        variant="outlined"
+                        onClick={() => handlePartnerStakeClick(day, stake)}
+                      >
+                        <IconButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditStake(day.id, stake);
+                          }}
+                          sx={{
+                            position: "absolute",
+                            top: 8,
+                            right: 8,
+                            color: "primary.main",
+                          }}
+                        >
+                          <Edit />
+                        </IconButton>
+                        <CardContent>
+                          {/* <Typography variant="h6">ID: {stake.id}</Typography> */}
+                          <Typography variant="h6" sx={{ ml: 2 }}>
+                            {stake.name}
+                          </Typography>
+                          <Divider sx={{ my: 2 }} />
+                          <Accordion
+                            square
+                            elevation={0}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <AccordionSummary
+                              expandIcon={<ExpandMore />}
+                              sx={{
+                                px: 1,
+                                py: 1,
+                                "& .Mui-expanded": {
+                                  my: 0,
+                                },
+                                "& .MuiAccordionSummary-content": {
+                                  margin: 0,
+                                },
+                              }}
+                            >
+                              <Grid item xs={7}>
+                                <Button
+                                  variant="outlined"
+                                  color="primary"
+                                  sx={{ mt: 1 }}
+                                  onClick={(e) => {
+                                    handlePartnerStakeClick(day, stake);
+                                    e.stopPropagation();
+                                  }}
+                                >
+                                  {isSmallScreen ? "Projects" : "View Projects"}
+                                </Button>
+                              </Grid>
+                              <Typography
+                                variant="h6"
+                                sx={{ fontSize: "16px !important;" }}
+                              >
+                                Stake/Organization Information
+                              </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails
+                              sx={{
+                                px: 2,
+                                pt: 2,
+                                pb: 1,
+                                flexDirection: "column",
+                              }}
+                            >
+                              <Grid container spacing={2}>
+                                {/* Left column - First liaison */}
+                                <Grid item xs={12} md={6}>
+                                  <Box sx={{ p: 1 }}>
+                                    {stake.liaison_name_1 && (
+                                      <Typography variant="h6" gutterBottom>
+                                        Liaison 1: {stake.liaison_name_1}
+                                      </Typography>
+                                    )}
+                                    {stake.partner_stake_liaison_title_1 && (
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                      >
+                                        Title:{" "}
+                                        {stake.partner_stake_liaison_title_1}
+                                      </Typography>
+                                    )}
+                                    {stake.liaison_email_1 && (
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                      >
+                                        Email: {stake.liaison_email_1}
+                                      </Typography>
+                                    )}
+                                    {stake.liaison_phone_1 && (
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                      >
+                                        Phone: {stake.liaison_phone_1}
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                </Grid>
+
+                                {/* Right column - Second liaison */}
+                                <Grid item xs={12} md={6}>
+                                  <Box sx={{ p: 1 }}>
+                                    {stake.liaison_name_2 && (
+                                      <Typography variant="h6" gutterBottom>
+                                        Liaison 2: {stake.liaison_name_2}
+                                      </Typography>
+                                    )}
+                                    {stake.partner_stake_liaison_title_2 && (
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                      >
+                                        Title:{" "}
+                                        {stake.partner_stake_liaison_title_2}
+                                      </Typography>
+                                    )}
+                                    {stake.liaison_email_2 && (
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                      >
+                                        Email: {stake.liaison_email_2}
+                                      </Typography>
+                                    )}
+                                    {stake.liaison_phone_2 && (
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                      >
+                                        Phone: {stake.liaison_phone_2}
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                </Grid>
+                              </Grid>
+
+                              {/* Show message if no details */}
+                              {!stake.liaison_name_1 &&
+                                !stake.liaison_name_2 && (
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
+                                    No contact information details available.
+                                    Please click edit to add details.
+                                  </Typography>
+                                )}
+                            </AccordionDetails>
+                          </Accordion>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  sx={{ mt: 4, ml: 2 }}
+                  onClick={() => handleOpenAddStakeDialog(day.id)}
+                >
+                  Add Partner Stake / Organization
+                </Button>
+              </Box>
+            </Card>
+          ))}
+
+        {daysOfService.length !== 0 && (
+          <Divider sx={{ my: 3, width: "100%" }} />
+        )}
+
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ mt: 4, mx: "auto", display: "block" }}
+          onClick={handleCreateNewDay}
+        >
+          Create New Day Of Service
+        </Button>
+      </Box>
+
+      {isSmallScreen && (
+        <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
           <Button
             variant="outlined"
             color="primary"
@@ -312,245 +637,8 @@ const CommunitySelectionPage = ({ params }) => {
             {isAuthenticated ? "Budget Access Granted" : "Budget Access"}
           </Button>
         </Box>
+      )}
 
-        <Typography variant="h6" color="primary" gutterBottom sx={{ mb: 5 }}>
-          {daysOfService.length === 0 &&
-            "No Days of Service have been created yet. Please create a new Day of Service to get started."}
-        </Typography>
-
-        <JsonViewer data={daysOfService} />
-
-        {daysOfService
-          .sort((a, b) => new Date(a.end_date) - new Date(b.end_date))
-          .map((day, index) => (
-            <Box key={day.id} sx={{ mb: 4 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 2,
-                }}
-              >
-                <Typography variant="h5" color="primary">
-                  {day.name || "Day of Service"} -{" "}
-                  {moment(day.end_date).format("dddd, MMMM Do, YYYY")}
-                </Typography>
-                <Button
-                  onClick={() => handleEditDay(day)}
-                  sx={{
-                    bgcolor: "primary.main",
-                    color: "white",
-                    "&:hover": { bgcolor: "primary.dark" },
-                    ml: 2,
-                  }}
-                >
-                  <EditCalendar sx={{ mr: 1 }} /> Edit Day of Service
-                </Button>
-              </Box>
-
-              <Typography variant="h6" gutterBottom sx={{ my: 2, ml: 2 }}>
-                {day.partner_stakes.length === 0
-                  ? "Please add a partner stake/organization to this day of service."
-                  : "Manage the projects   for your partner stakes/organizations."}
-              </Typography>
-              <Grid container spacing={3} sx={{ ml: 0 }}>
-                {day.partner_stakes.map((stake) => (
-                  <Grid item xs={12} sm={6} md={4} key={stake.id}>
-                    <Card
-                      sx={{
-                        cursor: "pointer",
-                        "&:hover": { boxShadow: 6 },
-                        position: "relative",
-                      }}
-                      onClick={() => handlePartnerStakeClick(day, stake)}
-                    >
-                      <IconButton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditStake(day.id, stake);
-                        }}
-                        sx={{
-                          position: "absolute",
-                          top: 8,
-                          right: 8,
-                          color: "primary.main",
-                        }}
-                      >
-                        <Edit />
-                      </IconButton>
-                      <CardContent>
-                        {/* <Typography variant="h6">ID: {stake.id}</Typography> */}
-                        <Typography variant="h6" sx={{ ml: 2 }}>
-                          {stake.name}
-                        </Typography>
-                        <Divider sx={{ my: 2 }} />
-                        <Accordion
-                          square
-                          elevation={0}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <AccordionSummary
-                            expandIcon={<ExpandMore />}
-                            sx={{
-                              px: 1,
-                              py: 1,
-                              "& .Mui-expanded": {
-                                my: 0,
-                              },
-                              "& .MuiAccordionSummary-content": {
-                                margin: 0,
-                              },
-                            }}
-                          >
-                            <Grid item xs={7}>
-                              <Button
-                                variant="outlined"
-                                color="primary"
-                                sx={{ mt: 1 }}
-                                onClick={(e) => {
-                                  handlePartnerStakeClick(day, stake);
-                                  e.stopPropagation();
-                                }}
-                              >
-                                View Projects
-                              </Button>
-                            </Grid>
-                            <Typography
-                              variant="h6"
-                              sx={{ fontSize: "16px !important;" }}
-                            >
-                              Stake/Organization Information
-                            </Typography>
-                          </AccordionSummary>
-                          <AccordionDetails
-                            sx={{
-                              px: 2,
-                              pt: 2,
-                              pb: 1,
-                              flexDirection: "column",
-                            }}
-                          >
-                            <Grid container spacing={2}>
-                              {/* Left column - First liaison */}
-                              <Grid item xs={12} md={6}>
-                                <Box sx={{ p: 1 }}>
-                                  {stake.liaison_name_1 && (
-                                    <Typography variant="h6" gutterBottom>
-                                      Liaison 1: {stake.liaison_name_1}
-                                    </Typography>
-                                  )}
-                                  {stake.partner_stake_liaison_title_1 && (
-                                    <Typography
-                                      variant="body2"
-                                      color="text.secondary"
-                                    >
-                                      Title:{" "}
-                                      {stake.partner_stake_liaison_title_1}
-                                    </Typography>
-                                  )}
-                                  {stake.liaison_email_1 && (
-                                    <Typography
-                                      variant="body2"
-                                      color="text.secondary"
-                                    >
-                                      Email: {stake.liaison_email_1}
-                                    </Typography>
-                                  )}
-                                  {stake.liaison_phone_1 && (
-                                    <Typography
-                                      variant="body2"
-                                      color="text.secondary"
-                                    >
-                                      Phone: {stake.liaison_phone_1}
-                                    </Typography>
-                                  )}
-                                </Box>
-                              </Grid>
-
-                              {/* Right column - Second liaison */}
-                              <Grid item xs={12} md={6}>
-                                <Box sx={{ p: 1 }}>
-                                  {stake.liaison_name_2 && (
-                                    <Typography variant="h6" gutterBottom>
-                                      Liaison 2: {stake.liaison_name_2}
-                                    </Typography>
-                                  )}
-                                  {stake.partner_stake_liaison_title_2 && (
-                                    <Typography
-                                      variant="body2"
-                                      color="text.secondary"
-                                    >
-                                      Title:{" "}
-                                      {stake.partner_stake_liaison_title_2}
-                                    </Typography>
-                                  )}
-                                  {stake.liaison_email_2 && (
-                                    <Typography
-                                      variant="body2"
-                                      color="text.secondary"
-                                    >
-                                      Email: {stake.liaison_email_2}
-                                    </Typography>
-                                  )}
-                                  {stake.liaison_phone_2 && (
-                                    <Typography
-                                      variant="body2"
-                                      color="text.secondary"
-                                    >
-                                      Phone: {stake.liaison_phone_2}
-                                    </Typography>
-                                  )}
-                                </Box>
-                              </Grid>
-                            </Grid>
-
-                            {/* Show message if no details */}
-                            {!stake.liaison_name_1 && !stake.liaison_name_2 && (
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                No contact information details available. Please
-                                click edit to add details.
-                              </Typography>
-                            )}
-                          </AccordionDetails>
-                        </Accordion>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-
-              <Button
-                variant="contained"
-                color="secondary"
-                sx={{ mt: 4, ml: 2 }}
-                onClick={() => handleOpenAddStakeDialog(day.id)}
-              >
-                Add Partner Stake / Organization
-              </Button>
-
-              {index !== daysOfService.length - 1 && (
-                <Divider sx={{ my: 3, width: "100%" }} />
-              )}
-            </Box>
-          ))}
-
-        {daysOfService.length !== 0 && (
-          <Divider sx={{ my: 3, width: "100%" }} />
-        )}
-
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{ mt: 4 }}
-          onClick={handleCreateNewDay}
-        >
-          Create New Day Of Service
-        </Button>
-      </Box>
       <ServiceDayDialog
         open={showServiceDayDialog}
         onClose={handleServiceDayDialogClose}
