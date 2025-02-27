@@ -28,7 +28,7 @@ const Step1 = ({ date }) => {
         Developer(s)
       </Typography>
 
-      <Divider sx={{ mt: 2 }} />
+      <Divider />
       <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
         Project Information
       </Typography>
@@ -69,7 +69,11 @@ const Step1 = ({ date }) => {
         value={`${community?.city_name || ""} - ${community?.name || ""}`}
         InputProps={{ readOnly: true }}
       />
-      <Divider sx={{ my: 1 }} />
+      <Divider />
+
+      <Typography variant="h6" sx={{ mb: 1 }}>
+        Project Developer Information
+      </Typography>
 
       <ProjectTextField
         label="Project Developer(s)"
@@ -104,8 +108,11 @@ const Step1 = ({ date }) => {
           handleInputChange("project_developer_email2", e.target.value)
         }
       />
-      <Divider sx={{ my: 2 }} />
+      <Divider />
 
+      <Typography variant="h6" sx={{ mb: 1 }}>
+        Project Owner Information
+      </Typography>
       <ProjectTextField
         label="Property Owner"
         value={formData.property_owner}
@@ -121,17 +128,9 @@ const Step1 = ({ date }) => {
         value={formData.email}
         onChange={(e) => handleInputChange("email", e.target.value)}
       />
-      <Divider sx={{ my: 2 }} />
+      <Divider />
 
       <AddressFormFields />
-      <Divider sx={{ my: 2 }} />
-      <ProjectTextField
-        label="Work Summary"
-        multiline
-        rows={4}
-        value={formData.work_summary}
-        onChange={(e) => handleInputChange("work_summary", e.target.value)}
-      />
     </Box>
   );
 };

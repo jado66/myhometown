@@ -80,7 +80,7 @@ export default function ProjectFormsPage({ params }) {
   const [selectedProjects, setSelectedProjects] = useState([]);
   const [partnerWardDialogOpen, setPartnerWardDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
-  const isSmallScreen = true; // useMediaQuery(theme.breakpoints.down("lg"));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [menuAnchorEl, setMenuAnchorEl] = useState({});
 
@@ -402,17 +402,39 @@ export default function ProjectFormsPage({ params }) {
   }
 
   return (
-    <Box sx={{ p: 4 }}>
+    <Box sx={{ p: { md: 4, xs: 1 } }}>
       <DosBreadcrumbs
         dayOfService={dayOfService}
         date={date}
         stakeId={stakeId}
       />
 
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 5 }}>
-        {partnerStake?.name || "Day of Service"} Projects for{" "}
-        {dayOfService?.name || moment(date).format("dddd, MMMM Do, YYYY")}
-      </Typography>
+      {isMobile ? (
+        <>
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            sx={{ textAlign: "center" }}
+          >
+            {partnerStake?.name || "Day of Service"} Projects
+          </Typography>
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            sx={{ textAlign: "center", mb: 5 }}
+          >
+            for{" "}
+            {dayOfService?.name || moment(date).format("dddd, MMMM Do, YYYY")}
+          </Typography>
+        </>
+      ) : (
+        <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 5 }}>
+          {partnerStake?.name || "Day of Service"} Projects for{" "}
+          {dayOfService?.name || moment(date).format("dddd, MMMM Do, YYYY")}
+        </Typography>
+      )}
 
       <Typography variant="h6" color="primary" gutterBottom sx={{ mb: 5 }}>
         {projects?.length === 0 &&
@@ -421,7 +443,7 @@ export default function ProjectFormsPage({ params }) {
           "No projects have been created yet. Please create a new project to get started."}
       </Typography>
 
-      <JsonViewer data={projects} />
+      {/* <JsonViewer data={projects} /> */}
 
       <Paper
         elevation={0}
@@ -457,7 +479,7 @@ export default function ProjectFormsPage({ params }) {
         ) : projects?.length >= 1 ? (
           <Grid
             container
-            spacing={{ xs: 0.5, sm: 2, lg: 4 }}
+            spacing={{ xs: 1, sm: 2, lg: 4 }}
             sx={{ p: { lg: 3, md: 0 }, overflowY: "auto" }}
           >
             {projects
@@ -601,7 +623,8 @@ export default function ProjectFormsPage({ params }) {
                       }
                       sx={{
                         pb: 0,
-                        pl: { xs: 2, sm: 4, md: 6 },
+                        pl: { xs: 6, sm: 4, md: 6 },
+                        pt: { xs: 2.5, sm: 3, md: 0 },
                         "& .MuiCardHeader-title": {
                           fontSize: { xs: "0.9rem", sm: "1rem", md: "1.25rem" },
                           whiteSpace: "nowrap",
@@ -657,7 +680,16 @@ export default function ProjectFormsPage({ params }) {
                             backgroundColor: theme.palette.background.default,
                           }}
                         >
-                          <Typography variant="h6">
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              fontSize: {
+                                xs: "0.75rem",
+                                sm: "1rem",
+                                md: "1.25rem",
+                              },
+                            }}
+                          >
                             Partner Ward/Group Information
                           </Typography>
                         </AccordionSummary>
@@ -820,13 +852,23 @@ export default function ProjectFormsPage({ params }) {
         )}
       </Paper>
 
-      <Box sx={{ mt: 5, display: "flex", justifyContent: "center", gap: 2 }}>
+      <Box
+        sx={{
+          mt: 5,
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          justifyContent: "center",
+          gap: 2,
+          width: { xs: "100%", sm: "auto" },
+        }}
+      >
         <Button
           variant="contained"
           color="primary"
           onClick={handleNewProject}
           startIcon={<AddIcon />}
           disabled={isLoading || creatingProject}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
         >
           {creatingProject ? "Creating Project..." : "New Project"}
         </Button>
@@ -837,6 +879,7 @@ export default function ProjectFormsPage({ params }) {
           onClick={handleViewTimelines}
           startIcon={<TimelineIcon />}
           disabled={isLoading || selectedProjects.length === 0}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
         >
           View Project Timelines
         </Button>
@@ -846,6 +889,7 @@ export default function ProjectFormsPage({ params }) {
           color="primary"
           onClick={handleGenerateDayOfServiceReport}
           startIcon={<Assignment />}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
         >
           Generate Projects Summary
         </Button>

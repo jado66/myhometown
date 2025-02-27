@@ -32,12 +32,13 @@ const Step2 = () => {
         This step of the form is typically filled out by the Resource Couple
       </Typography>
       <Divider sx={{ mt: 2 }} />
-      <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
-        Detailed Planning
+      <Typography variant="h5" sx={{ mb: 1 }}>
+        Resource Couple Information
       </Typography>
 
       <ProjectTextField
         label="Resource Couple"
+        key="project_development_couple"
         value={formData.project_development_couple}
         onChange={(e) =>
           handleInputChange("project_development_couple", e.target.value)
@@ -45,6 +46,7 @@ const Step2 = () => {
       />
       <ProjectTextField
         label="Resource Couple Phone Number (1)"
+        key="project_development_couple_phone1"
         value={formData.project_development_couple_phone1}
         onChange={(e) =>
           handleInputChange("project_development_couple_phone1", e.target.value)
@@ -52,6 +54,7 @@ const Step2 = () => {
       />
       <ProjectTextField
         label="Resource Couple Email (1)"
+        key="project_development_couple_email1"
         value={formData.project_development_couple_email1}
         onChange={(e) =>
           handleInputChange("project_development_couple_email1", e.target.value)
@@ -59,6 +62,7 @@ const Step2 = () => {
       />
       <ProjectTextField
         label="Resource Couple Phone Number (2)"
+        key="project_development_couple_phone2"
         value={formData.project_development_couple_phone2}
         onChange={(e) =>
           handleInputChange("project_development_couple_phone2", e.target.value)
@@ -66,14 +70,31 @@ const Step2 = () => {
       />
       <ProjectTextField
         label="Resource Couple Email (2)"
+        key="project_development_couple_email2"
         value={formData.project_development_couple_email2}
         onChange={(e) =>
           handleInputChange("project_development_couple_email2", e.target.value)
         }
       />
+
+      <Divider />
+
+      <Typography variant="h5" sx={{ mb: 1 }}>
+        Detailed Planning
+      </Typography>
+
+      <ProjectTextField
+        label="Work Summary"
+        multiline
+        key="work_summary"
+        rows={4}
+        value={formData.work_summary}
+        onChange={(e) => handleInputChange("work_summary", e.target.value)}
+      />
       <ProjectTextField
         label="Preferred Remedies"
         multiline
+        key="preferred_remedies"
         rows={4}
         value={formData.preferred_remedies}
         onChange={(e) =>
@@ -81,7 +102,9 @@ const Step2 = () => {
         }
       />
 
-      <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
+      <Divider />
+
+      <Typography variant="h5" sx={{ mb: 1 }}>
         Task Planning
       </Typography>
       <TaskTable
@@ -90,7 +113,9 @@ const Step2 = () => {
         hideResources={true}
       />
 
-      <Typography variant="h4" component="h1" gutterBottom>
+      <Divider />
+
+      <Typography variant="h5" gutterBottom>
         Project Setup
       </Typography>
       <ProjectResources
@@ -99,19 +124,18 @@ const Step2 = () => {
         handleToolAdd={handleToolAdd}
       />
 
-      <Divider sx={{ my: 1 }} />
-      <Box sx={{ mt: 3 }}>
-        <ProjectTextField
-          label="Number of Volunteers Needed"
-          type="number"
-          key="volunteers_needed"
-          min={0}
-          value={formData.volunteers_needed}
-          onChange={(e) =>
-            handleInputChange("volunteers_needed", e.target.value)
-          }
-        />
-      </Box>
+      <Divider />
+      <Typography variant="h5" gutterBottom>
+        Volunteers
+      </Typography>
+      <ProjectTextField
+        label="Number of Volunteers Needed"
+        type="number"
+        key="volunteers_needed"
+        min={0}
+        value={formData.volunteers_needed}
+        onChange={(e) => handleInputChange("volunteers_needed", e.target.value)}
+      />
     </Box>
   );
 };

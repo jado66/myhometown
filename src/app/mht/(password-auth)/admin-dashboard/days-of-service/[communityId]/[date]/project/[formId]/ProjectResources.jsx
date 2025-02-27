@@ -70,10 +70,10 @@ export function ProjectResources({
   };
 
   return (
-    <>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 1, px: 1 }}>
       {sections.map((section, sectionIndex) => (
         <React.Fragment key={section.category}>
-          {sectionIndex > 0 && <Divider />}
+          {sectionIndex > 0 && <Divider sx={{ mx: 1 }} />}
           <Box sx={{ mb: 1 }}>
             <Typography variant="subtitle1" sx={{ mb: 1 }}>
               {section.title}
@@ -98,6 +98,6 @@ export function ProjectResources({
           </Box>
         </React.Fragment>
       ))}
-    </>
+    </Box>
   );
 }

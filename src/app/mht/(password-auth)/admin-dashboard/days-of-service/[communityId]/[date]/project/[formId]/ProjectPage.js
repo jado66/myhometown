@@ -28,6 +28,10 @@ const ProjectFormPage = ({ formId, date, communityId, dayOfService }) => {
           maxWidth="lg"
           sx={{
             pt: 6,
+            px: {
+              xs: 0.5,
+              sm: 3,
+            },
           }}
         >
           <DosBreadcrumbs
@@ -43,7 +47,15 @@ const ProjectFormPage = ({ formId, date, communityId, dayOfService }) => {
             isProjectView
           />
         </Container>
-        <Container maxWidth="lg" sx={{}}>
+        <Container
+          maxWidth="lg"
+          sx={{
+            px: {
+              xs: 1,
+              sm: 3,
+            },
+          }}
+        >
           <ProjectForm formId={formId} date={date} communityId={communityId} />
         </Container>
       </Box>

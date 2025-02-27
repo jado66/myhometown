@@ -64,7 +64,7 @@ const HomeOwnerEmailSection = () => {
   };
 
   return (
-    <Box sx={{ mt: 2, mb: 4 }}>
+    <Box>
       <Box
         sx={{
           display: "flex",
@@ -73,7 +73,17 @@ const HomeOwnerEmailSection = () => {
         }}
       >
         <Grid container spacing={1}>
-          <Grid item xs={12} sm={4.5}>
+          <Grid
+            item
+            xs={12}
+            sm={4.5}
+            sx={{
+              mb: {
+                md: 0,
+                xs: 1,
+              },
+            }}
+          >
             <ProjectTextField
               label="Property Owner"
               value={formData.property_owner}
@@ -143,7 +153,7 @@ const HomeOwnerEmailSection = () => {
 
       {formData.collaborators &&
         formData.collaborators.some((c) => c.type === "property-owner") && (
-          <Box sx={{ mt: 3 }}>
+          <Box sx={{}}>
             <Divider sx={{ my: 2 }} />
             <Accordion
               elevation={0}
@@ -151,34 +161,52 @@ const HomeOwnerEmailSection = () => {
                 "&.MuiAccordion-root:before": {
                   display: "none",
                 },
+                border: "1px solid #E0E0E0",
+                px: 1,
               }}
             >
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-controls="collaboration-history-content"
                 id="collaboration-history-header"
-                sx={{ pl: 0, pr: 1 }}
               >
                 <Typography variant="subtitle1" color="primary">
                   Property Owner Email History
                 </Typography>
               </AccordionSummary>
-              <AccordionDetails sx={{ px: 0 }}>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <AccordionDetails sx={{ px: 1 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: {
+                      xs: 1,
+                      sm: 2,
+                    },
+                  }}
+                >
                   {formData.collaborators
                     .filter(
                       (collaborator) => collaborator.type === "property-owner"
                     )
                     .map((collaborator, index) => (
-                      <Paper key={index} variant="outlined" sx={{ p: 2 }}>
-                        <Typography variant="body2">
-                          <strong>Sent to:</strong> {collaborator.email}
-                        </Typography>
-                        <Typography variant="body2">
-                          <strong>Date:</strong>{" "}
-                          {new Date(collaborator.date).toLocaleDateString()}
-                        </Typography>
-                      </Paper>
+                      <>
+                        <Box key={index}>
+                          <Typography variant="body2">
+                            <strong>Sent to:</strong> {collaborator.email}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Date:</strong>{" "}
+                            {new Date(collaborator.date).toLocaleDateString()}
+                          </Typography>
+                        </Box>
+                        {index !==
+                          formData.collaborators.filter(
+                            (collaborator) =>
+                              collaborator.type === "property-owner"
+                          ).length -
+                            1 && <Divider />}
+                      </>
                     ))}
                 </Box>
               </AccordionDetails>

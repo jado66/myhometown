@@ -1,8 +1,6 @@
-import React from "react";
 import {
   Box,
   Typography,
-  Paper,
   FormControl,
   FormControlLabel,
   Checkbox,
@@ -19,197 +17,308 @@ import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import { toast } from "react-toastify";
 import HomeOwnerEmailSection from "./HomeOwnerEmailSection";
-import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const Step3 = () => {
   const { formData, handleInputChange } = useProjectForm();
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <JsonViewer data={formData} />
+      {/* <JsonViewer data={formData} /> */}
 
-      <Paper sx={{ p: 3 }}>
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle1" color="primary">
-            Basic Information
-          </Typography>
-          <Box sx={{ pl: 2 }}>
-            <Box display="flex" alignItems="center" gap={1}>
-              <Typography>
-                <strong>Project Developer:</strong> {formData.project_developer}
-              </Typography>
-              <Stack direction="row" spacing={2}>
-                <Tooltip title={formData.project_developer_phone1} arrow>
-                  <IconButton
-                    color="primary"
-                    size="small"
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        formData.project_developer_phone1
-                      );
-                      toast.success("Phone number copied to clipboard");
-                    }}
-                  >
-                    <PhoneIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={formData.project_developer_email1} arrow>
-                  <IconButton
-                    color="primary"
-                    size="small"
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        formData.project_developer_email1
-                      );
-                      toast.success("Email copied to clipboard");
-                    }}
-                  >
-                    <EmailIcon />
-                  </IconButton>
-                </Tooltip>
-              </Stack>
-            </Box>
-            <Box display="flex" alignItems="center" gap={1}>
-              <Typography>
-                <strong>Resource Couple:</strong>{" "}
-                {formData.project_development_couple}
-              </Typography>
-              <Stack direction="row" spacing={2}>
-                <Tooltip
-                  title={formData.project_development_couple_phone1}
-                  arrow
-                >
-                  <IconButton
-                    color="primary"
-                    size="small"
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        formData.project_development_couple_phone1
-                      );
-                      toast.success("Phone number copied to clipboard");
-                    }}
-                  >
-                    <PhoneIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip
-                  title={formData.project_development_couple_email1}
-                  arrow
-                >
-                  <IconButton
-                    color="primary"
-                    size="small"
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        formData.project_development_couple_email1
-                      );
-                      toast.success("Email copied to clipboard");
-                    }}
-                  >
-                    <EmailIcon />
-                  </IconButton>
-                </Tooltip>
-              </Stack>
-            </Box>
-            <Box display="flex" alignItems="center" gap={1}>
-              <Typography>
-                <strong>Property Owner:</strong> {formData.property_owner}
-              </Typography>
-              <Stack direction="row" spacing={2}>
-                <Tooltip title={formData.phone_number} arrow>
-                  <IconButton
-                    color="primary"
-                    size="small"
-                    onClick={() => {
-                      navigator.clipboard.writeText(formData.phone_number);
-                      toast.success("Phone number copied to clipboard");
-                    }}
-                  >
-                    <PhoneIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={formData.email} arrow>
-                  <IconButton
-                    color="primary"
-                    size="small"
-                    onClick={() => {
-                      navigator.clipboard.writeText(formData.email);
-                      toast.success("Email copied to clipboard");
-                    }}
-                  >
-                    <EmailIcon />
-                  </IconButton>
-                </Tooltip>
-              </Stack>
-            </Box>
-          </Box>
-        </Box>
-
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle1" color="primary">
-            Project Location
-          </Typography>
-          <Box sx={{ pl: 2 }}>
-            <Typography>
-              {formData.address_street1}
-              {formData.address_street2 && `, ${formData.address_street2}`}
+      <Box sx={{ mb: { md: 3, xs: 1 } }}>
+        <Typography variant="subtitle1" color="primary" sx={{ mb: 2 }}>
+          Basic Information
+        </Typography>
+        <Box sx={{ pl: 2 }}>
+          {/* Project Developer */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "flex-start", sm: "center" },
+              mb: 1,
+            }}
+          >
+            <Typography sx={{ mr: 1, mb: { xs: 0.5, sm: 0 } }}>
+              <strong>Project Developer:</strong> {formData.project_developer}
             </Typography>
-            <Typography>
-              {formData.address_city}, {formData.address_state}{" "}
-              {formData.address_zip_code}
+            <Stack direction="row" spacing={1}>
+              {formData.project_developer_phone1 && (
+                <Button
+                  variant="text"
+                  color="primary"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      formData.project_developer_phone1
+                    );
+                    toast.success(
+                      `Phone number copied to clipboard: ${formData.project_developer_phone1}`
+                    );
+                  }}
+                >
+                  <PhoneIcon fontSize="small" sx={{ mr: 1 }} />
+                  {formData.project_developer_phone1}
+                </Button>
+              )}
+
+              {formData.project_developer_email1 && (
+                <Button
+                  variant="text"
+                  color="primary"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      formData.project_developer_email1
+                    );
+                    toast.success(
+                      `Email copied to clipboard: ${formData.project_developer_email1}`
+                    );
+                  }}
+                >
+                  <EmailIcon fontSize="small" sx={{ mr: 1 }} />
+                  {formData.project_developer_email1}
+                </Button>
+              )}
+            </Stack>
+          </Box>
+
+          {/* Resource Couple */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "flex-start", sm: "center" },
+              mb: 1,
+            }}
+          >
+            <Typography sx={{ mr: 1, mb: { xs: 0.5, sm: 0 } }}>
+              <strong>Resource Couple:</strong>{" "}
+              {formData.project_development_couple}
             </Typography>
-          </Box>
-        </Box>
+            <Stack direction="row" spacing={1}>
+              {formData.project_development_couple_phone1 && (
+                <Button
+                  variant="text"
+                  color="primary"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      formData.project_development_couple_phone1
+                    );
+                    toast.success(
+                      `Phone number copied to clipboard: ${formData.project_development_couple_phone1}`
+                    );
+                  }}
+                >
+                  <PhoneIcon fontSize="small" sx={{ mr: 1 }} />
+                  {formData.project_development_couple_phone1}
+                </Button>
+              )}
 
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle1" color="primary">
-            Work Summary
-          </Typography>
-          <Box sx={{ pl: 2 }}>
-            <Typography>{formData.work_summary}</Typography>
+              {formData.project_development_couple_email1 && (
+                <Button
+                  variant="text"
+                  color="primary"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      formData.project_development_couple_email1
+                    );
+                    toast.success(
+                      `Email copied to clipboard: ${formData.project_development_couple_email1}`
+                    );
+                  }}
+                >
+                  <EmailIcon fontSize="small" sx={{ mr: 1 }} />
+                  {formData.project_development_couple_email1}
+                </Button>
+              )}
+            </Stack>
           </Box>
-        </Box>
 
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle1" color="primary">
-            Preferred Remedies
-          </Typography>
-          <Box sx={{ pl: 2 }}>
-            <Typography>{formData.preferred_remedies}</Typography>
-          </Box>
-        </Box>
+          {/* Property Owner */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "flex-start", sm: "center" },
+            }}
+          >
+            <Typography sx={{ mr: 1, mb: { xs: 0.5, sm: 0 } }}>
+              <strong>Property Owner:</strong> {formData.property_owner}
+            </Typography>
+            <Stack direction="row" spacing={1}>
+              {/* <Tooltip title={formData.phone_number} arrow>
+                <IconButton
+                  color="primary"
+                  size="small"
+                  onClick={() => {
+                    navigator.clipboard.writeText(formData.phone_number);
+                    toast.success("Phone number copied to clipboard");
+                  }}
+                >
+                  <PhoneIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title={formData.email} arrow>
+                <IconButton
+                  color="primary"
+                  size="small"
+                  onClick={() => {
+                    navigator.clipboard.writeText(formData.email);
+                    toast.success("Email copied to clipboard");
+                  }}
+                >
+                  <EmailIcon fontSize="small" />
+                </IconButton>
+              </Tooltip> */}
 
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle1" color="primary">
-            Planned Tasks
-          </Typography>
-          <Box sx={{ pl: 2 }}>
-            {formData.tasks &&
-              formData.tasks.tasks &&
-              Array.isArray(formData.tasks.tasks) &&
-              formData.tasks.tasks.map((task, index) => (
-                <Box key={index} sx={{ mb: 1 }}>
-                  <Typography>
-                    <strong>Task {index + 1}:</strong> {task.description}
-                  </Typography>
-                  {task.todos &&
-                    task.todos.map((todo, i) => (
-                      <Box key={i} sx={{ pl: 2 }}>
-                        <Typography>
-                          <strong>- </strong> {todo}
-                        </Typography>
-                      </Box>
-                    ))}
-                </Box>
-              ))}
+              {formData.phone_number && (
+                <Button
+                  variant="text"
+                  color="primary"
+                  onClick={() => {
+                    navigator.clipboard.writeText(formData.phone_number);
+                    toast.success(
+                      `Phone number copied to clipboard: ${formData.phone_number}`
+                    );
+                  }}
+                >
+                  <PhoneIcon fontSize="small" sx={{ mr: 1 }} />
+                  {formData.phone_number}
+                </Button>
+              )}
+
+              {formData.email && (
+                <Button
+                  variant="text"
+                  color="primary"
+                  onClick={() => {
+                    navigator.clipboard.writeText(formData.email);
+                    toast.success(
+                      `Email copied to clipboard: ${formData.email}`
+                    );
+                  }}
+                >
+                  <EmailIcon fontSize="small" sx={{ mr: 1 }} />
+                  {formData.email}
+                </Button>
+              )}
+            </Stack>
           </Box>
         </Box>
-      </Paper>
+      </Box>
+
+      <Divider />
+
+      <Box
+        sx={{
+          mb: {
+            md: 3,
+            xs: 1,
+          },
+        }}
+      >
+        <Typography variant="subtitle1" color="primary">
+          Project Location
+        </Typography>
+        <Box sx={{ pl: 2 }}>
+          {formData.address_street1 &&
+          formData.address_city &&
+          formData.address_state &&
+          formData.address_zip_code ? (
+            <>
+              <Typography>
+                {formData.address_street1}
+                {formData.address_street2 && `, ${formData.address_street2}`}
+              </Typography>
+              <Typography>
+                {formData.address_city}, {formData.address_state}{" "}
+                {formData.address_zip_code}
+              </Typography>
+            </>
+          ) : (
+            <Typography>Not Provided</Typography>
+          )}
+        </Box>
+      </Box>
+
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="subtitle1" color="primary">
+          Work Summary
+        </Typography>
+        <Box sx={{ pl: 2 }}>
+          <Typography
+            sx={{
+              wordBreak: "break-word",
+              hyphens: "auto",
+            }}
+          >
+            {formData.work_summary || "Not Provided"}
+          </Typography>
+        </Box>
+      </Box>
+
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="subtitle1" color="primary">
+          Preferred Remedies
+        </Typography>
+        <Box sx={{ pl: 2 }}>
+          <Typography
+            sx={{
+              wordBreak: "break-word",
+              hyphens: "auto",
+            }}
+          >
+            {formData.preferred_remedies || "Not Provided"}
+          </Typography>
+        </Box>
+      </Box>
+
+      <Box
+        sx={{
+          mb: {
+            md: 3,
+            xs: 1,
+          },
+        }}
+      >
+        <Typography variant="subtitle1" color="primary">
+          Planned Tasks
+        </Typography>
+        <Box sx={{ pl: 2 }}>
+          {formData.tasks &&
+            formData.tasks.tasks &&
+            Array.isArray(formData.tasks.tasks) &&
+            formData.tasks.tasks.map((task, index) => (
+              <Box key={index} sx={{ mb: 2 }}>
+                <Typography
+                  sx={{
+                    wordBreak: "break-word",
+                    hyphens: "auto",
+                  }}
+                >
+                  <strong>Task {index + 1}:</strong> {task.description}
+                </Typography>
+                {task.todos &&
+                  task.todos.map((todo, i) => (
+                    <Box key={i} sx={{ pl: 2 }}>
+                      <Typography
+                        sx={{
+                          wordBreak: "break-word",
+                          hyphens: "auto",
+                        }}
+                      >
+                        <strong>- </strong> {todo}
+                      </Typography>
+                    </Box>
+                  ))}
+              </Box>
+            ))}
+        </Box>
+      </Box>
+
+      <Divider />
 
       {/*  Host */}
-      <Typography variant="h6" sx={{ mt: 3 }}>
-        Host Information
-      </Typography>
+      <Typography variant="h6">Host Information</Typography>
       <ProjectTextField
         label="Host Name"
         value={formData.host_name}
@@ -229,7 +338,8 @@ const Step3 = () => {
         onChange={(e) => handleInputChange("host_email", e.target.value)}
       />
 
-      <FormControl component="fieldset" sx={{ mt: 2 }}>
+      <Divider />
+      <FormControl component="fieldset">
         <FormControlLabel
           control={
             <Checkbox
@@ -245,6 +355,7 @@ const Step3 = () => {
           label="I have reviewed the project information with the resource couple"
         />
       </FormControl>
+      <Divider />
       <FormControl component="fieldset">
         <FormControlLabel
           control={
@@ -261,7 +372,7 @@ const Step3 = () => {
           label="I have reviewed the project information with the homeowner"
         />
       </FormControl>
-
+      <Divider />
       <ProjectTextField
         label="Issues or Concerns (Optional)"
         multiline
@@ -271,7 +382,7 @@ const Step3 = () => {
         placeholder="Note any issues or concerns that need to be addressed"
       />
 
-      <Divider sx={{ my: 2 }} />
+      <Divider />
 
       <Typography variant="h6">Property Owner Release Information</Typography>
 
@@ -285,6 +396,7 @@ const Step3 = () => {
 
       {!formData.signature_text && <HomeOwnerEmailSection />}
 
+      <Divider />
       <FormControl component="fieldset">
         <FormControlLabel
           control={
@@ -302,10 +414,15 @@ const Step3 = () => {
           }}
           label="The home owner has reviewed and signed the liability release form"
         />
+
         {!formData.signature_text && (
           <FormHelperText
             sx={{
               fontSize: "1rem",
+              mt: {
+                md: 0,
+                xs: 2,
+              },
             }}
           >
             Once the property owner has signed the liability release form this
@@ -317,7 +434,7 @@ const Step3 = () => {
       {formData && formData.signature_image && (
         <Box sx={{ mt: 2, display: "flex" }}>
           <img
-            src={formData.signature_image}
+            src={formData.signature_image || "/placeholder.svg"}
             alt="Homeowner Signature"
             style={{
               maxWidth: "200px",

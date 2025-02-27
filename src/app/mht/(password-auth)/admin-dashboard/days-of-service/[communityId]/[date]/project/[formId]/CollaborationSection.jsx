@@ -11,6 +11,8 @@ import {
   AccordionSummary,
   AccordionDetails,
   Paper,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { toast } from "react-toastify";
 import { useProjectForm } from "@/contexts/ProjectFormProvider";
@@ -29,6 +31,8 @@ const CollaborationSection = () => {
   const [isSending, setIsSending] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const { formData, addCollaborator } = useProjectForm();
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleSendCollaborationEmail = async () => {
     if (!collaboratorEmail) return;
@@ -119,7 +123,7 @@ const CollaborationSection = () => {
               fullWidth
               onClick={() => setShowEmailDialog(true)}
             >
-              View Preview of Email
+              {isSmallScreen ? "Preview Email" : "View Preview of Email"}
             </Button>
             <Button
               variant="contained"

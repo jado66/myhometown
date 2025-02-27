@@ -107,12 +107,18 @@ const ProjectForm = ({ formId, date, communityId }) => {
 
   const saveAndExit = () => {
     saveProject();
-    router.push(`/admin-dashboard/days-of-service/${communityId}/${date}`);
+    router.push(
+      process.env.NEXT_PUBLIC_DOMAIN +
+        `/admin-dashboard/days-of-service/${communityId}`
+    );
   };
 
   const handleFinish = () => {
     finishProject();
-    router.push(`/admin-dashboard/days-of-service/${communityId}/${date}`);
+    router.push(
+      process.env.NEXT_PUBLIC_DOMAIN +
+        `/admin-dashboard/days-of-service/${communityId}`
+    );
   };
 
   const getSteps = (isBudgetHidden) => {
@@ -127,7 +133,15 @@ const ProjectForm = ({ formId, date, communityId }) => {
 
   return (
     <>
-      <Card sx={{ margin: "auto", p: 1 }}>
+      <Card
+        sx={{
+          margin: "auto",
+          p: {
+            xs: 0,
+            sm: 3,
+          },
+        }}
+      >
         <CardContent>
           <Typography variant="h4" sx={{ mt: 1, mb: 3, textAlign: "center" }}>
             Days of Service Project Form
@@ -152,6 +166,10 @@ const ProjectForm = ({ formId, date, communityId }) => {
                   }
                   sx={{
                     "& .MuiStepLabel-label": {
+                      display: {
+                        xs: "none",
+                        sm: "block",
+                      },
                       color:
                         isBudgetHidden && step.label === "Budget Estimates"
                           ? "grey.500"
