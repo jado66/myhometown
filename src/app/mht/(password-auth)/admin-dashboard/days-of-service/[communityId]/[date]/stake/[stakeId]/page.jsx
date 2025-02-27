@@ -22,6 +22,8 @@ import {
   Alert,
   Checkbox,
   Tooltip,
+  Menu,
+  MenuItem,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -45,6 +47,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import moment from "moment";
 import { toast } from "react-toastify";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 import { useLocalStorageProjectForms } from "@/hooks/use-local-storage-project-forms";
 import { supabase } from "@/util/supabase";
@@ -77,6 +80,36 @@ export default function ProjectFormsPage({ params }) {
   const [selectedProjects, setSelectedProjects] = useState([]);
   const [partnerWardDialogOpen, setPartnerWardDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
+  const isSmallScreen = true; // useMediaQuery(theme.breakpoints.down("lg"));
+
+  const [menuAnchorEl, setMenuAnchorEl] = useState({});
+
+  // Replace your current handleMenuClick and handleMenuClose functions with these
+  const handleMenuClick = (event, projectId) => {
+    event.stopPropagation();
+    console.log("Menu clicked for project ID:", projectId);
+    console.log("Current target:", event.currentTarget);
+    setMenuAnchorEl((prev) => {
+      const newState = {
+        ...prev,
+        [projectId]: event.currentTarget,
+      };
+      console.log("New menuAnchorEl state:", newState);
+      return newState;
+    });
+  };
+
+  const handleMenuClose = (projectId) => {
+    console.log("Closing menu for project ID:", projectId);
+    setMenuAnchorEl((prev) => {
+      const newState = {
+        ...prev,
+        [projectId]: null,
+      };
+      console.log("Updated menuAnchorEl state:", newState);
+      return newState;
+    });
+  };
 
   const [partnerWardData, setPartnerWardData] = useState({
     partner_ward: "",
@@ -351,7 +384,10 @@ export default function ProjectFormsPage({ params }) {
       return `Project ${project.id.slice(0, 8)}...`;
     }
 
-    return projectTitle;
+    // Truncate title if longer than 40 characters
+    return projectTitle.length > 25
+      ? `${projectTitle.substring(0, 25)}...`
+      : projectTitle;
   };
 
   // Find the current partner stake
@@ -388,11 +424,12 @@ export default function ProjectFormsPage({ params }) {
       <JsonViewer data={projects} />
 
       <Paper
-        elevation={2}
+        elevation={0}
         sx={{
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
+          p: 0,
         }}
       >
         {isLoading ? (
@@ -418,7 +455,11 @@ export default function ProjectFormsPage({ params }) {
             <Alert severity="error">{error}</Alert>
           </Box>
         ) : projects?.length >= 1 ? (
-          <Grid container spacing={3} sx={{ p: 3, overflowY: "auto" }}>
+          <Grid
+            container
+            spacing={{ xs: 0.5, sm: 2, lg: 4 }}
+            sx={{ p: { lg: 3, md: 0 }, overflowY: "auto" }}
+          >
             {projects
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
               .map((project) => (
@@ -458,49 +499,145 @@ export default function ProjectFormsPage({ params }) {
                         zIndex: 1,
                       }}
                     >
-                      {project.volunteers_needed && (
-                        <IconButton
-                          edge="end"
-                          aria-label="generate-report"
-                          onClick={(e) =>
-                            handleGenerateSingleReport(e, project.id)
-                          }
-                          sx={{
-                            mr: 1,
-                          }}
-                        >
-                          <Tooltip
-                            title={`${project.volunteers_needed} Volunteers Needed`}
+                      {/* Regular buttons for normal screens */}
+                      {!isSmallScreen && (
+                        <>
+                          {project.volunteers_needed && (
+                            <IconButton
+                              edge="end"
+                              aria-label="generate-report"
+                              onClick={(e) =>
+                                handleGenerateSingleReport(e, project.id)
+                              }
+                              sx={{ mr: 1 }}
+                            >
+                              <Tooltip
+                                title={`${project.volunteers_needed} Volunteers Needed`}
+                              >
+                                <Box
+                                  sx={{ display: "flex", alignItems: "center" }}
+                                >
+                                  <Typography variant="body2" sx={{ mr: 0.5 }}>
+                                    {project.volunteers_needed}
+                                  </Typography>
+                                  <Group />
+                                </Box>
+                              </Tooltip>
+                            </IconButton>
+                          )}
+
+                          <IconButton
+                            edge="end"
+                            aria-label="generate-report"
+                            onClick={(e) =>
+                              handleGenerateSingleReport(e, project.id)
+                            }
+                            sx={{ mr: 1 }}
                           >
-                            <Box sx={{ display: "flex", alignItems: "center" }}>
-                              <Typography variant="body2" sx={{ mr: 0.5 }}>
-                                {project.volunteers_needed}
-                              </Typography>
-                              <Group />
-                            </Box>
-                          </Tooltip>
-                        </IconButton>
+                            <Tooltip title="Generate Report">
+                              <Assignment />
+                            </Tooltip>
+                          </IconButton>
+
+                          <IconButton
+                            edge="end"
+                            aria-label="delete"
+                            onClick={(e) => handleDeleteClick(e, project)}
+                            sx={{ mr: 1 }}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </>
                       )}
-                      <IconButton
-                        edge="end"
-                        aria-label="generate-report"
-                        onClick={(e) =>
-                          handleGenerateSingleReport(e, project.id)
-                        }
-                        sx={{ mr: 1 }}
-                      >
-                        <Tooltip title="Generate Report">
-                          <Assignment />
-                        </Tooltip>
-                      </IconButton>
-                      <IconButton
-                        edge="end"
-                        aria-label="delete"
-                        onClick={(e) => handleDeleteClick(e, project)}
-                        sx={{ mr: 1 }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+
+                      {/* Dropdown menu button for small screens */}
+                      {isSmallScreen && (
+                        <>
+                          {project.volunteers_needed && (
+                            <IconButton
+                              edge="end"
+                              aria-label="generate-report"
+                              onClick={(e) =>
+                                handleGenerateSingleReport(e, project.id)
+                              }
+                              sx={{ mr: 1 }}
+                            >
+                              <Tooltip
+                                title={`${project.volunteers_needed} Volunteers Needed`}
+                              >
+                                <Box
+                                  sx={{ display: "flex", alignItems: "center" }}
+                                >
+                                  <Typography variant="body2" sx={{ mr: 0.5 }}>
+                                    {project.volunteers_needed}
+                                  </Typography>
+                                  <Group />
+                                </Box>
+                              </Tooltip>
+                            </IconButton>
+                          )}
+                          <IconButton
+                            aria-label="more-actions"
+                            aria-controls={`action-menu-${project.id}`}
+                            aria-haspopup="true"
+                            onClick={(e) => handleMenuClick(e, project.id)}
+                          >
+                            <MoreVertIcon />
+                          </IconButton>
+
+                          {/* Add debug output */}
+                          {console.log(
+                            `Menu anchor for ${project.id}:`,
+                            menuAnchorEl[project.id]
+                          )}
+                          <Menu
+                            id={`action-menu-${project.id}`}
+                            anchorEl={menuAnchorEl[project.id]}
+                            open={Boolean(menuAnchorEl[project.id])}
+                            onClose={() => handleMenuClose(project.id)}
+                            MenuListProps={{
+                              "aria-labelledby": `action-button-${project.id}`,
+                            }}
+                          >
+                            <MenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                console.log("Volunteers needed clicked");
+                                handleMenuClose(project.id);
+                              }}
+                            >
+                              <Box
+                                sx={{ display: "flex", alignItems: "center" }}
+                              >
+                                <Group sx={{ mr: 1 }} />
+                                <Typography variant="body2">
+                                  {project.volunteers_needed} Volunteers Needed
+                                </Typography>
+                              </Box>
+                            </MenuItem>
+                            <MenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleGenerateSingleReport(e, project.id);
+                                handleMenuClose(project.id);
+                              }}
+                            >
+                              <Assignment sx={{ mr: 1 }} />
+                              Generate Report
+                            </MenuItem>
+                            <MenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteClick(e, project);
+                                handleMenuClose(project.id);
+                              }}
+                            >
+                              <DeleteIcon sx={{ mr: 1 }} />
+                              Delete
+                            </MenuItem>
+                          </Menu>
+                        </>
+                      )}
                     </Box>
 
                     <CardHeader
@@ -509,7 +646,22 @@ export default function ProjectFormsPage({ params }) {
                         project.project_developer &&
                         "Project Developer(s): " + project.project_developer
                       }
-                      sx={{ pb: 0, pl: 6 }}
+                      sx={{
+                        pb: 0,
+                        pl: { xs: 2, sm: 4, md: 6 },
+                        "& .MuiCardHeader-title": {
+                          fontSize: { xs: "0.9rem", sm: "1rem", md: "1.25rem" },
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        },
+                        "& .MuiCardHeader-subheader": {
+                          fontSize: { xs: "0.5rem", sm: "0.875rem" },
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        },
+                      }}
                     />
 
                     <CardContent sx={{ pt: 2, flex: 1 }}>

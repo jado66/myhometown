@@ -95,15 +95,15 @@ const Step4 = () => {
         <Box sx={{ pl: 2 }}>
           <Box>
             <Typography>
-              <strong>Partner Stake:</strong> {partner_stake.name}
+              <strong>Partner Stake/Organization:</strong> {partner_stake.name}
             </Typography>
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
             <Typography>
-              <strong>Stake Liaison:</strong>{" "}
+              <strong>Stake/Organization Liaison:</strong>{" "}
               {partner_stake.liaison_name_1
                 ? partner_stake.liaison_name_1
-                : "No Assigned Stake Liaison. This can be added on the Days of Service page."}
+                : "No assigned liaison. This can be added on the Days of Service page."}
             </Typography>
             <Stack direction="row" spacing={2}>
               {partner_stake.liaison_phone_1 && (
@@ -147,7 +147,8 @@ const Step4 = () => {
           {partner_stake.liaison_name_2 && (
             <Box display="flex" alignItems="center" gap={1}>
               <Typography>
-                <strong>Stake Liaison 2:</strong> {partner_stake.liaison_name_2}
+                <strong>Stake/Organization Liaison 2:</strong>{" "}
+                {partner_stake.liaison_name_2}
               </Typography>
               <Stack direction="row" spacing={2}>
                 {partner_stake.liaison_phone_2 && (
@@ -192,62 +193,64 @@ const Step4 = () => {
           <Divider sx={{ my: 2 }} />
           <Box>
             <Typography>
-              <strong>Partner Ward:</strong>{" "}
+              <strong>Partner Ward/Group:</strong>{" "}
               {formData.partner_ward
                 ? formData.partner_ward
-                : "No Assigned Partner Ward. This can be added on the projects page"}
+                : "No assigned partner ward. This can be added on the projects page"}
             </Typography>
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
             <Typography>
-              <strong>Ward Liaison:</strong>{" "}
+              <strong>Partner Ward/Group Liaison:</strong>{" "}
               {formData.partner_ward_liaison
                 ? formData.partner_ward_liaison
-                : "No Assigned Ward Liaison. This can be added on the projects page"}
+                : "No assigned liaison. This can be added on the projects page"}
             </Typography>
-            <Stack direction="row" spacing={2}>
-              <Tooltip title={formData.partner_ward_liaison_phone1} arrow>
-                <IconButton
-                  color="primary"
-                  size="small"
-                  onClick={() => {
-                    navigator.clipboard.writeText(
-                      formData.partner_ward_liaison_phone1
-                    );
-                    toast.success(
-                      `Phone number copied to clipboard: ${formData.partner_ward_liaison_phone1}`
-                    );
-                  }}
-                >
-                  <Phone />
-                </IconButton>
-              </Tooltip>
-              {formData.partner_ward_liaison_email1 && (
-                <Tooltip title={formData.partner_ward_liaison_email1} arrow>
+            {formData.partner_ward_liaison_phone1 && (
+              <Stack direction="row" spacing={2}>
+                <Tooltip title={formData.partner_ward_liaison_phone1} arrow>
                   <IconButton
                     color="primary"
                     size="small"
                     onClick={() => {
                       navigator.clipboard.writeText(
-                        formData.partner_ward_liaison_email1
+                        formData.partner_ward_liaison_phone1
                       );
                       toast.success(
-                        `Email copied to clipboard: ${formData.partner_ward_liaison_email1}`
+                        `Phone number copied to clipboard: ${formData.partner_ward_liaison_phone1}`
                       );
                     }}
                   >
-                    <Email />
+                    <Phone />
                   </IconButton>
                 </Tooltip>
-              )}
-            </Stack>
+                {formData.partner_ward_liaison_email1 && (
+                  <Tooltip title={formData.partner_ward_liaison_email1} arrow>
+                    <IconButton
+                      color="primary"
+                      size="small"
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          formData.partner_ward_liaison_email1
+                        );
+                        toast.success(
+                          `Email copied to clipboard: ${formData.partner_ward_liaison_email1}`
+                        );
+                      }}
+                    >
+                      <Email />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </Stack>
+            )}
           </Box>
           {formData.partner_ward_liaison2 && (
             <Box display="flex" alignItems="center" gap={1}>
               <Stack direction="row" spacing={2}>
                 <Box display="flex" alignItems="center" gap={1}>
                   <Typography>
-                    <strong>Ward Liaison 2:</strong>{" "}
+                    <strong>Partner Ward/Group Liaison 2:</strong>{" "}
                     {formData.partner_ward_liaison2}
                   </Typography>
                   <Stack direction="row" spacing={2}>
@@ -307,7 +310,7 @@ const Step4 = () => {
                 }
               />
             }
-            label="Has the Partner Stake been contacted?"
+            label="Has the Partner Stake/Organization been contacted?"
           />
           <FormControlLabel
             control={
@@ -318,7 +321,7 @@ const Step4 = () => {
                 }
               />
             }
-            label="Has the Partner Ward been contacted?"
+            label="Has the Partner Ward/Group been contacted?"
           />
           <Divider sx={{ my: 2 }} />
           <FormControlLabel
@@ -361,7 +364,7 @@ const Step4 = () => {
                 }
               />
             }
-            label="Was the site visit done with the Partner Ward Leader?"
+            label="Was the site visit done with the Partner Ward/Group Leader?"
           />
         </Box>
       </Paper>

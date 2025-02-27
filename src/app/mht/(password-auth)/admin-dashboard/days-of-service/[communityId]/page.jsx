@@ -836,8 +836,8 @@ const CommunitySelectionPage = ({ params }) => {
           setStakeToDelete(null);
           setSelectedDayId(null);
         }}
-        title="Delete Partner Stake?"
-        description={`Are you sure you want to delete the stake "${stakeToDelete?.name}"? This action cannot be undone.`}
+        title="Delete Partner Stake/Organization?"
+        description={`Are you sure you want to delete the stake/organization "${stakeToDelete?.name}"? This action cannot be undone.`}
       />
     </Box>
   );
