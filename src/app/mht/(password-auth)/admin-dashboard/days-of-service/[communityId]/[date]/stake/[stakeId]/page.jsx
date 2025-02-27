@@ -529,29 +529,6 @@ export default function ProjectFormsPage({ params }) {
                       {/* Dropdown menu button for small screens */}
                       {isSmallScreen && (
                         <>
-                          {project.volunteers_needed && (
-                            <IconButton
-                              edge="end"
-                              aria-label="generate-report"
-                              onClick={(e) =>
-                                handleGenerateSingleReport(e, project.id)
-                              }
-                              sx={{ mr: 1 }}
-                            >
-                              <Tooltip
-                                title={`${project.volunteers_needed} Volunteers Needed`}
-                              >
-                                <Box
-                                  sx={{ display: "flex", alignItems: "center" }}
-                                >
-                                  <Typography variant="body2" sx={{ mr: 0.5 }}>
-                                    {project.volunteers_needed}
-                                  </Typography>
-                                  <Group />
-                                </Box>
-                              </Tooltip>
-                            </IconButton>
-                          )}
                           <IconButton
                             aria-label="more-actions"
                             aria-controls={`action-menu-${project.id}`}
