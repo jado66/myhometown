@@ -15,7 +15,7 @@ const formattedHtml = ({ propertyOwner, url }) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Homeowner Project Form Access</title>
+      <title>Property Owner Project Form Access</title>
       <style>
         body {
           font-family: Arial, sans-serif;
@@ -62,12 +62,12 @@ const formattedHtml = ({ propertyOwner, url }) => {
     </head>
     <body>
       <div class="container">
-        <h2>Please Review and Sign the Homeowner Release Form</h2>
+        <h2>Please Review and Sign the Property Owner Release Form</h2>
         <p>Hi ${propertyOwner},</p>
-        <p>You've been requested to review and sign the homeowner release form, please click the button below:</p>
+        <p>You've been requested to review and sign the property owner release form, please click the button below:</p>
     
         <p></p>
-        <a href="${url}" class="button" style="display: inline-block; padding: 12px 24px; background-color: #188d4e; color: #ffffff !important; text-decoration: none; border-radius: 6px; margin-top: 20px; font-family: Arial, sans-serif;">Homeowner Release Form</a>
+        <a href="${url}" class="button" style="display: inline-block; padding: 12px 24px; background-color: #188d4e; color: #ffffff !important; text-decoration: none; border-radius: 6px; margin-top: 20px; font-family: Arial, sans-serif;">Property owner Release Form</a>
 
         <div class="divider"></div>
         
@@ -120,10 +120,7 @@ export async function POST(request) {
     }
 
     // Get the base URL from the request headers
-    const baseUrl =
-      request.headers.get("referer") ||
-      request.headers.get("origin") ||
-      process.env.NEXT_PUBLIC_DOMAIN;
+    const baseUrl = process.env.NEXT_PUBLIC_DOMAIN;
 
     // Construct the access URL with the new format
     const accessUrl = `${baseUrl}/auth/days-of-service-project/${formId}/signature?token=${accessToken}`;
@@ -132,19 +129,20 @@ export async function POST(request) {
     const info = await myHometownTransporter.sendMail({
       to,
       from: "volunteer@myhometownut.org", // Organization's email as sender
-      replyTo: to, // Reply-to set to homeowner's email
-      subject: "myHometown Days Of Service - Homeowner Release Form Access",
+      replyTo: to, // Reply-to set to property owner's email
+      subject:
+        "myHometown Days Of Service - Property Owner Release Form Access",
       html: formattedHtml({
         propertyOwner: propertyOwner,
         url: accessUrl,
       }),
     });
 
-    console.log("Homeowner access email sent:", info.messageId);
+    console.log("Property owner access email sent:", info.messageId);
 
     return new Response(
       JSON.stringify({
-        message: "Homeowner access email sent successfully",
+        message: "Property owner access email sent successfully",
         messageId: info.messageId,
         token: accessToken,
       }),
@@ -154,7 +152,7 @@ export async function POST(request) {
       }
     );
   } catch (error) {
-    console.error("Error sending homeowner access email:", error);
+    console.error("Error sending property owner access email:", error);
 
     return new Response(
       JSON.stringify({

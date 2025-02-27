@@ -15,10 +15,10 @@ import {
   CardHeader,
   Divider,
   Alert,
-  CheckCircleOutline,
 } from "@mui/material";
 import SignatureCanvas from "react-signature-canvas";
 import { supabase } from "@/util/supabase";
+import { CheckCircleOutline } from "@mui/icons-material";
 
 const TermsOfServicePage = ({ params }) => {
   const projectId = params.formId;
