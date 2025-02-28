@@ -352,7 +352,7 @@ const Step3 = () => {
               }
             />
           }
-          label="I have reviewed the project information with the resource couple"
+          label="The Resource Couple has reviewed the project information."
         />
       </FormControl>
       <Divider />
@@ -369,7 +369,7 @@ const Step3 = () => {
               }
             />
           }
-          label="I have reviewed the project information with the homeowner"
+          label="The Property Owner has reviewed the project information."
         />
       </FormControl>
       <Divider />

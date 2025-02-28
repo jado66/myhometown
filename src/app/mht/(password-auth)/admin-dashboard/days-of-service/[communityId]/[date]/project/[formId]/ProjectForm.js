@@ -17,13 +17,14 @@ import Loading from "@/components/util/Loading";
 import { useRouter } from "next/navigation";
 import { VisibilityOff } from "@mui/icons-material";
 import { toast } from "react-toastify";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const steps = [
   { label: "Project Information" },
   { label: "Detailed Planning" },
   { label: "Budget Estimates" },
   { label: "Review Project Assignment" },
-  { label: "Partner Stake & Ward Participation" },
+  { label: "Partner Organization and Group Participation" },
   { label: "Resource Assessment" },
 ];
 
@@ -76,7 +77,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
     // Get the total number of steps based on budget visibility
     const totalSteps = getSteps(isBudgetHidden).length;
 
-    if (activeStep < totalSteps - 1) {
+    if (activeStep < totalSteps) {
       if (isBudgetHidden && activeStep === 1) {
         // Skip from Step 1 (Detailed Planning) to Step 3 (Review Project Assignment)
         goToStep(activeStep + 2);
@@ -109,7 +110,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
     saveProject();
     router.push(
       process.env.NEXT_PUBLIC_DOMAIN +
-        `/admin-dashboard/days-of-service/${communityId}`
+        `/admin-dashboard/days-of-service/${communityId}/${date}/stake/${formData.partner_stake_id}`
     );
   };
 
@@ -117,7 +118,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
     finishProject();
     router.push(
       process.env.NEXT_PUBLIC_DOMAIN +
-        `/admin-dashboard/days-of-service/${communityId}`
+        `/admin-dashboard/days-of-service/${communityId}/${date}/stake/${formData.partner_stake_id}`
     );
   };
 
@@ -142,6 +143,8 @@ const ProjectForm = ({ formId, date, communityId }) => {
           },
         }}
       >
+        {/* <JsonViewer data={formData} /> */}
+
         <CardContent>
           <Typography variant="h4" sx={{ mt: 1, mb: 3, textAlign: "center" }}>
             Days of Service Project Form

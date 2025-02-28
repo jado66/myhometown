@@ -35,6 +35,8 @@ import {
   Add as AddIcon,
   Assignment,
   CalendarToday,
+  Check,
+  CheckCircle,
   Delete,
   Delete as DeleteIcon,
   Edit,
@@ -141,7 +143,7 @@ export default function ProjectFormsPage({ params }) {
     setPartnerWardData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Save partner ward data to Supabase
+  // Save Partner Group data to Supabase
   const handleSavePartnerWard = async () => {
     try {
       const { error } = await supabase
@@ -156,11 +158,11 @@ export default function ProjectFormsPage({ params }) {
           p.id === selectedProject.id ? { ...p, ...partnerWardData } : p
         )
       );
-      toast.success("Partner ward information updated successfully");
+      toast.success("Partner Group information updated successfully");
       setPartnerWardDialogOpen(false);
     } catch (error) {
-      console.error("Error updating partner ward:", error);
-      toast.error("Failed to update partner ward information");
+      console.error("Error updating Partner Group:", error);
+      toast.error("Failed to update Partner Group information");
     }
   };
 
@@ -379,8 +381,8 @@ export default function ProjectFormsPage({ params }) {
 
     if (project.project_name) projectTitle += project.project_name;
 
-    if (project.project_development_couple)
-      projectTitle += ` -  Resource Couple: ${project.project_development_couple}`;
+    // if (project.project_development_couple)
+    //   projectTitle += ` -  Resource Couple: ${project.project_development_couple}`;
 
     if (!projectTitle) {
       return `Project ${project.id.slice(0, 8)}...`;
@@ -414,6 +416,7 @@ export default function ProjectFormsPage({ params }) {
             xs: "center",
             sm: "flex-start",
           },
+          mt: { xs: 2, sm: 0 },
         }}
       />
 
@@ -629,12 +632,35 @@ export default function ProjectFormsPage({ params }) {
                     <CardHeader
                       title={getProjectTitle(project)}
                       subheader={
-                        project.project_developer &&
-                        "Project Developer(s): " + project.project_developer
+                        project.address_street1 &&
+                        project.address_city && (
+                          <Box>
+                            <Typography
+                              variant="subtitle"
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                ml: -0.5,
+                              }}
+                            >
+                              <LocationOn
+                                color="primary"
+                                size="small"
+                                sx={{ mr: 1 }}
+                              />
+
+                              {`${project.address_street1}${
+                                project.address_street2
+                                  ? `, ${project.address_street2}`
+                                  : ""
+                              }, ${project.address_city}`}
+                            </Typography>
+                          </Box>
+                        )
                       }
                       sx={{
                         pb: 0,
-                        pl: { xs: 6, sm: 4, md: 6 },
+                        pl: { xs: 6, sm: 6, md: 6 },
                         pt: { xs: 2.5, sm: 3, md: 2 },
                         "& .MuiCardHeader-title": {
                           fontSize: { xs: "0.9rem", sm: "1rem", md: "1.5rem" },
@@ -652,6 +678,16 @@ export default function ProjectFormsPage({ params }) {
                     />
 
                     <CardContent sx={{ pt: 2, flex: 1 }}>
+                      {project.project_developer && (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ mb: 3 }}
+                        >
+                          {"Project Developer(s): " + project.project_developer}
+                        </Typography>
+                      )}
+
                       {project.project_id && (
                         <Typography
                           variant="body2"
@@ -661,9 +697,9 @@ export default function ProjectFormsPage({ params }) {
                           {project.project_id}
                         </Typography>
                       )}
-                      {project.status && (
+                      {project.status === "completed" && (
                         <Chip
-                          label={project.status}
+                          label="Ready for Day of Service"
                           color="success"
                           size="small"
                           sx={{
@@ -672,29 +708,7 @@ export default function ProjectFormsPage({ params }) {
                           }}
                         />
                       )}
-                      {project.address_street1 && project.address_city && (
-                        <Box sx={{ mt: 2 }}>
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                            }}
-                          >
-                            <LocationOn
-                              color="primary"
-                              size="small"
-                              sx={{ mr: 1 }}
-                            />
 
-                            {`${project.address_street1}${
-                              project.address_street2
-                                ? `, ${project.address_street2}`
-                                : ""
-                            }, ${project.address_city}`}
-                          </Typography>
-                        </Box>
-                      )}
                       <Grid container spacing={2} sx={{ mb: 1 }}>
                         {/* Left column - First liaison */}
                         <Grid item xs={12} md={6}>
@@ -744,11 +758,19 @@ export default function ProjectFormsPage({ params }) {
                                   textAlign: "right",
                                 }}
                               >
-                                <Flag
-                                  color="info"
-                                  size="small"
-                                  sx={{ mr: 1 }}
-                                />
+                                {project.called_811 ? (
+                                  <CheckCircle
+                                    color="primary"
+                                    size="small"
+                                    sx={{ mr: 1 }}
+                                  />
+                                ) : (
+                                  <Flag
+                                    color="info"
+                                    size="small"
+                                    sx={{ mr: 1 }}
+                                  />
+                                )}
                                 Blue Stakes
                               </Typography>
                             </Box>
@@ -793,7 +815,7 @@ export default function ProjectFormsPage({ params }) {
                         <AccordionDetails>
                           <Box sx={{ position: "relative", mb: 2 }}>
                             <Typography variant="subtitle1" gutterBottom>
-                              Partner Ward: {project.partner_ward || "Not set"}
+                              Partner Group: {project.partner_ward || "Not set"}
                             </Typography>
                             <Button
                               variant="outlined"
@@ -811,14 +833,14 @@ export default function ProjectFormsPage({ params }) {
                           <Grid container spacing={2}>
                             {/* Left column - First liaison */}
 
-                            {/* liaison 1 & 2, resource couple, host */}
+                            {/* liaison 1 & 2, Resource Couple, host */}
                             {/* dumpster and blue stakes */}
 
                             <Grid item xs={12} md={6}>
                               <Box sx={{ p: 1 }}>
                                 {project.partner_ward_liaison && (
                                   <Typography variant="h6" gutterBottom>
-                                    Liaison 1 {project.partner_ward_liaison}
+                                    {project.partner_ward_liaison}
                                   </Typography>
                                 )}
                                 {project.partner_ward_liaison_title && (
@@ -853,7 +875,7 @@ export default function ProjectFormsPage({ params }) {
                               <Box sx={{ p: 1 }}>
                                 {project.partner_ward_liaison2 && (
                                   <Typography variant="h6" gutterBottom>
-                                    Liaison 2 {project.partner_ward_liaison2}
+                                    {project.partner_ward_liaison2}
                                   </Typography>
                                 )}
 
@@ -995,7 +1017,7 @@ export default function ProjectFormsPage({ params }) {
         open={partnerWardDialogOpen}
         onClose={() => setPartnerWardDialogOpen(false)}
       >
-        <DialogTitle>Edit Partner Ward/Group Information</DialogTitle>
+        <DialogTitle>Edit Partner Group Information</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             <Grid container spacing={2} alignItems="stretch">
@@ -1004,7 +1026,7 @@ export default function ProjectFormsPage({ params }) {
                 <TextField
                   autoFocus
                   margin="dense"
-                  label="Partner Ward/Group"
+                  label="Partner Group"
                   fullWidth
                   value={partnerWardData.partner_ward}
                   onChange={(e) =>

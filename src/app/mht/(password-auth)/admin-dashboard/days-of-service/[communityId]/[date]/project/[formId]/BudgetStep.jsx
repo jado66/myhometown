@@ -66,15 +66,15 @@ const BudgetStep = () => {
       <Divider sx={{ my: 1 }} />
 
       <ProjectTextField
-        label="Homeowner's Ability Description"
+        label="Property Owners's Ability Description"
         multiline
         rows={4}
-        key="homeowne ability"
+        key="homeowner ability"
         value={formData.homeowner_ability}
         onChange={(e) => handleInputChange("homeowner_ability", e.target.value)}
       />
       <ProjectTextField
-        label="Homeowner's Ability Estimates"
+        label="Property Owners's Ability Estimates"
         type="number"
         key="homeowner ability estimates"
         value={formData.homeowner_ability_estimates}

@@ -42,7 +42,7 @@ const WardsSection = ({ wards, onWardsChange, dayOfServiceId }) => {
   return (
     <Box>
       <Typography variant="subtitle1" gutterBottom>
-        Partner Wards / Groups
+        Partner Group
       </Typography>
       {wards.map((ward) => (
         <Chip

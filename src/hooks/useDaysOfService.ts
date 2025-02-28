@@ -326,7 +326,7 @@ export const useDaysOfService = () => {
             .single();
 
           if (updateError) throw updateError;
-          toast.success(`Added "${wardValue}" to partner wards`);
+          toast.success(`Added "${wardValue}" to Partner Groups`);
           return { data, error: null };
         }
       } catch (err) {

@@ -68,7 +68,7 @@ const CommunitySelectionPage = ({ params }) => {
 
   const theme = useTheme();
 
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("lg"));
 
   const [currentStake, setCurrentStake] = useState({
     name: "",
@@ -408,13 +408,13 @@ const CommunitySelectionPage = ({ params }) => {
 
                 <Typography variant="h6" gutterBottom sx={{ my: 2, ml: 2 }}>
                   {day.partner_stakes.length === 0
-                    ? "Please add a partner stake/organization to this day of service."
+                    ? "Please add a Partner Organization to this day of service."
                     : "Manage the projects   for your partner stakes/organizations."}
                 </Typography>
                 <Grid
                   container
                   columnSpacing={{
-                    xs: 0,
+                    xs: 1,
                     md: 3,
                   }}
                   rowSpacing={2}
@@ -484,9 +484,9 @@ const CommunitySelectionPage = ({ params }) => {
                               </Grid>
                               <Typography
                                 variant="h6"
-                                sx={{ fontSize: "16px !important;" }}
+                                sx={{ fontSize: "16px !important;", ml: 1 }}
                               >
-                                Stake/Organization Information
+                                Organization Liaison Information
                               </Typography>
                             </AccordionSummary>
                             <AccordionDetails
@@ -499,75 +499,71 @@ const CommunitySelectionPage = ({ params }) => {
                             >
                               <Grid container spacing={2}>
                                 {/* Left column - First liaison */}
-                                <Grid item xs={12} md={6}>
-                                  <Box sx={{ p: 1 }}>
-                                    {stake.liaison_name_1 && (
-                                      <Typography variant="h6" gutterBottom>
-                                        Liaison 1: {stake.liaison_name_1}
-                                      </Typography>
-                                    )}
-                                    {stake.partner_stake_liaison_title_1 && (
-                                      <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                      >
-                                        Title:{" "}
-                                        {stake.partner_stake_liaison_title_1}
-                                      </Typography>
-                                    )}
-                                    {stake.liaison_email_1 && (
-                                      <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                      >
-                                        Email: {stake.liaison_email_1}
-                                      </Typography>
-                                    )}
-                                    {stake.liaison_phone_1 && (
-                                      <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                      >
-                                        Phone: {stake.liaison_phone_1}
-                                      </Typography>
-                                    )}
-                                  </Box>
+                                <Grid item xs={12} lg={6}>
+                                  {stake.liaison_name_1 && (
+                                    <Typography variant="h6" gutterBottom>
+                                      {stake.liaison_name_1}
+                                    </Typography>
+                                  )}
+                                  {stake.partner_stake_liaison_title_1 && (
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
+                                      Title:{" "}
+                                      {stake.partner_stake_liaison_title_1}
+                                    </Typography>
+                                  )}
+                                  {stake.liaison_email_1 && (
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
+                                      Email: {stake.liaison_email_1}
+                                    </Typography>
+                                  )}
+                                  {stake.liaison_phone_1 && (
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
+                                      Phone: {stake.liaison_phone_1}
+                                    </Typography>
+                                  )}
                                 </Grid>
 
                                 {/* Right column - Second liaison */}
-                                <Grid item xs={12} md={6}>
-                                  <Box sx={{ p: 1 }}>
-                                    {stake.liaison_name_2 && (
-                                      <Typography variant="h6" gutterBottom>
-                                        Liaison 2: {stake.liaison_name_2}
-                                      </Typography>
-                                    )}
-                                    {stake.partner_stake_liaison_title_2 && (
-                                      <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                      >
-                                        Title:{" "}
-                                        {stake.partner_stake_liaison_title_2}
-                                      </Typography>
-                                    )}
-                                    {stake.liaison_email_2 && (
-                                      <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                      >
-                                        Email: {stake.liaison_email_2}
-                                      </Typography>
-                                    )}
-                                    {stake.liaison_phone_2 && (
-                                      <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                      >
-                                        Phone: {stake.liaison_phone_2}
-                                      </Typography>
-                                    )}
-                                  </Box>
+                                <Grid item xs={12} lg={6}>
+                                  {stake.liaison_name_2 && (
+                                    <Typography variant="h6" gutterBottom>
+                                      {stake.liaison_name_2}
+                                    </Typography>
+                                  )}
+                                  {stake.partner_stake_liaison_title_2 && (
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
+                                      Title:{" "}
+                                      {stake.partner_stake_liaison_title_2}
+                                    </Typography>
+                                  )}
+                                  {stake.liaison_email_2 && (
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
+                                      Email: {stake.liaison_email_2}
+                                    </Typography>
+                                  )}
+                                  {stake.liaison_phone_2 && (
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
+                                      Phone: {stake.liaison_phone_2}
+                                    </Typography>
+                                  )}
                                 </Grid>
                               </Grid>
 
@@ -924,8 +920,8 @@ const CommunitySelectionPage = ({ params }) => {
           setStakeToDelete(null);
           setSelectedDayId(null);
         }}
-        title="Delete Partner Stake/Organization?"
-        description={`Are you sure you want to delete the stake/organization "${stakeToDelete?.name}"? This action cannot be undone.`}
+        title="Delete Partner Organization?"
+        description={`Are you sure you want to delete the Organization "${stakeToDelete?.name}"? This action cannot be undone.`}
       />
     </Box>
   );
