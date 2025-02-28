@@ -7,6 +7,7 @@ import {
   FormControlLabel,
   Checkbox,
   Divider,
+  FormHelperText,
 } from "@mui/material";
 import { useProjectForm } from "@/contexts/ProjectFormProvider";
 
@@ -55,28 +56,47 @@ const Step5 = () => {
       />
       <Divider />
 
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={formData.called_811}
-            onChange={(e) => handleInputChange("called_811", e.target.checked)}
-          />
-        }
-        label="Have the Neighborhood Services Directors requested called Blue Stakes?"
-      />
-      <Divider />
-
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={formData.dumpster_requested}
-            onChange={(e) =>
-              handleInputChange("dumpster_requested", e.target.checked)
+      {formData.are_blue_stakes_needed && (
+        <>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={formData.called_811}
+                onChange={(e) =>
+                  handleInputChange("called_811", e.target.checked)
+                }
+              />
             }
+            label="Have the Neighborhood Services Directors requested called Blue Stakes?"
           />
-        }
-        label="Have the Neighborhood Services Directors requested a dumpster from the city?"
-      />
+          <Divider />
+        </>
+      )}
+
+      {formData.is_dumpster_needed && (
+        <>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={formData.dumpster_requested}
+                onChange={(e) =>
+                  handleInputChange("dumpster_requested", e.target.checked)
+                }
+              />
+            }
+            label={`Have the Neighborhood Services Directors requested ${
+              formData.is_second_dumpster_needed
+                ? "two dumpsters"
+                : "a dumpster"
+            }  from the city?`}
+          />
+          {formData.is_second_dumpster_needed && (
+            <FormHelperText sx={{ color: "text.secondary", ml: 5, mt: -2 }}>
+              Note: This project requires two dumpsters.
+            </FormHelperText>
+          )}
+        </>
+      )}
     </Box>
   );
 };

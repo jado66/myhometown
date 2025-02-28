@@ -1,5 +1,13 @@
 import React from "react";
-import { Box, Typography, Divider, Alert, InputAdornment } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Divider,
+  Alert,
+  InputAdornment,
+  FormControlLabel,
+  Checkbox,
+} from "@mui/material";
 import { useProjectForm } from "@/contexts/ProjectFormProvider";
 import ProjectTextField from "./ProjectTextField";
 import TaskTable from "@/components/days-of-service/form-components/TaskTable";
@@ -36,6 +44,7 @@ const Step2 = () => {
         Resource Couple Information
       </Typography>
 
+      {/* Assigned Ward  */}
       <ProjectTextField
         label="Resource Couple"
         key="project_development_couple"
@@ -74,6 +83,14 @@ const Step2 = () => {
         value={formData.project_development_couple_email2}
         onChange={(e) =>
           handleInputChange("project_development_couple_email2", e.target.value)
+        }
+      />
+      <ProjectTextField
+        label="Resource Couple's Assigned Ward"
+        key="project_development_couple_ward"
+        value={formData.project_development_couple_ward}
+        onChange={(e) =>
+          handleInputChange("project_development_couple_ward", e.target.value)
         }
       />
 
@@ -128,6 +145,58 @@ const Step2 = () => {
       <Typography variant="h5" gutterBottom>
         Volunteers
       </Typography>
+
+      {/* are_blue_stakes_needed, is_dumpster_needed, is_second_dumpster_needed */}
+
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={formData.are_blue_stakes_needed}
+            onChange={(e) =>
+              handleInputChange("are_blue_stakes_needed", e.target.checked)
+            }
+          />
+        }
+        label="Are blue stakes needed for this project?"
+      />
+      <Divider />
+
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={formData.is_dumpster_needed}
+            onChange={(e) =>
+              handleInputChange("is_dumpster_needed", e.target.checked)
+            }
+          />
+        }
+        label="Is a dumpster needed for this project?"
+      />
+      <Divider />
+      {formData.is_dumpster_needed && (
+        <>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={formData.is_second_dumpster_needed}
+                onChange={(e) =>
+                  handleInputChange(
+                    "is_second_dumpster_needed",
+                    e.target.checked
+                  )
+                }
+              />
+            }
+            label="Is a second dumpster needed for this project?"
+          />
+          <Divider />
+        </>
+      )}
+
+      {/* blue stakes */}
+      {/* dumpster */}
+      {/* do you need a second  */}
+
       <ProjectTextField
         label="Number of Volunteers Needed"
         type="number"

@@ -35,10 +35,12 @@ import {
   Add as AddIcon,
   Assignment,
   CalendarToday,
+  Delete,
   Delete as DeleteIcon,
   Edit,
   Email,
   ExpandMore,
+  Flag,
   Group,
   LocationOn,
   Phone,
@@ -666,6 +668,89 @@ export default function ProjectFormsPage({ params }) {
                           }}
                         />
                       )}
+                      {project.address_street1 && project.address_city && (
+                        <Box sx={{ mt: 2 }}>
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            <LocationOn
+                              color="primary"
+                              size="small"
+                              sx={{ mr: 1 }}
+                            />
+
+                            {`${project.address_street1}${
+                              project.address_street2
+                                ? `, ${project.address_street2}`
+                                : ""
+                            }, ${project.address_city}`}
+                          </Typography>
+                        </Box>
+                      )}
+                      <Grid container spacing={2} sx={{ mb: 1 }}>
+                        {/* Left column - First liaison */}
+                        <Grid item xs={12} md={6}>
+                          {project.is_dumpster_needed && (
+                            <Box sx={{ mt: 2 }}>
+                              <Typography
+                                variant="subtitle"
+                                gutterBottom
+                                sx={{ display: "flex", alignItems: "center" }}
+                              >
+                                <Delete
+                                  color="primary"
+                                  size="small"
+                                  sx={{ mr: 1 }}
+                                />
+                                Dumpsters
+                                {project.is_second_dumpster_needed && (
+                                  <Chip
+                                    label={"x 2"}
+                                    color="primary"
+                                    size="small"
+                                    sx={{
+                                      ml: 1,
+                                      backgroundColor:
+                                        theme.palette.primary.light,
+                                    }}
+                                  />
+                                )}
+                              </Typography>
+                            </Box>
+                          )}
+                        </Grid>
+                        <Grid
+                          item
+                          xs={12}
+                          md={6}
+                          sx={{ display: "flex", justifyContent: "flex-end" }}
+                        >
+                          {project.are_blue_stakes_needed && (
+                            <Box sx={{ mt: 2 }}>
+                              <Typography
+                                variant="subtitle"
+                                gutterBottom
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  textAlign: "right",
+                                }}
+                              >
+                                <Flag
+                                  color="info"
+                                  size="small"
+                                  sx={{ mr: 1 }}
+                                />
+                                Blue Stakes
+                              </Typography>
+                            </Box>
+                          )}
+                        </Grid>
+                      </Grid>
 
                       <Accordion
                         elevation={1}
@@ -693,9 +778,12 @@ export default function ProjectFormsPage({ params }) {
                                 sm: "1rem",
                                 md: "1rem",
                               },
+                              display: "flex",
+                              alignItems: "center",
                             }}
                           >
-                            Partner Ward/Group Information
+                            <Phone sx={{ mr: 1 }} />
+                            Essential Contact Information
                           </Typography>
                         </AccordionSummary>
                         <AccordionDetails>
@@ -718,6 +806,10 @@ export default function ProjectFormsPage({ params }) {
 
                           <Grid container spacing={2}>
                             {/* Left column - First liaison */}
+
+                            {/* liaison 1 & 2, resource couple, host */}
+                            {/* dumpster and blue stakes */}
+
                             <Grid item xs={12} md={6}>
                               <Box sx={{ p: 1 }}>
                                 {project.partner_ward_liaison && (
@@ -788,20 +880,6 @@ export default function ProjectFormsPage({ params }) {
                               </Box>
                             </Grid>
                           </Grid>
-
-                          {project.address_street1 && project.address_city && (
-                            <Box sx={{ mt: 2 }}>
-                              <ContactItem
-                                icon={<LocationOn color="primary" />}
-                                primary="Location"
-                                secondary={`${project.address_street1}${
-                                  project.address_street2
-                                    ? `, ${project.address_street2}`
-                                    : ""
-                                }, ${project.address_city}`}
-                              />
-                            </Box>
-                          )}
 
                           <Box
                             sx={{
