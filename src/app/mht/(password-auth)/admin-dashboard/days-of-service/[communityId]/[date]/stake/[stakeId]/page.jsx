@@ -704,7 +704,8 @@ export default function ProjectFormsPage({ params }) {
                           color="text.secondary"
                           sx={{ mb: 3 }}
                         >
-                          {"Project Developer(s): " + project.project_developer}
+                          {"Resource Couple: " +
+                            project.project_development_couple}
                         </Typography>
                       )}
 

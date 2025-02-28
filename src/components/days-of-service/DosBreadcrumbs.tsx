@@ -60,14 +60,11 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
     : [];
 
   const generateBreadcrumbsData = useCallback((): string[] => {
-    // alert("dayOfService: " + JSON.stringify(dayOfService?.partner_stakes));
-
     const stake = dayOfService?.partner_stakes?.find(
       (stake) => stake.id === stakeId
     );
 
     const isSmallScreen = windowWidth < 600;
-
     const base = [];
 
     if (communityData) {
@@ -81,18 +78,44 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
     }
 
     if (dayOfService && date) {
+      // Safely parse the date for all browsers, especially Safari
+      const formatSafeDate = (dateString) => {
+        if (!dateString) return "";
+
+        // Try standard parsing first
+        let parsedDate = moment(dateString);
+
+        // If invalid, try manual parsing for MM-DD-YYYY format
+        if (!parsedDate.isValid() && dateString.includes("-")) {
+          const parts = dateString.split("-");
+          if (parts.length === 3) {
+            // If first part is 4 digits, assume YYYY-MM-DD
+            if (parts[0].length === 4) {
+              parsedDate = moment(dateString);
+            } else {
+              // Otherwise assume MM-DD-YYYY and convert to YYYY-MM-DD
+              parsedDate = moment(
+                `${parts[2]}-${parts[0]}-${parts[1]}`,
+                "YYYY-MM-DD"
+              );
+            }
+          }
+        }
+
+        return parsedDate;
+      };
+
+      const parsedDate = formatSafeDate(date);
+      const formattedDate = parsedDate.isValid()
+        ? isSmallScreen
+          ? parsedDate.format("MMM-D-YY")
+          : parsedDate.format("dddd, MMMM Do, YYYY")
+        : date; // Fallback to original string if parsing fails
+
       if (isSmallScreen) {
-        base.push(
-          `${dayOfService.name || moment(date).format("MMM-D-YY")} - ${
-            stake?.name
-          } `
-        );
+        base.push(`${dayOfService.name || formattedDate} - ${stake?.name} `);
       } else {
-        base.push(
-          `${
-            dayOfService.name || moment(date).format("dddd, MMMM Do, YYYY")
-          } - ${stake?.name} `
-        );
+        base.push(`${dayOfService.name || formattedDate} - ${stake?.name} `);
       }
 
       if (pathnames.includes("view-timeline") && !isProjectView) {
