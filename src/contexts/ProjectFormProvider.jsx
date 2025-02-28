@@ -34,6 +34,7 @@ export function ProjectFormProvider({
     saveProject,
     finishProject,
     handleMultipleInputChange,
+    handleNumberInputChange,
     isLoading,
     isSaving: isSavingProject,
   } = useDaysOfServiceProjectForm({
@@ -236,6 +237,7 @@ export function ProjectFormProvider({
     community,
     finishProject,
     updateProjectForm,
+    handleNumberInputChange,
     addCollaborator,
     stakeOptions,
     wardOptions,

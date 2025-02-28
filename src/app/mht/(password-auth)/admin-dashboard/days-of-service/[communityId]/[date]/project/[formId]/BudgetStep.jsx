@@ -6,7 +6,8 @@ import TaskTable from "@/components/days-of-service/form-components/TaskTable";
 import { ProjectResources } from "./ProjectResources";
 
 const BudgetStep = () => {
-  const { formData, handleInputChange } = useProjectForm();
+  const { formData, handleInputChange, handleNumberInputChange } =
+    useProjectForm();
 
   const handleToolAdd = (e, category) => {
     if (e.key === "Enter" && e.target.value.trim()) {
@@ -56,8 +57,11 @@ const BudgetStep = () => {
         label="Resource Budget Estimates"
         type="number"
         key="budget estimates"
+        min={0}
         value={formData.budget_estimates}
-        onChange={(e) => handleInputChange("budget_estimates", e.target.value)}
+        onChange={(e) =>
+          handleNumberInputChange("budget_estimates", e.target.value)
+        }
         hasInputAdornment
         InputProps={{
           startAdornment: <InputAdornment position="start">$</InputAdornment>,
@@ -66,7 +70,7 @@ const BudgetStep = () => {
       <Divider sx={{ my: 1 }} />
 
       <ProjectTextField
-        label="Property Owners's Ability Description"
+        label="Property Owner's Ability Description"
         multiline
         rows={4}
         key="homeowner ability"
@@ -74,12 +78,13 @@ const BudgetStep = () => {
         onChange={(e) => handleInputChange("homeowner_ability", e.target.value)}
       />
       <ProjectTextField
-        label="Property Owners's Ability Estimates"
+        label="Property Owner's Ability Estimates"
         type="number"
         key="homeowner ability estimates"
         value={formData.homeowner_ability_estimates}
+        min={0}
         onChange={(e) =>
-          handleInputChange("homeowner_ability_estimates", e.target.value)
+          handleNumberInputChange("homeowner_ability_estimates", e.target.value)
         }
         hasInputAdornment
         InputProps={{

@@ -17,8 +17,8 @@ const ProjectTextField = ({
       {...props}
       variant="outlined"
       InputLabelProps={{
-        shrink: value ? true : false,
-        sx: { ml: hasInputAdornment && !value ? 2 : 0 },
+        shrink: value !== undefined ? true : false,
+        sx: { ml: hasInputAdornment && value === undefined ? 2 : 0 },
       }}
     />
   );

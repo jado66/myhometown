@@ -177,6 +177,30 @@ export const useDaysOfServiceProjectForm = ({
 
   const handlePartnerChange = (parnterType: string, value: string) => {};
 
+  const handleNumberInputChange = (
+    field: keyof ProjectFormData,
+    value: any
+  ) => {
+    let cleanedValue: number | null = null;
+
+    // Handle different input scenarios
+    if (value === "" || value === undefined) {
+      // Empty string or undefined becomes null
+      cleanedValue = null;
+    } else if (typeof value === "string") {
+      // Try to convert string to number
+      const parsed = parseFloat(value);
+      // If it's a valid number, use it; otherwise, use null
+      cleanedValue = !isNaN(parsed) ? parsed : null;
+    } else if (typeof value === "number") {
+      // Already a number, use it directly
+      cleanedValue = isNaN(value) ? null : value;
+    }
+
+    // Call the regular handleInputChange with the cleaned value
+    handleInputChange(field, cleanedValue);
+  };
+
   const handleInputChange = (field: keyof ProjectFormData, value: any) => {
     const newFormData = {
       ...formData,
@@ -253,6 +277,7 @@ export const useDaysOfServiceProjectForm = ({
     setFormData,
     handleInputChange,
     handleMultipleInputChange,
+    handleNumberInputChange,
     addCollaborator,
     saveProject,
     finishProject,

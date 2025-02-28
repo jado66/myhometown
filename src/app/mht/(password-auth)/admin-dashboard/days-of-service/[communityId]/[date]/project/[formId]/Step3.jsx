@@ -17,13 +17,14 @@ import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import { toast } from "react-toastify";
 import HomeOwnerEmailSection from "./HomeOwnerEmailSection";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const Step3 = () => {
   const { formData, handleInputChange } = useProjectForm();
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      {/* <JsonViewer data={formData} /> */}
+      <JsonViewer data={formData} />
 
       <Box sx={{ mb: { md: 3, xs: 1 } }}>
         <Typography variant="subtitle1" color="primary" sx={{ mb: 2 }}>
@@ -352,7 +353,7 @@ const Step3 = () => {
               }
             />
           }
-          label="The Resource Couple has reviewed the project information."
+          label="The Resource Couple has reviewed the project information"
         />
       </FormControl>
       <Divider />
@@ -369,7 +370,7 @@ const Step3 = () => {
               }
             />
           }
-          label="The Property Owner has reviewed the project information."
+          label="The Property Owner has reviewed the project information"
         />
       </FormControl>
       <Divider />

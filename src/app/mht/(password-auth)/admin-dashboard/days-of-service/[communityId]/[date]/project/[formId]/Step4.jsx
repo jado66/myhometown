@@ -105,7 +105,7 @@ const Step4 = () => {
         }}
       >
         <Typography sx={{ mr: 1, mb: { xs: 0.5, sm: 0 } }}>
-          <strong>Partner Organization:</strong> {partner_stake.name}
+          <strong>Partner Organization:</strong> {partner_stake?.name}
         </Typography>
       </Box>
 
@@ -120,47 +120,47 @@ const Step4 = () => {
       >
         <Typography sx={{ mr: 1, mb: { xs: 0.5, sm: 0 } }}>
           <strong>Organization Liaison:</strong>{" "}
-          {partner_stake.liaison_name_1
-            ? partner_stake.liaison_name_1
+          {partner_stake?.liaison_name_1
+            ? partner_stake?.liaison_name_1
             : "No assigned liaison. This can be added on the Days of Service page."}
         </Typography>
         <Stack direction="row" spacing={1}>
-          {partner_stake.liaison_phone_1 && (
+          {partner_stake?.liaison_phone_1 && (
             <Button
               variant="text"
               color="primary"
               onClick={() => {
-                navigator.clipboard.writeText(partner_stake.liaison_phone_1);
+                navigator.clipboard.writeText(partner_stake?.liaison_phone_1);
                 toast.success(
-                  `Phone number copied to clipboard: ${partner_stake.liaison_phone_1}`
+                  `Phone number copied to clipboard: ${partner_stake?.liaison_phone_1}`
                 );
               }}
             >
               <PhoneIcon fontSize="small" sx={{ mr: 1 }} />
-              {partner_stake.liaison_phone_1}
+              {partner_stake?.liaison_phone_1}
             </Button>
           )}
 
-          {partner_stake.liaison_email_1 && (
+          {partner_stake?.liaison_email_1 && (
             <Button
               variant="text"
               color="primary"
               onClick={() => {
-                navigator.clipboard.writeText(partner_stake.liaison_email_1);
+                navigator.clipboard.writeText(partner_stake?.liaison_email_1);
                 toast.success(
-                  `Email copied to clipboard: ${partner_stake.liaison_email_1}`
+                  `Email copied to clipboard: ${partner_stake?.liaison_email_1}`
                 );
               }}
             >
               <EmailIcon fontSize="small" sx={{ mr: 1 }} />
-              {partner_stake.liaison_email_1}
+              {partner_stake?.liaison_email_1}
             </Button>
           )}
         </Stack>
       </Box>
 
       {/* Organization Liaison 2 (if exists) */}
-      {partner_stake.liaison_name_2 && (
+      {partner_stake?.liaison_name_2 && (
         <Box
           sx={{
             display: "flex",
@@ -171,38 +171,38 @@ const Step4 = () => {
         >
           <Typography sx={{ mr: 1, mb: { xs: 0.5, sm: 0 } }}>
             <strong>Organization Liaison 2:</strong>{" "}
-            {partner_stake.liaison_name_2}
+            {partner_stake?.liaison_name_2}
           </Typography>
           <Stack direction="row" spacing={1}>
-            {partner_stake.liaison_phone_2 && (
+            {partner_stake?.liaison_phone_2 && (
               <Button
                 variant="text"
                 color="primary"
                 onClick={() => {
-                  navigator.clipboard.writeText(partner_stake.liaison_phone_2);
+                  navigator.clipboard.writeText(partner_stake?.liaison_phone_2);
                   toast.success(
-                    `Phone number copied to clipboard: ${partner_stake.liaison_phone_2}`
+                    `Phone number copied to clipboard: ${partner_stake?.liaison_phone_2}`
                   );
                 }}
               >
                 <PhoneIcon fontSize="small" sx={{ mr: 1 }} />
-                {partner_stake.liaison_phone_2}
+                {partner_stake?.liaison_phone_2}
               </Button>
             )}
 
-            {partner_stake.liaison_email_2 && (
+            {partner_stake?.liaison_email_2 && (
               <Button
                 variant="text"
                 color="primary"
                 onClick={() => {
-                  navigator.clipboard.writeText(partner_stake.liaison_email_2);
+                  navigator.clipboard.writeText(partner_stake?.liaison_email_2);
                   toast.success(
-                    `Email copied to clipboard: ${partner_stake.liaison_email_2}`
+                    `Email copied to clipboard: ${partner_stake?.liaison_email_2}`
                   );
                 }}
               >
                 <EmailIcon fontSize="small" sx={{ mr: 1 }} />
-                {partner_stake.liaison_email_2}
+                {partner_stake?.liaison_email_2}
               </Button>
             )}
           </Stack>

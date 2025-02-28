@@ -44,6 +44,7 @@ import {
   ExpandMore,
   Flag,
   Group,
+  Info,
   LocationOn,
   Phone,
   Timeline as TimelineIcon,
@@ -368,6 +369,7 @@ export default function ProjectFormsPage({ params }) {
 
   // Utility functions
   const formatDate = (dateString) => {
+    return dateString;
     const parsed = moment(dateString, "MM-DD-YYYY");
     return parsed.isValid()
       ? parsed.format("dddd, MMMM Do, YYYY")
@@ -512,7 +514,7 @@ export default function ProjectFormsPage({ params }) {
                     variant="outlined"
                     onClick={() => handleProjectClick(project.id)}
                   >
-                    <Box
+                    {/* <Box
                       sx={{
                         position: "absolute",
                         top: 10,
@@ -525,7 +527,7 @@ export default function ProjectFormsPage({ params }) {
                         onChange={(e) => handleCheckboxChange(e, project.id)}
                         onClick={(e) => e.stopPropagation()}
                       />
-                    </Box>
+                    </Box> */}
 
                     <Box
                       sx={{
@@ -638,7 +640,6 @@ export default function ProjectFormsPage({ params }) {
                               sx={{
                                 display: "flex",
                                 alignItems: "center",
-                                ml: -0.5,
                               }}
                             >
                               <LocationOn
@@ -658,7 +659,7 @@ export default function ProjectFormsPage({ params }) {
                       }
                       sx={{
                         pb: 0,
-                        pl: { xs: 6, sm: 6, md: 6 },
+
                         pt: { xs: 2.5, sm: 3, md: 2 },
                         "& .MuiCardHeader-title": {
                           fontSize: { xs: "0.9rem", sm: "1rem", md: "1.5rem" },
@@ -792,6 +793,7 @@ export default function ProjectFormsPage({ params }) {
                           id="contact-info-header"
                           sx={{
                             backgroundColor: theme.palette.background.default,
+                            display: "flex",
                           }}
                         >
                           <Typography
@@ -807,8 +809,27 @@ export default function ProjectFormsPage({ params }) {
                             }}
                           >
                             <Phone sx={{ mr: 1 }} />
-                            Essential Contact Information
+                            Group Assignment &amp; Liaison Information
                           </Typography>
+
+                          {!project.partner_ward && (
+                            <>
+                              <Box sx={{ flexGrow: 1 }} />
+                              <Typography
+                                variant="subtitle1"
+                                gutterBottom
+                                sx={{
+                                  color: "#cf6179",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  mt: 1,
+                                  mr: 2,
+                                }}
+                              >
+                                Partner Group not Assigned
+                              </Typography>
+                            </>
+                          )}
                         </AccordionSummary>
                         <AccordionDetails>
                           <Box sx={{ position: "relative", mb: 2 }}>
