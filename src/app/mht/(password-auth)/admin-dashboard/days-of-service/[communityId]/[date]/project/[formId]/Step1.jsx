@@ -5,6 +5,7 @@ import ProjectTextField from "./ProjectTextField";
 import AddressFormFields from "@/components/days-of-service/form-components/AddressFormFields";
 import { toast } from "react-toastify";
 import { Info } from "@mui/icons-material";
+import moment from "moment";
 
 const Step1 = ({ date }) => {
   const { formData, handleInputChange, community } = useProjectForm();
@@ -62,8 +63,8 @@ const Step1 = ({ date }) => {
         type="date"
         label="Day Of Service Date"
         value={
-          date && !isNaN(new Date(date).getTime())
-            ? new Date(date).toISOString().split("T")[0]
+          date && moment(date, "MM-DD-YYYY").isValid()
+            ? moment(date, "MM-DD-YYYY").format("YYYY-MM-DD")
             : ""
         }
         InputProps={{ readOnly: true }}
