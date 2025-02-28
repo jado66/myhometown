@@ -24,7 +24,7 @@ const Step3 = () => {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <JsonViewer data={formData} />
+      {/* <JsonViewer data={formData} /> */}
 
       <Box sx={{ mb: { md: 3, xs: 1 } }}>
         <Typography variant="subtitle1" color="primary" sx={{ mb: 2 }}>

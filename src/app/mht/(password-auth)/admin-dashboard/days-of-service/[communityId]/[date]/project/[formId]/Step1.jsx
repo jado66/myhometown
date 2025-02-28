@@ -111,8 +111,12 @@ const Step1 = ({ date }) => {
       />
       <Divider />
 
-      <Typography variant="h6" sx={{ mb: 1 }}>
-        Project Developer Information
+      <Typography variant="h6">Project Developer Information</Typography>
+
+      <Typography variant="subtitle" sx={{ mb: 1 }}>
+        The Project Developer is the person or couple who are tasked with
+        finding the project and establishing a relationship with the property
+        owner.
       </Typography>
 
       <ProjectTextField
@@ -150,8 +154,13 @@ const Step1 = ({ date }) => {
       />
       <Divider />
 
-      <Typography variant="h6" sx={{ mb: 1 }}>
+      <Typography variant="h6" sx={{ mb: 0 }}>
         Project Owner Information
+      </Typography>
+      <Typography variant="subtitle" sx={{ mb: 1 }}>
+        The Property Owner is the person or couple who own the property where
+        the project will take place. This can be a homeowner, a business, or the
+        city.
       </Typography>
       <ProjectTextField
         label="Property Owner"
