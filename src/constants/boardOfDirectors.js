@@ -171,7 +171,7 @@ from Brigham Young University and West Virginia University.`,
   },
   {
     name: "Rob Campbell",
-    avatar: "/images/board/Rob Campbell.jpg",
+    avatar: "/images/board/rob campbell.jpg",
     bio: `Rob Campbell brings a wealth of leadership experience from his tenure as Chair
 and CEO of Wheeler Machinery Co., the prominent Caterpillar Tractor distributor.
 He is a graduate of the University of Utah, with degrees in business finance and
