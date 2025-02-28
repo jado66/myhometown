@@ -90,11 +90,9 @@ const Step4 = () => {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-      <Typography variant="h6">
-        Partner Organization and Group Information
-      </Typography>
+      <Typography variant="h6">Partner Stake and Ward Information</Typography>
 
-      {/* Partner Organization*/}
+      {/* Partner Stake*/}
 
       <Box
         sx={{
@@ -104,11 +102,11 @@ const Step4 = () => {
         }}
       >
         <Typography sx={{ mr: 1 }}>
-          <strong>Partner Organization:</strong> {partner_stake?.name}
+          <strong>Partner Stake:</strong> {partner_stake?.name}
         </Typography>
       </Box>
 
-      {/* Organization Liaison */}
+      {/* Stake Liaison */}
       <Box
         sx={{
           display: "flex",
@@ -117,7 +115,7 @@ const Step4 = () => {
         }}
       >
         <Typography sx={{ mr: 1 }}>
-          <strong>Organization Liaison:</strong>{" "}
+          <strong>Stake Liaison:</strong>{" "}
           {partner_stake?.liaison_name_1
             ? partner_stake?.liaison_name_1
             : "No assigned liaison. This can be added on the Days of Service page."}
@@ -157,7 +155,7 @@ const Step4 = () => {
         </Stack>
       </Box>
 
-      {/* Organization Liaison 2 (if exists) */}
+      {/* Stake Liaison 2 (if exists) */}
       {partner_stake?.liaison_name_2 && (
         <Box
           sx={{
@@ -167,8 +165,7 @@ const Step4 = () => {
           }}
         >
           <Typography sx={{ mr: 1 }}>
-            <strong>Organization Liaison 2:</strong>{" "}
-            {partner_stake?.liaison_name_2}
+            <strong>Stake Liaison 2:</strong> {partner_stake?.liaison_name_2}
           </Typography>
           <Stack direction="row" spacing={1}>
             {partner_stake?.liaison_phone_2 && (
@@ -208,7 +205,7 @@ const Step4 = () => {
 
       <Divider />
 
-      {/* Partner Group */}
+      {/* Partner Ward */}
       <Box
         sx={{
           display: "flex",
@@ -218,16 +215,16 @@ const Step4 = () => {
         }}
       >
         <Typography sx={{ mr: 1 }}>
-          <strong>Partner Group:</strong>{" "}
+          <strong>Partner Ward:</strong>{" "}
           {formData.partner_ward
             ? formData.partner_ward
-            : "No assigned Partner Group. This can be added on the projects page"}
+            : "No assigned Partner Ward. This can be added on the projects page"}
         </Typography>
       </Box>
 
       <Divider />
 
-      {/* Partner Group Liaison */}
+      {/* Partner Ward Liaison */}
       <Box
         sx={{
           display: "flex",
@@ -237,7 +234,7 @@ const Step4 = () => {
         }}
       >
         <Typography sx={{ mr: 1 }}>
-          <strong>Partner Group Liaison:</strong>{" "}
+          <strong>Partner Ward Liaison:</strong>{" "}
           {formData.partner_ward_liaison
             ? formData.partner_ward_liaison
             : "No assigned liaison. This can be added on the projects page"}
@@ -281,7 +278,7 @@ const Step4 = () => {
         </Stack>
       </Box>
 
-      {/* Partner Group Liaison 2 (if exists) */}
+      {/* Partner Ward Liaison 2 (if exists) */}
       {formData.partner_ward_liaison2 && (
         <Box
           sx={{
@@ -291,7 +288,7 @@ const Step4 = () => {
           }}
         >
           <Typography sx={{ mr: 1 }}>
-            <strong>Partner Group Liaison 2:</strong>{" "}
+            <strong>Partner Ward Liaison 2:</strong>{" "}
             {formData.partner_ward_liaison2}
           </Typography>
           <Stack direction="row" spacing={1}>
@@ -345,7 +342,7 @@ const Step4 = () => {
               }
             />
           }
-          label="The Partner Organization has been contacted"
+          label="The Partner Stake has been contacted"
         />
         <FormControlLabel
           control={
@@ -356,7 +353,7 @@ const Step4 = () => {
               }
             />
           }
-          label="The Partner Group has been contacted"
+          label="The Partner Ward has been contacted"
         />
         <Divider />
 
@@ -383,7 +380,7 @@ const Step4 = () => {
               }
             />
           }
-          label="The Group Liaison has done a site visit"
+          label="The Ward Liaison has done a site visit"
         />
       </Box>
     </Box>

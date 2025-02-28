@@ -57,7 +57,7 @@ const Step2 = () => {
         onChange={(e) =>
           handleInputChange("project_development_couple_ward", e.target.value)
         }
-        helperText="The ward/group whose geographical boundaries encompass this property location."
+        helperText="The ward whose geographical boundaries encompass this property location."
       />
 
       <ProjectTextField

@@ -21,6 +21,7 @@ import {
   Visibility,
   VisibilityOff,
   LockOpen,
+  LocationOn,
 } from "@mui/icons-material";
 import moment from "moment";
 import { useCommunities } from "@/hooks/use-communities";
@@ -307,7 +308,7 @@ const CommunitySelectionPage = ({ params }) => {
           textAlign: { xs: "center", sm: "left" },
         }}
       >
-        Organization Summary Page
+        Stake Summary Page
       </Typography>
 
       <Box sx={{ position: "relative" }}>
@@ -316,7 +317,7 @@ const CommunitySelectionPage = ({ params }) => {
           gutterBottom
           sx={{
             textTransform: "capitalize",
-            mb: 4,
+            mb: 2,
             textAlign: { xs: "center", sm: "left" },
           }}
         >
@@ -395,10 +396,28 @@ const CommunitySelectionPage = ({ params }) => {
                       </Typography>
                     </Box>
                   ) : (
-                    <Typography variant="h5" color="primary">
-                      {community.name} {day.name || "Day of Service"} -{" "}
-                      {moment(day.end_date).format("dddd, MMMM Do, YYYY")}
-                    </Typography>
+                    <Box sx={{ display: "flex", flexDirection: "column" }}>
+                      <Typography variant="h5" color="primary">
+                        {community.name} {day.name || "Day of Service"} -{" "}
+                        {moment(day.end_date).format("dddd, MMMM Do, YYYY")}
+                      </Typography>
+                      {day.check_in_location && (
+                        <Typography
+                          variant="h6"
+                          gutterBottom
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            textTransform: "capitalize",
+                            mb: 4,
+                            textAlign: { xs: "center", sm: "left" },
+                          }}
+                        >
+                          <LocationOn sx={{ mr: 1 }} />
+                          Check-in Location: {day.check_in_location}
+                        </Typography>
+                      )}
+                    </Box>
                   )}
 
                   <Button
@@ -420,8 +439,8 @@ const CommunitySelectionPage = ({ params }) => {
 
                 <Typography variant="h6" gutterBottom sx={{ my: 2, ml: 2 }}>
                   {day.partner_stakes.length === 0
-                    ? "Please add a Partner Organization to this day of service."
-                    : "Manage the projects   for your partner stakes/organizations."}
+                    ? "Please add a Partner Stake to this day of service"
+                    : "Manage the projects for your partner stakes"}
                 </Typography>
                 <Grid
                   container
@@ -498,7 +517,7 @@ const CommunitySelectionPage = ({ params }) => {
                                 variant="h6"
                                 sx={{ fontSize: "16px !important;", ml: 1 }}
                               >
-                                Organization Liaison Information
+                                Stake Liaison Information
                               </Typography>
                             </AccordionSummary>
                             <AccordionDetails
@@ -604,7 +623,7 @@ const CommunitySelectionPage = ({ params }) => {
                   sx={{ mt: 4, ml: 2 }}
                   onClick={() => handleOpenAddStakeDialog(day.id)}
                 >
-                  Add Partner Stake / Organization
+                  Add Partner Stake
                 </Button>
               </Box>
             </Card>
@@ -665,8 +684,8 @@ const CommunitySelectionPage = ({ params }) => {
       >
         <DialogTitle>
           {currentStake.id
-            ? `Edit Stake / Organization: ${currentStake.name}`
-            : "Add New Stake / Organization"}
+            ? `Edit Stake: ${currentStake.name}`
+            : "Add New Stake"}
         </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
@@ -676,7 +695,7 @@ const CommunitySelectionPage = ({ params }) => {
                 <TextField
                   autoFocus
                   margin="dense"
-                  label="Stake / Organization Name"
+                  label="Stake Name"
                   fullWidth
                   value={currentStake.name}
                   onChange={(e) =>
@@ -685,6 +704,25 @@ const CommunitySelectionPage = ({ params }) => {
                   required
                 />
               </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  autoFocus
+                  margin="dense"
+                  label="Estimated Number of Projects"
+                  fullWidth
+                  type="number"
+                  value={currentStake.number_of_projects}
+                  onChange={(e) =>
+                    setCurrentStake({
+                      ...currentStake,
+                      number_of_projects: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Grid>
+
+              <Divider sx={{ my: 2, width: "100%" }} />
 
               <Grid
                 item
@@ -933,8 +971,8 @@ const CommunitySelectionPage = ({ params }) => {
           setStakeToDelete(null);
           setSelectedDayId(null);
         }}
-        title="Delete Partner Organization?"
-        description={`Are you sure you want to delete the Organization "${stakeToDelete?.name}"? This action cannot be undone.`}
+        title="Delete Partner Stake?"
+        description={`Are you sure you want to delete the Stake "${stakeToDelete?.name}"? This action cannot be undone.`}
       />
     </Box>
   );

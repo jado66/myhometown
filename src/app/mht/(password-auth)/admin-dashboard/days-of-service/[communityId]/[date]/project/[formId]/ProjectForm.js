@@ -25,7 +25,7 @@ const steps = [
   { label: "Detailed Planning" },
   { label: "Budget Estimates" },
   { label: "Review Project Assignment" },
-  { label: "Partner Organization and Group Participation" },
+  { label: "Partner Stake and Ward Participation" },
   { label: "Resource Assessment" },
 ];
 

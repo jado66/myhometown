@@ -95,7 +95,7 @@ const StakesSection = ({ stakes, onStakesChange, dayOfServiceId }) => {
   return (
     <Box>
       <Typography variant="subtitle1" gutterBottom>
-        Partner Stakes / Organizations
+        Partner Stakes / Stakes
       </Typography>
       {stakes.map((stake) => (
         <Chip

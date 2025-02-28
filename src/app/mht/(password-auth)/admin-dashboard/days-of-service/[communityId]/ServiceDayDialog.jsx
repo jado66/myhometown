@@ -53,6 +53,7 @@ const ServiceDayDialog = ({
         community_id: communityId,
         partner_stakes: initialData.partner_stakes || [],
         partner_wards: initialData.partner_wards || [],
+        check_in_location: initialData.check_in_location || "",
       });
     } else {
       setFormData({
@@ -63,6 +64,7 @@ const ServiceDayDialog = ({
         community_id: communityId,
         partner_stakes: [],
         partner_wards: [],
+        check_in_location: "",
       });
     }
   }, [initialData, cityId, communityId]);
@@ -147,6 +149,16 @@ const ServiceDayDialog = ({
               }
               fullWidth
               InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Check-In Location"
+              value={formData.check_in_location}
+              key="check_in_location"
+              onChange={(e) =>
+                setFormData({ ...formData, check_in_location: e.target.value })
+              }
+              fullWidth
+              variant="outlined"
             />
           </Box>
         </DialogContent>
