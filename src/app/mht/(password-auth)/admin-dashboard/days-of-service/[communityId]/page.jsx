@@ -298,6 +298,18 @@ const CommunitySelectionPage = ({ params }) => {
     >
       <DosBreadcrumbs communityData={community} />
 
+      <Typography
+        variant="h3"
+        gutterBottom
+        sx={{
+          textTransform: "capitalize",
+          mb: 4,
+          textAlign: { xs: "center", sm: "left" },
+        }}
+      >
+        Organization Summary Page
+      </Typography>
+
       <Box sx={{ position: "relative" }}>
         <Typography
           variant="h4"

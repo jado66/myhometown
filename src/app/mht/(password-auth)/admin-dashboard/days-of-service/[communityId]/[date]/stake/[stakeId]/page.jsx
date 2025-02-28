@@ -420,6 +420,18 @@ export default function ProjectFormsPage({ params }) {
         }}
       />
 
+      <Typography
+        variant="h3"
+        gutterBottom
+        sx={{
+          textTransform: "capitalize",
+          mb: 4,
+          textAlign: { xs: "center", sm: "left" },
+        }}
+      >
+        Projects Summary Page
+      </Typography>
+
       {isMobile ? (
         <>
           <Typography
