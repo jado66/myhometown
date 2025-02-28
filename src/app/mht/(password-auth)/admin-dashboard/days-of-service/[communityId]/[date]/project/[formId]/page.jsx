@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 
 export default function ProjectPage({ params }) {
   const { formId, date, communityId } = params;
+  console.log("Params date:", date);
 
   const [dayOfService, setDayOfService] = useState();
   const { fetchDayOfServiceByShortId } = useDaysOfService();

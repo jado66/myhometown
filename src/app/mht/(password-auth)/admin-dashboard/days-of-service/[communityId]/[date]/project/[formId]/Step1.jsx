@@ -61,7 +61,11 @@ const Step1 = ({ date }) => {
       <ProjectTextField
         type="date"
         label="Day Of Service Date"
-        value={date ? new Date(date).toISOString().split("T")[0] : null}
+        value={
+          date && !isNaN(new Date(date).getTime())
+            ? new Date(date).toISOString().split("T")[0]
+            : ""
+        }
         InputProps={{ readOnly: true }}
       />
       <ProjectTextField
