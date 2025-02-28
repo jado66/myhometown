@@ -24,15 +24,13 @@ const Step1 = ({ date }) => {
         position: "relative",
       }}
     >
-      <Typography variant="h4" sx={{ mt: 2, mb: 1, textAlign: "center" }}>
+      <Typography variant="h4" sx={{ textAlign: "center" }}>
         This step of the form is typically filled out by the Project
         Developer(s)
       </Typography>
 
       <Divider />
-      <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
-        Project Information
-      </Typography>
+      <Typography variant="h6">Project Information</Typography>
 
       <ProjectTextField
         label="Project Name"

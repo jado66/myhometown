@@ -447,12 +447,20 @@ export default function ProjectFormsPage({ params }) {
         </Typography>
       )}
 
-      <Typography variant="h6" color="primary" gutterBottom sx={{ mb: 5 }}>
+      <Typography variant="h6" color="primary" gutterBottom sx={{ mb: 2 }}>
         {projects?.length === 0 &&
           !isLoading &&
           !error &&
           "No projects have been created yet. Please create a new project to get started."}
       </Typography>
+
+      {projects?.length !== 0 && (
+        <Typography variant="h6" color="primary" gutterBottom sx={{ mb: 5 }}>
+          Click on a project to view or edit the project form. You can select
+          projects using the checkbox and generate reports or view selected
+          projects as timelines.
+        </Typography>
+      )}
 
       {/* <JsonViewer data={projects} /> */}
 
@@ -514,7 +522,7 @@ export default function ProjectFormsPage({ params }) {
                     variant="outlined"
                     onClick={() => handleProjectClick(project.id)}
                   >
-                    {/* <Box
+                    <Box
                       sx={{
                         position: "absolute",
                         top: 10,
@@ -527,7 +535,7 @@ export default function ProjectFormsPage({ params }) {
                         onChange={(e) => handleCheckboxChange(e, project.id)}
                         onClick={(e) => e.stopPropagation()}
                       />
-                    </Box> */}
+                    </Box>
 
                     <Box
                       sx={{
@@ -640,6 +648,7 @@ export default function ProjectFormsPage({ params }) {
                               sx={{
                                 display: "flex",
                                 alignItems: "center",
+                                ml: -0.5,
                               }}
                             >
                               <LocationOn
@@ -659,7 +668,7 @@ export default function ProjectFormsPage({ params }) {
                       }
                       sx={{
                         pb: 0,
-
+                        pl: { xs: 6, sm: 6, md: 6 },
                         pt: { xs: 2.5, sm: 3, md: 2 },
                         "& .MuiCardHeader-title": {
                           fontSize: { xs: "0.9rem", sm: "1rem", md: "1.5rem" },
@@ -1004,7 +1013,10 @@ export default function ProjectFormsPage({ params }) {
         <Button
           variant="outlined"
           color="primary"
-          onClick={handleViewTimelines}
+          // onClick={handleViewTimelines}
+          onClick={() =>
+            toast.info("This feature is currently under construction.")
+          }
           startIcon={<TimelineIcon />}
           disabled={isLoading || selectedProjects.length === 0}
           sx={{ width: { xs: "100%", sm: "auto" } }}

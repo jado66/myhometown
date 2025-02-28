@@ -39,7 +39,7 @@ const Step2 = () => {
       <Typography variant="h4" sx={{ mt: 2, mb: 1, textAlign: "center" }}>
         This step of the form is typically filled out by the Resource Couple
       </Typography>
-      <Divider sx={{ mt: 2 }} />
+      <Divider />
       <Typography variant="h5" sx={{ mb: 0 }}>
         Resource Couple Information
       </Typography>

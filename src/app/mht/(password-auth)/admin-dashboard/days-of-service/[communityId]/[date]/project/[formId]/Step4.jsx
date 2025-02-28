@@ -101,10 +101,9 @@ const Step4 = () => {
           display: "flex",
           flexDirection: { xs: "column", sm: "row" },
           alignItems: { xs: "flex-start", sm: "center" },
-          mb: 1,
         }}
       >
-        <Typography sx={{ mr: 1, mb: { xs: 0.5, sm: 0 } }}>
+        <Typography sx={{ mr: 1 }}>
           <strong>Partner Organization:</strong> {partner_stake?.name}
         </Typography>
       </Box>
@@ -115,10 +114,9 @@ const Step4 = () => {
           display: "flex",
           flexDirection: { xs: "column", sm: "row" },
           alignItems: { xs: "flex-start", sm: "center" },
-          mb: 1,
         }}
       >
-        <Typography sx={{ mr: 1, mb: { xs: 0.5, sm: 0 } }}>
+        <Typography sx={{ mr: 1 }}>
           <strong>Organization Liaison:</strong>{" "}
           {partner_stake?.liaison_name_1
             ? partner_stake?.liaison_name_1
@@ -166,10 +164,9 @@ const Step4 = () => {
             display: "flex",
             flexDirection: { xs: "column", sm: "row" },
             alignItems: { xs: "flex-start", sm: "center" },
-            mb: 1,
           }}
         >
-          <Typography sx={{ mr: 1, mb: { xs: 0.5, sm: 0 } }}>
+          <Typography sx={{ mr: 1 }}>
             <strong>Organization Liaison 2:</strong>{" "}
             {partner_stake?.liaison_name_2}
           </Typography>
@@ -227,6 +224,8 @@ const Step4 = () => {
             : "No assigned Partner Group. This can be added on the projects page"}
         </Typography>
       </Box>
+
+      <Divider />
 
       {/* Partner Group Liaison */}
       <Box

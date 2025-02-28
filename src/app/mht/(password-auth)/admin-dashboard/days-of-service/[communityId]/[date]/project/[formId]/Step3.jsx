@@ -26,8 +26,8 @@ const Step3 = () => {
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       {/* <JsonViewer data={formData} /> */}
 
-      <Box sx={{ mb: { md: 3, xs: 1 } }}>
-        <Typography variant="subtitle1" color="primary" sx={{ mb: 2 }}>
+      <Box>
+        <Typography variant="subtitle1" color="primary">
           Basic Information
         </Typography>
         <Box sx={{ pl: 2 }}>
@@ -37,10 +37,9 @@ const Step3 = () => {
               display: "flex",
               flexDirection: { xs: "column", sm: "row" },
               alignItems: { xs: "flex-start", sm: "center" },
-              mb: 1,
             }}
           >
-            <Typography sx={{ mr: 1, mb: { xs: 0.5, sm: 0 } }}>
+            <Typography sx={{ mr: 1 }}>
               <strong>Project Developer:</strong> {formData.project_developer}
             </Typography>
             <Stack direction="row" spacing={1}>
@@ -88,7 +87,6 @@ const Step3 = () => {
               display: "flex",
               flexDirection: { xs: "column", sm: "row" },
               alignItems: { xs: "flex-start", sm: "center" },
-              mb: 1,
             }}
           >
             <Typography sx={{ mr: 1, mb: { xs: 0.5, sm: 0 } }}>
@@ -209,14 +207,7 @@ const Step3 = () => {
 
       <Divider />
 
-      <Box
-        sx={{
-          mb: {
-            md: 3,
-            xs: 1,
-          },
-        }}
-      >
+      <Box>
         <Typography variant="subtitle1" color="primary">
           Project Location
         </Typography>
@@ -241,7 +232,7 @@ const Step3 = () => {
         </Box>
       </Box>
 
-      <Box sx={{ mb: 3 }}>
+      <Box>
         <Typography variant="subtitle1" color="primary">
           Work Summary
         </Typography>
@@ -257,7 +248,7 @@ const Step3 = () => {
         </Box>
       </Box>
 
-      <Box sx={{ mb: 3 }}>
+      <Box>
         <Typography variant="subtitle1" color="primary">
           Preferred Remedies
         </Typography>
@@ -273,14 +264,7 @@ const Step3 = () => {
         </Box>
       </Box>
 
-      <Box
-        sx={{
-          mb: {
-            md: 3,
-            xs: 1,
-          },
-        }}
-      >
+      <Box>
         <Typography variant="subtitle1" color="primary">
           Planned Tasks
         </Typography>
@@ -289,7 +273,7 @@ const Step3 = () => {
             formData.tasks.tasks &&
             Array.isArray(formData.tasks.tasks) &&
             formData.tasks.tasks.map((task, index) => (
-              <Box key={index} sx={{ mb: 2 }}>
+              <Box key={index}>
                 <Typography
                   sx={{
                     wordBreak: "break-word",

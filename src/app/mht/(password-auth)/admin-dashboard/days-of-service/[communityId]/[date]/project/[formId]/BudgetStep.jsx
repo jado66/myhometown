@@ -32,11 +32,9 @@ const BudgetStep = () => {
       <Typography variant="h4" sx={{ mt: 2, mb: 1, textAlign: "center" }}>
         This step of the form is typically filled out by the Resource Couple
       </Typography>
-      <Divider sx={{ mt: 2 }} />
+      <Divider />
 
-      <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
-        Budget Estimates
-      </Typography>
+      <Typography variant="h6">Budget Estimates</Typography>
       <Alert severity="info" sx={{ mb: 2 }}>
         <Typography>
           Once you enter this budget information and navigate away from this
