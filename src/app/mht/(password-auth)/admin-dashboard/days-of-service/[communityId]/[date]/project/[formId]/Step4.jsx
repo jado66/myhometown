@@ -346,7 +346,7 @@ const Step4 = () => {
               }
             />
           }
-          label="Has the Partner Organization been contacted?"
+          label="The Partner Organization has been contacted"
         />
         <FormControlLabel
           control={
@@ -357,23 +357,10 @@ const Step4 = () => {
               }
             />
           }
-          label="Has the Partner Group been contacted?"
+          label="The Partner Group has been contacted"
         />
         <Divider />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={formData.site_visit_done_with_resource_couple}
-              onChange={(e) =>
-                handleInputChange(
-                  "site_visit_done_with_resource_couple",
-                  e.target.checked
-                )
-              }
-            />
-          }
-          label="Was the site visit done with the Resource Couple?"
-        />
+
         <FormControlLabel
           control={
             <Checkbox
@@ -383,7 +370,7 @@ const Step4 = () => {
               }
             />
           }
-          label="Was the site visit done with the Host?"
+          label="The Host has done a site visit"
         />
         <FormControlLabel
           control={
@@ -397,7 +384,7 @@ const Step4 = () => {
               }
             />
           }
-          label="Was the site visit done with the Partner Group Leader?"
+          label="The Group Liaison has done a site visit"
         />
       </Box>
     </Box>

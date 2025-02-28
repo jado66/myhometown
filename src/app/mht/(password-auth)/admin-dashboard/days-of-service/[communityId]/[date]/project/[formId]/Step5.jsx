@@ -26,7 +26,7 @@ const Step5 = () => {
             }
           />
         }
-        label="Have the materials been ordered?"
+        label="The materials have been ordered"
       />
       <Divider />
 
@@ -39,7 +39,7 @@ const Step5 = () => {
             }
           />
         }
-        label="Have arrangements been made for the tools and equipment?"
+        label="Arrangements have been made for the tools and equipment"
       />
       <Divider />
 
@@ -52,7 +52,7 @@ const Step5 = () => {
             }
           />
         }
-        label="Are materials on site?"
+        label="Materials are on site"
       />
       <Divider />
 
@@ -67,7 +67,7 @@ const Step5 = () => {
                 }
               />
             }
-            label="Have the Neighborhood Services Directors requested called Blue Stakes?"
+            label="Blue stakes have been requested"
           />
           <Divider />
         </>
@@ -84,11 +84,11 @@ const Step5 = () => {
                 }
               />
             }
-            label={`Have the Neighborhood Services Directors requested ${
+            label={`${
               formData.is_second_dumpster_needed
-                ? "two dumpsters"
-                : "a dumpster"
-            }  from the city?`}
+                ? "Two dumpsters have "
+                : "A dumpster has "
+            } been requested from the city`}
           />
           {formData.is_second_dumpster_needed && (
             <FormHelperText sx={{ color: "text.secondary", ml: 5, mt: -2 }}>

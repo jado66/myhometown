@@ -373,6 +373,22 @@ const Step3 = () => {
         />
       </FormControl>
       <Divider />
+
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={formData.site_visit_done_with_resource_couple}
+            onChange={(e) =>
+              handleInputChange(
+                "site_visit_done_with_resource_couple",
+                e.target.checked
+              )
+            }
+          />
+        }
+        label="The Resource Couple has done a site visit with Property Owner"
+      />
+      <Divider />
       <ProjectTextField
         label="Issues or Concerns (Optional)"
         multiline
