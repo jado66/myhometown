@@ -61,7 +61,6 @@ import { useDaysOfService } from "@/hooks/useDaysOfService";
 import { useUser } from "@/hooks/use-user";
 
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
-import JsonViewer from "@/components/util/debug/DebugOutput";
 import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
 import Loading from "@/components/util/Loading";
 
@@ -369,11 +368,10 @@ export default function ProjectFormsPage({ params }) {
 
   // Utility functions
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    const parsed = moment(dateString, "MM-DD-YYYY");
+    return parsed.isValid()
+      ? parsed.format("dddd, MMMM Do, YYYY")
+      : "Invalid Date";
   };
 
   const getProjectTitle = (project) => {
@@ -494,7 +492,7 @@ export default function ProjectFormsPage({ params }) {
             sx={{ p: { lg: 3, md: 0 }, overflowY: "auto" }}
           >
             {projects
-              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+              .sort((a, b) => moment(b.created_at).diff(moment(a.created_at)))
               .map((project) => (
                 <Grid item xs={12} sm={6} lg={6} key={project.id}>
                   <Card
