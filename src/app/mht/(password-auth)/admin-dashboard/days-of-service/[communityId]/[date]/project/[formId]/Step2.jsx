@@ -40,11 +40,26 @@ const Step2 = () => {
         This step of the form is typically filled out by the Resource Couple
       </Typography>
       <Divider sx={{ mt: 2 }} />
-      <Typography variant="h5" sx={{ mb: 1 }}>
+      <Typography variant="h5" sx={{ mb: 0 }}>
         Resource Couple Information
+      </Typography>
+      <Typography variant="subtitle" sx={{ mb: 1 }}>
+        The Resource Couple are the primary contacts for the project. They are
+        the detailed planners and interact with property owners and volunteers.
+        Their contact information is used to communicate with the project team.
       </Typography>
 
       {/* Assigned Ward  */}
+      <ProjectTextField
+        label="Encompassing Ward"
+        key="project_development_couple_ward"
+        value={formData.project_development_couple_ward}
+        onChange={(e) =>
+          handleInputChange("project_development_couple_ward", e.target.value)
+        }
+        helperText="The ward/group whose geographical boundaries encompass this property location."
+      />
+
       <ProjectTextField
         label="Resource Couple"
         key="project_development_couple"
@@ -83,14 +98,6 @@ const Step2 = () => {
         value={formData.project_development_couple_email2}
         onChange={(e) =>
           handleInputChange("project_development_couple_email2", e.target.value)
-        }
-      />
-      <ProjectTextField
-        label="Resource Couple's Assigned Ward"
-        key="project_development_couple_ward"
-        value={formData.project_development_couple_ward}
-        onChange={(e) =>
-          handleInputChange("project_development_couple_ward", e.target.value)
         }
       />
 
