@@ -503,6 +503,10 @@ export default function ProjectFormsPage({ params }) {
                       display: "flex",
                       flexDirection: "column",
                       backgroundColor: theme.palette.grey[50],
+                      border:
+                        project.status === "completed"
+                          ? "2px solid #318D43"
+                          : "",
                     }}
                     variant="outlined"
                     onClick={() => handleProjectClick(project.id)}
