@@ -49,7 +49,7 @@ the Wasatch Front and was its Utah Director from 2019 to 2024.`,
   },
   {
     name: "A. Scott Anderson",
-    title: "Vice Chairman",
+    position: "Vice Chairman",
     avatar: "/images/board/Scott Anderson.jpg",
     bio: `A. Scott Anderson concluded a highly successful 33-year career at Zions
 Bank in April 2024, retiring after more than 25 years as president and CEO.
