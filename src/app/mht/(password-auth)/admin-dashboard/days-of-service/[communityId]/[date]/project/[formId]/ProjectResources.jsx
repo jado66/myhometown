@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -10,37 +10,51 @@ import {
   Chip,
   Box,
   Divider,
+  FormHelperText,
 } from "@mui/material";
+import { Info } from "@mui/icons-material";
 
 export function ProjectResources({
   formData,
   handleInputChange,
   handleToolAdd,
 }) {
+  // State to manage the current input values
+  const [inputValues, setInputValues] = useState({
+    tools: "",
+    equipment: "",
+    homeownerMaterials: "",
+    otherMaterials: "",
+  });
+
   const sections = [
     {
       title: "Volunteer Tools",
       items: formData.volunteerTools,
-      placeholder: "Hit enter to add tools...",
+      placeholder: "Enter tools",
       category: "tools",
+      fieldName: "volunteerTools",
     },
     {
       title: "Equipment",
       items: formData.equipment,
-      placeholder: "Hit enter to add equipment...",
+      placeholder: "Enter equipment",
       category: "equipment",
+      fieldName: "equipment",
     },
     {
       title: "Materials provided by Homeowner",
       items: formData.homeownerMaterials,
-      placeholder: "Hit enter to add material...",
+      placeholder: "Enter materials",
       category: "homeownerMaterials",
+      fieldName: "homeownerMaterials",
     },
     {
       title: "Other Materials provided",
       items: formData.otherMaterials,
-      placeholder: "Hit enter to add material...",
+      placeholder: "Enter materials",
       category: "otherMaterials",
+      fieldName: "otherMaterials",
     },
   ];
 
@@ -52,7 +66,9 @@ export function ProjectResources({
       otherMaterials: "otherMaterials",
     };
     const fieldName = categoryMap[category];
-    const newItems = formData[fieldName].filter((_, i) => i !== index);
+    // Use normalizeItems to ensure we're working with an array before filtering
+    const currentItems = normalizeItems(formData[fieldName]);
+    const newItems = currentItems.filter((_, i) => i !== index);
     handleInputChange(fieldName, newItems);
   };
 
@@ -67,6 +83,48 @@ export function ProjectResources({
       }
     }
     return []; // Fallback for undefined, null, or other types
+  };
+
+  // Handle input change for text fields
+  const handleInputValueChange = (category, value) => {
+    setInputValues((prev) => ({
+      ...prev,
+      [category]: value,
+    }));
+  };
+
+  // Process comma-separated input and add items
+  const handleCommaInput = (e, category) => {
+    const value = e.target.value.trim();
+
+    if (e.key === "Enter" && value) {
+      e.preventDefault();
+
+      // Split by commas and filter out empty strings
+      const newItems = value
+        .split(",")
+        .map((item) => item.trim())
+        .filter((item) => item !== "");
+
+      const categoryMap = {
+        tools: "volunteerTools",
+        equipment: "equipment",
+        homeownerMaterials: "homeownerMaterials",
+        otherMaterials: "otherMaterials",
+      };
+
+      const fieldName = categoryMap[category];
+      const currentItems = normalizeItems(formData[fieldName]);
+
+      // Add all new items at once
+      handleInputChange(fieldName, [...currentItems, ...newItems]);
+
+      // Clear the input field
+      setInputValues((prev) => ({
+        ...prev,
+        [category]: "",
+      }));
+    }
   };
 
   return (
@@ -91,9 +149,27 @@ export function ProjectResources({
                 size="small"
                 variant="outlined"
                 placeholder={section.placeholder}
-                onKeyDown={(e) => handleToolAdd(e, section.category)}
+                value={inputValues[section.category]}
+                onChange={(e) =>
+                  handleInputValueChange(section.category, e.target.value)
+                }
+                onKeyDown={(e) => handleCommaInput(e, section.category)}
                 sx={{ minWidth: 150 }}
               />
+              {inputValues[section.category] && (
+                <FormHelperText
+                  sx={{
+                    ml: 1,
+                    color: "red",
+
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <Info fontSize="small" sx={{ mr: 0.5 }} />
+                  Press Enter to add
+                </FormHelperText>
+              )}
             </Box>
           </Box>
         </React.Fragment>

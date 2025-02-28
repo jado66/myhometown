@@ -10,6 +10,7 @@ import {
   Button,
   Box,
   IconButton,
+  InputAdornment,
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import moment from "moment";
@@ -27,6 +28,7 @@ const ServiceDayDialog = ({
   initialData,
   fetchDays,
   handleDeleteDay,
+  dayOfServicePrefix,
 }) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -116,7 +118,16 @@ const ServiceDayDialog = ({
                 setFormData({ ...formData, name: e.target.value })
               }
               fullWidth
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start" sx={{ mt: "2px" }}>
+                    {dayOfServicePrefix}
+                  </InputAdornment>
+                ),
+              }}
+              variant="outlined"
             />
+
             <TextField
               label="Start Date"
               type="date"

@@ -1,6 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Breadcrumbs, Typography, SxProps, Theme } from "@mui/material";
+import type React from "react";
+import { useState, useEffect, useCallback } from "react";
+import {
+  Breadcrumbs,
+  Typography,
+  type SxProps,
+  type Theme,
+} from "@mui/material";
 import { NavigateNext } from "@mui/icons-material";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -17,6 +23,7 @@ interface DayOfService {
   community_name: string;
   community_id: string;
   name?: string;
+  partner_stakes?: any[]; // Added to avoid type errors
 }
 
 interface DosBreadcrumbsProps {
@@ -38,6 +45,10 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
   stakeId,
   sx,
 }) => {
+  const [windowWidth, setWindowWidth] = useState<number>(
+    typeof window !== "undefined" ? window.innerWidth : 0
+  );
+
   const pathname = usePathname();
   const isDev = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev";
   const basePrefix = isDev ? "/mht" : "";
@@ -48,12 +59,14 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
         .filter((path) => path !== "mht") // Remove 'mht' from path segments
     : [];
 
-  const generateBreadcrumbsData = (): string[] => {
+  const generateBreadcrumbsData = useCallback((): string[] => {
     // alert("dayOfService: " + JSON.stringify(dayOfService?.partner_stakes));
 
     const stake = dayOfService?.partner_stakes?.find(
       (stake) => stake.id === stakeId
     );
+
+    const isSmallScreen = windowWidth < 600;
 
     const base = [];
 
@@ -61,16 +74,26 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
       base.push(`${communityData.city_name} - ${communityData.name}`);
     } else if (dayOfService) {
       base.push(
-        `${dayOfService.city_name} - ${dayOfService.community_name} Community`
+        isSmallScreen
+          ? `${dayOfService.community_name} `
+          : `${dayOfService.city_name} - ${dayOfService.community_name} Community`
       );
     }
 
     if (dayOfService && date) {
-      base.push(
-        `${dayOfService.name || moment(date).format("dddd, MMMM Do, YYYY")} - ${
-          stake?.name
-        } `
-      );
+      if (isSmallScreen) {
+        base.push(
+          `${dayOfService.name || moment(date).format("MMM-D-YY")} - ${
+            stake?.name
+          } `
+        );
+      } else {
+        base.push(
+          `${
+            dayOfService.name || moment(date).format("dddd, MMMM Do, YYYY")
+          } - ${stake?.name} `
+        );
+      }
 
       if (pathnames.includes("view-timeline") && !isProjectView) {
         base.push("View Timeline");
@@ -82,7 +105,15 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
     }
 
     return base;
-  };
+  }, [
+    communityData,
+    dayOfService,
+    date,
+    isProjectView,
+    projectName,
+    stakeId,
+    windowWidth,
+  ]);
 
   const [pathTitles, setPathTitles] = useState<string[]>(
     generateBreadcrumbsData()
@@ -90,7 +121,7 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
 
   useEffect(() => {
     setPathTitles(generateBreadcrumbsData());
-  }, [dayOfService, communityData, date, pathname, projectName, stakeId]);
+  }, [generateBreadcrumbsData]);
 
   const generateHref = (index: number): string => {
     const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || "";
@@ -147,6 +178,35 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
     }
   };
 
+  const truncateTitle = (title: string, maxLength: number): string => {
+    if (title.length <= maxLength) return title;
+
+    // For community names with city format "City - Community"
+    if (title.includes(" - ")) {
+      const [city, community] = title.split(" - ");
+      if (community.length > maxLength / 2) {
+        return `${city.substring(0, 3)} - ${community.substring(
+          0,
+          maxLength / 2
+        )}...`;
+      }
+    }
+
+    return title.substring(0, maxLength) + "...";
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    if (typeof window !== "undefined") {
+      setWindowWidth(window.innerWidth);
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, []);
+
   return (
     <Breadcrumbs
       aria-label="breadcrumb"
@@ -159,8 +219,11 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
         py: 1,
         borderRadius: 2,
         "& .MuiBreadcrumbs-separator": {
-          mx: 1,
+          mx: { xs: 0.5, sm: 1 },
           color: "grey.600",
+        },
+        "& .MuiBreadcrumbs-ol": {
+          flexWrap: "wrap",
         },
         ...sx,
       }}
@@ -173,7 +236,13 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
           <Typography
             color="textPrimary"
             key={`breadcrumb-${index}`}
-            sx={{ fontWeight: "bold", textTransform: "capitalize" }}
+            sx={{
+              fontWeight: "bold",
+              textTransform: "capitalize",
+              fontSize: { xs: "0.75rem", sm: "0.875rem", md: "1rem" },
+              lineHeight: 1.2,
+              wordBreak: "break-word",
+            }}
           >
             {title}
           </Typography>
@@ -187,6 +256,9 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
               color="textPrimary"
               sx={{
                 textTransform: "capitalize",
+                fontSize: { xs: "0.75rem", sm: "0.875rem", md: "1rem" },
+                lineHeight: 1.2,
+                wordBreak: "break-word",
                 "&:hover": {
                   textDecoration: "underline",
                 },

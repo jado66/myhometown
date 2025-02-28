@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { VisibilityOff } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import JsonViewer from "@/components/util/debug/DebugOutput";
+import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 
 const steps = [
   { label: "Project Information" },
@@ -29,6 +30,8 @@ const steps = [
 ];
 
 const ProjectForm = ({ formId, date, communityId }) => {
+  const [showFinishDialog, setShowFinishDialog] = React.useState(false);
+
   const router = useRouter();
   const {
     activeStep,
@@ -207,22 +210,42 @@ const ProjectForm = ({ formId, date, communityId }) => {
                 onClick={saveAndExit}
                 sx={{ mx: 1 }}
               >
-                Save and Exit
+                Return to Projects Page
               </Button>
             )}
             <Button
               variant="contained"
               color="primary"
+              disabled={
+                activeStep === steps.length - 1 &&
+                formData.status === "completed"
+              }
               onClick={
-                activeStep === steps.length - 1 ? handleFinish : handleNext
+                activeStep === steps.length - 1
+                  ? () => setShowFinishDialog(true)
+                  : handleNext
               }
             >
-              {activeStep === steps.length - 1 ? "Finish Project" : "Next"}
+              {activeStep === steps.length - 1
+                ? formData.status !== "completed"
+                  ? "Mark Project Ready For Day of Service"
+                  : "Project Completed"
+                : "Next"}
             </Button>
           </Box>
         </CardContent>
       </Card>
       <CollaborationSection />
+
+      <AskYesNoDialog
+        // title, description, onConfirm, onCancel, onClose, open
+        title="Are you sure?"
+        description='Are you sure this project is ready for the Day of Service? You will still be able to edit your project but your project will indicate "Ready for Day of Service".'
+        onConfirm={handleFinish}
+        onCancel={() => setShowFinishDialog(false)}
+        onClose={() => setShowFinishDialog(false)}
+        open={showFinishDialog}
+      />
     </>
   );
 };

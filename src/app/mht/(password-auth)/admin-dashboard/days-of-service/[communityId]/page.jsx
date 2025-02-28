@@ -384,7 +384,7 @@ const CommunitySelectionPage = ({ params }) => {
                     </Box>
                   ) : (
                     <Typography variant="h5" color="primary">
-                      {day.name || "Day of Service"} -{" "}
+                      {community.name} {day.name || "Day of Service"} -{" "}
                       {moment(day.end_date).format("dddd, MMMM Do, YYYY")}
                     </Typography>
                   )}
@@ -643,6 +643,7 @@ const CommunitySelectionPage = ({ params }) => {
         initialData={selectedServiceDay}
         fetchDays={fetchDays}
         handleDeleteDay={handleDeleteDay}
+        dayOfServicePrefix={community.name}
       />
       <Dialog
         open={showStakeDialog}

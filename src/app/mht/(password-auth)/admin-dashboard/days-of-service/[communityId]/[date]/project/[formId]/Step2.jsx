@@ -157,7 +157,7 @@ const Step2 = () => {
             }
           />
         }
-        label="Are blue stakes needed for this project?"
+        label="Blue stakes will be required for this project?"
       />
       <Divider />
 
@@ -170,7 +170,7 @@ const Step2 = () => {
             }
           />
         }
-        label="Is a dumpster needed for this project?"
+        label="A dumpster is needed for this project?"
       />
       <Divider />
       {formData.is_dumpster_needed && (
@@ -187,7 +187,7 @@ const Step2 = () => {
                 }
               />
             }
-            label="Is a second dumpster needed for this project?"
+            label="A second dumpster is needed for this project?"
           />
           <Divider />
         </>
