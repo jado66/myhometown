@@ -784,6 +784,40 @@ const Page = ({ params }) => {
     });
   };
 
+  const handleDeleteMarketingItem = (index) => {
+    // Create a confirmation dialog before deleting
+    if (
+      !window.confirm(
+        `Are you sure you want to delete marketing item ${index}?`
+      )
+    ) {
+      return;
+    }
+
+    // Create a new content object without the deleted marketing item
+    const updatedContent = { ...communityData.content };
+
+    // Delete both the header and image
+    const headerKey = `marketingHeader${index === 1 ? "" : index}`;
+    const imageKey = `marketingImage${index}`;
+
+    delete updatedContent[headerKey];
+    delete updatedContent[imageKey];
+
+    // Update the community data state
+    setCommunityData({
+      ...communityData,
+      content: updatedContent,
+    });
+
+    // Decrease the marketing image count if we're deleting the highest index
+    if (index === marketingImageCount) {
+      setMarketingImageCount(marketingImageCount - 1);
+    }
+
+    toast.success("Marketing item deleted successfully.");
+  };
+
   const CategorySelectOptions = communityData?.classes?.map((category) => ({
     value: category.id,
     label: category.title,
@@ -1082,9 +1116,10 @@ const Page = ({ params }) => {
                 content={content}
                 handleMarketingHeaderChange={handleMarketingHeaderChange}
                 handleChangeMarketingImage={handleChangeMarketingImage}
-                // openImageDialog={openImageDialog}
                 UploadImage={UploadImage}
                 communityData={communityData}
+                onDelete={handleDeleteMarketingItem}
+                showDeleteButton={true} // Show delete button for optional items 3-4
               />
             )}
 
@@ -1095,9 +1130,10 @@ const Page = ({ params }) => {
                 content={content}
                 handleMarketingHeaderChange={handleMarketingHeaderChange}
                 handleChangeMarketingImage={handleChangeMarketingImage}
-                // openImageDialog={openImageDialog}
                 UploadImage={UploadImage}
                 communityData={communityData}
+                onDelete={handleDeleteMarketingItem}
+                showDeleteButton={true} // Show delete button for optional items 3-4
               />
             )}
           </Grid>
