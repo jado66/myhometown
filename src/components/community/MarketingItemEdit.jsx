@@ -1,5 +1,6 @@
 import React from "react";
-import { Grid, TextField, Box, Typography } from "@mui/material";
+import { Grid, TextField, Box, Typography, IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const MarketingItemEdit = ({
   index = 1,
@@ -10,6 +11,8 @@ const MarketingItemEdit = ({
   openImageDialog,
   UploadImage,
   communityData,
+  onDelete, // New prop to handle deletion
+  showDeleteButton = false, // Only show delete button for items 3 and 4
 }) => {
   const textFieldStyles = {
     fontFamily: "inherit",
@@ -39,7 +42,33 @@ const MarketingItemEdit = ({
   const imageKey = `marketingImage${index}`;
 
   return (
-    <Grid item xs={12} md={6} display="flex" flexDirection="column">
+    <Grid
+      item
+      xs={12}
+      md={6}
+      display="flex"
+      flexDirection="column"
+      position="relative"
+    >
+      {showDeleteButton && (
+        <IconButton
+          onClick={() => onDelete(index)}
+          sx={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            zIndex: 10,
+
+            bgcolor: "rgba(255, 255, 255, 0.7)",
+            "&:hover": {
+              bgcolor: "rgba(255, 255, 255, 0.9)",
+            },
+          }}
+        >
+          <DeleteIcon />
+        </IconButton>
+      )}
+
       <TextField
         variant="standard"
         value={content?.[headerKey] || "Your Flyer Title"}
