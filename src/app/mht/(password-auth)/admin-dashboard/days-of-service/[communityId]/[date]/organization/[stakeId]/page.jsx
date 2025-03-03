@@ -346,8 +346,7 @@ export default function ProjectFormsPage({ params }) {
   const handleGenerateSingleReport = async (e, projectId) => {
     e.stopPropagation();
     try {
-      await generateReports("single", projectId);
-      toast.success("Report generated successfully");
+      await generateReports("single", projectId, date);
     } catch (error) {
       console.error("Error generating report:", error);
       toast.error("Failed to generate project report");

@@ -176,6 +176,7 @@ export default function ProjectFormsPage({ params }) {
     error,
     addProject,
     generateReports,
+    generatePDFReport,
   } = useDaysOfServiceProjects();
 
   // Fetch day of service data
@@ -343,11 +344,13 @@ export default function ProjectFormsPage({ params }) {
     );
   };
 
-  const handleGenerateSingleReport = async (e, projectId) => {
+  const handleGenerateSingleReport = async (e, project) => {
     e.stopPropagation();
     try {
-      await generateReports("single", projectId);
-      toast.success("Report generated successfully");
+      const projectTitle = getProjectTitle(project);
+
+      await generatePDFReport(project.id, date, projectTitle, dayOfService);
+      // toast.success("Report generated successfully");
     } catch (error) {
       console.error("Error generating report:", error);
       toast.error("Failed to generate project report");
@@ -591,7 +594,7 @@ export default function ProjectFormsPage({ params }) {
                             edge="end"
                             aria-label="generate-report"
                             onClick={(e) =>
-                              handleGenerateSingleReport(e, project.id)
+                              handleGenerateSingleReport(e, project)
                             }
                             sx={{ mr: 1 }}
                           >
