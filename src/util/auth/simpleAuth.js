@@ -109,7 +109,7 @@ export const CommunityIdToPasswordHash = {
   },
   "66df581af05bd41ef9493f40": {
     name: "West Valley City - Central Valley View",
-    password: "8844",
+    password: "1037",
   },
 };
 
