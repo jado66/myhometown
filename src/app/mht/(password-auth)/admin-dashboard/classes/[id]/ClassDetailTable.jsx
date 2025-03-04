@@ -61,8 +61,10 @@ const ClassDetailTable = ({
 }) => {
   const [rows, setRows] = useState([]);
   const [waitlistedRows, setWaitlistedRows] = useState([]);
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [newStudent, setNewStudent] = useState({});
+  const [showDialog, setShowDialog] = useState(false);
+  const [dialogMode, setDialogMode] = useState("add"); // "add" or "edit"
+  const [editingStudent, setEditingStudent] = useState(null);
+  const [studentData, setStudentData] = useState({});
   const [formErrors, setFormErrors] = useState({});
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
@@ -70,6 +72,7 @@ const ClassDetailTable = ({
   const [promoteDialogOpen, setPromoteDialogOpen] = useState(false);
   const [studentToPromote, setStudentToPromote] = useState(null);
   const [promoteLoading, setPromoteLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
 
   // Update rows when classData changes
   useEffect(() => {
@@ -142,7 +145,7 @@ const ClassDetailTable = ({
     let isValid = true;
 
     classData.signupForm.fieldOrder.forEach((fieldKey) => {
-      const error = validateField(fieldKey, newStudent[fieldKey]);
+      const error = validateField(fieldKey, studentData[fieldKey]);
       if (error) {
         errors[fieldKey] = error;
         isValid = false;
@@ -227,7 +230,7 @@ const ClassDetailTable = ({
       );
     } catch (error) {
       console.error("Error promoting student:", error);
-      alert("Failed to promote student. Please try again.");
+      toast.error("Failed to promote student. Please try again.");
     } finally {
       setPromoteLoading(false);
       setPromoteDialogOpen(false);
@@ -237,26 +240,94 @@ const ClassDetailTable = ({
 
   const handleEditClick = useCallback(
     (id) => () => {
-      setRows((prevRows) =>
-        prevRows.map((row) => (row.id === id ? { ...row, mode: "edit" } : row))
-      );
+      // Find the student in either enrolled or waitlisted
+      const student =
+        rows.find((row) => row.id === id) ||
+        waitlistedRows.find((row) => row.id === id);
+
+      if (student) {
+        setDialogMode("edit");
+        setEditingStudent(student);
+        setStudentData({ ...student });
+        setShowDialog(true);
+      }
     },
-    []
+    [rows, waitlistedRows]
   );
 
-  const handleAdd = async () => {
+  const handleAddClick = () => {
+    setDialogMode("add");
+    setEditingStudent(null);
+    setStudentData({});
+    setShowDialog(true);
+  };
+
+  const handleDialogSubmit = async () => {
     if (validateForm()) {
-      if (onAddStudent) {
-        await onAddStudent(newStudent);
-        setNewStudent({});
+      if (dialogMode === "add" && onAddStudent) {
+        await onAddStudent(studentData);
+        setStudentData({});
         setFormErrors({});
-        setShowAddDialog(false);
+        setShowDialog(false);
+      } else if (dialogMode === "edit") {
+        setEditLoading(true);
+        try {
+          // API call to update student
+          const response = await fetch(
+            `/api/database/classes/${classData.id}/signup/${editingStudent.id}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(studentData),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error("Failed to update student information");
+          }
+
+          const updatedData = await response.json();
+
+          // Update local state
+          if (editingStudent.isWaitlisted) {
+            setWaitlistedRows((prev) =>
+              prev.map((row) =>
+                row.id === editingStudent.id
+                  ? { ...studentData, id: editingStudent.id }
+                  : row
+              )
+            );
+          } else {
+            setRows((prev) =>
+              prev.map((row) =>
+                row.id === editingStudent.id
+                  ? { ...studentData, id: editingStudent.id }
+                  : row
+              )
+            );
+          }
+
+          toast.success("Student information updated successfully");
+        } catch (error) {
+          console.error("Error updating student:", error);
+          toast.error(
+            "Failed to update student information. Please try again."
+          );
+        } finally {
+          setEditLoading(false);
+          setShowDialog(false);
+          setEditingStudent(null);
+          setStudentData({});
+          setFormErrors({});
+        }
       }
     }
   };
 
   const handleFieldChange = (fieldKey, value) => {
-    setNewStudent((prev) => ({
+    setStudentData((prev) => ({
       ...prev,
       [fieldKey]: value,
     }));
@@ -293,7 +364,7 @@ const ClassDetailTable = ({
           <FormControlLabel
             control={
               <Checkbox
-                checked={!!newStudent[fieldKey]}
+                checked={!!studentData[fieldKey]}
                 onChange={(e) => handleFieldChange(fieldKey, e.target.checked)}
               />
             }
@@ -306,7 +377,7 @@ const ClassDetailTable = ({
           <FormControl fullWidth error={!!error}>
             <InputLabel>{field.label}</InputLabel>
             <Select
-              value={newStudent[fieldKey] || ""}
+              value={studentData[fieldKey] || ""}
               onChange={(e) => handleFieldChange(fieldKey, e.target.value)}
               label={field.label}
             >
@@ -327,7 +398,7 @@ const ClassDetailTable = ({
             multiline
             rows={4}
             fullWidth
-            value={newStudent[fieldKey] || ""}
+            value={studentData[fieldKey] || ""}
             onChange={(e) => handleFieldChange(fieldKey, e.target.value)}
             error={!!error}
             helperText={error || field.helpText}
@@ -341,7 +412,7 @@ const ClassDetailTable = ({
             label={field.label}
             type="date"
             fullWidth
-            value={newStudent[fieldKey] || ""}
+            value={studentData[fieldKey] || ""}
             onChange={(e) => handleFieldChange(fieldKey, e.target.value)}
             error={!!error}
             helperText={error || field.helpText}
@@ -361,7 +432,7 @@ const ClassDetailTable = ({
             label={field.label}
             type={field.type || "text"}
             fullWidth
-            value={newStudent[fieldKey] || ""}
+            value={studentData[fieldKey] || ""}
             onChange={(e) => handleFieldChange(fieldKey, e.target.value)}
             error={!!error}
             helperText={error || field.helpText}
@@ -442,6 +513,12 @@ const ClassDetailTable = ({
         width: 100,
         getActions: (params) => [
           <GridActionsCellItem
+            icon={<EditIcon />}
+            label="Edit Student"
+            onClick={handleEditClick(params.id)}
+            disabled={editLoading}
+          />,
+          <GridActionsCellItem
             icon={<DeleteIcon />}
             label="Remove Student"
             onClick={handleDeleteClick(params.id)}
@@ -450,7 +527,13 @@ const ClassDetailTable = ({
         ],
       },
     ],
-    [baseColumns, handleDeleteClick, removeSignupLoading]
+    [
+      baseColumns,
+      handleEditClick,
+      handleDeleteClick,
+      removeSignupLoading,
+      editLoading,
+    ]
   );
 
   // Add actions column for waitlisted students with promote option
@@ -484,6 +567,13 @@ const ClassDetailTable = ({
             showInMenu={false}
           />,
           <GridActionsCellItem
+            icon={<EditIcon />}
+            label="Edit Student"
+            onClick={handleEditClick(params.id)}
+            disabled={editLoading}
+            showInMenu={false}
+          />,
+          <GridActionsCellItem
             icon={<DeleteIcon />}
             label="Remove Student"
             onClick={handleDeleteClick(params.id)}
@@ -496,9 +586,11 @@ const ClassDetailTable = ({
     [
       baseColumns,
       handlePromoteClick,
+      handleEditClick,
       handleDeleteClick,
       removeSignupLoading,
       promoteLoading,
+      editLoading,
       hasAvailableCapacity,
     ]
   );
@@ -610,7 +702,7 @@ const ClassDetailTable = ({
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => setShowAddDialog(true)}
+            onClick={handleAddClick}
             disabled={signupLoading || isCompletelyFull}
           >
             {isCompletelyFull
@@ -758,27 +850,31 @@ const ClassDetailTable = ({
         </div>
       )}
 
-      {/* Add Student Dialog */}
+      {/* Student Dialog (Add/Edit) */}
       <Dialog
-        open={showAddDialog}
+        open={showDialog}
         onClose={() => {
-          setShowAddDialog(false);
-          setNewStudent({});
+          setShowDialog(false);
+          setStudentData({});
           setFormErrors({});
+          setEditingStudent(null);
         }}
         maxWidth="sm"
         fullWidth
       >
         <DialogTitle>
-          {isMainCapacityFull && isWaitlistEnabled
+          {dialogMode === "edit"
+            ? `Edit Student: ${editingStudent?.firstName} ${editingStudent?.lastName}`
+            : isMainCapacityFull && isWaitlistEnabled
             ? "Add to Waitlist"
             : "Add New Student"}
           <IconButton
             aria-label="close"
             onClick={() => {
-              setShowAddDialog(false);
-              setNewStudent({});
+              setShowDialog(false);
+              setStudentData({});
               setFormErrors({});
+              setEditingStudent(null);
             }}
             sx={{
               position: "absolute",
@@ -791,7 +887,7 @@ const ClassDetailTable = ({
           </IconButton>
         </DialogTitle>
         <DialogContent>
-          {isMainCapacityFull && isWaitlistEnabled && (
+          {dialogMode === "add" && isMainCapacityFull && isWaitlistEnabled && (
             <Box sx={{ mb: 2 }}>
               <Typography variant="body2" color="text.secondary">
                 The class is currently at full capacity. This student will be
@@ -817,20 +913,25 @@ const ClassDetailTable = ({
         <DialogActions>
           <Button
             onClick={() => {
-              setShowAddDialog(false);
-              setNewStudent({});
+              setShowDialog(false);
+              setStudentData({});
               setFormErrors({});
+              setEditingStudent(null);
             }}
           >
             Cancel
           </Button>
           <Button
-            onClick={handleAdd}
+            onClick={handleDialogSubmit}
             variant="contained"
-            disabled={signupLoading}
+            disabled={signupLoading || editLoading}
           >
-            {signupLoading
-              ? "Adding..."
+            {signupLoading || editLoading
+              ? dialogMode === "edit"
+                ? "Updating..."
+                : "Adding..."
+              : dialogMode === "edit"
+              ? "Update Student"
               : isMainCapacityFull && isWaitlistEnabled
               ? "Add to Waitlist"
               : "Add Student"}
