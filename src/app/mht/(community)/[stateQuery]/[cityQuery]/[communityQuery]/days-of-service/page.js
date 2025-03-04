@@ -9,6 +9,8 @@ import JsonViewer from "@/components/util/debug/DebugOutput";
 import { SignUpForm } from "@/components/SignUpForm";
 import { Container, Typography, Box, Divider } from "@mui/material";
 import { Alert, AlertTitle } from "@mui/material";
+import { CustomDaysOfServiceContent } from "@/views/dayOfService/CustomDaysOfService";
+import Loading from "@/components/util/Loading";
 
 const DaysOfServicePage = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params;
@@ -70,17 +72,30 @@ const DaysOfServicePage = ({ params }) => {
 
   if (!hasLoaded) {
     return (
-      <Container maxWidth="lg" className="p-8">
-        <Typography>Loading...</Typography>
+      <Container
+        maxWidth="lg"
+        className="p-8"
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "80vh",
+        }}
+      >
+        <Loading size={100} />
       </Container>
     );
   }
 
   return (
     <Box className="min-h-screen bg-gray-50">
-      <DaysOfServiceContent />
+      <CustomDaysOfServiceContent
+        isEditMode={false}
+        onSave={() => alert("Can't save in view mode")}
+        initialContent={community?.daysOfService || {}}
+      />
 
-      <Divider sx={{ my: 4 }} />
+      {/* <Divider sx={{ my: 4 }} />
 
       <JsonViewer data={{ defaultConfig }} />
 
@@ -111,7 +126,7 @@ const DaysOfServicePage = ({ params }) => {
             )}
           </>
         )}
-      </Container>
+      </Container> */}
     </Box>
   );
 };

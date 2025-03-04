@@ -41,8 +41,8 @@ export const DaysOfServiceContent = () => {
           poster="https://myhometown-bucket.s3.us-west-1.amazonaws.com/uploads/DOS_Thumbnail.webp"
           sx={{
             mx: "auto",
-            width: "100%",
-            height: "100%",
+            width: "50%",
+            height: "50%",
             borderRadius: "12px",
           }}
           src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Days+of+Service+(Hey)+.webm"

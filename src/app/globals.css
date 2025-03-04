@@ -2,7 +2,7 @@
   :root {
     --foreground-rgb: 255, 255, 255;
     --background-start-rgb: 214, 219, 220; /* Light background start rgb */
-    --background-end-rgb: 255, 255, 255;   /* Light background end rgb */
+    --background-end-rgb: 255, 255, 255; /* Light background end rgb */
 
     --primary-glow: radial-gradient(rgba(1, 65, 255, 0.4), rgba(1, 65, 255, 0));
     --secondary-glow: linear-gradient(
@@ -13,7 +13,7 @@
     );
 
     --tile-start-rgb: 239, 245, 249; /* Light tile start rgb */
-    --tile-end-rgb: 228, 232, 233;   /* Light tile end rgb */
+    --tile-end-rgb: 228, 232, 233; /* Light tile end rgb */
     --tile-border: conic-gradient(
       #ffffff80,
       #ffffff40,
@@ -24,10 +24,10 @@
       #ffffff80
     );
 
-    --callout-rgb: 238, 240, 241;        /* Light callout rgb */
+    --callout-rgb: 238, 240, 241; /* Light callout rgb */
     --callout-border-rgb: 172, 175, 176; /* Light callout border rgb */
-    --card-rgb: 180, 185, 188;           /* Light card rgb */
-    --card-border-rgb: 131, 134, 135;    /* Light card border rgb */
+    --card-rgb: 180, 185, 188; /* Light card rgb */
+    --card-border-rgb: 131, 134, 135; /* Light card border rgb */
   }
 }
 
@@ -39,13 +39,50 @@ body {
   background: rgb(var(--background-start-rgb)); /* Use a solid light color */
 }
 
-html, body, main, #paper-root{
+html,
+body,
+main,
+#paper-root {
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
 }
 
-.nextjs-toast-errors{
+.nextjs-toast-errors {
   display: none !important;
+}
+
+/* WYSIWYG Editor Styles */
+.wysiwyg-editor-content {
+  min-height: 200px;
+  outline: none;
+}
+
+.wysiwyg-editor-content p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.wysiwyg-editor .wysiwyg-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1rem 0;
+}
+
+.wysiwyg-editor .ProseMirror {
+  min-height: 200px;
+  padding: 0.5rem;
+}
+
+.wysiwyg-editor .ProseMirror:focus {
+  outline: none;
+}
+
+.wysiwyg-editor .ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid #1b75bc;
 }

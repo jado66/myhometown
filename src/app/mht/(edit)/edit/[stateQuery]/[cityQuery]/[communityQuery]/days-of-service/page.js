@@ -1,20 +1,15 @@
 "use client";
-import { DaysOfServiceContent } from "@/views/dayOfService/DaysOfService";
+import { CustomDaysOfServiceContent } from "@/views/dayOfService/CustomDaysOfService";
 import { communityTemplate } from "@/constants/templates/communityTemplate";
 import useCommunity from "@/hooks/use-community";
 import { useEffect, useState } from "react";
-import { useCustomForms } from "@/hooks/useCustomForm";
-import JsonViewer from "@/components/util/debug/DebugOutput";
-import { SignUpForm } from "@/components/SignUpForm";
-import { Container, Divider } from "@mui/material";
+import { Container } from "@mui/material";
+import { toast } from "react-toastify";
+import Loading from "@/components/util/Loading";
 
 const DaysOfServicePage = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params;
-  const [headerText, setHeaderText] = useState("");
-  const [headerImage, setHeaderImage] = useState("");
-  const [formId, setFormId] = useState("");
-  const [form, setForm] = useState(null);
-  const [isEditing, setIsEditing] = useState(true);
+  const [contentEditMode, setContentEditMode] = useState(false);
 
   const { community, hasLoaded, updateCommunity } = useCommunity(
     communityQuery,
@@ -24,74 +19,59 @@ const DaysOfServicePage = ({ params }) => {
     true
   );
 
-  const { addForm, updateForm, getFormById } = useCustomForms();
-
-  const handleVolunteerFormSave = async (form) => {
+  // Handle saving content changes
+  const handleContentSave = async (contentData) => {
     if (!community) return;
 
     try {
-      let finalFormId = formId;
+      // Ensure all fields, including mapUrl, are included in the update
+      const updatedDaysOfService = {
+        ...(community.daysOfService || {}),
+        secondaryHeaderText: contentData.secondaryHeaderText,
+        daysOfServiceImage: contentData.daysOfServiceImage, // Explicitly include mapUrl
+        bodyContent: contentData.bodyContent,
+      };
 
-      setForm(form);
+      // Update the community with the new daysOfService object
+      await updateCommunity({
+        daysOfService: updatedDaysOfService,
+      });
 
-      // If we don't have a form ID, create a new form
-      if (!community.volunteerSignUpId) {
-        const newForm = await addForm(
-          `${community.name} Volunteer Sign Up Form`,
-          form.formConfig,
-          form.fieldOrder // Default field order
-        );
-
-        if (newForm) {
-          finalFormId = newForm.id;
-
-          // Update community with new form ID
-          await updateCommunity({
-            volunteerSignUpId: newForm.id,
-          });
-        }
-      } else {
-        // Update existing form
-        await updateForm(community.volunteerSignUpId, {
-          form_config: form.formConfig,
-          field_order: form.fieldOrder,
-        });
-      }
+      toast.success("Content updated successfully");
+      setContentEditMode(false);
     } catch (error) {
-      console.error("Error saving volunteer form:", error);
+      console.error("Error saving content:", error);
+      toast.error("Failed to update content");
     }
-
-    setIsEditing(false);
   };
 
-  useEffect(() => {
-    if (community?.volunteerSignUpId) {
-      getFormById(community.volunteerSignUpId).then((f) => {
-        setForm(f);
-      });
-    }
-  }, [community]);
+  // Check if user has permission to edit (simplified example)
+  const userCanEdit = true; // Replace with actual permission check
+
+  if (!hasLoaded) {
+    return (
+      <Container
+        maxWidth="lg"
+        className="p-8"
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "80vh",
+        }}
+      >
+        <Loading size={100} />
+      </Container>
+    );
+  }
 
   return (
     <>
-      <DaysOfServiceContent />
-
-      {/* <Divider sx={{ my: 2, width: "100%" }} /> */}
-
-      {/* <Container
-        maxWidth="lg"
-        sx={{
-          padding: { md: 4, xs: 3 },
-        }}
-      >
-        <SignUpForm
-          isEdit={isEditing}
-          onClose={handleVolunteerFormSave}
-          form={form}
-          signUpFormId={community?.volunteerSignUpId}
-          handleSubmit={() => alert("Can't submit in edit mode")}
-        />
-      </Container> */}
+      <CustomDaysOfServiceContent
+        isEditMode
+        onSave={handleContentSave}
+        initialContent={community?.daysOfService || {}}
+      />
     </>
   );
 };
