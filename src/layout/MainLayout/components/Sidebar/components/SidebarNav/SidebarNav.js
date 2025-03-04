@@ -273,6 +273,23 @@ const SidebarNav = ({ onClose }) => {
                     Teacher Login
                   </Typography>
                 </NextLink>
+                <NextLink
+                  href={rootUrl + "/admin-dashboard/days-of-service"}
+                  style={{ textDecoration: "none", color: "#686868" }}
+                >
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontWeight: 700,
+                      marginBottom: 1,
+                      mt: 1,
+                      display: "block",
+                      color: "black",
+                    }}
+                  >
+                    Service Login
+                  </Typography>
+                </NextLink>
               </div>
             )}
           </Box>
