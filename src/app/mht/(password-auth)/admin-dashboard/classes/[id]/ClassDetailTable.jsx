@@ -18,6 +18,9 @@ import {
   Select,
   MenuItem,
   FormHelperText,
+  Tabs,
+  Tab,
+  Divider,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -54,16 +57,26 @@ const ClassDetailTable = ({
   removeSignupLoading,
 }) => {
   const [rows, setRows] = useState([]);
+  const [waitlistedRows, setWaitlistedRows] = useState([]);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newStudent, setNewStudent] = useState({});
   const [formErrors, setFormErrors] = useState({});
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
+  const [tabValue, setTabValue] = useState(0);
 
   // Update rows when classData changes
   useEffect(() => {
     if (classData?.signups) {
-      setRows(classData.signups);
+      const enrolled = classData.signups.filter(
+        (signup) => !signup.isWaitlisted
+      );
+      const waitlisted = classData.signups.filter(
+        (signup) => signup.isWaitlisted
+      );
+
+      setRows(enrolled);
+      setWaitlistedRows(waitlisted);
     }
   }, [classData]);
 
@@ -135,8 +148,13 @@ const ClassDetailTable = ({
     if (onRemoveSignup && studentToDelete) {
       const success = await onRemoveSignup(studentToDelete);
       if (success) {
-        const updatedRows = rows.filter((row) => row.id !== studentToDelete);
-        setRows(updatedRows);
+        // Update both regular and waitlisted rows
+        setRows((prevRows) =>
+          prevRows.filter((row) => row.id !== studentToDelete)
+        );
+        setWaitlistedRows((prevRows) =>
+          prevRows.filter((row) => row.id !== studentToDelete)
+        );
       }
       setDeleteConfirmOpen(false);
       setStudentToDelete(null);
@@ -364,6 +382,21 @@ const ClassDetailTable = ({
     [baseColumns, handleEditClick, handleDeleteClick, removeSignupLoading]
   );
 
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
+
+  // Calculate enrollment status
+  const enrolledCount = rows.length;
+  const waitlistedCount = waitlistedRows.length;
+  const totalCapacity = parseInt(classData.capacity) || 0;
+  const isMainCapacityFull = enrolledCount >= totalCapacity;
+  const isWaitlistEnabled = classData.isWaitlistEnabled === true;
+  const waitlistCapacity = parseInt(classData.waitlistCapacity) || 0;
+  const isWaitlistFull = waitlistedCount >= waitlistCapacity;
+  const isCompletelyFull =
+    isMainCapacityFull && (!isWaitlistEnabled || isWaitlistFull);
+
   return (
     <>
       <Dialog
@@ -401,62 +434,159 @@ const ClassDetailTable = ({
           </Button>
         </DialogActions>
       </Dialog>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 2,
-        }}
-      >
-        <Typography variant="h6">Class Roster</Typography>
-        {/* <JsonViewer data={classData} /> */}
 
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setShowAddDialog(true)}
-          disabled={
-            signupLoading || classData.signups.length >= classData.capacity
-          }
+      <Box sx={{ mb: 3 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
         >
-          {classData.signups.length >= classData.capacity
-            ? "Class is Full"
-            : signupLoading
-            ? "Adding..."
-            : "Add Student"}
-        </Button>
+          <Typography variant="h6">Class Roster</Typography>
+
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setShowAddDialog(true)}
+            disabled={signupLoading || isCompletelyFull}
+          >
+            {isCompletelyFull
+              ? "Class is Full"
+              : isMainCapacityFull && isWaitlistEnabled
+              ? "Add to Waitlist"
+              : signupLoading
+              ? "Adding..."
+              : "Add Student"}
+          </Button>
+        </Box>
+
+        {/* Class capacity information */}
+
+        {classData.capacity ? (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Enrolled: {enrolledCount}/{totalCapacity}{" "}
+              {enrolledCount === 1 ? "student" : "students"}
+              {isWaitlistEnabled &&
+                ` • Waitlist: ${waitlistedCount}/${waitlistCapacity}`}
+            </Typography>
+          </Box>
+        ) : (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Enrolled: {enrolledCount}{" "}
+              {enrolledCount === 1 ? "student" : "students"}
+            </Typography>
+          </Box>
+        )}
+
+        {/* Tab navigation */}
+        {classData.capacity && (
+          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+            <Tabs
+              value={tabValue}
+              onChange={handleTabChange}
+              aria-label="roster tabs"
+            >
+              <Tab
+                label={`Enrolled Students (${enrolledCount})`}
+                id="tab-0"
+                aria-controls="tabpanel-0"
+              />
+              {isWaitlistEnabled && (
+                <Tab
+                  label={`Waitlist (${waitlistedCount})`}
+                  id="tab-1"
+                  aria-controls="tabpanel-1"
+                />
+              )}
+            </Tabs>
+          </Box>
+        )}
       </Box>
 
-      <Paper sx={{ height: 600, width: "100%" }}>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          pageSize={10}
-          rowsPerPageOptions={[5, 10, 25]}
-          checkboxSelection={false}
-          disableSelectionOnClick
-          components={{
-            Toolbar: GridToolbar,
-          }}
-          componentsProps={{
-            toolbar: {
-              showQuickFilter: true,
-              quickFilterProps: { debounceMs: 500 },
-            },
-          }}
-          density="comfortable"
-          // processRowUpdate={processRowUpdate}
-          // experimentalFeatures={{ newEditingApi: true }}
-          initialState={{
-            sorting: {
-              sortModel: [
-                { field: classData.signupForm.fieldOrder[0], sort: "asc" },
-              ],
-            },
-          }}
-        />
-      </Paper>
+      {/* Regular enrollment table */}
+      <div
+        role="tabpanel"
+        hidden={tabValue !== 0}
+        id="tabpanel-0"
+        aria-labelledby="tab-0"
+      >
+        {tabValue === 0 && (
+          <Paper sx={{ height: 600, width: "100%" }}>
+            <DataGrid
+              rows={rows}
+              columns={columns}
+              pageSize={10}
+              rowsPerPageOptions={[5, 10, 25]}
+              checkboxSelection={false}
+              disableSelectionOnClick
+              components={{
+                Toolbar: GridToolbar,
+              }}
+              componentsProps={{
+                toolbar: {
+                  showQuickFilter: true,
+                  quickFilterProps: { debounceMs: 500 },
+                },
+              }}
+              density="comfortable"
+              initialState={{
+                sorting: {
+                  sortModel: [
+                    { field: classData.signupForm.fieldOrder[0], sort: "asc" },
+                  ],
+                },
+              }}
+            />
+          </Paper>
+        )}
+      </div>
+
+      {/* Waitlist table */}
+      {isWaitlistEnabled && (
+        <div
+          role="tabpanel"
+          hidden={tabValue !== 1}
+          id="tabpanel-1"
+          aria-labelledby="tab-1"
+        >
+          {tabValue === 1 && (
+            <Paper sx={{ height: 600, width: "100%" }}>
+              <DataGrid
+                rows={waitlistedRows}
+                columns={columns}
+                pageSize={10}
+                rowsPerPageOptions={[5, 10, 25]}
+                checkboxSelection={false}
+                disableSelectionOnClick
+                components={{
+                  Toolbar: GridToolbar,
+                }}
+                componentsProps={{
+                  toolbar: {
+                    showQuickFilter: true,
+                    quickFilterProps: { debounceMs: 500 },
+                  },
+                }}
+                density="comfortable"
+                initialState={{
+                  sorting: {
+                    sortModel: [
+                      {
+                        field: classData.signupForm.fieldOrder[0],
+                        sort: "asc",
+                      },
+                    ],
+                  },
+                }}
+              />
+            </Paper>
+          )}
+        </div>
+      )}
 
       <Dialog
         open={showAddDialog}
@@ -469,7 +599,9 @@ const ClassDetailTable = ({
         fullWidth
       >
         <DialogTitle>
-          Add New Student
+          {isMainCapacityFull && isWaitlistEnabled
+            ? "Add to Waitlist"
+            : "Add New Student"}
           <IconButton
             aria-label="close"
             onClick={() => {
@@ -488,6 +620,15 @@ const ClassDetailTable = ({
           </IconButton>
         </DialogTitle>
         <DialogContent>
+          {isMainCapacityFull && isWaitlistEnabled && (
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                The class is currently at full capacity. This student will be
+                added to the waitlist.
+              </Typography>
+              <Divider sx={{ my: 2 }} />
+            </Box>
+          )}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}>
             {classData.signupForm.fieldOrder
               .filter((fieldKey) => {
@@ -517,7 +658,11 @@ const ClassDetailTable = ({
             variant="contained"
             disabled={signupLoading}
           >
-            {signupLoading ? "Adding..." : "Add Student"}
+            {signupLoading
+              ? "Adding..."
+              : isMainCapacityFull && isWaitlistEnabled
+              ? "Add to Waitlist"
+              : "Add Student"}
           </Button>
         </DialogActions>
       </Dialog>

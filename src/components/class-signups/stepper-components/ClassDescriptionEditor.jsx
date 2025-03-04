@@ -200,6 +200,7 @@ export function ClassDescriptionEditor({ CategorySelectOptions, isEdit }) {
         fullWidth
         label="Class Capacity"
         type="number"
+        inputProps={{ min: 0 }}
         value={classConfig.capacity}
         onChange={(e) => handleClassConfigChange("capacity", e.target.value)}
         error={!!errors.capacity}
@@ -217,6 +218,39 @@ export function ClassDescriptionEditor({ CategorySelectOptions, isEdit }) {
             />
           }
           label="Show Class Capacity"
+        />
+      )}
+
+      {classConfig.capacity && (
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={classConfig.isWaitlistEnabled}
+              onChange={(e) =>
+                handleClassConfigChange("isWaitlistEnabled", e.target.checked)
+              }
+            />
+          }
+          label="Enable Waitlist"
+        />
+      )}
+
+      {classConfig.isWaitlistEnabled && (
+        <TextField
+          fullWidth
+          type="number"
+          // min
+          inputProps={{ min: 0 }}
+          label="Waitlist Capacity"
+          value={classConfig.waitlistCapacity}
+          onChange={(e) =>
+            handleClassConfigChange("waitlistCapacity", e.target.value)
+          }
+          error={!!errors.waitlistCapacity}
+          helperText={
+            errors.waitlistCapacity ||
+            "Optional: Maximum number of students on waitlist - If not set or set waitlist will be unlimited"
+          }
         />
       )}
     </Stack>

@@ -284,34 +284,36 @@ export default function ClassRollTable({ classData, show, onClose }) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {classData.signups.map((signup, index) => (
-                <TableRow key={index}>
-                  {nameFields.map((field, fieldIndex) => (
-                    <TableCell
-                      key={field.key}
-                      className={`sticky-column ${
-                        fieldIndex > 0 ? `sticky-column-${fieldIndex}` : ""
-                      }`}
-                    >
-                      {signup[field.key] || ""}
-                    </TableCell>
-                  ))}
-                  {dates.map((date) => (
-                    <TableCell key={date} align="center">
-                      <Checkbox
-                        checked={localAttendance[signup.id]?.[date] || false}
-                        onChange={(e) =>
-                          handleAttendanceChange(
-                            signup.id,
-                            date,
-                            e.target.checked
-                          )
-                        }
-                      />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
+              {classData.signups
+                .filter((signup) => !signup.isWaitlisted)
+                .map((signup, index) => (
+                  <TableRow key={index}>
+                    {nameFields.map((field, fieldIndex) => (
+                      <TableCell
+                        key={field.key}
+                        className={`sticky-column ${
+                          fieldIndex > 0 ? `sticky-column-${fieldIndex}` : ""
+                        }`}
+                      >
+                        {signup[field.key] || ""}
+                      </TableCell>
+                    ))}
+                    {dates.map((date) => (
+                      <TableCell key={date} align="center">
+                        <Checkbox
+                          checked={localAttendance[signup.id]?.[date] || false}
+                          onChange={(e) =>
+                            handleAttendanceChange(
+                              signup.id,
+                              date,
+                              e.target.checked
+                            )
+                          }
+                        />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </TableContainer>

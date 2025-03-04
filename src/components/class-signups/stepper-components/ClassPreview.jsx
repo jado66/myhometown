@@ -106,6 +106,12 @@ const ClassPreview = ({ classData, noBanner }) => {
           <People fontSize="small" color="action" />
           <Typography variant="body2">
             Capacity: {classData.capacity} students
+            {
+              // Show waitlist capacity if it's set
+              classData.waitlistCapacity > 0
+                ? ` and (${classData.waitlistCapacity} waitlist spots)`
+                : ""
+            }
           </Typography>
         </Box>
       )}

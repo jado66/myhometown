@@ -56,6 +56,7 @@ const ClassPreviewAccordion = ({
       })) || [],
     location: classData.location || "",
     capacity: classData.capacity || "",
+    waitlistCapacity: classData.waitlistCapacity || "",
     showCapacity: classData.showCapacity || false,
   };
 

@@ -136,6 +136,12 @@ export const useClasses = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
+
+        // Handle 409 Conflict specifically for when a class is completely full (including waitlist)
+        if (response.status === 409) {
+          throw new Error(errorData.error || "Class is fully booked");
+        }
+
         throw new Error(errorData.error || "Failed to process signup");
       }
 
@@ -146,7 +152,7 @@ export const useClasses = () => {
     } catch (err) {
       setError(err.message);
       setSignupLoading(false);
-      return null;
+      throw err; // Re-throw the error so it can be caught in handleSubmit
     }
   };
 

@@ -18,21 +18,33 @@ export async function POST(req, { params }) {
       });
     }
 
-    // Check capacity if it's set
-    if (
-      classDoc.capacity &&
-      classDoc.signups.length >= parseInt(classDoc.capacity)
-    ) {
-      return new Response(JSON.stringify({ error: "Class is full" }), {
-        status: 400,
-      });
+    // Check if waitlist is enabled and set initial waitlisted status
+    const isWaitlistEnabled = classDoc.isWaitlistEnabled === true;
+    const waitlistCapacity = parseInt(classDoc.waitlistCapacity || 0);
+    const totalCapacity =
+      parseInt(classDoc.capacity) + (isWaitlistEnabled ? waitlistCapacity : 0);
+
+    // Check if class is completely full (including waitlist)
+    if (classDoc.signups.length >= totalCapacity) {
+      return new Response(
+        JSON.stringify({ error: "Class is fully booked including waitlist" }),
+        {
+          status: 409,
+        }
+      );
     }
+
+    // Determine if this signup should be waitlisted
+    const isWaitlisted =
+      isWaitlistEnabled &&
+      classDoc.signups.length >= parseInt(classDoc.capacity);
 
     // Generate a unique ID for the signup
     const signupId = uuidv4();
     const signupWithId = {
       ...signupData,
       id: signupId,
+      isWaitlisted: isWaitlisted,
       createdAt: new Date().toISOString(),
     };
 
@@ -48,16 +60,21 @@ export async function POST(req, { params }) {
         firstName: signupData.firstName,
         phone: signupData.phone,
         classDoc, // Pass the entire class document
+        isWaitlisted, // Pass waitlist status
       });
     }
+
+    // Use 201 for successful signup, 202 for waitlist
+    const statusCode = isWaitlisted ? 202 : 201;
 
     return new Response(
       JSON.stringify({
         success: true,
+        isWaitlisted: isWaitlisted,
         signup: signupWithId,
         notification: notificationResult,
       }),
-      { status: 201 }
+      { status: statusCode }
     );
   } catch (e) {
     console.error("Error occurred while processing signup", e);

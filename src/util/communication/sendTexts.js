@@ -155,7 +155,12 @@ async function sendSimpleText({ message, phone, name }) {
 }
 
 // Utility function for class signup notification
-async function sendClassSignupText({ firstName, phone, classDoc }) {
+async function sendClassSignupText({
+  firstName,
+  phone,
+  classDoc,
+  isWaitlisted = false,
+}) {
   try {
     // Format the date range if start and end dates are different
     const startDate = new Date(classDoc.startDate).toLocaleDateString();
@@ -168,7 +173,27 @@ async function sendClassSignupText({ firstName, phone, classDoc }) {
     // Format meeting times
     const meetingSchedule = formatMeetingTimes(classDoc.meetings);
 
-    const message = `Hello ${firstName}, Thank you for signing up for ${classDoc.title}. Here are the details:
+    let message;
+
+    if (isWaitlisted) {
+      // Waitlist confirmation message
+      message = `Hello ${firstName}, Thank you for joining the waitlist for ${classDoc.title}.
+      
+This class is currently at capacity, but we've added you to our waitlist. We'll contact you if a spot becomes available.
+
+Class Details:
+  Date: ${dateRange}
+  Schedule:
+  ${meetingSchedule}
+  Location: ${classDoc.location}
+  
+We appreciate your interest and hope to accommodate you soon.
+  
+Best Regards,
+myHometown`;
+    } else {
+      // Regular signup confirmation message
+      message = `Hello ${firstName}, Thank you for signing up for ${classDoc.title}. Here are the details:
   Date: ${dateRange}
   Schedule:
   ${meetingSchedule}
@@ -178,6 +203,7 @@ async function sendClassSignupText({ firstName, phone, classDoc }) {
   
   Best Regards,
   myHometown`;
+    }
 
     return sendSimpleText({
       message,

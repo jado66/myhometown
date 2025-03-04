@@ -33,20 +33,55 @@ export function ViewClassSignupForm({ testSubmit, classData, type, onSubmit }) {
     testSignup,
   } = useClassSignup();
 
-  if (
-    classConfig &&
-    classConfig.signups &&
-    classConfig.capacity &&
-    classConfig.signups.length == classConfig.capacity
-  ) {
+  // Check if the class is fully booked, including waitlist if enabled
+  const capacity = Number(classData?.capacity) || 0;
+  const waitlistCapacity = Number(classData?.waitlistCapacity) || 0;
+  const signupsCount = classConfig?.signups?.length || 0;
+  const isWaitlistEnabled = classData?.isWaitlistEnabled || false;
+
+  // Calculate total capacity
+  const totalCapacity =
+    isWaitlistEnabled && waitlistCapacity > 0
+      ? capacity + waitlistCapacity
+      : capacity;
+
+  // Log calculated values
+  console.log({
+    capacity,
+    waitlistCapacity,
+    signupsCount,
+    isWaitlistEnabled,
+    totalCapacity,
+    isFullyBooked: signupsCount >= totalCapacity,
+    isMainCapacityFull:
+      signupsCount >= capacity &&
+      signupsCount < totalCapacity &&
+      isWaitlistEnabled,
+  });
+
+  const isFullyBooked = signupsCount >= totalCapacity;
+  const isMainCapacityFull =
+    signupsCount >= capacity &&
+    signupsCount < totalCapacity &&
+    isWaitlistEnabled;
+
+  if (isFullyBooked) {
     return (
       <>
+        <JsonViewer data={classData} title="Class Config" />
+
         <ClassPreview classData={classConfig} />
         <Divider sx={{ my: 3 }} />
 
         <Alert severity="warning">
           This class is currently full. Please check back later for more
           availability.
+          {JSON.stringify({
+            capacity,
+            waitlistCapacity,
+            signupsCount,
+            totalCapacity,
+          })}
         </Alert>
       </>
     );
@@ -62,6 +97,13 @@ export function ViewClassSignupForm({ testSubmit, classData, type, onSubmit }) {
       )}
 
       {/* <JsonViewer data={classData} title="Class Config" /> */}
+
+      {isMainCapacityFull && (
+        <Alert severity="info">
+          The main capacity for this class is full. Signing up will add you to
+          the waitlist.
+        </Alert>
+      )}
 
       {fieldOrder &&
         fieldOrder.map((field) => {
@@ -137,11 +179,17 @@ export function ViewClassSignupForm({ testSubmit, classData, type, onSubmit }) {
             }}
             disabled={submitStatus === "submitting" || testSubmit}
           >
-            {submitStatus === "submitting" ? "Signing Up..." : "Sign Up"}
+            {submitStatus === "submitting"
+              ? "Signing Up..."
+              : isMainCapacityFull
+              ? "Join Waitlist"
+              : "Sign Up"}
           </Button>
           {submitStatus === "success" && (
             <Typography variant="body1" color="success" sx={{ mt: 2 }}>
-              Successfully signed up for the class!
+              {isMainCapacityFull
+                ? "Successfully added to the waitlist!"
+                : "Successfully signed up for the class!"}
             </Typography>
           )}
         </>
