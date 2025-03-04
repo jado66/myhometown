@@ -160,6 +160,7 @@ async function sendClassSignupText({
   phone,
   classDoc,
   isWaitlisted = false,
+  wasPromoted = false,
 }) {
   try {
     // Format the date range if start and end dates are different
@@ -175,7 +176,21 @@ async function sendClassSignupText({
 
     let message;
 
-    if (isWaitlisted) {
+    if (wasPromoted) {
+      // Promotion confirmation message
+      message = `Good news, ${firstName}! A spot has opened up in ${classDoc.title} and you've been moved from the waitlist to enrolled status.
+
+Class Details:
+Date: ${dateRange}
+Schedule:
+${meetingSchedule}
+Location: ${classDoc.location}
+  
+We look forward to seeing you there!
+  
+Best Regards,
+myHometown`;
+    } else if (isWaitlisted) {
       // Waitlist confirmation message
       message = `Hello ${firstName}, Thank you for joining the waitlist for ${classDoc.title}.
       
