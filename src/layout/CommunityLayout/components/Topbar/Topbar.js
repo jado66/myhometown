@@ -15,7 +15,7 @@ import useManageCities from "@/hooks/use-manage-cities";
 import LanguageIcon from "@mui/icons-material/Language";
 import { ExpandLess, Translate } from "@mui/icons-material";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Cookies from "js-cookie";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import { cityStrings } from "@/constants/cities";
@@ -23,6 +23,8 @@ import { toast } from "react-toastify";
 
 const Topbar = ({ onSidebarOpen }) => {
   const { groupedCityStrings } = useManageCities(null, true);
+
+  const pathname = usePathname();
 
   const [citiesAnchorEl, setCitiesAnchorEl] = useState(null);
   const [resourcesAnchorEl, setResourcesAnchorEl] = useState(null);
@@ -63,6 +65,18 @@ const Topbar = ({ onSidebarOpen }) => {
     const y =
       element.getBoundingClientRect().top + window.pageYOffset + yOffset;
     window.scrollTo({ top: y, behavior: "smooth" });
+  };
+
+  const getDaysOfServiceUrl = () => {
+    // Check if the current path already ends with /days-of-service
+    if (pathname && pathname.endsWith("/days-of-service")) {
+      return pathname;
+    }
+
+    // Otherwise, append /days-of-service to the current path
+    return `${pathname || ""}${
+      pathname && !pathname.endsWith("/") ? "/" : ""
+    }days-of-service`;
   };
 
   let filteredGroupedCityStrings = Object.fromEntries(
@@ -128,7 +142,7 @@ const Topbar = ({ onSidebarOpen }) => {
           <Box marginX={2}>
             <Button
               variant="text"
-              href="http://localhost:3000/mht/edit/utah/dev/dev/days-of-service"
+              href={getDaysOfServiceUrl()}
               sx={{
                 fontSize: "larger",
                 color: "black",
@@ -136,12 +150,6 @@ const Topbar = ({ onSidebarOpen }) => {
               }}
             >
               Days of Service
-              {/* {
-                !resourcesAnchorEl ?
-                <ExpandMore/>
-                :
-                <ExpandLess/>
-              } */}
             </Button>
           </Box>
 
