@@ -378,7 +378,7 @@ const Page = ({ params }) => {
           events={events}
           maxEvents={5}
         />
-        <Divider sx={{ my: 5 }} />
+        <Divider sx={{ my: 5 }} id="events" />
         <EventsCalendar events={events} onSelectEvent={onSelectEvent} />
         <Divider sx={{ my: 5 }} />
 

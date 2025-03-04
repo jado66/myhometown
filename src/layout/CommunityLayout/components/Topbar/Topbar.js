@@ -25,6 +25,8 @@ const Topbar = ({ onSidebarOpen }) => {
   const { groupedCityStrings } = useManageCities(null, true);
 
   const pathname = usePathname();
+  const isOnDaysOfServicePage =
+    pathname && pathname.endsWith("/days-of-service");
 
   const [citiesAnchorEl, setCitiesAnchorEl] = useState(null);
   const [resourcesAnchorEl, setResourcesAnchorEl] = useState(null);
@@ -65,6 +67,17 @@ const Topbar = ({ onSidebarOpen }) => {
     const y =
       element.getBoundingClientRect().top + window.pageYOffset + yOffset;
     window.scrollTo({ top: y, behavior: "smooth" });
+  };
+
+  const handleNavigation = (id, yOffset) => {
+    if (isOnDaysOfServicePage) {
+      // If on the days-of-service page, navigate to parent path with hash
+      const parentPath = pathname.substring(0, pathname.lastIndexOf("/"));
+      window.location.href = `${parentPath}/#${id}`;
+    } else {
+      // If not on days-of-service page, use scroll function
+      scrollToWithOffset(id, yOffset);
+    }
   };
 
   const getDaysOfServiceUrl = () => {
@@ -156,7 +169,7 @@ const Topbar = ({ onSidebarOpen }) => {
           <Box marginX={2}>
             <Button
               variant="text"
-              onClick={(e) => scrollToWithOffset("events", -150)}
+              onClick={() => handleNavigation("events", -150)}
               sx={{
                 fontSize: "larger",
                 color: "black",
@@ -164,19 +177,13 @@ const Topbar = ({ onSidebarOpen }) => {
               }}
             >
               Events
-              {/* {
-                !resourcesAnchorEl ?
-                <ExpandMore/>
-                :
-                <ExpandLess/>
-              } */}
             </Button>
           </Box>
 
           <Box marginX={2}>
             <Button
               variant="text"
-              onClick={(e) => scrollToWithOffset("crc-classes")}
+              onClick={() => handleNavigation("crc-classes", -100)}
               sx={{
                 fontSize: "larger",
                 color: "black",
@@ -184,19 +191,13 @@ const Topbar = ({ onSidebarOpen }) => {
               }}
             >
               Classes
-              {/* {
-                !resourcesAnchorEl ?
-                <ExpandMore/>
-                :
-                <ExpandLess/>
-              } */}
             </Button>
           </Box>
 
           <Box marginX={2}>
             <Button
               variant="text"
-              onClick={(e) => scrollToWithOffset("volunteer")}
+              onClick={() => handleNavigation("volunteer", -100)}
               sx={{
                 fontSize: "larger",
                 color: "black",
@@ -204,12 +205,6 @@ const Topbar = ({ onSidebarOpen }) => {
               }}
             >
               Volunteer
-              {/* {
-                !resourcesAnchorEl ?
-                <ExpandMore/>
-                :
-                <ExpandLess/>
-              } */}
             </Button>
           </Box>
 
@@ -283,27 +278,6 @@ const Topbar = ({ onSidebarOpen }) => {
               </MenuItem>
             </Menu>
           </Box>
-
-          {/* <Box marginX={2}>
-            <Link
-              underline="none"
-              component="a"
-              href={rootUrl + "/about-us"}
-              color="textPrimary"
-            >
-              About Us
-            </Link>
-          </Box> */}
-          {/* <Box marginX={2}>
-            <Link
-              underline="none"
-              component="a"
-              href={rootUrl + "/donate"}
-              color="textPrimary"
-            >
-              Donate
-            </Link>
-          </Box> */}
         </Box>
       </Box>
     </Box>
