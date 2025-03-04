@@ -76,9 +76,9 @@ const DaysOfServicePage = ({ params }) => {
     <>
       <DaysOfServiceContent />
 
-      <Divider sx={{ my: 2, width: "100%" }} />
+      {/* <Divider sx={{ my: 2, width: "100%" }} /> */}
 
-      <Container
+      {/* <Container
         maxWidth="lg"
         sx={{
           padding: { md: 4, xs: 3 },
@@ -91,7 +91,7 @@ const DaysOfServicePage = ({ params }) => {
           signUpFormId={community?.volunteerSignUpId}
           handleSubmit={() => alert("Can't submit in edit mode")}
         />
-      </Container>
+      </Container> */}
     </>
   );
 };
