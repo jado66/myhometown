@@ -36,12 +36,15 @@ import {
 } from "@mui/icons-material";
 
 const colors = [
+  {
+    name: "Default",
+    value: "inherit",
+  },
   { name: "Purple", value: "#a16faf" },
   { name: "Blue", value: "#1b75bc" },
   { name: "Yellow", value: "#febc18" },
   { name: "Green", value: "#318d43" },
   { name: "Orange", value: "#e45620" },
-  { name: "Default", value: "inherit" },
 ];
 
 export interface WysiwygEditorProps {
@@ -317,7 +320,7 @@ export default function WysiwygEditor({
                         border: "1px solid",
                         borderColor: "grey.300",
                         backgroundColor:
-                          color.value !== "inherit" ? color.value : "white",
+                          color.value !== "inherit" ? color.value : "#686868",
                         outline: editor.isActive("textStyle", {
                           color: color.value,
                         })
