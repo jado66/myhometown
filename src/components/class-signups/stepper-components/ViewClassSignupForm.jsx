@@ -95,16 +95,12 @@ export function ViewClassSignupForm({
           <Divider sx={{ my: 3 }} />
         </>
       )}
-
-      {/* <JsonViewer data={classData} title="Class Config" /> */}
-
       {isMainCapacityFull && (
         <Alert severity="info">
           The main capacity for this class is full. Signing up will add you to
           the waitlist.
         </Alert>
       )}
-
       {fieldOrder &&
         fieldOrder.map((field) => {
           const config = formConfig[field];

@@ -233,6 +233,8 @@ export function ClassSignupProvider({
           endTime: loadedClass.meetings?.[0]?.endTime || "",
           id: loadedClass.id,
           signups: loadedClass.signups || [],
+          isWaitlistEnabled: loadedClass.isWaitlistEnabled || false,
+          waitlistCapacity: loadedClass.waitlistCapacity || 0,
           categoryId: category?.id,
         };
 
