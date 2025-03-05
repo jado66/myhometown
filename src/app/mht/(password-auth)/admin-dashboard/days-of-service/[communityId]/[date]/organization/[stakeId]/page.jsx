@@ -620,7 +620,7 @@ export default function ProjectFormsPage({ params }) {
                                 sx={{ display: "flex", alignItems: "center" }}
                               >
                                 <Group sx={{ mr: 1 }} size="small" />
-                                {project.volunteers_needed} Volunteers
+                                {project.volunteers_needed}
                               </Typography>
                             )}
                           <IconButton
@@ -657,7 +657,7 @@ export default function ProjectFormsPage({ params }) {
                               }}
                             >
                               <Assignment sx={{ mr: 1 }} />
-                              Generate Report
+                              Print Report
                             </MenuItem>
                             <MenuItem
                               onClick={(e) => {

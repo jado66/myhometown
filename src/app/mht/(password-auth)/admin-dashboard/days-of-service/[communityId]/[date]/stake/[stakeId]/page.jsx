@@ -545,7 +545,7 @@ export default function ProjectFormsPage({ params }) {
                   : 0; // Default to no change if dates are invalid
               })
               .map((project) => (
-                <Grid item xs={12} sm={6} lg={6} key={project.id}>
+                <Grid item xs={12} lg={6} key={project.id}>
                   <Card
                     sx={{
                       cursor: "pointer",
@@ -590,19 +590,36 @@ export default function ProjectFormsPage({ params }) {
                       {/* Regular buttons for normal screens */}
                       {!isSmallScreen && (
                         <>
-                          <IconButton
-                            edge="end"
-                            aria-label="generate-report"
-                            onClick={(e) =>
-                              handleGenerateSingleReport(e, project)
-                            }
-                            sx={{ mr: 1 }}
-                          >
-                            <Tooltip title="Generate Report">
-                              <Assignment />
-                            </Tooltip>
-                          </IconButton>
-
+                          <Tooltip title="Generate Report">
+                            <Button
+                              edge="end"
+                              aria-label="generate-report"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toast.info(
+                                  `This project needs ${project.volunteers_needed} volunteers.`
+                                );
+                              }}
+                              sx={{ mr: 1, color: "#686868" }}
+                            >
+                              <Group sx={{ mr: 1 }} />
+                              {project.volunteers_needed}
+                            </Button>
+                          </Tooltip>
+                          <Tooltip title="Generate Report">
+                            <Button
+                              edge="end"
+                              variant="outlined"
+                              aria-label="generate-report"
+                              onClick={(e) =>
+                                handleGenerateSingleReport(e, project)
+                              }
+                              sx={{ mr: 1 }}
+                            >
+                              <Assignment sx={{ mr: 1 }} />
+                              Print
+                            </Button>
+                          </Tooltip>
                           <IconButton
                             edge="end"
                             aria-label="delete"
@@ -624,7 +641,7 @@ export default function ProjectFormsPage({ params }) {
                                 sx={{ display: "flex", alignItems: "center" }}
                               >
                                 <Group sx={{ mr: 1 }} size="small" />
-                                {project.volunteers_needed} Volunteers
+                                {project.volunteers_needed}
                               </Typography>
                             )}
                           <IconButton
@@ -661,7 +678,7 @@ export default function ProjectFormsPage({ params }) {
                               }}
                             >
                               <Assignment sx={{ mr: 1 }} />
-                              Generate Report
+                              Print Report
                             </MenuItem>
                             <MenuItem
                               onClick={(e) => {

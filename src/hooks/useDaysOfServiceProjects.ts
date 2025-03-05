@@ -718,7 +718,7 @@ export const useDaysOfServiceProjects = () => {
       yPosition = checkForNewPage(yPosition);
 
       doc.text(
-        `Homeowner Can Pay Half: $${
+        `Property Owner's Ability Estimates: $${
           project.homeowner_ability_estimates || "N/A"
         }`,
         margin,

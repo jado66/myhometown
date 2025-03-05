@@ -51,13 +51,13 @@ const Step2 = () => {
 
       {/* Assigned Ward  */}
       <ProjectTextField
-        label="Encompassing Ward"
+        label="Encompassing Area"
         key="project_development_couple_ward"
         value={formData.project_development_couple_ward}
         onChange={(e) =>
           handleInputChange("project_development_couple_ward", e.target.value)
         }
-        helperText="The ward whose geographical boundaries encompass this property location."
+        helperText="The area whose geographical boundaries encompass this property location."
       />
 
       <ProjectTextField
