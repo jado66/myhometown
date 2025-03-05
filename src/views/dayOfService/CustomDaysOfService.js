@@ -8,10 +8,11 @@ import {
   Button,
   TextField,
 } from "@mui/material";
-import { Edit, Save, Cancel } from "@mui/icons-material";
+import { Edit, Save, Cancel, Link as LinkIcon } from "@mui/icons-material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import WysiwygEditor from "./WysiwygEditor";
 import UploadImage from "@/components/util/UploadImage";
+import { toast } from "react-toastify";
 
 // Assuming you have this component available or will create it
 
@@ -24,7 +25,7 @@ export const CustomDaysOfServiceContent = ({
   const isMd = useMediaQuery(theme.breakpoints.up("md"));
   const contentRef = useRef("");
 
-  const [editing, setEditing] = useState(isEditMode);
+  const [editing, setEditing] = useState(false);
   const [headerText] = useState(initialContent.headerText || "Days of Service");
   const [secondaryHeaderText, setSecondaryHeaderText] = useState(
     initialContent.secondaryHeaderText || ""
@@ -38,10 +39,6 @@ export const CustomDaysOfServiceContent = ({
           yards and parks, refurbish homes, repaint fences, fix code violations
           and more. If there's a need, we're here to help.`
   );
-
-  useEffect(() => {
-    setEditing(isEditMode);
-  }, [isEditMode]);
 
   useEffect(() => {
     if (initialContent) {
@@ -170,8 +167,32 @@ export const CustomDaysOfServiceContent = ({
         ) : (
           <>
             {secondaryHeaderText && (
-              <Typography variant="h4" sx={{ textAlign: "center", mb: 3 }}>
+              <Typography
+                variant="h4"
+                sx={{ textAlign: "center", mb: 3 }}
+                id="days-of-service"
+              >
                 {secondaryHeaderText}
+                {isEditMode && (
+                  <Button
+                    onClick={
+                      // copy to clipboard
+                      () => {
+                        navigator.clipboard.writeText(
+                          `${window.location.href}#days-of-service`.replace(
+                            /edit\//g,
+                            ""
+                          )
+                        );
+                        toast.success("Link copied to clipboard");
+                      }
+                    }
+                    variant="text"
+                    sx={{ mb: 1 }}
+                  >
+                    <LinkIcon sx={{ mr: 1 }} />
+                  </Button>
+                )}
               </Typography>
             )}
           </>

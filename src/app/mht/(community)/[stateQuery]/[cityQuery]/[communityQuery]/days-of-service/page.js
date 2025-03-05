@@ -30,6 +30,35 @@ const DaysOfServicePage = ({ params }) => {
     signupForm: {},
   };
 
+  useEffect(() => {
+    // Check if the page has loaded and if there's a hash in the URL
+    if (hasLoaded && typeof window !== "undefined") {
+      // Get the hash from the URL (without the #)
+      const hash = window.location.hash.replace("#", "");
+
+      if (hash) {
+        // Find the element with the matching ID
+
+        // set timeout
+        setTimeout(() => {
+          const element = document.getElementById(hash);
+
+          if (element) {
+            const headerOffset = 100;
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition =
+              elementPosition + window.pageYOffset - headerOffset;
+
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: "smooth",
+            });
+          }
+        }, 1500);
+      }
+    }
+  }, [hasLoaded]);
+
   const { getFormById } = useCustomForms();
   const { submitResponse } = useFormResponses();
 
