@@ -18,7 +18,13 @@ import ClassPreview from "./ClassPreview";
 import { ExpandMore } from "@mui/icons-material";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 
-export function ViewClassSignupForm({ testSubmit, classData, type, onSubmit }) {
+export function ViewClassSignupForm({
+  testSubmit,
+  classData,
+  type,
+  onSubmit,
+  isCreating,
+}) {
   const {
     classConfig,
     fieldOrder,
@@ -65,7 +71,7 @@ export function ViewClassSignupForm({ testSubmit, classData, type, onSubmit }) {
     signupsCount < totalCapacity &&
     isWaitlistEnabled;
 
-  if (isFullyBooked) {
+  if (isFullyBooked && !isCreating) {
     return (
       <>
         <JsonViewer data={classData} title="Class Config" />
@@ -76,12 +82,6 @@ export function ViewClassSignupForm({ testSubmit, classData, type, onSubmit }) {
         <Alert severity="warning">
           This class is currently full. Please check back later for more
           availability.
-          {JSON.stringify({
-            capacity,
-            waitlistCapacity,
-            signupsCount,
-            totalCapacity,
-          })}
         </Alert>
       </>
     );

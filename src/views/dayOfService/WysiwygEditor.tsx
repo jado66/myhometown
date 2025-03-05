@@ -6,6 +6,7 @@ import StarterKit from "@tiptap/starter-kit";
 import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import TextAlign from "@tiptap/extension-text-align";
+
 import {
   Button,
   Tooltip,
@@ -29,6 +30,9 @@ import {
   Redo,
   TextFormat,
   ArrowDropDown,
+  HorizontalRule,
+  ViewWeek,
+  ViewColumn,
 } from "@mui/icons-material";
 
 const colors = [
@@ -263,6 +267,18 @@ export default function WysiwygEditor({
 
         <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
 
+        {/* Add Horizontal Rule button */}
+        <Tooltip title="Horizontal Rule">
+          <IconButton
+            size="small"
+            onClick={() => editor.chain().focus().setHorizontalRule().run()}
+          >
+            <HorizontalRule fontSize="small" />
+          </IconButton>
+        </Tooltip>
+
+        <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+
         <Tooltip title="Undo">
           <IconButton
             size="small"
@@ -324,6 +340,26 @@ export default function WysiwygEditor({
       <Box sx={{ p: 2 }}>
         <EditorContent editor={editor} />
       </Box>
+
+      <style jsx global>{`
+        .wysiwyg-editor-content .two-column-layout {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          grid-gap: 24px;
+          margin: 16px 0;
+          border: 1px dashed #ddd;
+          padding: 8px;
+        }
+
+        .wysiwyg-editor-content .three-column-layout {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          grid-gap: 24px;
+          margin: 16px 0;
+          border: 1px dashed #ddd;
+          padding: 8px;
+        }
+      `}</style>
     </Box>
   );
 }

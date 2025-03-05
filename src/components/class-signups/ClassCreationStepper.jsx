@@ -124,7 +124,7 @@ export default function ClassCreationStepper({
       case 3:
         return (
           <Paper sx={{ p: 3 }}>
-            <ViewClassSignupForm testSubmit type={type} />
+            <ViewClassSignupForm testSubmit type={type} isCreating />
           </Paper>
         );
       default:
