@@ -97,7 +97,7 @@ export function ViewClassSignupForm({
       )}
       {isMainCapacityFull && (
         <Alert severity="info">
-          The main capacity for this class is full. Signing up will add you to
+          We are sorry, this is class currently full. Signing up will add you to
           the waitlist.
         </Alert>
       )}
