@@ -256,14 +256,20 @@ const TaskTable = ({ value, onChange }) => {
                                       objectFit: "cover",
                                     }}
                                   />
-                                  <UploadImage
-                                    setUrl={(url) =>
-                                      handlePhotoUpload(taskIndex, url)
-                                    }
-                                    onRemove={() =>
+                                  <IconButton
+                                    size="small"
+                                    sx={{
+                                      position: "absolute",
+                                      top: 0,
+                                      right: 0,
+                                      backgroundColor: "rgba(255,255,255,0.7)",
+                                    }}
+                                    onClick={() =>
                                       handleRemovePhoto(taskIndex, photoIndex)
                                     }
-                                  />
+                                  >
+                                    <Delete fontSize="small" />
+                                  </IconButton>
                                 </Box>
                               ))}
                               <Box
@@ -299,7 +305,33 @@ const TaskTable = ({ value, onChange }) => {
         Add Task
       </Button>
 
-      {/* Tools and Equipment Section */}
+      {/* Tools and Equipment Section - uncomment and complete if needed */}
+      {/* 
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h6">Volunteer Tools</Typography>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          {volunteerTools.map((tool, index) => (
+            <Chip
+              key={index}
+              label={tool}
+              onDelete={() => handleRemoveTool(index)}
+            />
+          ))}
+        </Box>
+      </Box>
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h6">Equipment</Typography>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          {equipment.map((item, index) => (
+            <Chip
+              key={index}
+              label={item}
+              onDelete={() => handleRemoveTool(index, true)}
+            />
+          ))}
+        </Box>
+      </Box>
+      */}
     </Box>
   );
 };
