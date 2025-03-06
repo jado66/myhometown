@@ -92,6 +92,10 @@ export const pages = () => {
           title: "Bugs and Feature Requests",
           href: rootUrl + "/admin-dashboard/bugs-and-features",
         },
+        {
+          title: "Upload Media",
+          href: rootUrl + "/admin-dashboard/tools/media-upload",
+        },
       ],
     },
     // {

@@ -46,6 +46,16 @@ const Page = () => {
 
         <>
           <ResponsiveVideoBanner src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Banner CSF music 3440X1000 1.webm" />
+
+          <Grid item xs={12}>
+            <Typography
+              variant="h3"
+              sx={{ mt: 6, mb: 2, fontWeight: "bold" }}
+              align="center"
+            >
+              Cities Strong Foundation
+            </Typography>
+          </Grid>
           <Grid
             item
             xs={12}
@@ -53,11 +63,12 @@ const Page = () => {
             sx={{ padding: 4, display: "flex", flexDirection: "column" }}
           >
             <Typography variant="h4" sx={{ flexGrow: 1 }}>
-              Our Name is our mission. We build strong cities through a culture
-              of love and service.
+              Cities Strong Foundation is a public charity that supports
+              community-driven efforts to improve the lives of individuals and
+              families. These initiatives strengthen families, enhance community
+              engagement, and ultimately contribute to stronger, more resilient
+              cities.
             </Typography>
-
-            <Divider sx={{ borderWidth: 3, borderColor: "black", mt: 4 }} />
           </Grid>
 
           <Grid item xs={12} sm={6} sx={{ padding: 4, pt: { xs: 0, sm: 4 } }}>
@@ -65,21 +76,11 @@ const Page = () => {
               src="/cities-strong/homepage/mother-daughter.webp"
               alt="A Mother and Daughter"
             />
-
-            <Divider
-              sx={{
-                display: { xs: "none", md: "block" },
-                borderWidth: 3,
-                borderColor: "black",
-                mt: 4,
-              }}
-            />
           </Grid>
 
           <Grid
             item
             xs={12}
-            sm={6}
             sx={{
               padding: 4,
               pt: 0,
@@ -88,53 +89,19 @@ const Page = () => {
               height: { sm: "220px" },
             }}
           >
-            <Typography variant="h5" sx={{ flexGrow: 1 }}>
-              We do it by supporting community programs that revitalize
-              neighborhoods, inspire education, and lift lives.
+            <Typography variant="h4" sx={{ flexGrow: 1 }}>
+              Cities Strong Foundation is a public charity that supports
+              community-driven efforts to improve the lives of individuals and
+              families. These initiatives strengthen families, enhance community
+              engagement, and ultimately contribute to stronger, more resilient
+              cities.
             </Typography>
             {/* <ButtonStyled variant='outlined'  sx = {{mr:'auto', mt:3}}
                 href = '/about'
               >
                 Learn More
               </ButtonStyled> */}
-            <Divider
-              sx={{
-                borderWidth: 1.5,
-                mx: 2,
-                borderColor: "black",
-                mt: 4,
-                display: { xs: "block", sm: "none" },
-              }}
-            />
           </Grid>
-
-          <VisibilitySensor
-            onChange={(isVisible) => setViewPortVisibility(0, isVisible)}
-            delayedCall
-          >
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              sx={{
-                padding: 4,
-                pt: 0,
-                display: "flex",
-                flexDirection: "column",
-                height: { sm: "220px" },
-              }}
-            >
-              <Typography variant="h5" sx={{ flexGrow: 1 }}>
-                Our vision is to see beautiful, thriving communities full of
-                happiness, peace, and personal growth.
-              </Typography>
-              {/* <ButtonStyled variant='outlined'  sx = {{mr:'auto', mt:3}}
-                href = '/about'
-              >
-                Learn More
-              </ButtonStyled> */}
-            </Grid>
-          </VisibilitySensor>
 
           <VisibilitySensor
             onChange={(isVisible) => setViewPortVisibility(1, isVisible)}
@@ -178,7 +145,7 @@ const Page = () => {
                 </Grid>
                 <ImageAccordion
                   title="Neighborhood Revitalization"
-                  content={`We support My Hometown's neighbor helping neighbor programs including Days of Service and Community Resource Centers.`}
+                  content={`We support myHometown's efforts to foster neighbor-helping-neighbor programs. This includes the Days of Service program, which provides a variety of neighborhood improvement projects, and Community Resource Centers that provide spaces and facilitators for learning, gathering, and socializing.`}
                 />
               </Grid>
             </Fade>
@@ -225,7 +192,7 @@ const Page = () => {
 
                 <ImageAccordion
                   title="Enhancing Public Education"
-                  content="We partner with schools to enhance literacy, leadership, and academic achievement that will help students succeed in life."
+                  content="We support myHometown and their work with schools to improve literacy and learning skills by providing dedicated tutors.  We also support the acclaimed Leader In Me® program, which empowers students by fostering a culture of learning and leadership throughout the school."
                   bgColor="#188D4E"
                   contentColor="#ffffff"
                   right
@@ -274,7 +241,7 @@ const Page = () => {
                 </Grid>
                 <ImageAccordion
                   title="Legal Immigration Assistance"
-                  content="We help provide legal immigration assistance with relevant information and resources that will empower candidates to achieve their goals."
+                  content="Partnering with the Good Samaritan Foundation, we provide legal immigration assistance, emergency housing, and case management support to help immigrant families successfully navigate the immigration process and become productive members of the community."
                   bgColor="#DC5331"
                   contentColor="#ffffff"
                 />
@@ -319,7 +286,7 @@ const Page = () => {
 
               <ImageAccordion
                 title="Mental Health Assistance"
-                content="We provide mental health programs that empower parents to help their pre-teen and teenage children grow, thrive, and excel."
+                content="We provide mental health support through programs like EveryDay Strong for parents and School Pulse for students. EveryDay Strong empowers parents to guide their children, while School Pulse delivers inspiring messages directly to students via email and text."
                 bgColor="#286AA4"
                 contentColor="#ffffff"
                 right
@@ -327,49 +294,13 @@ const Page = () => {
             </Grid>
           </Fade>
 
-          <Grid marginBottom={4} px={5} xs={12}>
-            <Divider sx={{ borderWidth: 3, borderColor: "black", mt: 4 }} />
-          </Grid>
-
-          <Grid marginBottom={4} px={5}>
-            <Typography
-              fontWeight={700}
-              sx={{ mt: 4 }}
-              variant={"h3"}
-              align={"center"}
-            >
-              Cities Served
-            </Typography>
-            <Grid
-              xs={12}
-              sm={8}
-              sx={{ mx: "auto" }}
-              component={Typography}
-              variant={"h6"}
-              align={"center"}
-            >
-              Cities Strong Foundation has made a difference for fourteen
-              communities in cities across the Wasatch Front.
-            </Grid>
-          </Grid>
-
-          <Grid container px={2} display="flex" justifyContent="center">
-            <CityImage title="Ogden" src="/cities-strong/cities/ogden.jpeg" />
-
-            <CityImage title="Provo" src="/cities-strong/cities/provo.webp" />
-
-            <CityImage title="Orem" src="/cities-strong/cities/orem.webp" />
-
-            <CityImage
-              title="Salt Lake City"
-              src="/cities-strong/cities/salt-lake.jpeg"
-            />
-
-            <CityImage
-              title="West Valley City"
-              src="/cities-strong/cities/orem.jpeg"
-            />
-          </Grid>
+          <Box
+            sx={{
+              py: 4,
+              position: "relative",
+              boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+            }}
+          ></Box>
         </>
         {/* </ContainerStyled> */}
       </CitiesStrongLayout>
