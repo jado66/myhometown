@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Container,
   Typography,
@@ -9,32 +9,28 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material";
-import useGiveButterScripts from "@/hooks/use-give-butter-scripts";
-import { WebsiteTestDonateForm } from "@/constants/give-butter/constants";
-import "@/styles/givebutter.css";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import { CheckBox } from "@mui/icons-material";
-import CitiesStrongLogo from "@/assets/svg/logos/CitiesStrong";
 import CitiesStrongShieldIcon from "@/assets/svg/logos/CitiesStrongShieldIcon";
 import Link from "next/link";
 import { Faq } from "@/views/supportingPages/CitiesStrongContact/components";
 import LoadingImage from "@/components/util/LoadingImage";
+import { DonationForm } from "./DonationForm";
 
 const items = [
   "Complete Transparency",
   "Dollars multiplied by thousands of volunteer hours",
   "Real results you can see and feel",
-  "Many kinds of projects to fund",
+  "A wide range of projects to fund",
+  "Organizations carefully chosen for effectiveness",
   "Long term sustainability",
   "Able to build strong community relationships",
-  "Easy to involve your staff in community projects",
+  "Easy to involve your staff or family in community projects",
 ];
 
-const Donate = () => {
-  const { isLoaded } = useGiveButterScripts();
+const Continue = () => {
   const theme = useTheme();
   const isMd = useMediaQuery(theme.breakpoints.up("md"));
 
@@ -48,7 +44,6 @@ const Donate = () => {
           pt: "50px !important",
         }}
       >
-        {" "}
         <Typography
           sx={{
             textTransform: "uppercase",
@@ -57,7 +52,7 @@ const Donate = () => {
           gutterBottom
           mt={2}
         >
-          Donate
+          Continue
         </Typography>
         <Box marginBottom={2}>
           <Typography
@@ -140,9 +135,10 @@ const Donate = () => {
               neighborhoods, provide more educational opportunities, and lift
               more lives.
             </Typography>
-            <Box sx={{ mx: "auto" }}>
-              <WebsiteTestDonateForm />
-            </Box>
+
+            {/* Stripe Elements wrapper */}
+            <DonationForm />
+
             <Typography
               sx={{
                 maxWidth: "600px",
@@ -170,4 +166,4 @@ const Donate = () => {
   );
 };
 
-export default Donate;
+export default Continue;

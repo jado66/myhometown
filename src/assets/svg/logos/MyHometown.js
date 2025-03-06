@@ -1,7 +1,7 @@
 import { SvgIcon } from "@mui/material";
 import React from "react";
 
-const MyHometownLogo = ({ type, sx }) => {
+const MyHometownLogo = ({ type, sx, size }) => {
   if (type === "h") {
     return (
       <SvgIcon
@@ -167,8 +167,8 @@ const MyHometownLogo = ({ type, sx }) => {
     return (
       <SvgIcon
         sx={{
-          height: 36, //{ xs: 28, md: 32 },
-          width: 200,
+          height: size || 36, //{ xs: 28, md: 32 },
+          width: size ? 5.55555555556 * size : 200,
           marginRight: "auto", // Ensures the SVG aligns to the left
           ...sx,
         }}

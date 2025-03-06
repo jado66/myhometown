@@ -33,20 +33,36 @@ const Team = () => {
 
   return (
     <Box>
-      {/* <Divider sx = {{width:"100%", mb:4}} /> */}
       <Divider sx={{ borderWidth: 3, mb: 4, borderColor: "black" }} />
 
-      <Box marginBottom={4}>
-        <Typography
-          sx={{
-            textTransform: "uppercase",
-            fontWeight: "medium",
-          }}
-          gutterBottom
-          align={"center"}
-        >
-          Our team
-        </Typography>
+      <Typography
+        variant="h3"
+        sx={{
+          textTransform: "uppercase",
+          fontWeight: "bold",
+        }}
+        gutterBottom
+        align={"center"}
+      >
+        Building communities together.
+      </Typography>
+
+      <Typography
+        variant="h6"
+        sx={{
+          fontWeight: "medium",
+          textAlign: "center",
+          color: "text.secondary",
+        }}
+        gutterBottom
+      >
+        Driven by a shared passion for lifting the lives of people, the Cities
+        Strong Foundation is led by a dedicated team of volunteer leaders from
+        the business, faith, and education sectors.
+      </Typography>
+      {/* <Divider sx = {{width:"100%", mb:4}} /> */}
+
+      <Box marginBottom={4} mt={6}>
         <Box
           component={Typography}
           fontWeight={700}

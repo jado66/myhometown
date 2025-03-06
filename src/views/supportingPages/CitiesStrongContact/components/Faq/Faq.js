@@ -28,12 +28,14 @@ const Faq = () => {
           },
           {
             title:
-              "Can I select a specific organization or community to support?",
+              "Can I select a specific organization or program to support??",
             subtitle: `Yes. We can earmark donations to a specific organization or community. Some of the organizations we support are:
 <ul>
   <li>myHometown (neighborhood revitalization)</li>
+  <li>Good Samaritan Foundation (legal immigration services)</li>
   <li>Leader in Me (elementary school support)</li>
   <li>Everyday Strong (mental health support)</li>
+  <li>SchoolPulse (teen mental health support)</li>
 </ul>
 
             `,
@@ -54,6 +56,7 @@ const Faq = () => {
             subtitle:
               "Contact us if you would like to be an official sponsor.  We are happy to recognize our supporters.",
           },
+
           // {
           //   title: "How do Days of Service work?",
           //   subtitle:

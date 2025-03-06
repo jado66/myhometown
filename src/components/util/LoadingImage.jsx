@@ -8,6 +8,7 @@ const LoadingImage = ({
   objectPosition = "center",
   boxSx,
   sx,
+  noBoxShadow = false,
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -36,7 +37,7 @@ const LoadingImage = ({
         height: height,
         position: "relative",
         overflow: "hidden",
-        boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+        boxShadow: !noBoxShadow && "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
         display: "flex",
         justifyContent: "center",
         ...boxSx,
