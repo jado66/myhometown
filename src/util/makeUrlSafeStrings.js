@@ -1,4 +1,8 @@
 export const makeUrlSafeString = (str) => {
+  if (!str) {
+    return "";
+  }
+
   return (
     str
       // Convert to lowercase
