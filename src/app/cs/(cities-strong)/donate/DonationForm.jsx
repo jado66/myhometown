@@ -132,14 +132,13 @@ const Form = () => {
         selectedAmount === "custom" ? customAmount : selectedAmount;
 
       // Create payment intent on the server
-      const response = await fetch("/api/create-payment-intent", {
+      const paymentResponse = await fetch("/api/create-payment-intent", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Add CSRF token if implemented
         },
         body: JSON.stringify({
-          amount: donationAmount * 100, // Convert to cents
+          amount: donationAmount * 100,
           currency: "usd",
           recurring: paymentType === "recurring",
           metadata: {
@@ -150,9 +149,9 @@ const Form = () => {
         }),
       });
 
-      if (!response.ok) throw new Error("Payment initialization failed");
+      if (!paymentResponse.ok) throw new Error("Payment initialization failed");
 
-      const { clientSecret } = await response.json();
+      const { clientSecret } = await paymentResponse.json();
 
       const cardElement = elements.getElement(CardElement);
       const paymentMethodReq = await stripe.createPaymentMethod({
@@ -176,6 +175,25 @@ const Form = () => {
 
       if (result.error) {
         throw new Error(result.error.message);
+      }
+
+      // Send emails after successful payment
+      const emailResponse = await fetch("/api/send-donation-emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          amount: donationAmount * 100,
+          recurring: paymentType === "recurring",
+        }),
+      });
+
+      if (!emailResponse.ok) {
+        console.error("Email sending failed but payment was successful");
       }
 
       setPaymentSuccess(true);
