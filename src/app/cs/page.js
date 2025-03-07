@@ -91,11 +91,9 @@ const Page = () => {
             }}
           >
             <Typography variant="h4" sx={{ flexGrow: 1 }}>
-              Cities Strong Foundation is a public charity that supports
-              community-driven efforts to improve the lives of individuals and
-              families. These initiatives strengthen families, enhance community
-              engagement, and ultimately contribute to stronger, more resilient
-              cities.
+              By supporting grassroots efforts that cultivate a culture of
+              strong, neighborly communities, the Cities Strong Foundation
+              contributes to making our <strong>Cities Strong</strong>.
             </Typography>
             {/* <ButtonStyled variant='outlined'  sx = {{mr:'auto', mt:3}}
                 href = '/about'
@@ -404,7 +402,7 @@ const Page = () => {
 
         <PictureWithText
           src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/uploads/ffc2f976-4e5b-445e-a934-9f7e099e6762-chalkboard.webp"
-          content={`Empowers students to become leaders and enhances the overall learning environment. This proven approach has demonstrated positive outcomes, including increased graduation rates, improved academic performance, and a more positive school environment. It draws upon the principles of “The 7 habits pf highly effective People”`}
+          content={`Empowers students to become leaders and enhances the overall learning environment. This proven approach has demonstrated positive outcomes, including increased graduation rates, improved academic performance, and a more positive school environment. It draws upon the principles of “The 7 Habits of Highly Effective People”.`}
         />
 
         <Grid item xs={12}>

@@ -144,7 +144,7 @@ export default function ProjectFormsPage({ params }) {
     setPartnerWardData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Save Partner Ward data to Supabase
+  // Save Partner Group data to Supabase
   const handleSavePartnerWard = async () => {
     try {
       const { error } = await supabase
@@ -159,11 +159,11 @@ export default function ProjectFormsPage({ params }) {
           p.id === selectedProject.id ? { ...p, ...partnerWardData } : p
         )
       );
-      toast.success("Partner Ward information updated successfully");
+      toast.success("Partner Group information updated successfully");
       setPartnerWardDialogOpen(false);
     } catch (error) {
-      console.error("Error updating Partner Ward:", error);
-      toast.error("Failed to update Partner Ward information");
+      console.error("Error updating Partner Group:", error);
+      toast.error("Failed to update Partner Group information");
     }
   };
 
@@ -418,7 +418,7 @@ export default function ProjectFormsPage({ params }) {
       : projectTitle;
   };
 
-  // Find the current partner stake
+  // Find the current Partner Organization
   const partnerStake = dayOfService?.partner_stakes?.find(
     (stake) => stake.id === stakeId
   );
@@ -877,7 +877,7 @@ export default function ProjectFormsPage({ params }) {
                             }}
                           >
                             <Phone sx={{ mr: 1 }} />
-                            Ward Assignment &amp; Liaison Information
+                            Group Assignment &amp; Liaison Information
                           </Typography>
 
                           {!project.partner_ward && (
@@ -894,7 +894,7 @@ export default function ProjectFormsPage({ params }) {
                                   mr: 2,
                                 }}
                               >
-                                Partner Ward not Assigned
+                                Partner Group not Assigned
                               </Typography>
                             </>
                           )}
@@ -902,7 +902,7 @@ export default function ProjectFormsPage({ params }) {
                         <AccordionDetails>
                           <Box sx={{ position: "relative", mb: 2 }}>
                             <Typography variant="subtitle1" gutterBottom>
-                              Partner Ward: {project.partner_ward || "Not set"}
+                              Partner Group: {project.partner_ward || "Not set"}
                             </Typography>
                             <Button
                               variant="outlined"
@@ -1102,7 +1102,7 @@ export default function ProjectFormsPage({ params }) {
         open={partnerWardDialogOpen}
         onClose={() => setPartnerWardDialogOpen(false)}
       >
-        <DialogTitle>Edit Partner Ward Information</DialogTitle>
+        <DialogTitle>Edit Partner Group Information</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             <Grid container spacing={2} alignItems="stretch">
@@ -1111,7 +1111,7 @@ export default function ProjectFormsPage({ params }) {
                 <TextField
                   autoFocus
                   margin="dense"
-                  label="Partner Ward"
+                  label="Partner Group"
                   fullWidth
                   value={partnerWardData.partner_ward}
                   onChange={(e) =>

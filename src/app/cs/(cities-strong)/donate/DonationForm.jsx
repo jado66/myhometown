@@ -491,7 +491,7 @@ const Form = () => {
       </Typography>
 
       {/* Payment Type Selection */}
-      <Box sx={{ mb: 3 }}>
+      {/* <Box sx={{ mb: 3 }}>
         <Typography gutterBottom>Payment Type</Typography>
         <Grid container spacing={1}>
           <Grid item xs={6}>
@@ -535,7 +535,7 @@ const Form = () => {
             </Box>
           </Grid>
         </Grid>
-      </Box>
+      </Box> */}
 
       {/* Amount Selection */}
       <Box sx={{ mb: 3 }}>

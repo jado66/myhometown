@@ -310,7 +310,7 @@ export const useDaysOfService = () => {
             .single();
 
           if (updateError) throw updateError;
-          toast.success(`Added "${stakeValue.name}" to partner stakes`);
+          toast.success(`Added "${stakeValue.name}" to Partner Organizations`);
           return { data, error: null };
         } else if (type === "ward") {
           const currentWards = currentData.partner_wards || [];

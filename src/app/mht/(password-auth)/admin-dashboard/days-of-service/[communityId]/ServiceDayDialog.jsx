@@ -16,8 +16,6 @@ import { Close } from "@mui/icons-material";
 import moment from "moment";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
 import { toast } from "react-toastify";
-import StakesSection from "./StakesSection";
-import WardsSection from "./WardsSection";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 
 const ServiceDayDialog = ({

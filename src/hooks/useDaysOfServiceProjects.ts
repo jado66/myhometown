@@ -169,7 +169,8 @@ export const useDaysOfServiceProjects = () => {
     identifier: string,
     dateOfService: string,
     projectName: string,
-    dayOfService: any
+    dayOfService: any,
+    includeBudget: boolean = false
   ) => {
     setLoading(true);
     try {
@@ -251,14 +252,14 @@ export const useDaysOfServiceProjects = () => {
       yPosition += 5; // Reduced spacing
       yPosition = checkForNewPage(yPosition);
       doc.text(
-        `Partner Stake: ${partner_stake?.name || "N/A"}`,
+        `Partner Organization: ${partner_stake?.name || "N/A"}`,
         margin,
         yPosition
       );
       yPosition += 5;
       yPosition = checkForNewPage(yPosition);
       doc.text(
-        `Partner Ward: ${project.partner_ward || "N/A"}`,
+        `Partner Group: ${project.partner_ward || "N/A"}`,
         margin,
         yPosition
       );
@@ -397,14 +398,14 @@ export const useDaysOfServiceProjects = () => {
       yPosition += 4;
       yPosition = checkForNewPage(yPosition);
       doc.text(
-        `Partner Ward: ${project.partner_ward || "N/A"}`,
+        `Partner Group: ${project.partner_ward || "N/A"}`,
         margin,
         yPosition
       );
       yPosition += 4;
       yPosition = checkForNewPage(yPosition);
       doc.text(
-        `Ward Liaison: ${project.partner_ward_liaison || "N/A"}`,
+        `Group Liaison: ${project.partner_ward_liaison || "N/A"}`,
         margin,
         yPosition
       );
@@ -557,28 +558,31 @@ export const useDaysOfServiceProjects = () => {
         yPosition += 4;
       }
 
-      yPosition += 6;
-      yPosition = checkForNewPage(yPosition, 12);
-      dividerLine(yPosition);
-      yPosition += 6;
+      // Only include budget section if includeBudget is true
+      if (includeBudget) {
+        yPosition += 6;
+        yPosition = checkForNewPage(yPosition, 12);
+        dividerLine(yPosition);
+        yPosition += 6;
 
-      // BUDGET SECTION
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text("BUDGET & HOMEOWNER CONTRIBUTION", margin, yPosition);
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "normal");
-      yPosition += 5;
-      yPosition = checkForNewPage(yPosition);
-      doc.text(
-        `Total Budget Estimate: $${
-          project.budget_estimates || "N/A"
-        } • Property Owner's Ability Estimates: $${
-          project.homeowner_ability_estimates || "N/A"
-        }`,
-        margin,
-        yPosition
-      );
+        // BUDGET SECTION
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("BUDGET & HOMEOWNER CONTRIBUTION", margin, yPosition);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
+        yPosition += 5;
+        yPosition = checkForNewPage(yPosition);
+        doc.text(
+          `Total Budget Estimate: $${
+            project.budget_estimates || "N/A"
+          } • Property Owner's Ability Estimates: $${
+            project.homeowner_ability_estimates || "N/A"
+          }`,
+          margin,
+          yPosition
+        );
+      }
 
       doc.save(fileName);
       toast.success("Report generated successfully");

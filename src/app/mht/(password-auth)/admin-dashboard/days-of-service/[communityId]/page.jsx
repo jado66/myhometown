@@ -308,7 +308,7 @@ const CommunitySelectionPage = ({ params }) => {
           textAlign: { xs: "center", sm: "left" },
         }}
       >
-        Stake Summary Page
+        Organization Summary Page
       </Typography>
 
       <Box sx={{ position: "relative" }}>
@@ -439,8 +439,8 @@ const CommunitySelectionPage = ({ params }) => {
 
                 <Typography variant="h6" gutterBottom sx={{ my: 2, ml: 2 }}>
                   {day.partner_stakes.length === 0
-                    ? "Please add a Partner Stake to this day of service"
-                    : "Manage the projects for your partner stakes"}
+                    ? "Please add a Partner Organization to this day of service"
+                    : "Manage the projects for your Partner Organizations"}
                 </Typography>
                 <Grid
                   container
@@ -517,7 +517,7 @@ const CommunitySelectionPage = ({ params }) => {
                                 variant="h6"
                                 sx={{ fontSize: "16px !important;", ml: 1 }}
                               >
-                                Stake Liaison Information
+                                Organization Liaison Information
                               </Typography>
                             </AccordionSummary>
                             <AccordionDetails
@@ -623,7 +623,7 @@ const CommunitySelectionPage = ({ params }) => {
                   sx={{ mt: 4, ml: 2 }}
                   onClick={() => handleOpenAddStakeDialog(day.id)}
                 >
-                  Add Partner Stake
+                  Add Partner Organization
                 </Button>
               </Box>
             </Card>
@@ -695,7 +695,7 @@ const CommunitySelectionPage = ({ params }) => {
                 <TextField
                   autoFocus
                   margin="dense"
-                  label="Stake Name"
+                  label="Organization Name"
                   fullWidth
                   value={currentStake.name}
                   onChange={(e) =>
@@ -971,7 +971,7 @@ const CommunitySelectionPage = ({ params }) => {
           setStakeToDelete(null);
           setSelectedDayId(null);
         }}
-        title="Delete Partner Stake?"
+        title="Delete Partner Organization?"
         description={`Are you sure you want to delete the Stake "${stakeToDelete?.name}"? This action cannot be undone.`}
       />
     </Box>
