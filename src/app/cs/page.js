@@ -302,7 +302,7 @@ const Page = () => {
               sx={{ mt: 4, mb: 2, fontWeight: "bold" }}
               align="center"
             >
-              Making a Difference Cities Strong Foundation Supports These
+              Making a Difference, Cities Strong Foundation Supports These
               Organizations
             </Typography>
           </Grid>
