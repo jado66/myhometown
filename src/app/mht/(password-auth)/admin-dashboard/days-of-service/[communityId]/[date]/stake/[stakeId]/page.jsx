@@ -595,22 +595,24 @@ export default function ProjectFormsPage({ params }) {
                       {/* Regular buttons for normal screens */}
                       {!isSmallScreen && (
                         <>
-                          <Tooltip title="Generate Report">
-                            <Button
-                              edge="end"
-                              aria-label="generate-report"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toast.info(
-                                  `This project needs ${project.volunteers_needed} volunteers.`
-                                );
-                              }}
-                              sx={{ mr: 1, color: "#686868" }}
-                            >
-                              <Group sx={{ mr: 1 }} />
-                              {project.volunteers_needed}
-                            </Button>
-                          </Tooltip>
+                          {project.volunteers_needed && (
+                            <Tooltip title="Generate Report">
+                              <Button
+                                edge="end"
+                                aria-label="generate-report"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toast.info(
+                                    `This project needs ${project.volunteers_needed} volunteers.`
+                                  );
+                                }}
+                                sx={{ mr: 1, color: "#686868" }}
+                              >
+                                <Group sx={{ mr: 1 }} />
+                                {project.volunteers_needed || "N/A"}
+                              </Button>
+                            </Tooltip>
+                          )}
                           <Tooltip title="Generate Report">
                             <Button
                               edge="end"
@@ -1087,7 +1089,7 @@ export default function ProjectFormsPage({ params }) {
           startIcon={<Assignment />}
           sx={{ width: { xs: "100%", sm: "auto" } }}
         >
-          Generate Projects Summary
+          Print Organization&apos;s Projects Summary
         </Button>
       </Box>
 

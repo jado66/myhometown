@@ -721,6 +721,14 @@ export const useDaysOfServiceProjects = () => {
           doc.text(stakeContact2, margin, yPosition);
         }
         yPosition += 5;
+
+        doc.text(
+          `Check-in Location: ${dayOfService?.check_in_location || "N/A"}`,
+          margin,
+          yPosition
+        );
+
+        yPosition += 5;
         doc.text(`Date: ${formattedDate || "N/A"}`, margin, yPosition);
         yPosition += 5;
         doc.text(`Total Projects: ${projectsData.length}`, margin, yPosition);

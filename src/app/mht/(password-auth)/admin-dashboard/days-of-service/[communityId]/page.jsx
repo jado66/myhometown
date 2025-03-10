@@ -22,6 +22,7 @@ import {
   VisibilityOff,
   LockOpen,
   LocationOn,
+  Assignment,
 } from "@mui/icons-material";
 import moment from "moment";
 import { useCommunities } from "@/hooks/use-communities";
@@ -46,6 +47,7 @@ import {
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { toast } from "react-toastify";
+import { useDaysOfServiceProjects } from "@/hooks/useDaysOfServiceProjects";
 
 const CommunitySelectionPage = ({ params }) => {
   const router = useRouter();
@@ -88,6 +90,9 @@ const CommunitySelectionPage = ({ params }) => {
     updatePartnerStakeInDayOfService,
     removePartnerStakeFromDayOfService,
   } = useDaysOfService();
+
+  const { fetchProjectsByDaysOfStakeId, generateStakeSummaryReport } =
+    useDaysOfServiceProjects();
 
   useEffect(() => {
     const authenticated = isAuthenticatedBudget();
@@ -283,6 +288,26 @@ const CommunitySelectionPage = ({ params }) => {
     }
   };
 
+  const handleGenerateDayOfServiceReport = async (
+    stakeId,
+    date,
+    dayOfService
+  ) => {
+    if (!dayOfService?.id) {
+      toast.error("Day of Service ID not available");
+      return;
+    }
+    try {
+      // Get all projects for this stake
+
+      // Use the new function instead
+      await generateStakeSummaryReport(stakeId, date, dayOfService);
+    } catch (error) {
+      console.error("Error generating projects summary:", error);
+      toast.error("Failed to generate projects summary");
+    }
+  };
+
   if (!community) {
     return <Loading center />;
   }
@@ -462,20 +487,47 @@ const CommunitySelectionPage = ({ params }) => {
                         variant="outlined"
                         onClick={() => handlePartnerStakeClick(day, stake)}
                       >
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditStake(day.id, stake);
-                          }}
+                        <Box
                           sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            gap: 2,
+
                             position: "absolute",
                             top: 8,
                             right: 8,
                             color: "primary.main",
                           }}
                         >
-                          <Edit />
-                        </IconButton>
+                          <Button
+                            variant="outlined"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleGenerateDayOfServiceReport(
+                                stake.id,
+                                day.end_date,
+                                day
+                              );
+                            }}
+                            sx={{
+                              color: "primary.main",
+                            }}
+                          >
+                            <Assignment sx={{ mr: 1 }} />
+                            Print
+                          </Button>
+                          <IconButton
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditStake(day.id, stake);
+                            }}
+                            sx={{
+                              color: "primary.main",
+                            }}
+                          >
+                            <Edit />
+                          </IconButton>
+                        </Box>
                         <CardContent>
                           {/* <Typography variant="h6">ID: {stake.id}</Typography> */}
                           <Typography variant="h6" sx={{ ml: 2 }}>
