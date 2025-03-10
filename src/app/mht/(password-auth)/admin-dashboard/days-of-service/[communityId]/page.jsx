@@ -91,8 +91,7 @@ const CommunitySelectionPage = ({ params }) => {
     removePartnerStakeFromDayOfService,
   } = useDaysOfService();
 
-  const { fetchProjectsByDaysOfStakeId, generateStakeSummaryReport } =
-    useDaysOfServiceProjects();
+  const { generateStakeSummaryReport } = useDaysOfServiceProjects();
 
   useEffect(() => {
     const authenticated = isAuthenticatedBudget();

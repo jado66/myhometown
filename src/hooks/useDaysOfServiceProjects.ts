@@ -394,11 +394,13 @@ export const useDaysOfServiceProjects = () => {
       doc.setFont("helvetica", "normal");
       yPosition += 5;
       yPosition = checkForNewPage(yPosition);
+      doc.setTextColor("#e30031"); //red
       doc.text(
         `Check-in Location: ${dayOfService?.check_in_location || "N/A"}`,
         margin,
         yPosition
       );
+      doc.setTextColor("#000000"); // Reset to black
       yPosition += 4;
       yPosition = checkForNewPage(yPosition);
       doc.text(
@@ -721,13 +723,13 @@ export const useDaysOfServiceProjects = () => {
           doc.text(stakeContact2, margin, yPosition);
         }
         yPosition += 5;
-
+        doc.setTextColor("#e30031"); //red
         doc.text(
           `Check-in Location: ${dayOfService?.check_in_location || "N/A"}`,
           margin,
           yPosition
         );
-
+        doc.setTextColor("#000000"); //black
         yPosition += 5;
         doc.text(`Date: ${formattedDate || "N/A"}`, margin, yPosition);
         yPosition += 5;
