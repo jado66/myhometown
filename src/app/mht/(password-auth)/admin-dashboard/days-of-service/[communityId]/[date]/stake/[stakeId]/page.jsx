@@ -62,6 +62,7 @@ import { useDaysOfServiceProjects } from "@/hooks/useDaysOfServiceProjects";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
 import { useUser } from "@/hooks/use-user";
 
+import { formatSafeDate } from "@/util/dates/formatSafeDate";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
 import Loading from "@/components/util/Loading";
@@ -177,6 +178,7 @@ export default function ProjectFormsPage({ params }) {
     addProject,
     generateReports,
     generatePDFReport,
+    generateStakeSummaryReport,
   } = useDaysOfServiceProjects();
 
   // Fetch day of service data
@@ -363,11 +365,14 @@ export default function ProjectFormsPage({ params }) {
       return;
     }
     try {
-      await generateReports("multiple", dayOfService.id, "daysOfServiceId");
-      toast.success("Projects summary generated successfully");
+      // Get all projects for this stake
+      const projects = await fetchProjectsByDaysOfStakeId(stakeId, true);
+
+      // Use the new function instead
+      await generateStakeSummaryReport(stakeId, date, dayOfService, projects);
     } catch (error) {
-      console.error("Error generating day of service report:", error);
-      toast.error("Failed to generate day of service report");
+      console.error("Error generating projects summary:", error);
+      toast.error("Failed to generate projects summary");
     }
   };
 
@@ -1306,32 +1311,4 @@ const DumpsterIcon = (props) => {
       <path d="M49.7 32c-10.5 0-19.8 6.9-22.9 16.9L.9 133c-.6 2-.9 4.1-.9 6.1C0 150.7 9.3 160 20.9 160l94 0L140.5 32 49.7 32zM272 160l0-128-98.9 0L147.5 160 272 160zm32 0l124.5 0L402.9 32 304 32l0 128zm157.1 0l94 0c11.5 0 20.9-9.3 20.9-20.9c0-2.1-.3-4.1-.9-6.1L549.2 48.9C546.1 38.9 536.8 32 526.3 32l-90.8 0 25.6 128zM32 192l4 32-4 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l12 0L64 448c0 17.7 14.3 32 32 32s32-14.3 32-32l320 0c0 17.7 14.3 32 32 32s32-14.3 32-32l20-160 12 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-4 0 4-32L32 192z" />
     </SvgIcon>
   );
-};
-
-const formatSafeDate = (dateString) => {
-  if (!dateString) return "";
-
-  // First try standard moment parsing
-  let parsedDate = moment(dateString);
-
-  // If moment couldn't parse it properly, try manual parsing for MM-DD-YYYY format
-  if (!parsedDate.isValid() && dateString.includes("-")) {
-    const parts = dateString.split("-");
-    if (parts.length === 3) {
-      // If first part is 4 digits, it's likely YYYY-MM-DD already
-      if (parts[0].length === 4) {
-        parsedDate = moment(dateString);
-      } else {
-        // Otherwise, assume MM-DD-YYYY and convert to YYYY-MM-DD for better browser compatibility
-        parsedDate = moment(
-          `${parts[2]}-${parts[0]}-${parts[1]}`,
-          "YYYY-MM-DD"
-        );
-      }
-    }
-  }
-
-  return parsedDate.isValid()
-    ? parsedDate.format("dddd, MMMM Do, YYYY")
-    : dateString; // Fallback to original string if parsing still fails
 };

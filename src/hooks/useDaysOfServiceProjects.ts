@@ -4,6 +4,7 @@ import { supabase } from "@/util/supabase";
 import { useDaysOfService } from "./useDaysOfService";
 import jsPDF from "jspdf";
 import "jspdf-autotable"; // For table formatting
+import { formatSafeDate } from "@/util/dates/formatSafeDate";
 
 export const useDaysOfServiceProjects = () => {
   const [loading, setLoading] = useState(true);
@@ -385,7 +386,7 @@ export const useDaysOfServiceProjects = () => {
       // WARD & VOLUNTEER INFO SECTION
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
-      doc.text("WARD & VOLUNTEER INFO", margin, yPosition);
+      doc.text("GROUP & VOLUNTEER INFO", margin, yPosition);
       doc.setFontSize(8);
       doc.setFont("helvetica", "normal");
       yPosition += 5;
@@ -594,6 +595,352 @@ export const useDaysOfServiceProjects = () => {
     }
   };
 
+  const generateStakeSummaryReport = async (
+    stakeId,
+    dateOfService,
+    dayOfService
+  ) => {
+    setLoading(true);
+    try {
+      // Fetch projects if not provided
+      let projectsData = await fetchProjectsByDaysOfStakeId(stakeId, false);
+
+      if (!projectsData || projectsData.length === 0) {
+        toast.warning("No projects found to generate report");
+        return;
+      }
+
+      const partnerStake = dayOfService?.partner_stakes.find(
+        (stake) => stake.id === stakeId
+      );
+      const formattedDate = formatSafeDate(dateOfService);
+
+      // Initialize PDF
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.width;
+      const pageHeight = doc.internal.pageSize.height;
+      const margin = 2;
+      const maxWidth = pageWidth - 2 * margin;
+
+      // Load logo
+      const logoPath = "/svgs/Primary_Logo_Black_Text.png";
+      const logoWidth = 40;
+      const logoHeight = 6.15;
+      let imgData = null;
+      try {
+        const response = await fetch(logoPath);
+        const blob = await response.blob();
+        imgData = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(blob);
+        });
+      } catch (imgError) {
+        console.error("Failed to load logo:", imgError);
+      }
+
+      let yPosition = margin;
+      let currentPage = 1;
+
+      // Helper functions
+      const checkForNewPage = (currentY, heightNeeded = 10) => {
+        if (currentY + heightNeeded > pageHeight - margin) {
+          doc.addPage();
+          currentPage++;
+          yPosition = margin;
+          addPageHeader(true);
+          return yPosition;
+        }
+        return currentY;
+      };
+
+      const dividerLine = (yPos) => {
+        doc.setLineWidth(0.3);
+        doc.setDrawColor(150, 150, 150);
+        doc.line(margin, yPos, pageWidth - margin, yPos);
+      };
+
+      const addPageHeader = (isNewPage = false) => {
+        if (!isNewPage) yPosition = margin;
+
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
+        doc.text("Stake Projects Summary", margin, yPosition + 4);
+
+        if (imgData) {
+          doc.addImage(
+            imgData,
+            "PNG",
+            pageWidth - logoWidth - margin,
+            yPosition,
+            logoWidth,
+            logoHeight
+          );
+        } else {
+          doc.setFontSize(8);
+          doc.text("MHT Dashboard", pageWidth - margin, yPosition + 2, {
+            align: "right",
+          });
+        }
+
+        yPosition += logoHeight + 6;
+        doc.setFontSize(12);
+        doc.text(`Partner: ${partnerStake?.name || "N/A"}`, margin, yPosition);
+        yPosition += 5;
+        doc.text(`Date: ${formattedDate || "N/A"}`, margin, yPosition);
+        yPosition += 5;
+        doc.text(`Total Projects: ${projectsData.length}`, margin, yPosition);
+        yPosition += 6;
+        dividerLine(yPosition);
+        yPosition += 6;
+      };
+
+      // Add initial header
+      addPageHeader();
+
+      // Sort projects alphabetically
+      projectsData.sort((a, b) =>
+        (a.project_name || "").localeCompare(b.project_name || "")
+      );
+
+      // Project summaries with additional details in 2-column layout
+      const colWidth = (maxWidth - 5) / 2; // Width of each column, with 5pt gap between columns
+      let leftColY = yPosition; // Track Y position for left column
+      let rightColY = yPosition; // Track Y position for right column
+      let currentColumn = "left"; // Start with left column
+
+      // Reduced space between cards (changed from 6 to 3)
+      const spaceBetweenCards = 3;
+
+      // Process the projects in order, but allow skipping and revisiting
+      let projectIndex = 0;
+      while (projectIndex < projectsData.length) {
+        const project = projectsData[projectIndex];
+
+        // Determine which column to use and its current Y position
+        const useLeftColumn = currentColumn === "left";
+        const currentY = useLeftColumn ? leftColY : rightColY;
+        const colX = useLeftColumn ? margin : margin + colWidth + 5; // X position based on column
+
+        // First, calculate the height that the content will need
+        let tempY = currentY + 5; // Reduced top padding from 6 to 5
+
+        // Project Number and Name
+        const projectTitle = `${projectIndex + 1}. ${
+          project.project_name || "Unnamed Project"
+        }`;
+        const wrappedTitle = doc.splitTextToSize(projectTitle, colWidth - 10);
+        tempY += wrappedTitle.length * 5 + 1; // Reduced spacing after title from 2 to 1
+
+        // Calculate height for details
+        const details = [
+          `Homeowner: ${project.property_owner || "N/A"}`,
+          `Address: ${concatenateAddress(project)}`,
+          `Phone: ${project.phone_number || "N/A"}`,
+          `Host: ${project.host_name || "N/A"}${
+            project.host_phone ? ` (${project.host_phone})` : ""
+          }`,
+          `Group: ${project.partner_ward || "N/A"}`,
+        ];
+
+        details.forEach((line) => {
+          const wrappedLine = doc.splitTextToSize(line, colWidth - 10);
+          tempY += wrappedLine.length * 4;
+        });
+
+        // Calculate height for tasks
+        if (project.tasks?.tasks?.length > 0) {
+          tempY += 4; // "Project Description:" label
+
+          const tasks = project.tasks.tasks
+            .slice(0, 3) // Limit to 3 tasks
+            .map((task) =>
+              task.todos?.length > 0 ? task.todos[0].substring(0, 40) : "N/A"
+            );
+
+          tasks.forEach((task) => {
+            const wrappedTask = doc.splitTextToSize(
+              `• ${task}${task.length > 40 ? "..." : ""}`,
+              colWidth - 15
+            );
+            tempY += wrappedTask.slice(0, 1).length * 4;
+          });
+
+          if (project.tasks.tasks.length > 3) {
+            tempY += 4; // "+X more" text
+          }
+        }
+
+        // Calculate height for more details
+        const moreDetails = [
+          `Contact For Project: ${project.project_development_couple || "N/A"}`,
+          `Partner Group: ${project.partner_ward || "N/A"}`,
+          `Group Contact: ${project.partner_ward_liaison || "N/A"}`,
+          `Volunteers Needed: ${project.volunteers_needed || "N/A"}`,
+        ];
+
+        moreDetails.forEach((line) => {
+          const wrappedLine = doc.splitTextToSize(line, colWidth - 10);
+          tempY += wrappedLine.length * 4;
+        });
+
+        // Reduced padding at bottom of card from 6 to 4
+        tempY += 4;
+
+        // Calculate the actual height needed for the card
+        const estimatedCardHeight = tempY - currentY;
+
+        // Check if adding this card to the current column would exceed page height
+        const wouldExceedPage =
+          currentY + estimatedCardHeight > pageHeight - margin;
+
+        // If it would exceed, check how to handle it:
+        if (wouldExceedPage) {
+          if (useLeftColumn && rightColY < currentY) {
+            // If left column reaches bottom but right column has space, switch to right
+            currentColumn = "right";
+            // Don't increment projectIndex, we'll try this project again in the right column
+            continue;
+          } else {
+            // Both columns are at bottom or we're already in right column
+            doc.addPage();
+            currentPage++;
+            leftColY = margin;
+            rightColY = margin;
+
+            // Start again with left column
+            currentColumn = "left";
+            // Don't increment projectIndex, we'll try this project again on the new page
+            continue;
+          }
+        }
+
+        // Now we know we can fit the card, determine the column and position
+        const cardStartY = useLeftColumn ? leftColY : rightColY;
+
+        // Draw the card background FIRST
+        const isCompleted = project.status === "completed";
+
+        const borderColor = isCompleted ? [49, 141, 67] : [245, 245, 245];
+
+        doc.setFillColor(245, 245, 245);
+        doc.setDrawColor(...borderColor);
+        doc.roundedRect(
+          colX,
+          cardStartY,
+          colWidth,
+          estimatedCardHeight,
+          2, // Reduced corner radius from 3 to 2
+          2, // Reduced corner radius from 3 to 2
+          "FD"
+        );
+
+        // Now render all the content on top of the background
+        let contentY = cardStartY + 5; // Reduced top padding from 6 to 5
+
+        // Project Number and Name
+        doc.setFontSize(11); // Slightly smaller font for narrower columns
+        doc.setFont("helvetica", "bold");
+        doc.text(wrappedTitle, colX + 5, contentY);
+        contentY += wrappedTitle.length * 5 + 1; // Reduced spacing after title from 2 to 1
+
+        // Details with updated schema keys
+        doc.setFontSize(8); // Slightly smaller font for narrower columns
+        doc.setFont("helvetica", "normal");
+
+        details.forEach((line) => {
+          const wrappedLine = doc.splitTextToSize(line, colWidth - 10);
+          wrappedLine.forEach((text) => {
+            doc.text(text, colX + 5, contentY);
+            contentY += 4;
+          });
+        });
+
+        // Project Description (Tasks)
+        if (project.tasks?.tasks?.length > 0) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Project Description:", colX + 5, contentY);
+          contentY += 4;
+          doc.setFont("helvetica", "normal");
+
+          const tasks = project.tasks.tasks.map((task) =>
+            task.todos?.length > 0 ? task.todos[0].substring(0, 40) : "N/A"
+          );
+
+          tasks.forEach((task) => {
+            // if task.trim() === "N/A" then don't add it to the pdf
+            if (!task.trim()) return;
+            const wrappedTask = doc.splitTextToSize(
+              `• ${task}${task.length > 40 ? "..." : ""}`,
+              colWidth - 15
+            );
+            wrappedTask.slice(0, 1).forEach((text) => {
+              doc.text(text, colX + 10, contentY);
+              contentY += 4;
+            });
+          });
+        }
+
+        moreDetails.forEach((line) => {
+          const wrappedLine = doc.splitTextToSize(line, colWidth - 10);
+          wrappedLine.forEach((text) => {
+            doc.text(text, colX + 5, contentY);
+            contentY += 4;
+          });
+        });
+
+        // Update the Y position for the current column
+        // Reduced space between cards from 6 to spaceBetweenCards variable (3)
+        if (useLeftColumn) {
+          leftColY = cardStartY + estimatedCardHeight + spaceBetweenCards;
+          currentColumn = "right"; // Switch to right column for next card
+        } else {
+          rightColY = cardStartY + estimatedCardHeight + spaceBetweenCards;
+          currentColumn = "left"; // Switch to left column for next card
+        }
+
+        // If both columns have advanced, align them for aesthetics (optional)
+        // Reduced the threshold from 30 to 20 to align columns more often
+        if (Math.abs(leftColY - rightColY) < 20) {
+          const maxY = Math.max(leftColY, rightColY);
+          leftColY = maxY;
+          rightColY = maxY;
+        }
+
+        // Move to the next project
+        projectIndex++;
+      }
+
+      // Add page numbers
+      const totalPages = currentPage;
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
+        doc.text(
+          `Page ${i} of ${totalPages}`,
+          pageWidth - margin,
+          pageHeight - 5,
+          {
+            align: "right",
+          }
+        );
+      }
+
+      // Save PDF
+      const fileName = `${
+        partnerStake?.name || "Stake"
+      }_Summary_${formattedDate}.pdf`;
+      doc.save(fileName);
+      toast.success("Stake summary report generated successfully");
+    } catch (error) {
+      console.error("Failed to generate stake summary report:", error);
+      toast.error("Failed to generate stake summary");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const generateReports = async (
     type: "single" | "multiple",
     identifier: string,
@@ -660,6 +1007,7 @@ export const useDaysOfServiceProjects = () => {
     addProject,
     generateReports,
     generatePDFReport,
+    generateStakeSummaryReport,
     fetchProjectsByCommunityId,
     fetchProjectsByCityId,
     fetchProjectsByDaysOfServiceId,
@@ -669,3 +1017,15 @@ export const useDaysOfServiceProjects = () => {
 };
 
 // Helper function to convert data to C
+
+const concatenateAddress = (project: any) => {
+  return [
+    project.address_street1,
+    project.address_street2,
+    project.address_city,
+    project.address_state,
+    project.address_zip_code,
+  ]
+    .filter(Boolean)
+    .join(", ");
+};
