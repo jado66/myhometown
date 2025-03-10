@@ -5,6 +5,7 @@ import { useDaysOfService } from "./useDaysOfService";
 import jsPDF from "jspdf";
 import "jspdf-autotable"; // For table formatting
 import { formatSafeDate } from "@/util/dates/formatSafeDate";
+import moment from "moment";
 
 export const useDaysOfServiceProjects = () => {
   const [loading, setLoading] = useState(true);
@@ -273,6 +274,7 @@ export const useDaysOfServiceProjects = () => {
       );
       yPosition += 5;
       yPosition = checkForNewPage(yPosition);
+
       doc.text(
         `Volunteers Needed: ${project.volunteers_needed || "N/A"}`,
         margin,
@@ -297,6 +299,7 @@ export const useDaysOfServiceProjects = () => {
       doc.setFont("helvetica", "normal");
       yPosition += 5;
       yPosition = checkForNewPage(yPosition);
+
       doc.text(
         `Homeowner: ${project.property_owner || "N/A"}`,
         margin,
@@ -665,7 +668,7 @@ export const useDaysOfServiceProjects = () => {
 
         doc.setFontSize(16);
         doc.setFont("helvetica", "bold");
-        doc.text("Stake Projects Summary", margin, yPosition + 4);
+        doc.text("Organization Projects Summary", margin, yPosition + 4);
 
         if (imgData) {
           doc.addImage(
@@ -683,9 +686,40 @@ export const useDaysOfServiceProjects = () => {
           });
         }
 
+        const stakeContact = `Organization Contact: ${
+          [
+            partnerStake.liaison_name_1 || "",
+            partnerStake.liaison_email_1 || "",
+            partnerStake.liaison_phone_1 || "",
+          ]
+            .filter((item) => item && item !== "null")
+            .join(" - ") || "N/A"
+        }`;
+
+        const stakeContact2 = `Organization Contact 2: ${
+          [
+            partnerStake.liaison_name_2 || "",
+            partnerStake.liaison_email_2 || "",
+            partnerStake.liaison_phone_2 || "",
+          ]
+            .filter((item) => item && item !== "null")
+            .join(" - ") || "N/A"
+        }`;
+
         yPosition += logoHeight + 6;
         doc.setFontSize(12);
-        doc.text(`Partner: ${partnerStake?.name || "N/A"}`, margin, yPosition);
+        doc.text(
+          `Partner Organization: ${partnerStake?.name || "N/A"}`,
+          margin,
+          yPosition
+        );
+        yPosition += 5;
+        doc.text(stakeContact, margin, yPosition);
+
+        if (partnerStake.liaison_name_2) {
+          yPosition += 5;
+          doc.text(stakeContact2, margin, yPosition);
+        }
         yPosition += 5;
         doc.text(`Date: ${formattedDate || "N/A"}`, margin, yPosition);
         yPosition += 5;
@@ -699,9 +733,11 @@ export const useDaysOfServiceProjects = () => {
       addPageHeader();
 
       // Sort projects alphabetically
-      projectsData.sort((a, b) =>
-        (a.project_name || "").localeCompare(b.project_name || "")
-      );
+      projectsData.sort((a, b) => {
+        const dateA = moment(a.created_at);
+        const dateB = moment(b.created_at);
+        return dateB.isValid() && dateA.isValid() ? dateB.diff(dateA) : 0; // Default to no change if dates are invalid
+      });
 
       // Project summaries with additional details in 2-column layout
       const colWidth = (maxWidth - 5) / 2; // Width of each column, with 5pt gap between columns
@@ -709,11 +745,13 @@ export const useDaysOfServiceProjects = () => {
       let rightColY = yPosition; // Track Y position for right column
       let currentColumn = "left"; // Start with left column
 
-      // Reduced space between cards (changed from 6 to 3)
+      // Reduced space between cards
       const spaceBetweenCards = 3;
 
       // Process the projects in order, but allow skipping and revisiting
       let projectIndex = 0;
+      let projectsPerPage = 0; // Track projects on the current page
+
       while (projectIndex < projectsData.length) {
         const project = projectsData[projectIndex];
 
@@ -726,14 +764,13 @@ export const useDaysOfServiceProjects = () => {
         let tempY = currentY + 5; // Reduced top padding from 6 to 5
 
         // Project Number and Name
-        const projectTitle = `${projectIndex + 1}. ${
-          project.project_name || "Unnamed Project"
-        }`;
+        const projectTitle = `${project.project_name || "Unnamed Project"}`;
         const wrappedTitle = doc.splitTextToSize(projectTitle, colWidth - 10);
         tempY += wrappedTitle.length * 5 + 1; // Reduced spacing after title from 2 to 1
 
         // Calculate height for details
         const details = [
+          `Local Group: ${project.project_development_couple_ward || "N/A"}`,
           `Homeowner: ${project.property_owner || "N/A"}`,
           `Address: ${concatenateAddress(project)}`,
           `Phone: ${project.phone_number || "N/A"}`,
@@ -771,12 +808,49 @@ export const useDaysOfServiceProjects = () => {
           }
         }
 
+        const groupContact = `Group Contact: ${
+          [
+            project.partner_ward_liaison || "",
+            project.partner_ward_liaison_phone1 || "",
+            project.partner_ward_liaison_email1 || "",
+          ]
+            .filter((item) => item && item !== "null")
+            .join(" - ") || "N/A"
+        }`;
+
+        const projectContact = `Contact For Project: ${
+          [
+            project.project_development_couple || "",
+            project.project_development_couple_phone1 || "",
+            project.project_development_couple_email1 || "",
+          ]
+            .filter((item) => item && item !== "null")
+            .join(" - ") || "N/A"
+        }`;
+
         // Calculate height for more details
+
+        const requirements = `${
+          [
+            project.volunteers_needed
+              ? `Volunteers Needed: ${project.volunteers_needed}`
+              : "",
+            project.are_blue_stakes_needed ? "Blue Stakes Needed" : "",
+            project.is_dumspter_needed
+              ? project.is_second_dumpster_needed
+                ? "2 Dumpsters Needed"
+                : "Dumpster Needed"
+              : "",
+          ]
+            .filter((item) => item && item !== "null")
+            .join(" - ") || "N/A"
+        }`;
+
         const moreDetails = [
-          `Contact For Project: ${project.project_development_couple || "N/A"}`,
-          `Partner Group: ${project.partner_ward || "N/A"}`,
-          `Group Contact: ${project.partner_ward_liaison || "N/A"}`,
-          `Volunteers Needed: ${project.volunteers_needed || "N/A"}`,
+          projectContact,
+          `Partner Group: ${project.partner_ward || "(Not provided)"}`,
+          groupContact,
+          requirements,
         ];
 
         moreDetails.forEach((line) => {
@@ -805,12 +879,19 @@ export const useDaysOfServiceProjects = () => {
             // Both columns are at bottom or we're already in right column
             doc.addPage();
             currentPage++;
+
+            // Reset for new page but preserve column alternation
             leftColY = margin;
             rightColY = margin;
+            projectsPerPage = 0; // Reset count for new page
 
-            // Start again with left column
-            currentColumn = "left";
+            // Important: when starting a new page, we should KEEP the current column
+            // so the alternating pattern continues across pages
             // Don't increment projectIndex, we'll try this project again on the new page
+
+            // Add header to the new page
+            // addPageHeader(true);
+
             continue;
           }
         }
@@ -856,29 +937,38 @@ export const useDaysOfServiceProjects = () => {
           });
         });
 
-        // Project Description (Tasks)
+        doc.text("Project Description:", colX + 5, contentY);
+        contentY += 4;
+
         if (project.tasks?.tasks?.length > 0) {
-          doc.setFont("helvetica", "bold");
-          doc.text("Project Description:", colX + 5, contentY);
-          contentY += 4;
-          doc.setFont("helvetica", "normal");
+          // Map and display tasks if they exist
+          const tasks = project.tasks.tasks
+            .map((task) =>
+              task.todos?.length > 0 ? task.todos[0].substring(0, 40) : ""
+            )
+            .filter((task) => task.trim()); // Filter out empty tasks
 
-          const tasks = project.tasks.tasks.map((task) =>
-            task.todos?.length > 0 ? task.todos[0].substring(0, 40) : "N/A"
-          );
-
-          tasks.forEach((task) => {
-            // if task.trim() === "N/A" then don't add it to the pdf
-            if (!task.trim()) return;
-            const wrappedTask = doc.splitTextToSize(
-              `• ${task}${task.length > 40 ? "..." : ""}`,
-              colWidth - 15
-            );
-            wrappedTask.slice(0, 1).forEach((text) => {
-              doc.text(text, colX + 10, contentY);
-              contentY += 4;
+          if (tasks.length > 0) {
+            // Only proceed with rendering if we have non-empty tasks
+            tasks.forEach((task) => {
+              const wrappedTask = doc.splitTextToSize(
+                `• ${task}${task.length > 40 ? "..." : ""}`,
+                colWidth - 15
+              );
+              wrappedTask.slice(0, 1).forEach((text) => {
+                doc.text(text, colX + 10, contentY);
+                contentY += 4;
+              });
             });
-          });
+          } else {
+            // No valid tasks found even though tasks array exists
+            doc.text("• N/A", colX + 10, contentY);
+            contentY += 4;
+          }
+        } else {
+          // No tasks array at all
+          doc.text("• N/A", colX + 10, contentY);
+          contentY += 4;
         }
 
         moreDetails.forEach((line) => {
@@ -890,7 +980,7 @@ export const useDaysOfServiceProjects = () => {
         });
 
         // Update the Y position for the current column
-        // Reduced space between cards from 6 to spaceBetweenCards variable (3)
+        // Reduced space between cards
         if (useLeftColumn) {
           leftColY = cardStartY + estimatedCardHeight + spaceBetweenCards;
           currentColumn = "right"; // Switch to right column for next card
@@ -899,9 +989,9 @@ export const useDaysOfServiceProjects = () => {
           currentColumn = "left"; // Switch to left column for next card
         }
 
-        // If both columns have advanced, align them for aesthetics (optional)
-        // Reduced the threshold from 30 to 20 to align columns more often
-        if (Math.abs(leftColY - rightColY) < 20) {
+        // Force column alignment after EACH pair of cards (two columns)
+        if (projectsPerPage % 2 === 1) {
+          // After processing both columns
           const maxY = Math.max(leftColY, rightColY);
           leftColY = maxY;
           rightColY = maxY;
@@ -909,6 +999,7 @@ export const useDaysOfServiceProjects = () => {
 
         // Move to the next project
         projectIndex++;
+        projectsPerPage++;
       }
 
       // Add page numbers

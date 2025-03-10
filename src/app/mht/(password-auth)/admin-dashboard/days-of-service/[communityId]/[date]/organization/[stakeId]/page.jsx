@@ -1046,10 +1046,7 @@ export default function ProjectFormsPage({ params }) {
         <Button
           variant="outlined"
           color="primary"
-          // onClick={handleViewTimelines}
-          onClick={() =>
-            toast.info("This feature is currently under construction.")
-          }
+          onClick={handleViewTimelines}
           startIcon={<TimelineIcon />}
           disabled={isLoading || selectedProjects.length === 0}
           sx={{ width: { xs: "100%", sm: "auto" } }}
