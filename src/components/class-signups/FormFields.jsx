@@ -209,6 +209,7 @@ export const FormField = ({
             />
           </Box>
         );
+
       case FIELD_TYPES.signature:
         return (
           <Box sx={{ border: "1px solid #ccc", borderRadius: 1, p: 1 }}>
@@ -225,23 +226,35 @@ export const FormField = ({
               }}
               style={{ border: "1px solid #ccc" }}
               ref={(ref) => {
-                if (ref && !value) {
-                  setSigPad(ref);
-                  onChange(field, ref);
+                setSigPad(ref);
+              }}
+              onEnd={() => {
+                if (sigPad) {
+                  // Store the signature as a base64 string instead of the entire ref
+                  const signatureData = sigPad.toDataURL();
+                  onChange(field, signatureData);
                 }
               }}
             />
-            <Button
-              size="small"
-              onClick={() => {
-                if (sigPad) {
-                  sigPad.clear();
-                  onChange(field, null);
-                }
-              }}
-            >
-              Clear
-            </Button>
+            <Stack direction="row" spacing={2} mt={1}>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => {
+                  if (sigPad) {
+                    sigPad.clear();
+                    onChange(field, null);
+                  }
+                }}
+              >
+                Clear
+              </Button>
+            </Stack>
+            {value && (
+              <Typography variant="caption" color="success.main" mt={1}>
+                Signature captured
+              </Typography>
+            )}
             {(error || config.helpText) && (
               <FormHelperText error={!!error}>
                 {error || config.helpText}

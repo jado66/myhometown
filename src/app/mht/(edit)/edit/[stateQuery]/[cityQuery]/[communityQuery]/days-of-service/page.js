@@ -18,9 +18,18 @@ const DaysOfServicePage = ({ params }) => {
   const [contentEditMode, setContentEditMode] = useState(false);
   const [form, setForm] = useState(null);
   const [formId, setFormId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   // Initialize the custom forms hook
   const { addForm, updateForm, getFormById } = useCustomForms();
+
+  // Initialize form responses hook
+  const {
+    submitResponse,
+    fetchResponse,
+    response,
+    loading: responseLoading,
+  } = useFormResponses();
 
   const { community, hasLoaded, updateCommunity } = useCommunity(
     communityQuery,
@@ -38,6 +47,9 @@ const DaysOfServicePage = ({ params }) => {
         if (formData) {
           setForm(formData);
           setFormId(formData.id);
+
+          // Also fetch any existing response data
+          await fetchResponse(formData.id);
         }
       };
 
@@ -73,7 +85,28 @@ const DaysOfServicePage = ({ params }) => {
 
   const handleSubmit = async (data) => {
     // Handle form submission for volunteers
-    toast.success("Form submitted successfully");
+    if (!formId) {
+      toast.error("Form ID is missing");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      // Submit the form data
+      const result = await submitResponse(formId, data);
+
+      if (result) {
+        toast.success("Form submitted successfully");
+        // You might want to reset the form or redirect the user
+      } else {
+        toast.error("Failed to submit form");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error("An error occurred while submitting the form");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleSaveForm = async (formConfig) => {
@@ -156,6 +189,8 @@ const DaysOfServicePage = ({ params }) => {
           signUpFormId={community?.volunteerSignUpId}
           handleSubmit={handleSubmit}
           onClose={handleSaveForm}
+          isSubmitting={submitting}
+          initialValues={response?.response_data || {}}
         />
       </Container>
     </>
