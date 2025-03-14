@@ -1,15 +1,20 @@
 "use client";
-import { CustomDaysOfServiceContent } from "@/views/dayOfService/CustomDaysOfService";
+import { DaysOfServiceContent } from "@/views/dayOfService/DaysOfService";
 import { communityTemplate } from "@/constants/templates/communityTemplate";
 import useCommunity from "@/hooks/use-community";
 import { useEffect, useState } from "react";
-import { Container } from "@mui/material";
-import { toast } from "react-toastify";
+import { useCustomForms } from "@/hooks/useCustomForm";
+import { useFormResponses } from "@/hooks/useFormResponses";
+import JsonViewer from "@/components/util/debug/DebugOutput";
+import { SignUpForm } from "@/components/SignUpForm";
+import { Container, Typography, Box, Divider } from "@mui/material";
+import { Alert, AlertTitle } from "@mui/material";
+import { CustomDaysOfServiceContent } from "@/views/dayOfService/CustomDaysOfService";
 import Loading from "@/components/util/Loading";
-
 const DaysOfServicePage = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params;
   const [contentEditMode, setContentEditMode] = useState(false);
+  const [form, setForm] = useState(null);
 
   const { community, hasLoaded, updateCommunity } = useCommunity(
     communityQuery,
@@ -45,6 +50,12 @@ const DaysOfServicePage = ({ params }) => {
     }
   };
 
+  const handleSubmit = async (data) => {
+    // Handle form submission
+  };
+
+  const handleSaveForm = async (formConfig) => {};
+
   // Check if user has permission to edit (simplified example)
   const userCanEdit = true; // Replace with actual permission check
 
@@ -72,6 +83,16 @@ const DaysOfServicePage = ({ params }) => {
         onSave={handleContentSave}
         initialContent={community?.daysOfService || {}}
       />
+      <Container maxWidth="lg" className="p-8">
+        <SignUpForm
+          isEdit
+          form={form}
+          signUpFormId={community?.volunteerSignUpId}
+          handleSubmit={handleSubmit}
+          defaultConfgig={{}}
+          onClose={() => {}}
+        />
+      </Container>
     </>
   );
 };

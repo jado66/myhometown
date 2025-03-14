@@ -14,4 +14,7 @@ export const FIELD_TYPES = {
   radioGroup: "radioGroup",
   externalLink: "externalLink",
   infoDialog: "infoDialog",
+  minorVolunteers: "minorVolunteers",
+  whoAreYou: "whoAreYou",
+  dayOfService: "dayOfService",
 };

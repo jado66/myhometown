@@ -89,6 +89,8 @@ export function ViewClassSignupForm({
 
   return (
     <Stack spacing={3} component="form">
+      <JsonViewer data={formData} title="Class Config" />
+
       {type === "class" && (
         <>
           <ClassPreview classData={classConfig} />

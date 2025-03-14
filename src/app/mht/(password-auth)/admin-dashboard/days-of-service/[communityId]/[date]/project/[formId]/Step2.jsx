@@ -212,6 +212,17 @@ const Step2 = () => {
         value={formData.volunteers_needed}
         onChange={(e) => handleInputChange("volunteers_needed", e.target.value)}
       />
+
+      <ProjectTextField
+        label="Estimated duration of project (hours)"
+        type="number"
+        key="project_duration"
+        min={0}
+        max={12}
+        value={formData.project_duration}
+        onChange={(e) => handleInputChange("project_duration", e.target.value)}
+        helperText="This is NOT the total number of man hours. For example, if the project starts at 8:00 AM and ends at noon, the duration would be 4 hours."
+      />
     </Box>
   );
 };

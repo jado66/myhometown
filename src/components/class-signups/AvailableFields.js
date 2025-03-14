@@ -444,58 +444,21 @@ export const AVAILABLE_FIELDS = {
       value === true ? null : "You must review the safety guidelines",
   },
 
-  serviceArea: {
-    label: "Service Area",
-    type: FIELD_TYPES.radioGroup,
-    visible: true,
-    required: true,
-    originalLabel: "Service Area",
-    options: [],
-    helpText: "Select your preferred service area",
-    category: "Days of Service",
-    validation: (value) => (value ? null : "Please select a service area"),
-  },
-
-  inCityBoundaries: {
-    label: "Do you live within city boundaries?",
-    type: FIELD_TYPES.radioGroup,
-    visible: true,
-    required: true,
-    originalLabel: "In City Boundaries?",
-    options: [
-      { value: true, label: "Yes" },
-      { value: false, label: "No" },
-    ],
-    helpText: "Select your preferred service area",
-    category: "Days of Service",
-    validation: (value) => (value ? null : "Please select a service area"),
-  },
-
-  yourVolunteerHours: {
-    label: "Your Volunteer Hours",
-    type: FIELD_TYPES.number,
-    visible: true,
-    required: true,
-    originalLabel: "Your Volunteer Hours",
-    helpText: "Hours for minors are included below",
-    category: "Days of Service",
-    validation: (value) =>
-      value > 0 ? null : "Please enter a valid number of hours",
-  },
-
-  minorChildren: {
+  minorVolunteers: {
     label: "Do you have minors/children volunteering with you today?",
-    type: FIELD_TYPES.radioGroup,
+    type: FIELD_TYPES.minorVolunteers,
     visible: true,
     required: true,
-    originalLabel: "Minor Children?",
-    options: [
-      { value: true, label: "Yes" },
-      { value: false, label: "No" },
-    ],
-    helpText: "",
+    originalLabel: "Minor Volunteers",
+    helpText:
+      "Please provide information about any minors volunteering with you",
     category: "Days of Service",
-    validation: (value) => (value ? null : "Please select an answer"),
+    validation: (value) => {
+      if (!value || value.hasMinors === undefined) {
+        return "Please indicate if you have minors volunteering with you";
+      }
+      return null;
+    },
   },
 
   safetyVideo: {
@@ -509,6 +472,54 @@ export const AVAILABLE_FIELDS = {
     category: "Days of Service",
     validation: (value) =>
       value === true ? null : "You must watch the safety video",
+  },
+  dayOfService: {
+    label: "Day of Service",
+    type: FIELD_TYPES.dayOfService,
+    visible: true,
+    required: true,
+    originalLabel: "Day of Service",
+    options: [],
+    helpText: "Please select the day you would like to volunteer",
+    category: "Days of Service",
+    validation: (value) => (value ? null : "Please select a day of service"),
+  },
+
+  whoAreYou: {
+    label: "Where are you coming from?",
+    type: FIELD_TYPES.whoAreYou,
+    visible: true,
+    required: true,
+    originalLabel: "Where are you coming from?",
+    helpText: "Please select the option that best describes you",
+    category: "Days of Service",
+    validation: (value) => {
+      if (!value || !value.type) {
+        return "Please select who you are";
+      }
+
+      // Validate based on type
+      switch (value.type) {
+        case "missionary":
+          return value.missionary?.area
+            ? null
+            : "Please select your missionary area";
+        case "volunteer":
+          return value.volunteer?.option
+            ? null
+            : "Please select a volunteer option";
+        case "wardMember":
+          return value.wardMember?.stake && value.wardMember?.ward
+            ? null
+            : "Please select both stake and ward";
+        case "other":
+          return value.other?.source
+            ? null
+            : "Please select how you heard about us";
+        default:
+          return "Invalid selection";
+      }
+    },
   },
 };
 

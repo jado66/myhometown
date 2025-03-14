@@ -30,7 +30,9 @@ import SignaturePad from "react-signature-canvas";
 import { useState } from "react";
 import Link from "next/link";
 import { MultiLineTypography } from "../MultiLineTypography";
-
+import { MinorVolunteersComponent } from "./days-of-service/MinorVolunteersComponent";
+import { WhoAreYouComponent } from "./days-of-service/WhoAreYouComponent";
+import { DayOfServiceSelect } from "./days-of-service/DayOfServiceSelect";
 // Form Field Component
 export const FormField = ({
   field,
@@ -134,6 +136,7 @@ export const FormField = ({
             }}
           />
         );
+
       case FIELD_TYPES.select:
         return (
           <FormControl fullWidth error={!!error}>
@@ -172,6 +175,39 @@ export const FormField = ({
               e.stopPropagation();
             }}
           />
+        );
+      case FIELD_TYPES.minorVolunteers:
+        return (
+          <Box sx={{ mb: 3 }}>
+            <MinorVolunteersComponent
+              value={value || []}
+              onChange={(newValue) => onChange(field, newValue)}
+              config={config}
+            />
+            {error && <FormHelperText error>{error}</FormHelperText>}
+          </Box>
+        );
+      case FIELD_TYPES.dayOfService:
+        return (
+          <DayOfServiceSelect
+            field={field}
+            value={value}
+            onChange={(newValue) => onChange(field, newValue)}
+            error={error}
+            config={config}
+          />
+        );
+      case FIELD_TYPES.whoAreYou:
+        return (
+          <Box sx={{ mb: 3 }}>
+            <WhoAreYouComponent
+              field={field}
+              value={value || {}}
+              onChange={(newValue) => onChange(field, newValue)}
+              config={config}
+              error={error}
+            />
+          </Box>
         );
       case FIELD_TYPES.signature:
         return (
