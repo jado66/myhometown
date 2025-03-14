@@ -237,7 +237,11 @@ export default function ClassCreationStepper({
                   onClick={handleFinish}
                   sx={{ textTransform: "capitalize" }}
                 >
-                  {isNew ? `Create ${type}` : "Save Changes"}
+                  {type === "volunteer signup"
+                    ? "Save Volunteer Signup"
+                    : isNew
+                    ? `Create ${type}`
+                    : "Save Changes"}
                 </Button>
               ) : (
                 <Button variant="contained" onClick={handleNext}>

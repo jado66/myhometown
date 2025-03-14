@@ -11,10 +11,16 @@ import { Container, Typography, Box, Divider } from "@mui/material";
 import { Alert, AlertTitle } from "@mui/material";
 import { CustomDaysOfServiceContent } from "@/views/dayOfService/CustomDaysOfService";
 import Loading from "@/components/util/Loading";
+import { toast } from "react-toastify";
+
 const DaysOfServicePage = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params;
   const [contentEditMode, setContentEditMode] = useState(false);
   const [form, setForm] = useState(null);
+  const [formId, setFormId] = useState(null);
+
+  // Initialize the custom forms hook
+  const { addForm, updateForm, getFormById } = useCustomForms();
 
   const { community, hasLoaded, updateCommunity } = useCommunity(
     communityQuery,
@@ -23,6 +29,21 @@ const DaysOfServicePage = ({ params }) => {
     communityTemplate,
     true
   );
+
+  // Fetch the existing form if available
+  useEffect(() => {
+    if (community?.volunteerSignUpId && hasLoaded) {
+      const fetchForm = async () => {
+        const formData = await getFormById(community.volunteerSignUpId);
+        if (formData) {
+          setForm(formData);
+          setFormId(formData.id);
+        }
+      };
+
+      fetchForm();
+    }
+  }, [community, hasLoaded]);
 
   // Handle saving content changes
   const handleContentSave = async (contentData) => {
@@ -33,7 +54,7 @@ const DaysOfServicePage = ({ params }) => {
       const updatedDaysOfService = {
         ...(community.daysOfService || {}),
         secondaryHeaderText: contentData.secondaryHeaderText,
-        daysOfServiceImage: contentData.daysOfServiceImage, // Explicitly include mapUrl
+        daysOfServiceImage: contentData.daysOfServiceImage,
         bodyContent: contentData.bodyContent,
       };
 
@@ -51,10 +72,54 @@ const DaysOfServicePage = ({ params }) => {
   };
 
   const handleSubmit = async (data) => {
-    // Handle form submission
+    // Handle form submission for volunteers
+    toast.success("Form submitted successfully");
   };
 
-  const handleSaveForm = async (formConfig) => {};
+  const handleSaveForm = async (formConfig) => {
+    try {
+      let savedForm;
+
+      // If we already have a form ID, update the existing form
+      if (formId) {
+        savedForm = await updateForm(formId, {
+          form_name: "Volunteer Sign Up Form",
+          form_config: formConfig.formConfig,
+          field_order: formConfig.fieldOrder,
+        });
+      } else {
+        // Create a new form
+        savedForm = await addForm(
+          "Volunteer Sign Up Form",
+          formConfig.formConfig,
+          formConfig.fieldOrder
+        );
+
+        // If the form was saved successfully, update the community with the form ID
+        if (savedForm) {
+          await updateCommunity({
+            volunteerSignUpId: savedForm.id,
+          });
+        }
+
+        toast.success("Form created successfully");
+      }
+
+      // Update state with the saved form
+      if (savedForm) {
+        setForm(savedForm);
+        setFormId(savedForm.id);
+
+        setTimeout(() => {
+          //refresh the page
+          window.location.reload();
+        }, 1000);
+      }
+    } catch (error) {
+      console.error("Error saving form:", error);
+      toast.error("Failed to save form");
+    }
+  };
 
   // Check if user has permission to edit (simplified example)
   const userCanEdit = true; // Replace with actual permission check
@@ -78,19 +143,19 @@ const DaysOfServicePage = ({ params }) => {
 
   return (
     <>
+      <JsonViewer data={community} />
       <CustomDaysOfServiceContent
-        isEditMode
+        isEditMode={userCanEdit}
         onSave={handleContentSave}
         initialContent={community?.daysOfService || {}}
       />
       <Container maxWidth="lg" className="p-8">
         <SignUpForm
-          isEdit
+          isEdit={userCanEdit}
           form={form}
           signUpFormId={community?.volunteerSignUpId}
           handleSubmit={handleSubmit}
-          defaultConfgig={{}}
-          onClose={() => {}}
+          onClose={handleSaveForm}
         />
       </Container>
     </>

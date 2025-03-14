@@ -311,6 +311,7 @@ export const SignUpForm = ({
               signUpFormId={signUpFormId}
               onClose={onClose}
               onSubmit={handleSubmit}
+              isVolunteerForm
             />
           </ClassSignupProvider>
         </Box>

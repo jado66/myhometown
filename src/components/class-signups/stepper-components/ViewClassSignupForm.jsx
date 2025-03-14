@@ -24,6 +24,7 @@ export function ViewClassSignupForm({
   type,
   onSubmit,
   isCreating,
+  isVolunteerForm,
 }) {
   const {
     classConfig,
@@ -71,7 +72,7 @@ export function ViewClassSignupForm({
     signupsCount < totalCapacity &&
     isWaitlistEnabled;
 
-  if (isFullyBooked && !isCreating) {
+  if (isFullyBooked && !isCreating && !isVolunteerForm) {
     return (
       <>
         <JsonViewer data={classData} title="Class Config" />
