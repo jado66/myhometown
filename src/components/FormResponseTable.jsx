@@ -24,6 +24,7 @@ import {
   AccessTime as AccessTimeIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
+import JsonViewer from "./util/debug/DebugOutput";
 
 const PAGE_SIZE = 10;
 
@@ -119,6 +120,7 @@ export const FormResponseTable = ({
   if (!responses || !formData) {
     return (
       <Box display="flex" justifyContent="center" p={3}>
+        <JsonViewer data={{ formId, responses, formData }} />
         <CircularProgress />
       </Box>
     );
