@@ -162,7 +162,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
             Days of Service Project Form
           </Typography>
           <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
-            {getSteps(isBudgetHidden).map((step, index) => (
+            {(getSteps(isBudgetHidden) || []).map((step, index) => (
               <Step
                 key={step.label}
                 sx={{
