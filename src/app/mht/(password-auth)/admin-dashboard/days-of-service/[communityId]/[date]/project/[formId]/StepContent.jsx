@@ -5,6 +5,7 @@ import Step3 from "./Step3";
 import Step4 from "./Step4";
 import Step5 from "./Step5";
 import BudgetStep from "./BudgetStep";
+import ReportingStep from "./ReportingStep";
 
 const StepContent = ({ activeStep, date, canSeeBudget }) => {
   switch (activeStep) {
@@ -20,6 +21,8 @@ const StepContent = ({ activeStep, date, canSeeBudget }) => {
       return <Step4 />;
     case 5:
       return <Step5 />;
+    case 6:
+      return <ReportingStep />;
 
     default:
       return null;

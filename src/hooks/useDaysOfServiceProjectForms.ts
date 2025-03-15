@@ -278,6 +278,7 @@ export const useDaysOfServiceProjectForm = ({
     handleInputChange,
     handleMultipleInputChange,
     handleNumberInputChange,
+
     addCollaborator,
     saveProject,
     finishProject,

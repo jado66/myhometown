@@ -21,13 +21,14 @@ import {
   DialogActions,
   RadioGroup,
   Radio,
+  useMediaQuery,
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { FIELD_TYPES } from "./FieldTypes";
 import { Upload } from "@mui/icons-material";
 import { useImageUpload } from "@/hooks/use-upload-image";
 import SignaturePad from "react-signature-canvas";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { MultiLineTypography } from "../MultiLineTypography";
 import { MinorVolunteersComponent } from "./days-of-service/MinorVolunteersComponent";
@@ -44,6 +45,8 @@ export const FormField = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [sigPad, setSigPad] = useState(null);
+
+  const isMobile = useMediaQuery("(max-width:600px)");
 
   const renderField = () => {
     if (config.type === FIELD_TYPES.header) {
@@ -211,8 +214,37 @@ export const FormField = ({
         );
 
       case FIELD_TYPES.signature:
+        const containerRef = useRef(null);
+        const [padWidth, setPadWidth] = useState(500);
+
+        useEffect(() => {
+          const updateWidth = () => {
+            if (containerRef.current) {
+              // Get actual width of the container
+              const width = containerRef.current.clientWidth - 16;
+              // Cap it at 500px for larger screens if desired
+              setPadWidth(isMobile ? width : Math.min(width, 500));
+            }
+          };
+
+          // Set initial width
+          updateWidth();
+
+          // Update on resize
+          window.addEventListener("resize", updateWidth);
+          return () => window.removeEventListener("resize", updateWidth);
+        }, [isMobile]);
+
         return (
-          <Box sx={{ border: "1px solid #ccc", borderRadius: 1, p: 1 }}>
+          <Box
+            ref={containerRef}
+            sx={{
+              border: "1px solid #ccc",
+              borderRadius: 1,
+              p: 1,
+              width: "100%",
+            }}
+          >
             <Typography>
               {config.label}
               {config.required && " *"}
@@ -221,7 +253,11 @@ export const FormField = ({
               backgroundColor="#edeff2"
               canvasProps={{
                 className: "signature-canvas",
-                width: 500,
+
+                width: padWidth,
+
+                backgroundColor: "#edeff2",
+                //500,
                 height: 200,
               }}
               style={{ border: "1px solid #ccc" }}

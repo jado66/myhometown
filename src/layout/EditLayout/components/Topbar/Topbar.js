@@ -59,6 +59,7 @@ const DaysOfServicePage = () => {
       justifyContent={"space-between"}
       alignItems={"center"}
       width={"100%"}
+      sx={{ flexDirection: { xs: "column", sm: "row" } }}
     >
       <Box display={"flex"} alignItems={"center"} sx={{ flexGrow: 1 }}>
         {isAtDaysOfService && (
@@ -72,7 +73,17 @@ const DaysOfServicePage = () => {
         )}
       </Box>
 
-      <Box display={"flex"} alignItems={"center"} sx={{ flexGrow: 1 }}>
+      <Box
+        display={"flex"}
+        alignItems={"center"}
+        sx={{
+          flexGrow: 1,
+          display: {
+            xs: "none",
+            sm: "block",
+          },
+        }}
+      >
         <Box display={"flex"} justifyContent="center" width="100%">
           <Typography variant="h4" color="primary">
             {isAtDaysOfService ? "Days of Service" : "You Are In Editing Mode"}
@@ -87,13 +98,23 @@ const DaysOfServicePage = () => {
               variant="outlined"
               component="a"
               href={rootUrl + "/admin-dashboard"}
+              sx={{
+                mt: {
+                  xs: 1,
+                  sm: 0,
+                },
+              }}
             >
               Admin Dashboard
             </Button>
           </Box>
 
           {isCommunityLevel ? (
-            <Box sx={{ ml: 2 }}>
+            <Box
+              sx={{
+                ml: 2,
+              }}
+            >
               <Button variant="outlined" onClick={handleGoToDaysOfService}>
                 Days of Service
               </Button>

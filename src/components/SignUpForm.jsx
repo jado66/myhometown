@@ -225,6 +225,7 @@ export const SignUpForm = ({
           startIcon={<Edit />}
           sx={{
             position: "absolute",
+            display: { xs: "none", md: "block" },
             top: 0,
             right: 0,
             mr: 3,

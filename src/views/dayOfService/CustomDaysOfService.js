@@ -127,7 +127,7 @@ export const CustomDaysOfServiceContent = ({
           poster="https://myhometown-bucket.s3.us-west-1.amazonaws.com/uploads/DOS_Thumbnail.webp"
           sx={{
             mx: "auto",
-            width: "50%",
+            width: { md: "50%", xs: "100%" },
             height: "100%",
             borderRadius: "12px",
           }}

@@ -126,10 +126,19 @@ const ProjectForm = ({ formId, date, communityId }) => {
   };
 
   const getSteps = (isBudgetHidden) => {
+    const showReporting = formData.status === "completed";
     if (isBudgetHidden) {
-      return steps;
+      if (showReporting) {
+        //append reporting step
+        return steps
+          .filter((step) => step.label !== "Budget Estimates")
+          .concat([{ label: "Reporting" }]);
+      }
     } else {
-      return steps.filter((step) => step.label !== "Budget Estimates");
+      if (showReporting) {
+        //append reporting step
+        return steps.concat([{ label: "Reporting" }]);
+      }
     }
   };
 
@@ -153,7 +162,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
             Days of Service Project Form
           </Typography>
           <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
-            {steps.map((step, index) => (
+            {getSteps(isBudgetHidden).map((step, index) => (
               <Step
                 key={step.label}
                 sx={{

@@ -1103,12 +1103,98 @@ export const useDaysOfServiceProjects = () => {
     }
   };
 
+  const generateCommunityReportCSV = async (
+    community: any,
+    daysOfService: any
+  ) => {
+    // Create CSV content
+    let csvContent = "";
+
+    // Generate the report
+    for (const day of daysOfService) {
+      // Day header
+      const dayHeader = `${day.name || "Day of Service"} - ${moment(
+        day.end_date
+      ).format("ddd, MM/DD/yy")}`;
+      csvContent += `"${dayHeader}"\n`;
+
+      // Column headers for projects
+      csvContent += `"Organization","Group","Owner","Address","Status","# of Volunteers","# of Hours"\n`;
+
+      // Process each stake sequentially
+      for (const stake of day.partner_stakes) {
+        // Fetch projects for this stake
+        const projects = (await fetchProjectsByDaysOfStakeId(
+          stake.id
+        )) as any[];
+
+        if (projects.length === 0) {
+          // Add a row for stakes with no projects
+          csvContent += `"${stake.name}","No projects found for this stake.","","","","",""\n`;
+        } else {
+          projects.forEach((project) => {
+            // Format address
+            const address = `${project.address_street1}${
+              project.address_street2 ? ", " + project.address_street2 : ""
+            }, ${project.address_city}, ${project.address_state}, ${
+              project.address_zip_code
+            }`;
+            const status =
+              project.status?.toUpperCase() || "In Progress".toUpperCase();
+            const volunteers = project.actual_volunteers || "";
+            const hours = project.actual_project_duration || "";
+
+            // Escape any double quotes in text fields by doubling them
+            const escapedStakeName = stake.name.replace(/"/g, '""');
+            const escapedGroup = (project.partner_ward || "").replace(
+              /"/g,
+              '""'
+            );
+            const escapedOwner = (project.property_owner || "").replace(
+              /"/g,
+              '""'
+            );
+            const escapedAddress = address.replace(/"/g, '""');
+            const escapedStatus = status.replace(/"/g, '""');
+
+            // Add the row to CSV content
+            csvContent += `"${escapedStakeName}","${escapedGroup}","${escapedOwner}","${escapedAddress}","${escapedStatus}","${volunteers}","${hours}"\n`;
+          });
+        }
+      }
+
+      // Add blank lines after each day
+      csvContent += `\n\n`;
+    }
+
+    // Generate filename
+    const fileName = `${community.city_name} - ${community.name} Days of Service Report.csv`;
+
+    // Create a blob and trigger download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName);
+    link.style.visibility = "hidden";
+
+    // Append to document, trigger click and cleanup
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    return fileName;
+  };
+
   return {
     loading,
     addProject,
     generateReports,
     generatePDFReport,
     generateStakeSummaryReport,
+    generateCommunityReportCSV,
     fetchProjectsByCommunityId,
     fetchProjectsByCityId,
     fetchProjectsByDaysOfServiceId,

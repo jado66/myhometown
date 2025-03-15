@@ -11,7 +11,7 @@ import {
   Tabs,
   Tab,
 } from "@mui/material";
-import { Lock, LockOpen } from "@mui/icons-material";
+import { Assignment, Lock, LockOpen } from "@mui/icons-material";
 import { useCommunities } from "@/hooks/use-communities";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
 import Loading from "@/components/util/Loading";
@@ -29,6 +29,7 @@ import {
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import { toast } from "react-toastify";
 import { useDaysOfServiceProjects } from "@/hooks/useDaysOfServiceProjects";
+import moment from "moment";
 
 const CommunitySelectionPage = ({ params }) => {
   const router = useRouter();
@@ -73,7 +74,8 @@ const CommunitySelectionPage = ({ params }) => {
     removePartnerStakeFromDayOfService,
   } = useDaysOfService();
 
-  const { generateStakeSummaryReport } = useDaysOfServiceProjects();
+  const { generateStakeSummaryReport, generateCommunityReportCSV } =
+    useDaysOfServiceProjects();
 
   useEffect(() => {
     const authenticated = isAuthenticatedBudget();
@@ -300,6 +302,55 @@ const CommunitySelectionPage = ({ params }) => {
     }
   };
 
+  const generateCommunityReport = async () => {
+    // // myHometown {City} - {Community} Days of Service Report
+    // const fileName = `${community.city_name} - ${community.name} Days of Service Report`;
+
+    // console.log(fileName);
+    // console.log("\n\n");
+    // // Generate the report
+    // for (const day of daysOfService) {
+    //   // Generate the report for each day
+    //   console.log(
+    //     `${day.name || "Day of Service"} - ${moment(day.end_date).format(
+    //       "ddd, MM/DD/yy"
+    //     )} - ${day.id}`
+    //   );
+
+    //   // Process each stake sequentially
+    //   for (const stake of day.partner_stakes) {
+    //     // Generate the report for each stake
+    //     console.log(`\t${stake.name} - ${stake.id}`);
+
+    //     // Now we can use await here
+    //     const projects = await fetchProjectsByDaysOfStakeId(stake.id);
+    //     console.log("\t\tOwner, Address, Status, # of Volunteers, # of Hours");
+
+    //     if (projects.length === 0) {
+    //       console.log("\t\tNo projects found for this stake.\n\n");
+    //       continue;
+    //     }
+
+    //     projects.forEach((project) => {
+    //       // address_city,address_state,address_street1,address_street2,address_zip_code,
+    //       const address = `${project.address_street1}, ${project.address_street2}, ${project.address_city}, ${project.address_state}, ${project.address_zip_code}`;
+    //       const status = project.status || "Incomplete";
+    //       const volunteers = project.volunteers || "Not yet reported";
+    //       const hours = project.hours || "Not yet reported";
+
+    //       console.log(
+    //         `\t\t${project.property_owner}, ${address}, ${status}, ${volunteers}, ${hours}\n`
+    //       );
+    //     });
+    //     console.log("\n");
+    //   }
+
+    //   console.log("\n\n");
+    // }
+
+    generateCommunityReportCSV(community, daysOfService);
+  };
+
   if (!community) {
     return <Loading center />;
   }
@@ -468,14 +519,26 @@ const CommunitySelectionPage = ({ params }) => {
                   <Divider sx={{ my: 3, width: "100%" }} />
                 )}
 
-                <Button
-                  variant="contained"
-                  color="primary"
-                  sx={{ mt: 4, mx: "auto", display: "block" }}
-                  onClick={handleCreateNewDay}
-                >
-                  Create New Day Of Service
-                </Button>
+                <Box sx={{ display: "flex", justifyContent: "center" }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ mt: 4, mx: 2, display: "block" }}
+                    onClick={handleCreateNewDay}
+                  >
+                    Create New Day Of Service
+                  </Button>
+
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    sx={{ mt: 4, mx: 2, display: "flex" }}
+                    onClick={generateCommunityReport}
+                  >
+                    <Assignment sx={{ mr: 1 }} />
+                    Generate Community Report
+                  </Button>
+                </Box>
               </>
             )}
           </Box>
