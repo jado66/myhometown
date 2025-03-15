@@ -26,6 +26,7 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { useDayOfServiceId } from "@/contexts/DayOfServiceIdProvider";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
 import { useDaysOfServiceProjects } from "@/hooks/useDaysOfServiceProjects";
+import { Dangerous, Warning } from "@mui/icons-material";
 
 // WhoAreYou Component using MUI
 export const WhoAreYouComponent = ({
@@ -166,7 +167,7 @@ export const WhoAreYouComponent = ({
         setGroupsLoading(true);
 
         // Fetch projects for this stake
-        const projects = await fetchProjectsByDaysOfStakeId(stakeId, true);
+        const projects = await fetchProjectsByDaysOfStakeId(stakeId, false);
 
         if (projects && projects.length > 0) {
           // Extract unique partner_ward values
@@ -441,68 +442,88 @@ export const WhoAreYouComponent = ({
         <>
           <Divider sx={{ my: 3 }} />
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth variant="outlined">
-                <InputLabel id="organization-label">
-                  Which organization are you from?
-                </InputLabel>
-                <Select
-                  labelId="organization-label"
-                  value={organization}
-                  onChange={handleOrganizationChange}
-                  label="Which organization are you from?"
-                  required={config.required}
-                  sx={{ borderRadius: 1 }}
+            {dayOfServiceId ? (
+              <>
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth variant="outlined">
+                    <InputLabel id="organization-label">
+                      Which organization are you from?
+                    </InputLabel>
+                    <Select
+                      labelId="organization-label"
+                      value={organization}
+                      onChange={handleOrganizationChange}
+                      label="Which organization are you from?"
+                      required={config.required}
+                      sx={{ borderRadius: 1 }}
+                    >
+                      <MenuItem value="">Select an organization</MenuItem>
+                      {partnerStakes.map((stake) => (
+                        <MenuItem key={stake.id} value={stake.id}>
+                          {stake.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {!organization && (
+                      <FormHelperText>
+                        Please select your organization
+                      </FormHelperText>
+                    )}
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth variant="outlined">
+                    <InputLabel id="group-label">
+                      Which group are you from?
+                    </InputLabel>
+                    <Select
+                      labelId="group-label"
+                      value={group}
+                      onChange={handleGroupChange}
+                      label="Which group are you from?"
+                      required={config.required}
+                      disabled={!organization || groupsLoading}
+                      sx={{ borderRadius: 1 }}
+                    >
+                      <MenuItem value="">Select a group</MenuItem>
+                      {groups.map((groupName) => (
+                        <MenuItem key={groupName} value={groupName}>
+                          {groupName}
+                        </MenuItem>
+                      ))}
+                      {groupsLoading && (
+                        <MenuItem disabled>Loading groups...</MenuItem>
+                      )}
+                      {!groupsLoading &&
+                        groups.length === 0 &&
+                        organization && (
+                          <MenuItem disabled>No groups found</MenuItem>
+                        )}
+                    </Select>
+                    {organization && !group && !groupsLoading && (
+                      <FormHelperText>Please select your group</FormHelperText>
+                    )}
+                    {groupsLoading && (
+                      <FormHelperText>
+                        Loading available groups...
+                      </FormHelperText>
+                    )}
+                  </FormControl>
+                </Grid>
+              </>
+            ) : (
+              <Grid item xs={12} md={6}>
+                <Typography
+                  variant="body1"
+                  display="flex"
+                  alignItems="center"
+                  sx={{ color: "red" }}
                 >
-                  <MenuItem value="">Select an organization</MenuItem>
-                  {partnerStakes.map((stake) => (
-                    <MenuItem key={stake.id} value={stake.id}>
-                      {stake.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {!organization && (
-                  <FormHelperText>
-                    Please select your organization
-                  </FormHelperText>
-                )}
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth variant="outlined">
-                <InputLabel id="group-label">
-                  Which group are you from?
-                </InputLabel>
-                <Select
-                  labelId="group-label"
-                  value={group}
-                  onChange={handleGroupChange}
-                  label="Which group are you from?"
-                  required={config.required}
-                  disabled={!organization || groupsLoading}
-                  sx={{ borderRadius: 1 }}
-                >
-                  <MenuItem value="">Select a group</MenuItem>
-                  {groups.map((groupName) => (
-                    <MenuItem key={groupName} value={groupName}>
-                      {groupName}
-                    </MenuItem>
-                  ))}
-                  {groupsLoading && (
-                    <MenuItem disabled>Loading groups...</MenuItem>
-                  )}
-                  {!groupsLoading && groups.length === 0 && organization && (
-                    <MenuItem disabled>No groups found</MenuItem>
-                  )}
-                </Select>
-                {organization && !group && !groupsLoading && (
-                  <FormHelperText>Please select your group</FormHelperText>
-                )}
-                {groupsLoading && (
-                  <FormHelperText>Loading available groups...</FormHelperText>
-                )}
-              </FormControl>
-            </Grid>
+                  <Warning sx={{ mr: 1 }} />
+                  Please select a day of service
+                </Typography>
+              </Grid>
+            )}
           </Grid>
         </>
       )}

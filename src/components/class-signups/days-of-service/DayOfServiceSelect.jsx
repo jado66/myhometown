@@ -63,7 +63,12 @@ export const DayOfServiceSelect = ({
           throw new Error("No data returned");
         }
 
-        const dayOptions = data.map((day) => ({
+        // Sort the data by end_date before mapping to options
+        const sortedData = [...data].sort(
+          (a, b) => moment(a.end_date).valueOf() - moment(b.end_date).valueOf()
+        );
+
+        const dayOptions = sortedData.map((day) => ({
           value: day.id,
           label: moment(day.end_date).format("dddd, MMMM Do, YYYY"),
         }));
