@@ -73,6 +73,43 @@ export const useFormResponses = () => {
     }
   };
 
+  const submitResponse = async (formId, responseData) => {
+    try {
+      console.log("Submitting response for formId:", formId);
+
+      // Don't use single() here to avoid the PGRST116 error
+      const { data: updateData, error: updateError } = await supabase
+        .from("form_responses")
+        .update({
+          response_data: responseData,
+          status: "submitted",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", formId)
+        .select();
+
+      console.log("Update result:", { updateData, updateError });
+
+      if (updateError) {
+        setError(updateError);
+        return null;
+      }
+
+      if (!updateData || updateData.length === 0) {
+        console.log("No rows were updated");
+        return null;
+      }
+
+      const updatedResponse = updateData[0];
+      setResponse(updatedResponse);
+      return updatedResponse;
+    } catch (err) {
+      console.error("Error in submitResponse:", err);
+      setError(err);
+      return null;
+    }
+  };
+
   const updateForm = async (formId, formData) => {
     setLoading(true);
     try {
@@ -100,6 +137,7 @@ export const useFormResponses = () => {
     loading,
     error,
     getFormById,
+    submitResponse,
     getFormResponses,
     createForm,
     updateForm,
