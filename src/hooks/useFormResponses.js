@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/util/supabase";
 
-export const useCustomForms = () => {
+export const useFormResponses = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -9,7 +9,7 @@ export const useCustomForms = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from("forms")
+        .from("custom_forms")
         .select("*")
         .eq("id", formId)
         .single();
@@ -34,7 +34,7 @@ export const useCustomForms = () => {
       const { data, error } = await supabase
         .from("form_responses")
         .select("*")
-        .eq("form_id", formId)
+        .eq("id", formId)
         .order("created_at", { ascending: false });
 
       if (error) {

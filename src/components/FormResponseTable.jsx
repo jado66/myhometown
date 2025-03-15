@@ -15,66 +15,35 @@ import {
   Chip,
   IconButton,
   Tooltip,
-  TablePagination,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Divider,
   CircularProgress,
+  Button,
 } from "@mui/material";
 import {
-  CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon,
+  CalendarMonth,
+  Person,
   AccessTime as AccessTimeIcon,
   Visibility as VisibilityIcon,
+  People,
+  ExpandMore as ExpandMoreIcon,
+  FilterList as FilterListIcon,
 } from "@mui/icons-material";
 import JsonViewer from "./util/debug/DebugOutput";
+import moment from "moment";
 
-const PAGE_SIZE = 10;
-
-const StatusChip = ({ status }) => {
-  switch (status) {
-    case "submitted":
-      return (
-        <Chip
-          icon={<AccessTimeIcon />}
-          label="Submitted"
-          color="primary"
-          size="small"
-        />
-      );
-    case "approved":
-      return (
-        <Chip
-          icon={<CheckCircleIcon />}
-          label="Approved"
-          color="success"
-          size="small"
-        />
-      );
-    case "rejected":
-      return (
-        <Chip
-          icon={<CancelIcon />}
-          label="Rejected"
-          color="error"
-          size="small"
-        />
-      );
-    default:
-      return (
-        <Chip
-          icon={<AccessTimeIcon />}
-          label="Draft"
-          variant="outlined"
-          size="small"
-        />
-      );
-  }
-};
-
-const SummaryCard = ({ title, value, color = "textPrimary" }) => (
+// Reuse the summary card component
+const SummaryCard = ({ title, value, color = "textPrimary", icon }) => (
   <Card>
     <CardContent>
-      <Typography variant="body2" color="textSecondary">
-        {title}
-      </Typography>
+      <Box display="flex" alignItems="center" mb={1}>
+        {icon && <Box mr={1}>{icon}</Box>}
+        <Typography variant="body2" color="textSecondary">
+          {title}
+        </Typography>
+      </Box>
       <Typography variant="h4" color={color}>
         {value}
       </Typography>
@@ -87,169 +56,420 @@ export const FormResponseTable = ({
   responses,
   formData,
   onViewResponse,
+  daysOfService,
 }) => {
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(PAGE_SIZE);
   const [summary, setSummary] = useState({
     total: 0,
-    submitted: 0,
-    approved: 0,
-    rejected: 0,
-    draft: 0,
+    totalPeople: 0,
+    totalHours: 0,
+    uniqueDays: 0,
   });
 
-  useEffect(() => {
-    if (responses) {
-      // Calculate summary statistics using native JS
-      const stats = responses.reduce((acc, response) => {
-        const status = response.status || "draft";
-        acc[status] = (acc[status] || 0) + 1;
-        return acc;
-      }, {});
+  const [groupedResponses, setGroupedResponses] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [expandedGroups, setExpandedGroups] = useState({});
 
-      setSummary({
-        total: responses.length,
-        submitted: stats.submitted || 0,
-        approved: stats.approved || 0,
-        rejected: stats.rejected || 0,
-        draft: stats.draft || 0,
+  useEffect(() => {
+    if (!responses || !formData) return;
+
+    setLoading(true);
+
+    // Extract days of service options for lookup
+
+    // Group responses by day of service
+    const groups = {};
+    const stats = responses.reduce(
+      (acc, response) => {
+        const data = response.response_data || response;
+        const serviceDay = data.dayOfService || "unspecified";
+
+        // Create group if it doesn't exist
+        if (!groups[serviceDay]) {
+          groups[serviceDay] = {
+            responses: [],
+            stats: {
+              volunteerCount: 0,
+              minorCount: 0,
+              totalHours: 0,
+            },
+          };
+
+          // Initialize expanded state for this group
+          setExpandedGroups((prev) => ({
+            ...prev,
+            [serviceDay]: true, // Default to expanded
+          }));
+        }
+
+        // Add response to group
+        groups[serviceDay].responses.push(response);
+
+        // Update group stats
+        groups[serviceDay].stats.volunteerCount++;
+
+        // Count minor volunteers
+        const minorCount = Array.isArray(data.minorVolunteers)
+          ? data.minorVolunteers.length
+          : 0;
+
+        groups[serviceDay].stats.minorCount += minorCount;
+
+        // Calculate total hours
+        let responseHours = 0;
+        if (Array.isArray(data.minorVolunteers)) {
+          data.minorVolunteers.forEach((minor) => {
+            responseHours += typeof minor.hours === "number" ? minor.hours : 0;
+          });
+        }
+        groups[serviceDay].stats.totalHours += responseHours;
+
+        // Update overall stats
+        acc.totalPeople += 1 + minorCount;
+        acc.totalHours += responseHours;
+
+        // Track unique days
+        if (serviceDay !== "unspecified" && !acc.daysSet.has(serviceDay)) {
+          acc.daysSet.add(serviceDay);
+        }
+
+        return acc;
+      },
+      { totalPeople: 0, totalHours: 0, daysSet: new Set() }
+    );
+
+    // Sort groups by date if possible
+    const sortedGroups = {};
+
+    // First try to sort by event date using the options data
+    const sortedKeys = Object.keys(groups).sort((a, b) => {
+      // If we have date information in the options, use it
+      if (serviceDayOptions[a] && serviceDayOptions[b]) {
+        // Try to extract dates from labels if possible
+        const dateA = extractDateFromLabel(serviceDayOptions[a]);
+        const dateB = extractDateFromLabel(serviceDayOptions[b]);
+
+        if (dateA && dateB) {
+          return dateA - dateB;
+        }
+
+        // Fall back to alphabetical sort of labels
+        return serviceDayOptions[a].localeCompare(serviceDayOptions[b]);
+      }
+
+      // If no date info, just use alphabetical
+      return a.localeCompare(b);
+    });
+
+    // Create the sorted object
+    sortedKeys.forEach((key) => {
+      sortedGroups[key] = groups[key];
+    });
+
+    // Update state
+    setGroupedResponses(sortedGroups);
+
+    setSummary({
+      total: responses.length,
+      totalPeople: stats.totalPeople,
+      totalHours: stats.totalHours.toFixed(1),
+      uniqueDays: stats.daysSet.size,
+    });
+
+    setLoading(false);
+  }, [responses, formData]);
+
+  // Helper function to try extracting a date from a service day label
+  const extractDateFromLabel = (label) => {
+    if (!label) return null;
+
+    // Try to find a date pattern in the label
+    const dateMatch = label.match(
+      /\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})\b/
+    );
+    if (dateMatch) {
+      const [_, month, day, year] = dateMatch;
+      return new Date(`${month}/${day}/${year}`);
+    }
+
+    // Also check for month names
+    const monthMatch = label.match(
+      /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* (\d{1,2})(?:st|nd|rd|th)?,? (\d{4})\b/i
+    );
+    if (monthMatch) {
+      const [_, month, day, year] = monthMatch;
+      return new Date(`${month} ${day}, ${year}`);
+    }
+
+    return null;
+  };
+
+  // Helper function to get key volunteer information
+  const getVolunteerInfo = (response) => {
+    const data = response.response_data || response;
+
+    // Format name
+    const fullName = `${data.firstName || ""} ${data.lastName || ""}`.trim();
+
+    // Format date
+    const submittedDate = response.created_at
+      ? new Date(response.created_at).toLocaleDateString()
+      : "-";
+
+    // Count minor volunteers
+    const minorCount = Array.isArray(data.minorVolunteers)
+      ? data.minorVolunteers.length
+      : 0;
+
+    // Calculate total hours including minors
+    let totalHours = 0;
+    if (Array.isArray(data.minorVolunteers)) {
+      data.minorVolunteers.forEach((minor) => {
+        totalHours += typeof minor.hours === "number" ? minor.hours : 0;
       });
     }
-  }, [responses]);
 
-  if (!responses || !formData) {
+    return {
+      fullName,
+      submittedDate,
+      email: data.email || "-",
+      phone: data.phone || "-",
+      location: data.addressLine1
+        ? `${data.addressLine1}${
+            data.addressLine2 ? ", " + data.addressLine2 : ""
+          }`
+        : "-",
+      minorCount,
+      totalHours: totalHours.toFixed(1),
+    };
+  };
+
+  const toggleGroupExpansion = (serviceDay) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [serviceDay]: !prev[serviceDay],
+    }));
+  };
+
+  const expandAllGroups = (expand = true) => {
+    const newState = {};
+    Object.keys(groupedResponses).forEach((key) => {
+      newState[key] = expand;
+    });
+    setExpandedGroups(newState);
+  };
+
+  if (loading) {
     return (
       <Box display="flex" justifyContent="center" p={3}>
-        <JsonViewer data={{ formId, responses, formData }} />
         <CircularProgress />
       </Box>
     );
   }
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const getFieldValue = (fieldId, value, field) => {
-    if (value === null || value === undefined) return "-";
-
-    switch (field.type) {
-      case "checkbox":
-        return value ? "Yes" : "No";
-      case "select":
-        const option = field.options?.find((opt) => opt.value === value);
-        return option ? option.label : value;
-      case "date":
-        return new Date(value).toLocaleDateString();
-      default:
-        return String(value);
-    }
-  };
-
-  const visibleFields = formData.field_order
-    .filter((fieldId) => {
-      const field = formData.form_config[fieldId];
-      return field && field.visible;
-    })
-    .slice(0, 3);
+  if (!responses || !formData) {
+    return (
+      <Box p={3}>
+        <Typography>No data available</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ width: "100%", mb: 4 }}>
-      {/* Summary Cards */}
+      {/* Overall Summary Cards */}
       <Grid container spacing={2} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={2.4}>
-          <SummaryCard title="Total Responses" value={summary.total} />
-        </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
+        <Grid item xs={12} sm={6} md={3}>
           <SummaryCard
-            title="Submitted"
-            value={summary.submitted}
+            title="Total Volunteers"
+            value={summary.total}
+            icon={<Person fontSize="small" />}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <SummaryCard
+            title="Total People"
+            value={summary.totalPeople}
             color="primary"
+            icon={<People fontSize="small" />}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
+        <Grid item xs={12} sm={6} md={3}>
           <SummaryCard
-            title="Approved"
-            value={summary.approved}
+            title="Volunteer Hours"
+            value={summary.totalHours}
             color="success"
+            icon={<AccessTimeIcon fontSize="small" />}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
+        <Grid item xs={12} sm={6} md={3}>
           <SummaryCard
-            title="Rejected"
-            value={summary.rejected}
-            color="error"
+            title="Unique Service Days"
+            value={summary.uniqueDays}
+            color="info"
+            icon={<CalendarMonth fontSize="small" />}
           />
-        </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
-          <SummaryCard title="Draft" value={summary.draft} />
         </Grid>
       </Grid>
 
-      {/* Responses Table */}
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Date</TableCell>
-              <TableCell>Status</TableCell>
-              {visibleFields.map((fieldId) => (
-                <TableCell key={fieldId}>
-                  {formData.form_config[fieldId].label}
-                </TableCell>
-              ))}
-              <TableCell align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {responses
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((response, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    {new Date(response.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <StatusChip status={response.status} />
-                  </TableCell>
-                  {visibleFields.map((fieldId) => (
-                    <TableCell key={fieldId}>
-                      {getFieldValue(
-                        fieldId,
-                        response.response_data[fieldId],
-                        formData.form_config[fieldId]
-                      )}
-                    </TableCell>
-                  ))}
-                  <TableCell align="right">
-                    <Tooltip title="View Details">
-                      <IconButton
+      {/* Group controls */}
+      <Box sx={{ mb: 2, display: "flex", justifyContent: "flex-end" }}>
+        <Button
+          startIcon={<FilterListIcon />}
+          onClick={() => expandAllGroups(true)}
+          variant="outlined"
+          size="small"
+          sx={{ mr: 1 }}
+        >
+          Expand All
+        </Button>
+        <Button
+          startIcon={<FilterListIcon />}
+          onClick={() => expandAllGroups(false)}
+          variant="outlined"
+          size="small"
+        >
+          Collapse All
+        </Button>
+      </Box>
+
+      <JsonViewer data={daysOfService} />
+
+      {/* Grouped Response Sections */}
+      {Object.keys(groupedResponses).length > 0 ? (
+        Object.entries(groupedResponses).map(([serviceDay, group]) => {
+          const dayOfService = daysOfService[serviceDay];
+          const { responses: groupResponses, stats } = group;
+
+          return (
+            <Accordion
+              key={serviceDay}
+              expanded={expandedGroups[serviceDay]}
+              onChange={() => toggleGroupExpansion(serviceDay)}
+              sx={{ mb: 2 }}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    width: "100%",
+                    pr: 2,
+                  }}
+                >
+                  <Typography variant="h6">
+                    {dayOfService?.name || "Day of Service"} -{" "}
+                    {moment(dayOfService?.end_date).format("ddd, MM/DD/yy")}
+                  </Typography>
+                  <Box sx={{ display: "flex", gap: 2 }}>
+                    <Chip
+                      label={`${groupResponses.length} volunteer${
+                        groupResponses.length !== 1 ? "s" : ""
+                      }`}
+                      size="small"
+                      color="secondary"
+                      sx={{ color: "white" }}
+                    />
+                    {stats.minorCount > 0 && (
+                      <Chip
+                        icon={<People fontSize="small" />}
+                        label={`${stats.minorCount} minor${
+                          stats.minorCount !== 1 ? "s" : ""
+                        }`}
                         size="small"
-                        onClick={() => onViewResponse?.(response.response_data)}
-                      >
-                        <VisibilityIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25, 50]}
-          component="div"
-          count={responses.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </TableContainer>
+                        color="info"
+                      />
+                    )}
+                    <Chip
+                      icon={<AccessTimeIcon fontSize="small" />}
+                      label={`${stats.totalHours.toFixed(1)} hours`}
+                      size="small"
+                      color="success"
+                    />
+                  </Box>
+                </Box>
+              </AccordionSummary>
+              <AccordionDetails sx={{ p: 0 }}>
+                <TableContainer component={Paper} elevation={0}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Volunteer</TableCell>
+                        <TableCell>Contact</TableCell>
+                        <TableCell>Date Submitted</TableCell>
+                        <TableCell>Minors</TableCell>
+                        <TableCell>Hours</TableCell>
+                        <TableCell align="right">Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {groupResponses.map((response, index) => {
+                        const info = getVolunteerInfo(response);
+                        return (
+                          <TableRow key={index}>
+                            <TableCell>{info.fullName}</TableCell>
+                            <TableCell>
+                              <Tooltip
+                                title={`Email: ${info.email}\nPhone: ${info.phone}`}
+                              >
+                                <Box>
+                                  <Typography variant="body2" noWrap>
+                                    {info.email}
+                                  </Typography>
+                                  <Typography
+                                    variant="body2"
+                                    color="textSecondary"
+                                    noWrap
+                                  >
+                                    {info.phone}
+                                  </Typography>
+                                </Box>
+                              </Tooltip>
+                            </TableCell>
+                            <TableCell>{info.submittedDate}</TableCell>
+                            <TableCell>
+                              {info.minorCount > 0 ? (
+                                <Chip
+                                  label={info.minorCount}
+                                  size="small"
+                                  color="primary"
+                                />
+                              ) : (
+                                "-"
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {info.totalHours > 0 ? info.totalHours : "-"}
+                            </TableCell>
+                            <TableCell align="right">
+                              <Tooltip title="View Details">
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    onViewResponse?.(
+                                      response.response_data || response
+                                    )
+                                  }
+                                >
+                                  <VisibilityIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </AccordionDetails>
+            </Accordion>
+          );
+        })
+      ) : (
+        <Typography variant="body1" sx={{ p: 2 }}>
+          No volunteer responses have been submitted yet.
+        </Typography>
+      )}
     </Box>
   );
 };

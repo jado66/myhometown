@@ -26,7 +26,6 @@ const DaysOfServicePage = ({ params }) => {
   // Initialize form responses hook
   const {
     submitResponse,
-    fetchResponse,
     response,
     loading: responseLoading,
   } = useFormResponses();
@@ -47,9 +46,6 @@ const DaysOfServicePage = ({ params }) => {
         if (formData) {
           setForm(formData);
           setFormId(formData.id);
-
-          // Also fetch any existing response data
-          await fetchResponse(formData.id);
         }
       };
 

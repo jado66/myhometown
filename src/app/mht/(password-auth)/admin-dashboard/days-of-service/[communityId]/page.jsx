@@ -484,7 +484,10 @@ const CommunitySelectionPage = ({ params }) => {
           <Box role="tabpanel" hidden={activeTab !== 1}>
             {activeTab === 1 && (
               <>
-                <VolunteerSignups communityId={communityId} />
+                <VolunteerSignups
+                  params={params}
+                  daysOfService={daysOfService}
+                />
               </>
             )}
           </Box>
