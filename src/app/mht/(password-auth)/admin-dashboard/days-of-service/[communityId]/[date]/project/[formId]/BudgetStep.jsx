@@ -9,24 +9,6 @@ const BudgetStep = () => {
   const { formData, handleInputChange, handleNumberInputChange } =
     useProjectForm();
 
-  const handleToolAdd = (e, category) => {
-    if (e.key === "Enter" && e.target.value.trim()) {
-      e.preventDefault();
-      const value = e.target.value.trim();
-      const categoryMap = {
-        tools: "volunteerTools",
-        equipment: "equipment",
-        homeownerMaterials: "homeownerMaterials",
-        otherMaterials: "otherMaterials",
-      };
-      const fieldName = categoryMap[category];
-      const currentItems = formData[fieldName] || [];
-      const newItems = [...currentItems, value];
-      handleInputChange(fieldName, newItems);
-      e.target.value = "";
-    }
-  };
-
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <Typography variant="h4" sx={{ mt: 2, mb: 1, textAlign: "center" }}>

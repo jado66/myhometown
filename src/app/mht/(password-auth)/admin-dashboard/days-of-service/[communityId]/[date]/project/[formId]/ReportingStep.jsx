@@ -4,25 +4,8 @@ import { useProjectForm } from "@/contexts/ProjectFormProvider";
 import ProjectTextField from "./ProjectTextField";
 
 const ReportingStep = () => {
-  const { formData, handleInputChange } = useProjectForm();
-
-  const handleToolAdd = (e, category) => {
-    if (e.key === "Enter" && e.target.value.trim()) {
-      e.preventDefault();
-      const value = e.target.value.trim();
-      const categoryMap = {
-        tools: "volunteerTools",
-        equipment: "equipment",
-        homeownerMaterials: "homeownerMaterials",
-        otherMaterials: "otherMaterials",
-      };
-      const fieldName = categoryMap[category];
-      const currentItems = formData[fieldName] || [];
-      const newItems = [...currentItems, value];
-      handleInputChange(fieldName, newItems);
-      e.target.value = "";
-    }
-  };
+  const { formData, handleInputChange, handleNumberInputChange } =
+    useProjectForm();
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -34,7 +17,9 @@ const ReportingStep = () => {
         helperText="The number of volunteers who actually participated in the project."
         min={0}
         value={formData.actual_volunteers}
-        onChange={(e) => handleInputChange("actual_volunteers", e.target.value)}
+        onChange={(e) =>
+          handleNumberInputChange("actual_volunteers", e.target.value)
+        }
       />
 
       <ProjectTextField
