@@ -93,6 +93,8 @@ const DaysOfServicePage = ({ params }) => {
 
       if (result) {
         toast.success("Form submitted successfully");
+
+        //
         // You might want to reset the form or redirect the user
       } else {
         toast.error("Failed to submit form");

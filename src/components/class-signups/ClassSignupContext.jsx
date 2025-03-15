@@ -534,6 +534,12 @@ export function ClassSignupProvider({
     return Object.keys(newErrors).length === 0;
   };
 
+  const resetForm = () => {
+    setFormData({});
+    setErrors({});
+    setSubmitStatus(null);
+  };
+
   const handleSubmit = async () => {
     try {
       setSubmitStatus("submitting");
@@ -609,6 +615,7 @@ export function ClassSignupProvider({
     handleAddFields,
     handleRemoveField,
     handleFormChange,
+    resetForm,
     handleSubmit,
     onDragEnd,
     handleBulkFieldUpdate,

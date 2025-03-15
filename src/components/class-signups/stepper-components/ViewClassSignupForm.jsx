@@ -36,7 +36,7 @@ export function ViewClassSignupForm({
     submitStatus,
     handleFormChange,
     handleSubmit,
-
+    resetForm,
     testSignup,
   } = useClassSignup();
 
@@ -172,6 +172,8 @@ export function ViewClassSignupForm({
             onClick={() => {
               if (typeof onSubmit === "function") {
                 onSubmit(formData);
+                //reset form
+                resetForm();
               } else {
                 handleSubmit();
               }

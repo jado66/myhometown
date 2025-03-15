@@ -88,6 +88,8 @@ const DaysOfServicePage = ({ params }) => {
       if (response) {
         setSubmitSuccess(true);
         setSubmitError("");
+
+        // reset form
       } else {
         setSubmitError("Failed to submit form. Please try again.");
       }

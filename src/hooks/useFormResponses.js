@@ -101,7 +101,6 @@ export const useFormResponses = () => {
       }
 
       const updatedResponse = updateData[0];
-      setResponse(updatedResponse);
       return updatedResponse;
     } catch (err) {
       console.error("Error in submitResponse:", err);
