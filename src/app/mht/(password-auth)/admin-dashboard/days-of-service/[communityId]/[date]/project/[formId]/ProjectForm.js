@@ -134,6 +134,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
           .filter((step) => step.label !== "Budget Estimates")
           .concat([{ label: "Reporting" }]);
       }
+      return allSteps.filter((step) => step.label !== "Budget Estimates");
     } else {
       if (showReporting) {
         //append reporting step
