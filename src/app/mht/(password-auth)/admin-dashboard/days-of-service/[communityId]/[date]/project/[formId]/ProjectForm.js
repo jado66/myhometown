@@ -125,24 +125,14 @@ const ProjectForm = ({ formId, date, communityId }) => {
     );
   };
 
-  const getSteps = (isBudgetHidden) => {
+  const getSteps = () => {
     const showReporting = formData.status === "completed";
-    if (isBudgetHidden) {
-      if (showReporting) {
-        //append reporting step
-        return allSteps
-          .filter((step) => step.label !== "Budget Estimates")
-          .concat([{ label: "Reporting" }]);
-      }
-      return allSteps.filter((step) => step.label !== "Budget Estimates");
-    } else {
-      if (showReporting) {
-        //append reporting step
-        return allSteps.concat([{ label: "Reporting" }]);
-      } else {
-        return allSteps;
-      }
+
+    if (showReporting) {
+      //append reporting step
+      return allSteps.concat([{ label: "Reporting" }]);
     }
+    return allSteps;
   };
 
   if (isInitialLoading) return <Loading />;
