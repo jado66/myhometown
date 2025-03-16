@@ -456,9 +456,13 @@ const CommunitySelectionPage = ({ params }) => {
                         Jump to a specific Day of Service:
                       </Typography>
                       {daysOfService
-                        .sort(
-                          (a, b) => new Date(a.end_date) - new Date(b.end_date)
-                        )
+                        .sort((a, b) => {
+                          const dateA = moment(b.end_date);
+                          const dateB = moment(a.end_date);
+                          return dateB.isValid() && dateA.isValid()
+                            ? dateB.diff(dateA)
+                            : 0; // Default to no change if dates are invalid
+                        })
                         .map((day) => (
                           <Button
                             key={`nav-${day.id}`}
@@ -472,13 +476,7 @@ const CommunitySelectionPage = ({ params }) => {
                           >
                             {
                               // Format the date
-                              new Date(day.end_date).toLocaleDateString(
-                                "en-US",
-                                {
-                                  month: "short",
-                                  day: "numeric",
-                                }
-                              )
+                              moment(day.end_date).format("MMM DD")
                             }
                           </Button>
                         ))}
