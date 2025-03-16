@@ -20,7 +20,7 @@ import { toast } from "react-toastify";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 
-const steps = [
+const allSteps = [
   { label: "Project Information" },
   { label: "Detailed Planning" },
   { label: "Budget Estimates" },
@@ -130,19 +130,23 @@ const ProjectForm = ({ formId, date, communityId }) => {
     if (isBudgetHidden) {
       if (showReporting) {
         //append reporting step
-        return steps
+        return allSteps
           .filter((step) => step.label !== "Budget Estimates")
           .concat([{ label: "Reporting" }]);
       }
     } else {
       if (showReporting) {
         //append reporting step
-        return steps.concat([{ label: "Reporting" }]);
+        return allSteps.concat([{ label: "Reporting" }]);
+      } else {
+        return allSteps;
       }
     }
   };
 
   if (isInitialLoading) return <Loading />;
+
+  const steps = getSteps(isBudgetHidden);
 
   return (
     <>
@@ -162,7 +166,7 @@ const ProjectForm = ({ formId, date, communityId }) => {
             Days of Service Project Form
           </Typography>
           <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
-            {(getSteps(isBudgetHidden) || []).map((step, index) => (
+            {steps.map((step, index) => (
               <Step
                 key={step.label}
                 sx={{

@@ -56,7 +56,11 @@ export const StakeCard = ({
           {stake.name}
         </Typography>
         <Divider sx={{ my: 2 }} />
-        <LiaisonAccordion stake={stake} day={day} />
+        <LiaisonAccordion
+          stake={stake}
+          day={day}
+          onViewProjects={() => onClick(day, stake)}
+        />
       </CardContent>
     </Card>
   );
