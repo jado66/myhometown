@@ -526,16 +526,6 @@ const CommunitySelectionPage = ({ params }) => {
                   >
                     Create New Day Of Service
                   </Button>
-
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    sx={{ mt: 4, mx: 2, display: "flex" }}
-                    onClick={generateCommunityReport}
-                  >
-                    <Assignment sx={{ mr: 1 }} />
-                    Generate Community Report
-                  </Button>
                 </Box>
               </>
             )}
@@ -548,6 +538,7 @@ const CommunitySelectionPage = ({ params }) => {
                 <VolunteerSignups
                   params={params}
                   daysOfService={daysOfService}
+                  generateCommunityReport={generateCommunityReport}
                 />
               </>
             )}

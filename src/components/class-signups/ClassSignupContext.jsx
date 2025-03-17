@@ -87,6 +87,8 @@ export function ClassSignupProvider({
   const [loadError, setLoadError] = useState(null);
   const hasLoadedRef = useRef(false);
 
+  const [resetKey, setResetKey] = useState(0);
+
   // Initialize form configuration
   const [formConfig, setFormConfig] = useState(() => {
     if (defaultConfig?.signupForm?.formConfig) {
@@ -538,6 +540,7 @@ export function ClassSignupProvider({
     setFormData({});
     setErrors({});
     setSubmitStatus(null);
+    setResetKey((prev) => prev + 1);
   };
 
   const handleSubmit = async () => {
@@ -607,6 +610,7 @@ export function ClassSignupProvider({
     isEditMode,
     isLoading,
     isNew,
+    resetKey,
     handleClassConfigChange,
     handleSaveClass,
     handleDeleteClass,

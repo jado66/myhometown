@@ -88,6 +88,8 @@ export function ViewClassSignupForm({
     );
   }
 
+  const isValid = Object.keys(errors).length === 0;
+
   return (
     <Stack spacing={3} component="form">
       <JsonViewer data={formData} title="Class Config" />
@@ -178,7 +180,7 @@ export function ViewClassSignupForm({
                 handleSubmit();
               }
             }}
-            disabled={submitStatus === "submitting" || testSubmit}
+            disabled={submitStatus === "submitting" || !isValid}
           >
             {submitStatus === "submitting"
               ? "Signing Up..."

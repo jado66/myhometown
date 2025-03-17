@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import {
   FormControl,
   FormLabel,
@@ -13,6 +13,7 @@ import { useDaysOfService } from "@/hooks/useDaysOfService";
 import { communityIdMap } from "@/util/communityIdMap";
 import { useDayOfServiceId } from "@/contexts/DayOfServiceIdProvider";
 import moment from "moment";
+import { useClassSignup } from "../ClassSignupContext";
 
 // Day of Service Component using MUI
 export const DayOfServiceSelect = ({

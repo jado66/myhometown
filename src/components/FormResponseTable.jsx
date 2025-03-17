@@ -30,6 +30,7 @@ import {
   People,
   ExpandMore as ExpandMoreIcon,
   FilterList as FilterListIcon,
+  Delete as DeleteIcon,
 } from "@mui/icons-material";
 import JsonViewer from "./util/debug/DebugOutput";
 import moment from "moment";
@@ -56,12 +57,13 @@ export const FormResponseTable = ({
   responses,
   formData,
   onViewResponse,
+  onDeleteResponse,
   daysOfService,
 }) => {
   const [summary, setSummary] = useState({
     total: 0,
     totalPeople: 0,
-    totalHours: 0,
+
     uniqueDays: 0,
   });
 
@@ -73,8 +75,6 @@ export const FormResponseTable = ({
     if (!responses || !formData) return;
 
     setLoading(true);
-
-    // Extract days of service options for lookup
 
     // Group responses by day of service
     const groups = {};
@@ -90,7 +90,6 @@ export const FormResponseTable = ({
             stats: {
               volunteerCount: 0,
               minorCount: 0,
-              totalHours: 0,
             },
           };
 
@@ -114,18 +113,8 @@ export const FormResponseTable = ({
 
         groups[serviceDay].stats.minorCount += minorCount;
 
-        // Calculate total hours
-        let responseHours = 0;
-        if (Array.isArray(data.minorVolunteers)) {
-          data.minorVolunteers.forEach((minor) => {
-            responseHours += typeof minor.hours === "number" ? minor.hours : 0;
-          });
-        }
-        groups[serviceDay].stats.totalHours += responseHours;
-
         // Update overall stats
         acc.totalPeople += 1 + minorCount;
-        acc.totalHours += responseHours;
 
         // Track unique days
         if (serviceDay !== "unspecified" && !acc.daysSet.has(serviceDay)) {
@@ -134,7 +123,7 @@ export const FormResponseTable = ({
 
         return acc;
       },
-      { totalPeople: 0, totalHours: 0, daysSet: new Set() }
+      { totalPeople: 0, daysSet: new Set() }
     );
 
     // Sort groups by date if possible
@@ -143,6 +132,7 @@ export const FormResponseTable = ({
     // First try to sort by event date using the options data
     const sortedKeys = Object.keys(groups).sort((a, b) => {
       // If we have date information in the options, use it
+      const serviceDayOptions = daysOfService || {};
       if (serviceDayOptions[a] && serviceDayOptions[b]) {
         // Try to extract dates from labels if possible
         const dateA = extractDateFromLabel(serviceDayOptions[a]);
@@ -171,12 +161,12 @@ export const FormResponseTable = ({
     setSummary({
       total: responses.length,
       totalPeople: stats.totalPeople,
-      totalHours: stats.totalHours.toFixed(1),
+
       uniqueDays: stats.daysSet.size,
     });
 
     setLoading(false);
-  }, [responses, formData]);
+  }, [responses, formData, daysOfService]);
 
   // Helper function to try extracting a date from a service day label
   const extractDateFromLabel = (label) => {
@@ -204,29 +194,23 @@ export const FormResponseTable = ({
   };
 
   // Helper function to get key volunteer information
-  const getVolunteerInfo = (response) => {
-    const data = response.response_data || response;
+  const getVolunteerInfo = (submission) => {
+    const data = submission.response_data || submission;
 
     // Format name
-    const fullName = `${data.firstName || ""} ${data.lastName || ""}`.trim();
+    const fullName = `${submission.firstName || ""} ${
+      submission.lastName || ""
+    }`.trim();
 
     // Format date
-    const submittedDate = response.created_at
-      ? new Date(response.created_at).toLocaleDateString()
+    const submittedDate = submission.created_at
+      ? moment(submission.created_at).format("MM/DD/YY")
       : "-";
 
     // Count minor volunteers
     const minorCount = Array.isArray(data.minorVolunteers)
       ? data.minorVolunteers.length
       : 0;
-
-    // Calculate total hours including minors
-    let totalHours = 0;
-    if (Array.isArray(data.minorVolunteers)) {
-      data.minorVolunteers.forEach((minor) => {
-        totalHours += typeof minor.hours === "number" ? minor.hours : 0;
-      });
-    }
 
     return {
       fullName,
@@ -239,7 +223,7 @@ export const FormResponseTable = ({
           }`
         : "-",
       minorCount,
-      totalHours: totalHours.toFixed(1),
+      submissionId: submission.id,
     };
   };
 
@@ -274,43 +258,16 @@ export const FormResponseTable = ({
     );
   }
 
+  let allSubmissions = [];
+  if (responses.length > 0) {
+    const responseData = responses[0]?.response_data || {};
+    if (responseData.submissions && Array.isArray(responseData.submissions)) {
+      allSubmissions = responseData.submissions;
+    }
+  }
+
   return (
     <Box sx={{ width: "100%", mb: 4 }}>
-      {/* Overall Summary Cards */}
-      <Grid container spacing={2} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <SummaryCard
-            title="Total Volunteers"
-            value={summary.total}
-            icon={<Person fontSize="small" />}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <SummaryCard
-            title="Total People"
-            value={summary.totalPeople}
-            color="primary"
-            icon={<People fontSize="small" />}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <SummaryCard
-            title="Volunteer Hours"
-            value={summary.totalHours}
-            color="success"
-            icon={<AccessTimeIcon fontSize="small" />}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <SummaryCard
-            title="Unique Service Days"
-            value={summary.uniqueDays}
-            color="info"
-            icon={<CalendarMonth fontSize="small" />}
-          />
-        </Grid>
-      </Grid>
-
       {/* Group controls */}
       <Box sx={{ mb: 2, display: "flex", justifyContent: "flex-end" }}>
         <Button
@@ -332,12 +289,10 @@ export const FormResponseTable = ({
         </Button>
       </Box>
 
-      <JsonViewer data={daysOfService} />
-
       {/* Grouped Response Sections */}
       {Object.keys(groupedResponses).length > 0 ? (
         Object.entries(groupedResponses).map(([serviceDay, group]) => {
-          const dayOfService = daysOfService[serviceDay];
+          const dayOfService = daysOfService?.[serviceDay];
           const { responses: groupResponses, stats } = group;
 
           return (
@@ -358,8 +313,11 @@ export const FormResponseTable = ({
                   }}
                 >
                   <Typography variant="h6">
-                    {dayOfService?.name || "Day of Service"} -{" "}
-                    {moment(dayOfService?.end_date).format("ddd, MM/DD/yy")}
+                    {dayOfService?.name || "Day of Service"}
+                    {dayOfService?.end_date &&
+                      ` - ${moment(dayOfService.end_date).format(
+                        "ddd, MM/DD/yy"
+                      )}`}
                   </Typography>
                   <Box sx={{ display: "flex", gap: 2 }}>
                     <Chip
@@ -380,16 +338,11 @@ export const FormResponseTable = ({
                         color="info"
                       />
                     )}
-                    <Chip
-                      icon={<AccessTimeIcon fontSize="small" />}
-                      label={`${stats.totalHours.toFixed(1)} hours`}
-                      size="small"
-                      color="success"
-                    />
                   </Box>
                 </Box>
               </AccordionSummary>
               <AccordionDetails sx={{ p: 0 }}>
+                <JsonViewer data={allSubmissions} />
                 <TableContainer component={Paper} elevation={0}>
                   <Table>
                     <TableHead>
@@ -398,15 +351,15 @@ export const FormResponseTable = ({
                         <TableCell>Contact</TableCell>
                         <TableCell>Date Submitted</TableCell>
                         <TableCell>Minors</TableCell>
-                        <TableCell>Hours</TableCell>
+
                         <TableCell align="right">Actions</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {groupResponses.map((response, index) => {
+                      {allSubmissions.map((response, index) => {
                         const info = getVolunteerInfo(response);
                         return (
-                          <TableRow key={index}>
+                          <TableRow key={info.submissionId}>
                             <TableCell>{info.fullName}</TableCell>
                             <TableCell>
                               <Tooltip
@@ -438,22 +391,40 @@ export const FormResponseTable = ({
                                 "-"
                               )}
                             </TableCell>
-                            <TableCell>
-                              {info.totalHours > 0 ? info.totalHours : "-"}
-                            </TableCell>
+
                             <TableCell align="right">
-                              <Tooltip title="View Details">
-                                <IconButton
-                                  size="small"
-                                  onClick={() =>
-                                    onViewResponse?.(
-                                      response.response_data || response
-                                    )
-                                  }
-                                >
-                                  <VisibilityIcon />
-                                </IconButton>
-                              </Tooltip>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "flex-end",
+                                }}
+                              >
+                                <Tooltip title="View Details">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                      onViewResponse?.(response);
+                                    }}
+                                  >
+                                    <VisibilityIcon />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete Response">
+                                  <IconButton
+                                    size="small"
+                                    color="error"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onDeleteResponse?.({
+                                        formId,
+                                        submissionId: info.submissionId,
+                                      });
+                                    }}
+                                  >
+                                    <DeleteIcon />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>
                             </TableCell>
                           </TableRow>
                         );

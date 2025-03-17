@@ -27,6 +27,7 @@ import { useDayOfServiceId } from "@/contexts/DayOfServiceIdProvider";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
 import { useDaysOfServiceProjects } from "@/hooks/useDaysOfServiceProjects";
 import { Dangerous, Warning } from "@mui/icons-material";
+import { useClassSignup } from "../ClassSignupContext";
 
 // WhoAreYou Component using MUI
 export const WhoAreYouComponent = ({
@@ -61,6 +62,7 @@ export const WhoAreYouComponent = ({
 
   const { fetchDayOfService } = useDaysOfService();
   const { fetchProjectsByDaysOfStakeId } = useDaysOfServiceProjects();
+  const { resetKey } = useClassSignup();
 
   useEffect(() => {
     if (dayOfServiceId) {
@@ -92,6 +94,16 @@ export const WhoAreYouComponent = ({
       fetchDayOfServiceById();
     }
   }, [dayOfServiceId]);
+
+  //reset
+  useEffect(() => {
+    if (resetKey) {
+      setActiveTab(-1);
+      setOrganization("");
+      setGroup("");
+      setOtherText("");
+    }
+  }, [resetKey]);
 
   // Initialize state based on existing value or defaults
   // Set active tab based on formData.type if available

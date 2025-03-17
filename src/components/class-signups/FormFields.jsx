@@ -34,6 +34,7 @@ import { MultiLineTypography } from "../MultiLineTypography";
 import { MinorVolunteersComponent } from "./days-of-service/MinorVolunteersComponent";
 import { WhoAreYouComponent } from "./days-of-service/WhoAreYouComponent";
 import { DayOfServiceSelect } from "./days-of-service/DayOfServiceSelect";
+import { useClassSignup } from "./ClassSignupContext";
 // Form Field Component
 export const FormField = ({
   field,
@@ -47,6 +48,17 @@ export const FormField = ({
   const [sigPad, setSigPad] = useState(null);
 
   const isMobile = useMediaQuery("(max-width:600px)");
+  const { resetKey } = useClassSignup();
+
+  useEffect(() => {
+    if (resetKey) {
+      if (sigPad) {
+        sigPad.clear();
+      }
+
+      onChange(field, null);
+    }
+  }, [resetKey]);
 
   const renderField = () => {
     if (config.type === FIELD_TYPES.header) {

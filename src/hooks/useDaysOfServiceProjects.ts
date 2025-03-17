@@ -1142,7 +1142,8 @@ export const useDaysOfServiceProjects = () => {
             const status =
               project.status?.toUpperCase() || "In Progress".toUpperCase();
             const volunteers = project.actual_volunteers || "";
-            const hours = project.actual_project_duration || "";
+            const hours =
+              project.actual_project_duration * project.actual_volunteers || "";
 
             // Escape any double quotes in text fields by doubling them
             const escapedStakeName = stake.name.replace(/"/g, '""');

@@ -18,6 +18,7 @@ import {
   FormHelperText,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useClassSignup } from "../ClassSignupContext";
 
 // Minor Volunteers Component using MUI
 export const MinorVolunteersComponent = ({
@@ -27,18 +28,18 @@ export const MinorVolunteersComponent = ({
   onChange,
   error,
 }) => {
+  const { resetKey } = useClassSignup();
+
   // State to track form values for a new minor
   const [newMinor, setNewMinor] = useState({
     name: "",
     age: "",
-    hours: "",
   });
 
   // State to track validation errors
   const [errors, setErrors] = useState({
     name: "",
     age: "",
-    hours: "",
   });
 
   // Local state to control the Yes/No selection
@@ -53,7 +54,6 @@ export const MinorVolunteersComponent = ({
     const newErrors = {
       name: "",
       age: "",
-      hours: "",
     };
 
     let isValid = true;
@@ -72,15 +72,21 @@ export const MinorVolunteersComponent = ({
       isValid = false;
     }
 
-    const hours = parseFloat(newMinor.hours);
-    if (isNaN(hours) || hours <= 0) {
-      newErrors.hours = "Hours must be greater than 0";
-      isValid = false;
-    }
-
     setErrors(newErrors);
     return isValid;
   };
+
+  useEffect(() => {
+    // Reset form fields when the key changes
+    setNewMinor({
+      name: "",
+      age: "",
+    });
+    setErrors({
+      name: "",
+      age: "",
+    });
+  }, [resetKey]);
 
   // Handle radio button change
   const handleRadioChange = (e) => {
@@ -205,11 +211,7 @@ export const MinorVolunteersComponent = ({
                         Age
                       </Typography>
                     </Grid>
-                    <Grid item xs={4}>
-                      <Typography variant="subtitle2" color="text.secondary">
-                        Hours
-                      </Typography>
-                    </Grid>
+
                     <Grid item xs={1}></Grid>
                   </Grid>
 
@@ -236,9 +238,7 @@ export const MinorVolunteersComponent = ({
                           <Grid item xs={3}>
                             <Typography>{minor.age}</Typography>
                           </Grid>
-                          <Grid item xs={4}>
-                            <Typography>{minor.hours}</Typography>
-                          </Grid>
+
                           <Grid item xs={1}>
                             <IconButton
                               size="small"
