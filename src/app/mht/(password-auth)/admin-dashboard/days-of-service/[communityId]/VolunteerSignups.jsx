@@ -23,35 +23,15 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Tabs,
-  Tab,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useCommunities } from "@/hooks/use-communities";
 import { useFormResponses } from "@/hooks/useFormResponses";
-import { FormResponseTable } from "@/components/FormResponseTable";
-import JsonViewer from "@/components/util/debug/DebugOutput";
-
 import { useDaysOfServiceProjects } from "@/hooks/useDaysOfServiceProjects";
+import { FormResponseTable } from "@/components/FormResponseTable";
 import { Assignment, Warning } from "@mui/icons-material";
 import moment from "moment";
-
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`tabpanel-${index}`}
-      aria-labelledby={`tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box>{children}</Box>}
-    </div>
-  );
-}
 
 const DaysOfServicePage = ({
   params,
@@ -60,19 +40,20 @@ const DaysOfServicePage = ({
 }) => {
   const { communityId } = params;
   const [community, setCommunity] = useState(null);
+  const [formConfig, setFormConfig] = useState(null);
   const [responses, setResponses] = useState([]);
-  const [formData, setFormData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedResponse, setSelectedResponse] = useState(null);
+  const [volunteerAccordionOpen, setVolunteerAccordionOpen] = useState(false);
+  const [projectsAccordionOpen, setProjectsAccordionOpen] = useState(false);
+  const [organizationAccordionOpen, setOrganizationAccordionOpen] =
+    useState(false);
+  const [responsesLoaded, setResponsesLoaded] = useState(false);
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState(null);
+  const [fullSubmissionData, setFullSubmissionData] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [responseToDelete, setResponseToDelete] = useState(null);
   const [projectSummary, setProjectSummary] = useState([]);
-
-  const [activeTab, setActiveTab] = useState(0);
-
-  const { deleteSubmission } = useFormResponses();
-
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -83,9 +64,9 @@ const DaysOfServicePage = ({
   const {
     getFormById,
     getFormResponses,
-    deleteFormResponse,
+    getSubmissionById,
+    deleteSubmission,
     loading: formLoading,
-    error: formError,
   } = useFormResponses();
 
   // Add the useDaysOfServiceProjects hook
@@ -93,103 +74,168 @@ const DaysOfServicePage = ({
     useDaysOfServiceProjects();
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadCommunityData = async () => {
       try {
-        // 1. Get the community first
+        setLoading(true);
+        // Get the community data
         const communityData = await getCommunity(communityId);
         setCommunity(communityData);
 
         if (communityData?.volunteerSignUpId) {
-          // 2. Get the form configuration using the new hook
+          // Get the form configuration
           const formConfigData = await getFormById(
             communityData.volunteerSignUpId
           );
 
-          if (!formConfigData)
-            throw new Error("Failed to fetch form configuration");
-
-          // Transform the data to match the expected format for FormResponseTable
-          const formattedFormData = {
-            form_config: formConfigData.form_config || {},
-            field_order: formConfigData.field_order || [],
-          };
-
-          setFormData(formattedFormData);
-
-          // 3. Get the form responses using the new hook
-          const responseData = await getFormResponses(
-            communityData.volunteerSignUpId
-          );
-
-          setResponses(responseData || []);
-
-          // 4. Calculate project summary
-          if (daysOfService && daysOfService.length > 0) {
-            // Create an array to hold all projects
-            let allProjects = [];
-
-            // For each day of service
-            for (const dayOfService of daysOfService) {
-              // For each partner stake in this day of service
-              if (
-                dayOfService.partner_stakes &&
-                dayOfService.partner_stakes.length > 0
-              ) {
-                for (const stake of dayOfService.partner_stakes) {
-                  // Fetch projects for this stake
-                  const stakeProjects = await fetchProjectsByDaysOfStakeId(
-                    stake.id,
-                    false
-                  );
-
-                  if (stakeProjects && stakeProjects.length > 0) {
-                    // Map each project to the summary format
-                    const mappedProjects = stakeProjects.map((project) => {
-                      // Calculate total volunteer hours
-                      const volunteerHours =
-                        (project.actual_volunteers || 0) *
-                        (project.actual_project_duration || 0);
-
-                      // Create date object properly
-                      const serviceDate = moment(
-                        dayOfService.date || dayOfService.end_date
-                      );
-
-                      return {
-                        id: project.id,
-                        name: project.project_name || "Unnamed Project",
-                        date: serviceDate,
-                        dateStr: serviceDate.format("ddd, MMM DD"),
-
-                        location: project.address_city || "Unknown",
-                        stakeName: stake.name,
-                        partnerGroup: project.partner_ward,
-                        volunteerCount: project.actual_volunteers || 0,
-                        duration: project.actual_project_duration || 0,
-                        volunteerHours: volunteerHours,
-                        status: project.status || "Pending",
-                      };
-                    });
-
-                    // Add these projects to our collection
-                    allProjects = [...allProjects, ...mappedProjects];
-                  }
-                }
-              }
-            }
-
-            setProjectSummary(allProjects);
+          if (formConfigData) {
+            const formattedFormData = {
+              form_config: formConfigData.form_config || {},
+              field_order: formConfigData.field_order || [],
+            };
+            setFormConfig(formattedFormData);
           }
+
+          // Load projects summary
+          await loadProjectSummary();
         }
       } catch (error) {
-        console.error("Error loading data:", error);
+        console.error("Error loading community data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadData();
-  }, [communityId, daysOfService]);
+    loadCommunityData();
+  }, [communityId]);
+
+  // Function to load project summary
+  const loadProjectSummary = async () => {
+    try {
+      if (daysOfService && daysOfService.length > 0) {
+        // Create an array to hold all projects
+        let allProjects = [];
+
+        // For each day of service
+        for (const dayOfService of daysOfService) {
+          // For each partner stake in this day of service
+          if (
+            dayOfService.partner_stakes &&
+            dayOfService.partner_stakes.length > 0
+          ) {
+            for (const stake of dayOfService.partner_stakes) {
+              // Fetch projects for this stake
+              const stakeProjects = await fetchProjectsByDaysOfStakeId(
+                stake.id,
+                false
+              );
+
+              if (stakeProjects && stakeProjects.length > 0) {
+                // Map each project to the summary format
+                const mappedProjects = stakeProjects.map((project) => {
+                  // Calculate total volunteer hours
+                  const volunteerHours =
+                    (project.actual_volunteers || 0) *
+                    (project.actual_project_duration || 0);
+
+                  // Create date object properly
+                  const serviceDate = moment(
+                    dayOfService.date || dayOfService.end_date
+                  );
+
+                  return {
+                    id: project.id,
+                    name: project.project_name || "Unnamed Project",
+                    date: serviceDate,
+                    dateStr: serviceDate.format("ddd, MMM DD"),
+                    location: project.address_city || "Unknown",
+                    stakeName: stake.name,
+                    partnerGroup: project.partner_ward,
+                    volunteerCount: project.actual_volunteers || 0,
+                    duration: project.actual_project_duration || 0,
+                    volunteerHours: volunteerHours,
+                    status: project.status || "Pending",
+                  };
+                });
+
+                // Add these projects to our collection
+                allProjects = [...allProjects, ...mappedProjects];
+              }
+            }
+          }
+        }
+
+        setProjectSummary(allProjects);
+      }
+    } catch (error) {
+      console.error("Error loading projects:", error);
+    }
+  };
+
+  // Load responses only when accordion is opened
+  useEffect(() => {
+    const loadResponses = async () => {
+      if (
+        volunteerAccordionOpen &&
+        !responsesLoaded &&
+        community?.volunteerSignUpId
+      ) {
+        try {
+          // Get responses without large base64 signature data
+          const responseData = await getFormResponses(
+            community.volunteerSignUpId,
+            true
+          );
+          setResponses(responseData || []);
+          setResponsesLoaded(true);
+        } catch (error) {
+          console.error("Error loading responses:", error);
+        }
+      }
+    };
+
+    loadResponses();
+  }, [volunteerAccordionOpen, responsesLoaded, community]);
+
+  const handleVolunteerAccordionChange = (event, expanded) => {
+    setVolunteerAccordionOpen(expanded);
+  };
+
+  const handleProjectsAccordionChange = (event, expanded) => {
+    setProjectsAccordionOpen(expanded);
+  };
+
+  const handleOrganizationAccordionChange = (event, expanded) => {
+    setOrganizationAccordionOpen(expanded);
+  };
+
+  const handleViewResponse = async (responseData) => {
+    try {
+      // When viewing a specific submission, fetch the full data including signature
+      const submissionId = responseData.submissionId || responseData.id;
+      setSelectedSubmissionId(submissionId);
+
+      // Fetch the complete submission data with signature
+      const fullData = await getSubmissionById(
+        community.volunteerSignUpId,
+        submissionId
+      );
+      setFullSubmissionData(fullData);
+      setOpenDialog(true);
+    } catch (error) {
+      console.error("Error fetching full submission data:", error);
+      setSnackbar({
+        open: true,
+        message: "Error loading submission details",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setFullSubmissionData(null);
+    setSelectedSubmissionId(null);
+  };
 
   const handleDeleteClick = (response) => {
     setResponseToDelete(response);
@@ -201,14 +247,23 @@ const DaysOfServicePage = ({
     setResponseToDelete(null);
   };
 
-  const handleConfirmDelete = async (formId, submissionId) => {
+  const handleConfirmDelete = async () => {
     if (!responseToDelete) return;
 
     try {
-      const success = await deleteSubmission(formId, submissionId);
+      const success = await deleteSubmission(
+        responseToDelete.formId,
+        responseToDelete.submissionId
+      );
+
       if (success) {
         // Remove the deleted response from the state
-        setResponses(responses.filter((r) => r.id !== responseToDelete.id));
+        setResponses(
+          responses.filter((r) => {
+            const id = r.submissionId || r.id;
+            return id !== responseToDelete.submissionId;
+          })
+        );
 
         setSnackbar({
           open: true,
@@ -239,30 +294,11 @@ const DaysOfServicePage = ({
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const handleViewResponse = (responseData) => {
-    setSelectedResponse(responseData);
-    setOpenDialog(true);
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-  };
-
   // Calculate total volunteer hours across all projects
   const totalVolunteerHours = projectSummary.reduce(
     (total, project) => total + project.volunteerHours,
     0
   );
-
-  // Group projects by stake for display
-  const projectsByStake = projectSummary.reduce((acc, project) => {
-    const stakeName = project.stakeName || "Unknown Organization";
-    if (!acc[stakeName]) {
-      acc[stakeName] = [];
-    }
-    acc[stakeName].push(project);
-    return acc;
-  }, {});
 
   if (loading || formLoading || projectsLoading) {
     return (
@@ -279,10 +315,9 @@ const DaysOfServicePage = ({
     );
   }
 
-  // Render function with updated table
   return (
     <Container>
-      {community?.volunteerSignUpId && formData && (
+      {community?.volunteerSignUpId && formConfig && (
         <>
           <Paper elevation={1} sx={{ p: 3, mb: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom>
@@ -291,60 +326,35 @@ const DaysOfServicePage = ({
             <Typography variant="body1" color="textSecondary">
               Projects and volunteer participation overview
             </Typography>
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Button
-                variant="outlined"
-                color="primary"
-                sx={{ mt: 4, mx: 2, display: "flex" }}
-                onClick={generateCommunityReport}
-              >
-                <Assignment sx={{ mr: 1 }} />
-                Generate Project Volunteer Hours Report
-              </Button>
-
-              <Button
-                variant="outlined"
-                color="primary"
-                sx={{ mt: 4, mx: 2, display: "flex" }}
-                onClick={generateCommunityReport}
-              >
-                <Assignment sx={{ mr: 1 }} />
-                Generate Org/Group Volunteer Hours Report
-              </Button>
-            </Box>
-          </Paper>
-
-          {/* Projects Summary Table */}
-          <Paper elevation={1} sx={{ p: 3, mb: 4 }}>
-            <Typography variant="h5" component="h2" gutterBottom>
-              Volunteer Summary
-            </Typography>
-            <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
               Total Community Volunteer Hours:{" "}
               <strong>{totalVolunteerHours}</strong>
             </Typography>
+          </Paper>
 
-            <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
-              <Tabs
-                value={activeTab}
-                onChange={(e, newValue) => setActiveTab(newValue)}
-                aria-label="volunteer summary tabs"
+          {/* Projects Summary Accordion */}
+          <Accordion
+            expanded={projectsAccordionOpen}
+            onChange={handleProjectsAccordionChange}
+            sx={{ mb: 2 }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="projects-summary-content"
+              id="projects-summary-header"
+            >
+              <Typography variant="h6">Projects Volunteer Summary</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Button
+                variant="outlined"
+                color="primary"
+                sx={{ my: 2, display: "flex" }}
+                onClick={generateCommunityReport}
               >
-                <Tab
-                  label="Projects Volunteer Summary"
-                  id="tab-0"
-                  aria-controls="tabpanel-0"
-                />
-                <Tab
-                  label="Organization Volunteer Summary"
-                  id="tab-1"
-                  aria-controls="tabpanel-1"
-                />
-              </Tabs>
-            </Box>
-
-            {/* Projects Volunteer Summary Tab */}
-            <TabPanel value={activeTab} index={0}>
+                <Assignment sx={{ mr: 1 }} />
+                Print Project Volunteer Hours Report
+              </Button>
               {(() => {
                 // Group projects by date first
                 const projectsByDate = projectSummary.reduce((acc, project) => {
@@ -538,10 +548,34 @@ const DaysOfServicePage = ({
                   );
                 });
               })()}
-            </TabPanel>
+            </AccordionDetails>
+          </Accordion>
 
-            {/* Organization Volunteer Summary Tab */}
-            <TabPanel value={activeTab} index={1}>
+          {/* Organization Summary Accordion */}
+          <Accordion
+            expanded={organizationAccordionOpen}
+            onChange={handleOrganizationAccordionChange}
+            sx={{ mb: 2 }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="organization-summary-content"
+              id="organization-summary-header"
+            >
+              <Typography variant="h6">
+                Organization Volunteer Summary
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Button
+                variant="outlined"
+                color="primary"
+                sx={{ my: 2, display: "flex" }}
+                onClick={generateCommunityReport}
+              >
+                <Assignment sx={{ mr: 1 }} />
+                Print Org/Group Volunteer Hours Report
+              </Button>
               {(() => {
                 // Group projects by date
                 const projectsByDate = projectSummary.reduce((acc, project) => {
@@ -734,11 +768,14 @@ const DaysOfServicePage = ({
                   );
                 });
               })()}
-            </TabPanel>
-          </Paper>
+            </AccordionDetails>
+          </Accordion>
 
-          {/* Volunteers Accordion */}
-          <Accordion>
+          {/* Volunteers Accordion - Only loads data when expanded */}
+          <Accordion
+            expanded={volunteerAccordionOpen}
+            onChange={handleVolunteerAccordionChange}
+          >
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
               aria-controls="volunteer-signups-content"
@@ -747,24 +784,19 @@ const DaysOfServicePage = ({
               <Typography variant="h6">Volunteer Signups</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              {responses.length > 0 ? (
-                <FormResponseTable
-                  formId={community.volunteerSignUpId}
-                  responses={responses}
-                  formData={formData}
-                  onViewResponse={handleViewResponse}
-                  onDeleteResponse={handleDeleteClick}
-                  daysOfService={daysOfService}
-                />
-              ) : (
-                <Typography variant="body1">
-                  No volunteer responses have been submitted yet.
-                </Typography>
-              )}
+              <FormResponseTable
+                formId={community.volunteerSignUpId}
+                responses={responses}
+                formData={formConfig}
+                onViewResponse={handleViewResponse}
+                onDeleteResponse={handleDeleteClick}
+                daysOfService={daysOfService}
+                isLoading={volunteerAccordionOpen && !responsesLoaded}
+              />
             </AccordionDetails>
           </Accordion>
 
-          {/* Response details dialog */}
+          {/* Response details dialog - Shows complete data including signature */}
           <Dialog
             open={openDialog}
             onClose={handleCloseDialog}
@@ -779,22 +811,23 @@ const DaysOfServicePage = ({
                 sx={{ position: "absolute", right: 8, top: 8 }}
                 onClick={() => {
                   handleCloseDialog();
-                  handleDeleteClick(selectedResponse);
+                  handleDeleteClick({
+                    formId: community.volunteerSignUpId,
+                    submissionId: selectedSubmissionId,
+                  });
                 }}
               >
                 <DeleteIcon />
               </IconButton>
             </DialogTitle>
             <DialogContent>
-              <JsonViewer data={selectedResponse} />
-
-              {selectedResponse && (
+              {fullSubmissionData ? (
                 <Box sx={{ my: 2 }}>
-                  {formData.field_order.map((fieldId) => {
-                    const field = formData.form_config[fieldId];
+                  {formConfig.field_order.map((fieldId) => {
+                    const field = formConfig.form_config[fieldId];
                     if (!field) return null;
 
-                    let displayValue = selectedResponse[fieldId];
+                    let displayValue = fullSubmissionData[fieldId];
 
                     // Handle array of objects (like minorVolunteers)
                     if (
@@ -823,30 +856,6 @@ const DaysOfServicePage = ({
                           </Box>
                         );
                       }
-
-                      if (fieldId === "volunteerSignature") {
-                        // Handle signature image
-                        return (
-                          <Box key={fieldId} sx={{ mb: 2 }}>
-                            <img
-                              src={volunteer.volunteerSignature}
-                              alt="Volunteer Signature"
-                            />
-                          </Box>
-                        );
-                      }
-
-                      // For other object arrays
-                      return (
-                        <Box key={fieldId} sx={{ mb: 2 }}>
-                          <Typography variant="subtitle2" color="textSecondary">
-                            {field.label || fieldId}
-                          </Typography>
-                          <Typography variant="body1">
-                            {JSON.stringify(displayValue)}
-                          </Typography>
-                        </Box>
-                      );
                     }
 
                     // Format other values based on field type
@@ -904,6 +913,10 @@ const DaysOfServicePage = ({
                       </Box>
                     );
                   })}
+                </Box>
+              ) : (
+                <Box display="flex" justifyContent="center" p={3}>
+                  <CircularProgress />
                 </Box>
               )}
             </DialogContent>

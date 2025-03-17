@@ -28,22 +28,55 @@ export const useFormResponses = () => {
     }
   };
 
-  const getFormResponses = async (formId) => {
+  /**
+   * Gets form responses, using Supabase Postgres function to exclude signatures
+   * @param {string} formId - The ID of the form
+   * @param {boolean} excludeSignatures - Whether to exclude signature data (default: false)
+   */
+  const getFormResponses = async (formId, excludeSignatures = false) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("form_responses")
-        .select("*")
-        .eq("id", formId)
-        .order("created_at", { ascending: false });
+      let responseData;
 
-      if (error) {
-        setError(error);
-        return [];
+      if (excludeSignatures) {
+        // Call a Postgres function that returns submissions without signatures
+        const { data, error } = await supabase.rpc(
+          "get_submissions_without_signatures",
+          {
+            form_id: formId,
+          }
+        );
+
+        if (error) {
+          setError(error);
+          return [];
+        }
+
+        responseData = data;
+      } else {
+        // Get the full data including signatures
+        const { data, error } = await supabase
+          .from("form_responses")
+          .select("*")
+          .eq("id", formId)
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          setError(error);
+          return [];
+        }
+
+        if (!data || data.length === 0) {
+          return [];
+        }
+
+        // Extract submissions from response data
+        responseData = data[0]?.response_data?.submissions || [];
       }
 
-      return data;
+      return responseData;
     } catch (err) {
+      console.error("Error fetching form responses:", err);
       setError(err);
       return [];
     } finally {
@@ -51,39 +84,28 @@ export const useFormResponses = () => {
     }
   };
 
-  // Get all individual submissions for a form
-  const getFormSubmissions = async (formId) => {
-    const responses = await getFormResponses(formId);
-    if (!responses || responses.length === 0) return [];
-
-    // Extract all submissions from the response_data
-    const responseData = responses[0]?.response_data;
-    if (!responseData) return [];
-
-    // If submissions array exists, return it
-    if (responseData.submissions && Array.isArray(responseData.submissions)) {
-      return responseData.submissions;
-    }
-
-    // Otherwise return an empty array
-    return [];
-  };
-
-  const createForm = async (formData) => {
+  /**
+   * Get a specific submission by ID, including signature data
+   * @param {string} formId - The ID of the form
+   * @param {string} submissionId - The ID of the specific submission
+   */
+  const getSubmissionById = async (formId, submissionId) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("forms")
-        .insert([formData])
-        .select();
+      // Call a Postgres function that returns a specific submission
+      const { data, error } = await supabase.rpc("get_submission_by_id", {
+        form_id: formId,
+        submission_id: submissionId,
+      });
 
       if (error) {
         setError(error);
         return null;
       }
 
-      return data[0];
+      return data;
     } catch (err) {
+      console.error("Error fetching submission:", err);
       setError(err);
       return null;
     } finally {
@@ -141,8 +163,6 @@ export const useFormResponses = () => {
           .eq("id", formId)
           .select();
 
-        console.log("Update result:", { updateData, updateError });
-
         if (updateError) {
           setError(updateError);
           return null;
@@ -165,8 +185,6 @@ export const useFormResponses = () => {
           })
           .select();
 
-        console.log("Insert result:", { insertData, insertError });
-
         if (insertError) {
           setError(insertError);
           return null;
@@ -184,98 +202,22 @@ export const useFormResponses = () => {
     }
   };
 
-  const updateForm = async (formId, formData) => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("forms")
-        .update(formData)
-        .eq("id", formId)
-        .select();
-
-      if (error) {
-        setError(error);
-        return null;
-      }
-
-      return data[0];
-    } catch (err) {
-      setError(err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteFormResponse = async (responseId) => {
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from("form_responses")
-        .delete()
-        .eq("id", responseId);
-
-      if (error) {
-        setError(error);
-        return false;
-      }
-
-      return true;
-    } catch (err) {
-      console.error("Error deleting form response:", err);
-      setError(err);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Delete a specific submission from a form's responses
   const deleteSubmission = async (formId, submissionId) => {
     try {
-      // Get the current form response
-      const { data: existingResponses, error: getError } = await supabase
-        .from("form_responses")
-        .select("*")
-        .eq("id", formId);
+      // Call a Postgres function to delete the submission
+      const { data, error } = await supabase.rpc("delete_submission", {
+        form_id: formId,
+        submission_id: submissionId,
+      });
 
-      if (getError) {
-        setError(getError);
+      if (error) {
+        console.error("Error deleting submission:", error);
+        setError(error);
         return false;
       }
 
-      if (!existingResponses || existingResponses.length === 0) {
-        return false;
-      }
-
-      const existingData = existingResponses[0].response_data || {};
-      const submissions = Array.isArray(existingData.submissions)
-        ? existingData.submissions
-        : [];
-
-      // Filter out the submission to delete
-      const updatedSubmissions = submissions.filter(
-        (submission) => submission.submissionId !== submissionId
-      );
-
-      // Update the response with the filtered submissions
-      const { error: updateError } = await supabase
-        .from("form_responses")
-        .update({
-          response_data: {
-            ...existingData,
-            submissions: updatedSubmissions,
-          },
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", formId);
-
-      if (updateError) {
-        setError(updateError);
-        return false;
-      }
-
-      return true;
+      return data; // Should be true if successful
     } catch (err) {
       console.error("Error deleting submission:", err);
       setError(err);
@@ -289,10 +231,7 @@ export const useFormResponses = () => {
     getFormById,
     submitResponse,
     getFormResponses,
-    getFormSubmissions,
-    createForm,
-    updateForm,
-    deleteFormResponse,
+    getSubmissionById,
     deleteSubmission,
   };
 };
