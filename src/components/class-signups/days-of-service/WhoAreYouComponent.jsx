@@ -8,7 +8,6 @@ import {
   Box,
   FormControl,
   InputLabel,
-  Select,
   MenuItem,
   FormHelperText,
   Grid,
@@ -26,10 +25,12 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { useDayOfServiceId } from "@/contexts/DayOfServiceIdProvider";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
 import { useDaysOfServiceProjects } from "@/hooks/useDaysOfServiceProjects";
-import { Dangerous, Warning } from "@mui/icons-material";
+import { AccountBalance, Dangerous, Warning } from "@mui/icons-material";
 import { useClassSignup } from "../ClassSignupContext";
+import Select from "react-select"; // Import react-select
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
-// WhoAreYou Component using MUI
+// WhoAreYou Component using React Select for searchable dropdown
 export const WhoAreYouComponent = ({
   field,
   config,
@@ -41,8 +42,10 @@ export const WhoAreYouComponent = ({
 
   const [dayOfService, setDayOfService] = useState(null);
   const [partnerStakes, setPartnerStakes] = useState([]);
-  const [groups, setGroups] = useState([]);
-  const [groupsLoading, setGroupsLoading] = useState(false);
+
+  const [selectedProject, setSelectedProject] = useState(null);
+
+  const [projects, setProjects] = useState([]);
 
   const [activeTab, setActiveTab] = useState(-1);
   const [organization, setOrganization] = useState(
@@ -61,31 +64,28 @@ export const WhoAreYouComponent = ({
   const { dayOfServiceId } = useDayOfServiceId();
 
   const { fetchDayOfService } = useDaysOfService();
-  const { fetchProjectsByDaysOfStakeId } = useDaysOfServiceProjects();
+  const { fetchProjectsByDaysOfServiceId } = useDaysOfServiceProjects();
   const { resetKey } = useClassSignup();
 
   useEffect(() => {
     if (dayOfServiceId) {
       const fetchDayOfServiceById = async () => {
         try {
-          const { data } = await fetchDayOfService(dayOfServiceId);
-          setDayOfService(data);
+          const { data: daysOfService } = await fetchDayOfService(
+            dayOfServiceId
+          );
+          setDayOfService(daysOfService);
+
+          const projects = await fetchProjectsByDaysOfServiceId(
+            daysOfService.id,
+            false
+          );
+
+          if (projects) {
+            setProjects(projects);
+          }
 
           // Parse the partner_stakes array
-          if (data.partner_stakes && data.partner_stakes.length > 0) {
-            const parsedStakes = data.partner_stakes
-              .map((stakeStr) => {
-                try {
-                  return JSON.parse(stakeStr);
-                } catch (e) {
-                  console.error("Error parsing stake data:", e);
-                  return null;
-                }
-              })
-              .filter(Boolean); // Remove any null values
-
-            setPartnerStakes(parsedStakes);
-          }
         } catch (error) {
           console.error("Error fetching day of service by ID", error);
         }
@@ -119,7 +119,7 @@ export const WhoAreYouComponent = ({
         case "groupMember":
           setActiveTab(2);
           break;
-        case "other":
+        case "cityStaff":
           setActiveTab(3);
           break;
         default:
@@ -145,7 +145,7 @@ export const WhoAreYouComponent = ({
         type = "groupMember";
         break;
       case 3:
-        type = "other";
+        type = "cityStaff";
         break;
       default:
         type = "missionary";
@@ -159,52 +159,13 @@ export const WhoAreYouComponent = ({
     onChange(updatedFormData);
   };
 
-  // Handle group member organization selection
-  const handleOrganizationChange = async (e) => {
-    const stakeId = e.target.value;
-    setOrganization(stakeId);
-    setGroup(""); // Reset group selection when organization changes
+  // Create options for react-select
+  const organizationOptions = partnerStakes.map((stake) => ({
+    value: stake.id,
+    label: stake.name,
+  }));
 
-    // Initialize with empty form data
-    const updatedFormData = {
-      type: "groupMember",
-      value: `${stakeId} - `,
-    };
-
-    onChange(updatedFormData);
-
-    // Only fetch groups if a stake is selected
-    if (stakeId) {
-      try {
-        setGroupsLoading(true);
-
-        // Fetch projects for this stake
-        const projects = await fetchProjectsByDaysOfStakeId(stakeId, false);
-
-        if (projects && projects.length > 0) {
-          // Extract unique partner_ward values
-          const uniqueGroups = [
-            ...new Set(
-              projects
-                .map((project) => project.partner_ward)
-                .filter((ward) => ward) // Filter out undefined/null/empty values
-            ),
-          ].sort(); // Sort alphabetically
-
-          setGroups(uniqueGroups);
-        } else {
-          setGroups([]);
-        }
-      } catch (error) {
-        console.error("Error fetching groups for stake:", error);
-        setGroups([]);
-      } finally {
-        setGroupsLoading(false);
-      }
-    } else {
-      setGroups([]);
-    }
-  };
+  // Handle group member organization selection with react-select
 
   // Handle group member group selection
   const handleGroupChange = (e) => {
@@ -230,6 +191,18 @@ export const WhoAreYouComponent = ({
     onChange(updatedFormData);
   };
 
+  const handleProjectChange = (selectedOption) => {
+    if (selectedOption) {
+      setSelectedProject(selectedOption);
+      const updatedFormData = {
+        type: "groupMember",
+        value: selectedOption.label,
+      };
+
+      onChange(updatedFormData);
+    }
+  };
+
   // Handle other text input
   const handleOtherTextChange = (e) => {
     const text = e.target.value;
@@ -243,8 +216,38 @@ export const WhoAreYouComponent = ({
     onChange(updatedFormData);
   };
 
+  // Find the current organization option for react-select
+  const groupProjectOptions = projects.map((project, index) => ({
+    value: project.id,
+    label: `${index + 1} ${project.partner_ward} - ${project.project_name}`,
+  }));
+  // .sort((a, b) => a.label.localeCompare(b.label));
+
+  // Custom styles for react-select
+  const customSelectStyles = {
+    control: (provided) => ({
+      ...provided,
+      borderRadius: "4px",
+      minHeight: "56px",
+      boxShadow: "none",
+      "&:hover": {
+        borderColor: "#90caf9",
+      },
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: "#757575",
+    }),
+    menu: (provided) => ({
+      ...provided,
+      zIndex: 9999,
+    }),
+  };
+
   return (
     <Box sx={{ mb: 3 }}>
+      <JsonViewer data={projects} />
+
       <Typography
         variant="h6"
         color="text.primary"
@@ -255,7 +258,7 @@ export const WhoAreYouComponent = ({
       {config.helpText && activeTab < 0 && (
         <FormHelperText
           sx={{
-            mt: 1,
+            mt: 1.25,
             color: "text.secondary",
             fontSize: "0.875rem",
           }}
@@ -427,7 +430,7 @@ export const WhoAreYouComponent = ({
                   control={<Radio color="primary" />}
                   label={
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <MoreHorizIcon
+                      <AccountBalance
                         color={activeTab === 3 ? "primary" : "action"}
                       />
                       <Typography
@@ -436,13 +439,13 @@ export const WhoAreYouComponent = ({
                           activeTab === 3 ? "primary.main" : "text.primary"
                         }
                       >
-                        Other
+                        City Staff
                       </Typography>
                     </Box>
                   }
                 />
                 <FormHelperText sx={{ ml: 4, mt: 1 }}>
-                  Select this if no other options apply to you
+                  Select this if you are a city staff member
                 </FormHelperText>
               </Paper>
             </Grid>
@@ -450,74 +453,31 @@ export const WhoAreYouComponent = ({
         </RadioGroup>
       </FormControl>
       {/* Group Member Tab */}
-      {activeTab === 2 && (
+      {activeTab !== -1 && (
         <>
           <Divider sx={{ my: 3 }} />
           <Grid container spacing={3}>
             {dayOfServiceId ? (
               <>
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12}>
                   <FormControl fullWidth variant="outlined">
-                    <InputLabel id="organization-label">
-                      Which organization are you from?
-                    </InputLabel>
+                    <Typography variant="body2" sx={{ mb: 1, ml: 1 }}>
+                      Which group and project are you assigned to?
+                    </Typography>
                     <Select
-                      labelId="organization-label"
-                      value={organization}
-                      onChange={handleOrganizationChange}
-                      label="Which organization are you from?"
-                      required={config.required}
-                      sx={{ borderRadius: 1 }}
-                    >
-                      <MenuItem value="">Select an organization</MenuItem>
-                      {partnerStakes.map((stake) => (
-                        <MenuItem key={stake.id} value={stake.id}>
-                          {stake.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                      value={selectedProject}
+                      onChange={handleProjectChange}
+                      options={groupProjectOptions}
+                      placeholder="Search for an organization..."
+                      isClearable
+                      isSearchable
+                      styles={customSelectStyles}
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                    />
                     {!organization && (
                       <FormHelperText>
-                        Please select your organization
-                      </FormHelperText>
-                    )}
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth variant="outlined">
-                    <InputLabel id="group-label">
-                      Which group are you from?
-                    </InputLabel>
-                    <Select
-                      labelId="group-label"
-                      value={group}
-                      onChange={handleGroupChange}
-                      label="Which group are you from?"
-                      required={config.required}
-                      disabled={!organization || groupsLoading}
-                      sx={{ borderRadius: 1 }}
-                    >
-                      <MenuItem value="">Select a group</MenuItem>
-                      {groups.map((groupName) => (
-                        <MenuItem key={groupName} value={groupName}>
-                          {groupName}
-                        </MenuItem>
-                      ))}
-                      {groupsLoading && (
-                        <MenuItem disabled>Loading groups...</MenuItem>
-                      )}
-                      {!groupsLoading &&
-                        groups.length === 0 &&
-                        organization && (
-                          <MenuItem disabled>No groups found</MenuItem>
-                        )}
-                    </Select>
-                    {organization && !group && !groupsLoading && (
-                      <FormHelperText>Please select your group</FormHelperText>
-                    )}
-                    {groupsLoading && (
-                      <FormHelperText>
-                        Loading available groups...
+                        Please select your group and project
                       </FormHelperText>
                     )}
                   </FormControl>
@@ -540,55 +500,7 @@ export const WhoAreYouComponent = ({
         </>
       )}
       {/* Other Tab */}
-      {activeTab === 3 && (
-        <>
-          <Divider sx={{ my: 3 }} />
-          <Box>
-            <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
-              <InputLabel id="other-source-label">
-                Where are you from?
-              </InputLabel>
-              <Select
-                labelId="other-source-label"
-                value={
-                  ["City Staff", "Family Member/Friend", "Other"].includes(
-                    value?.value
-                  )
-                    ? value?.value
-                    : "Other"
-                }
-                onChange={handleOtherSourceChange}
-                label="Where are you from?"
-                required={config.required}
-                sx={{ borderRadius: 1 }}
-              >
-                <MenuItem value="">Select a source</MenuItem>
-                <MenuItem value="City Staff">City Staff</MenuItem>
-                <MenuItem value="Family Member/Friend">
-                  Family Member/Friend
-                </MenuItem>
-                <MenuItem value="Other">Other (specify below)</MenuItem>
-              </Select>
-            </FormControl>
-
-            {(value?.value === "Other" ||
-              (value?.type === "other" &&
-                !["City Staff", "Family Member/Friend"].includes(
-                  value?.value
-                ))) && (
-              <TextField
-                fullWidth
-                label="Please specify"
-                variant="outlined"
-                value={otherText}
-                onChange={handleOtherTextChange}
-                sx={{ mt: 2, borderRadius: 1 }}
-                required={config.required}
-              />
-            )}
-          </Box>
-        </>
-      )}
+      {activeTab === 3 && <></>}
       {error && (
         <FormHelperText
           error

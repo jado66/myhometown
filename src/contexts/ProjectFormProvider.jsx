@@ -227,6 +227,7 @@ export function ProjectFormProvider({
     isInitialLoading,
     isSaving: isSavingProject || isSaving,
     handleSelectChange,
+    isBudgetAuthenticated,
     error,
     checkAndHideBudget,
     initializeProjectForm,

@@ -37,16 +37,18 @@ const Step2 = () => {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <Typography variant="h4" sx={{ mt: 2, mb: 1, textAlign: "center" }}>
-        This step of the form is typically filled out by the Resource Couple
+        This step is typically filled out by the Resource Couple/Project
+        Manager(s)
       </Typography>
       <Divider />
       <Typography variant="h5" sx={{ mb: 0 }}>
-        Resource Couple Information
+        Resource Couple/Project Manager(s) Information
       </Typography>
       <Typography variant="subtitle" sx={{ mb: 1 }}>
-        The Resource Couple are the primary contacts for the project. They are
-        the detailed planners and interact with property owners and volunteers.
-        Their contact information is used to communicate with the project team.
+        The Resource Couple/Project Manager(s) are the primary contacts for the
+        project. They are the detailed planners and interact with property
+        owners and volunteers. Their contact information is used to communicate
+        with the project team.
       </Typography>
 
       {/* Assigned Ward  */}

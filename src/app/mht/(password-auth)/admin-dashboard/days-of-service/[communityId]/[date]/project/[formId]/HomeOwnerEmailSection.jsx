@@ -31,19 +31,37 @@ const HomeOwnerEmailSection = () => {
   if (formData.email) {
     emailOptions.push({
       value: formData.email,
-      label: `Property Owner`,
+      label: `Property Owner Email`,
+    });
+  }
+  if (formData.email_2) {
+    emailOptions.push({
+      value: formData.email_2,
+      label: `Property Owner 2 Email`,
     });
   }
   if (formData.project_development_couple_email1) {
     emailOptions.push({
       value: formData.project_development_couple_email1,
-      label: `Project Development Couple Email 1`,
+      label: `Project Developer Email`,
     });
   }
   if (formData.project_development_couple_email2) {
     emailOptions.push({
       value: formData.project_development_couple_email2,
-      label: `Project Development Couple Email 2`,
+      label: `Project Developer Email 2`,
+    });
+  }
+  if (formData.project_development_couple_email1) {
+    emailOptions.push({
+      value: formData.project_development_couple_email1,
+      label: `Resource Couple Email`,
+    });
+  }
+  if (formData.project_development_couple_email2) {
+    emailOptions.push({
+      value: formData.project_development_couple_email2,
+      label: `Resource Couple Email 2`,
     });
   }
 
@@ -161,16 +179,16 @@ const HomeOwnerEmailSection = () => {
               )}
             </Button>
           </Grid>
-          {(!formData.email ||
-            !formData.project_development_couple_email1 ||
-            !formData.project_development_couple_email2) && (
-            <Grid item xs={12} sm={12}>
-              <Typography variant="subtitle" color="error">
-                *Please fill out at least one email field (Property Owner, Dev
-                Couple 1, or Dev Couple 2) in Step 1 before sending an email.
-              </Typography>
-            </Grid>
-          )}
+          {!formData.email &&
+            !formData.project_development_couple_email1 &&
+            !formData.project_development_couple_email2 && (
+              <Grid item xs={12} sm={12}>
+                <Typography variant="subtitle" color="error">
+                  *Please fill out at least one email field (Property Owner, Dev
+                  Couple 1, or Dev Couple 2) in Step 1 before sending an email.
+                </Typography>
+              </Grid>
+            )}
         </Grid>
       </Box>
 

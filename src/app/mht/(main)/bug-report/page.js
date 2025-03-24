@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { supabase } from "@/util/supabase";
 import { useUser } from "@/hooks/use-user";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export default function BugReportForm() {
   const { user } = useUser();
@@ -44,8 +45,8 @@ export default function BugReportForm() {
         user_id: user?.id,
         title,
         description,
-        phone_number: user?.contactNumber,
-        user_name: user?.firstName + " " + user?.lastName,
+        phone_number: user?.contact_number,
+        user_name: user?.first_name + " " + user?.last_name,
         image_url: imageUrl,
       });
 
@@ -61,7 +62,8 @@ export default function BugReportForm() {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mb: 3 }}>
+    <Container maxWidth="sm" sx={{ mb: 3, py: 3 }}>
+      <JsonViewer data={user} />
       <Typography
         variant="h4"
         sx={{

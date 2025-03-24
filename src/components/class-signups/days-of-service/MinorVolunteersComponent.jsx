@@ -278,7 +278,7 @@ export const MinorVolunteersComponent = ({
               </Typography>
 
               <Grid container spacing={2}>
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
                     label="First and Last Name"
@@ -290,7 +290,7 @@ export const MinorVolunteersComponent = ({
                     size="medium"
                   />
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
                     label="Age"
@@ -304,7 +304,7 @@ export const MinorVolunteersComponent = ({
                     size="medium"
                   />
                 </Grid>
-                <Grid item xs={12} md={4}>
+                {/* <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
                     label="Hours Volunteered"
@@ -317,7 +317,7 @@ export const MinorVolunteersComponent = ({
                     required
                     size="medium"
                   />
-                </Grid>
+                </Grid> */}
               </Grid>
               <Box sx={{ mt: 2 }}>
                 <Button

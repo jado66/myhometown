@@ -25,13 +25,10 @@ const Step1 = ({ date }) => {
       }}
     >
       <Typography variant="h4" sx={{ textAlign: "center" }}>
-        This step of the form is typically filled out by the Project
-        Developer(s)
+        This step is typically filled out by the Project Developer(s)
       </Typography>
-
       <Divider />
       <Typography variant="h6">Project Information</Typography>
-
       <ProjectTextField
         label="Project Name"
         value={formData.project_name}
@@ -108,15 +105,14 @@ const Step1 = ({ date }) => {
         }}
       />
       <Divider />
-
       <Typography variant="h6">Project Developer Information</Typography>
-
       <Typography variant="subtitle" sx={{ mb: 1 }}>
         The Project Developer is the person or couple who are tasked with
-        finding the project and establishing a relationship with the property
-        owner.
+        identifying the project, and may have first contact with the property
+        owner. They will hand off the project to the Resource Couple/Project
+        Manager(s) for detailed planning.
       </Typography>
-
+      Once you enter this budget information and
       <ProjectTextField
         label="Project Developer(s)"
         value={formData.project_developer}
@@ -151,7 +147,6 @@ const Step1 = ({ date }) => {
         }
       />
       <Divider />
-
       <Typography variant="h6" sx={{ mb: 0 }}>
         Project Owner Information
       </Typography>
@@ -166,17 +161,31 @@ const Step1 = ({ date }) => {
         onChange={(e) => handleInputChange("property_owner", e.target.value)}
       />
       <ProjectTextField
-        label="Phone Number"
+        label="Property Owner Phone Number"
         value={formData.phone_number}
         onChange={(e) => handleInputChange("phone_number", e.target.value)}
       />
       <ProjectTextField
-        label="Email"
+        label="Property Owner Email"
         value={formData.email}
         onChange={(e) => handleInputChange("email", e.target.value)}
       />
+      <ProjectTextField
+        label="Property Owner 2"
+        value={formData.property_owner_2}
+        onChange={(e) => handleInputChange("property_owner_2", e.target.value)}
+      />
+      <ProjectTextField
+        label="Property Owner Phone Number 2"
+        value={formData.phone_number_2}
+        onChange={(e) => handleInputChange("phone_number_2", e.target.value)}
+      />
+      <ProjectTextField
+        label="Property Owner Email 2"
+        value={formData.email_2}
+        onChange={(e) => handleInputChange("email_2", e.target.value)}
+      />
       <Divider />
-
       <AddressFormFields />
     </Box>
   );

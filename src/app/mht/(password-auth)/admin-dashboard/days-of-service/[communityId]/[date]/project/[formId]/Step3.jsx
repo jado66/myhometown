@@ -304,6 +304,10 @@ const Step3 = () => {
 
       {/*  Host */}
       <Typography variant="h6">Host Information</Typography>
+      <Typography variant="subtitle1" color="primary">
+        The Host is the person or couple who supports the property owner. This
+        could be a neighbor, a block captain, a ministering person, or other.
+      </Typography>
       <ProjectTextField
         label="Host Name"
         value={formData.host_name}

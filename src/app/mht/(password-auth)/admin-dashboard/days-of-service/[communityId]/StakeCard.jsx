@@ -52,7 +52,7 @@ export const StakeCard = ({
         </IconButton>
       </Box>
       <CardContent>
-        <Typography variant="h6" sx={{ ml: 2 }}>
+        <Typography variant="h6" sx={{ ml: 2, mt: { xs: 0, sm: 5, xl: 0 } }}>
           {stake.name}
         </Typography>
         <Divider sx={{ my: 2 }} />
