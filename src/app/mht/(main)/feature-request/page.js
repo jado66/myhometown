@@ -44,8 +44,8 @@ export default function FeatureRequestForm() {
         user_id: user?.id,
         title,
         description,
-        phone_number: user?.contactNumber,
-        user_name: user?.firstName + " " + user?.lastName,
+        phone_number: user?.contact_number,
+        user_name: user?.first_name + " " + user?.last_name,
         image_url: imageUrl,
       });
 

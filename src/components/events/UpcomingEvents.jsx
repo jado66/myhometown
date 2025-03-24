@@ -11,7 +11,6 @@ import {
 import Loading from "../util/Loading";
 import moment from "moment";
 import JsonViewer from "../util/debug/DebugOutput";
-
 const UpcomingEvents = ({
   events = [],
   isLoading,
@@ -22,19 +21,21 @@ const UpcomingEvents = ({
 }) => {
   // This function formats the date and time in an easily readable format
   const dateFormatter = (date, isAllDay) => {
-    date = new Date(date);
-    const month = date.toLocaleDateString(undefined, { month: "short" });
-    const day = date.getDate();
-    const weekday = date.toLocaleDateString(undefined, { weekday: "short" });
+    date = moment(date);
+    const month = date.format("MMM");
+    const day = date.format("D");
+    const weekday = date.format("dddd");
 
     if (isAllDay) {
       return `${weekday} ${month} ${day}`;
     }
 
-    return `${weekday} ${month} ${day}, ${date.toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "numeric",
-    })}`;
+    // return `${weekday} ${month} ${day}, ${date.toLocaleTimeString([], {
+    //   hour: "numeric",
+    //   minute: "numeric",
+    // })}`;
+
+    return `${weekday} ${month} ${day}, ${date.format("h:mm A")}`;
   };
 
   // Sort events by start date, then slice array to contain at most maxEvents items
@@ -47,7 +48,7 @@ const UpcomingEvents = ({
     })
     .sort(
       (a, b) =>
-        new Date(a.start || a.start_time) - new Date(b.start || b.start_time)
+        moment(a.start || a.start_time) - moment(b.start || b.start_time)
     ) // Fallback to start_time if start is missing
     .slice(0, maxEvents);
 
