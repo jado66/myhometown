@@ -1,4 +1,4 @@
-// ContactsTable with Combined Name Column
+// ContactsTable with Combined Name Column and Simplified Groups
 import React from "react";
 import {
   Table,
@@ -13,6 +13,7 @@ import {
   Box,
   Tooltip,
   Grid,
+  useMediaQuery,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -20,8 +21,12 @@ import {
   Close as CloseIcon,
   Delete as DeleteIcon,
   Person,
+  Phone,
+  ContentCopy,
+  Email,
 } from "@mui/icons-material";
 import Creatable from "react-select/creatable";
+import { toast } from "react-toastify";
 
 export const ContactsTable = ({
   editingId,
@@ -40,6 +45,8 @@ export const ContactsTable = ({
   userId,
   groups,
 }) => {
+  const isXlScreen = useMediaQuery((theme) => theme.breakpoints.up("xl"));
+
   // Styles for react-select
   const selectStyles = {
     control: (provided) => ({
@@ -82,6 +89,52 @@ export const ContactsTable = ({
       contact.last_name || "",
     ];
     return parts.filter((part) => part.trim() !== "").join(" ");
+  };
+
+  // Convert string groups to format needed for react-select
+  const formatGroupsForSelect = (groups, isString) => {
+    let groupStrings;
+    // If already simple strings, return as is
+    if (isString) {
+      groupStrings = JSON.parse(groups);
+    } else {
+      groupStrings = groups;
+    }
+
+    if (
+      !groupStrings ||
+      !Array.isArray(groupStrings) ||
+      groupStrings.length === 0
+    ) {
+      return [];
+    }
+
+    return groupStrings.map((group) => ({ label: group, value: group }));
+  };
+
+  // Convert react-select format back to string array
+  const formatGroupsForSave = (groupObjects) => {
+    if (!groupObjects) return [];
+    if (!Array.isArray(groupObjects)) return [];
+
+    // If already simple strings, return as is
+    if (groupObjects.length > 0 && typeof groupObjects[0] === "string") {
+      return groupObjects;
+    }
+
+    return groupObjects.map((group) => group.value);
+  };
+
+  const copyPhoneToClipboard = (phone) => {
+    navigator.clipboard.writeText(phone.replace(/[^0-9]/g, ""));
+
+    toast.success(`Copied ${phone} to clipboard`);
+  };
+
+  const copyEmailToClipboard = (email) => {
+    navigator.clipboard.writeText(email);
+
+    toast.success(`Copied ${email} to clipboard`);
   };
 
   return (
@@ -183,8 +236,26 @@ export const ContactsTable = ({
                     error={formError && formError.includes("Phone")}
                     required
                   />
+                ) : isXlScreen ? (
+                  <>
+                    {contact.phone}
+                    <IconButton
+                      size="small"
+                      onClick={() => copyPhoneToClipboard(contact.phone)}
+                      sx={{ ml: 1 }}
+                    >
+                      <ContentCopy />
+                    </IconButton>
+                  </>
                 ) : (
-                  contact.phone || ""
+                  <Tooltip title={contact.phone || ""} placement="top-start">
+                    <IconButton
+                      size="small"
+                      onClick={() => copyPhoneToClipboard(contact.phone)}
+                    >
+                      <Phone />
+                    </IconButton>
+                  </Tooltip>
                 )}
               </TableCell>
               <TableCell>
@@ -198,16 +269,40 @@ export const ContactsTable = ({
                     fullWidth
                   />
                 ) : (
-                  contact.email || ""
+                  contact.email.trim() &&
+                  (isXlScreen ? (
+                    <>
+                      {contact.email}
+                      <IconButton
+                        size="small"
+                        onClick={() => copyEmailToClipboard(contact.email)}
+                        sx={{ ml: 1 }}
+                      >
+                        <ContentCopy />
+                      </IconButton>
+                    </>
+                  ) : (
+                    <Tooltip title={contact.email} placement="top-start">
+                      <IconButton
+                        size="small"
+                        onClick={() => copyEmailToClipboard(contact.email)}
+                      >
+                        <Email />
+                      </IconButton>
+                    </Tooltip>
+                  ))
                 )}
               </TableCell>
               <TableCell>
                 {editingId === contact.id ? (
                   <Creatable
                     isMulti
-                    value={editForm.groups || []}
-                    options={groups}
-                    onChange={(newGroups) => handleGroupChange(newGroups)}
+                    value={formatGroupsForSelect(editForm.groups || [], true)}
+                    options={formatGroupsForSelect(groups || [])}
+                    onChange={(newGroups) => {
+                      const stringGroups = formatGroupsForSave(newGroups || []);
+                      handleGroupChange(stringGroups);
+                    }}
                     styles={selectStyles}
                     components={selectComponents}
                     menuPortalTarget={document.body}
@@ -215,10 +310,21 @@ export const ContactsTable = ({
                     menuPosition="fixed"
                     placeholder="Select or create groups"
                   />
-                ) : contact?.groups && Array.isArray(contact.groups) ? (
-                  contact.groups.map((g) => g.label || g).join(", ")
                 ) : (
-                  ""
+                  (() => {
+                    let displayGroups = contact.groups;
+                    // Parse JSON string if needed
+                    if (typeof contact.groups === "string") {
+                      try {
+                        displayGroups = JSON.parse(contact.groups);
+                      } catch (e) {
+                        return contact.groups || "";
+                      }
+                    }
+                    return Array.isArray(displayGroups)
+                      ? displayGroups.join(", ")
+                      : "";
+                  })()
                 )}
               </TableCell>
               <TableCell align="right">

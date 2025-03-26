@@ -19,7 +19,6 @@ import {
 
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import { useUserContacts } from "@/hooks/useUserContacts";
-import JsonViewer from "@/components/util/debug/DebugOutput";
 
 import { ContactsTable } from "./ContactsTable";
 
@@ -68,18 +67,34 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
     const uniqueGroups = new Set();
 
     contacts.forEach((contact) => {
-      if (contact.groups && Array.isArray(contact.groups)) {
-        contact.groups.forEach((group) => {
-          if (group && group.value) {
-            uniqueGroups.add(JSON.stringify(group));
+      let parsedGroups = contact.groups;
+
+      // Handle case where groups is a JSON string
+      if (typeof contact.groups === "string") {
+        try {
+          parsedGroups = JSON.parse(contact.groups);
+        } catch (error) {
+          console.error("Failed to parse groups:", error);
+          parsedGroups = [];
+        }
+      }
+
+      // Process groups regardless of format
+      if (parsedGroups && Array.isArray(parsedGroups)) {
+        parsedGroups.forEach((group) => {
+          // Handle both string format and object format
+          if (typeof group === "string") {
+            uniqueGroups.add(group);
+          } else if (group && group.value) {
+            // Legacy object format - extract just the value
+            uniqueGroups.add(group.value);
           }
         });
       }
     });
 
-    const groupsArray = Array.from(uniqueGroups).map((group) =>
-      JSON.parse(group)
-    );
+    // Convert Set to array of strings
+    const groupsArray = Array.from(uniqueGroups);
     setGroups(groupsArray);
   }, [contacts]);
 
@@ -313,8 +328,6 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
         }}
       >
         <Typography variant="h5">Directory</Typography>
-
-        <JsonViewer data={{ contacts }} />
 
         <Box sx={{ display: "flex", gap: 2 }}>
           <input
