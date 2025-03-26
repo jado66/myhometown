@@ -8,7 +8,8 @@ export function useUserContacts(userId, userCommunities, userCities) {
 
   // Fetch all contacts
   const fetchContacts = useCallback(async () => {
-    if (!userId || !userCommunities || !userCities) {
+    if (!userId) {
+      //|| !userCommunities || !userCities
       setLoading(false);
       return;
     }
