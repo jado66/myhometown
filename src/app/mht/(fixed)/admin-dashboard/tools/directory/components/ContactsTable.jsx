@@ -1,5 +1,5 @@
 // ContactsTable with Combined Name Column and Simplified Groups
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -14,6 +14,9 @@ import {
   Tooltip,
   Grid,
   useMediaQuery,
+  Checkbox,
+  Typography,
+  Button,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -44,7 +47,15 @@ export const ContactsTable = ({
   formError,
   userId,
   groups,
+  moveContact,
+  userCommunities,
+  userCities,
+  tableName,
+  canAddNew,
+  isNewContact,
 }) => {
+  const [selectedContacts, setSelectedContacts] = useState(new Set());
+
   const isXlScreen = useMediaQuery((theme) => theme.breakpoints.up("xl"));
 
   // Styles for react-select
@@ -62,6 +73,25 @@ export const ContactsTable = ({
       ...provided,
       zIndex: 9999,
     }),
+  };
+
+  const handleCheckboxChange = (contactId) => {
+    setSelectedContacts((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(contactId)) {
+        newSet.delete(contactId);
+      } else {
+        newSet.add(contactId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleMoveContacts = async (newOwnerType, newOwnerId) => {
+    for (const contactId of selectedContacts) {
+      await moveContact(contactId, newOwnerType, newOwnerId);
+    }
+    setSelectedContacts(new Set());
   };
 
   // Custom components for react-select
@@ -94,12 +124,6 @@ export const ContactsTable = ({
   // Convert string groups to format needed for react-select
   const formatGroupsForSelect = (groups, isString) => {
     let groupStrings;
-    // If already simple strings, return as is
-    if (isString) {
-      groupStrings = JSON.parse(groups);
-    } else {
-      groupStrings = groups;
-    }
 
     if (
       !groupStrings ||
@@ -107,6 +131,13 @@ export const ContactsTable = ({
       groupStrings.length === 0
     ) {
       return [];
+    }
+
+    // If already simple strings, return as is
+    if (isString) {
+      groupStrings = JSON.parse(groups);
+    } else {
+      groupStrings = groups;
     }
 
     return groupStrings.map((group) => ({ label: group, value: group }));
@@ -142,7 +173,20 @@ export const ContactsTable = ({
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>{renderSortLabel("owner_type", "Owner")}</TableCell>
+            <TableCell>
+              <Checkbox
+                checked={selectedContacts.size === filteredContacts.length}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSelectedContacts(
+                      new Set(filteredContacts.map((c) => c.id))
+                    );
+                  } else {
+                    setSelectedContacts(new Set());
+                  }
+                }}
+              />
+            </TableCell>
             <TableCell>{renderSortLabel("last_name", "Name")}</TableCell>
             <TableCell>{renderSortLabel("phone", "Phone")}</TableCell>
             <TableCell>{renderSortLabel("email", "Email")}</TableCell>
@@ -153,23 +197,13 @@ export const ContactsTable = ({
         <TableBody>
           {filteredContacts.map((contact) => (
             <TableRow key={contact.id}>
-              <TableCell
-                sx={{
-                  width: "50px",
-                }}
-              >
-                {contact.owner_type === "user" ? (
-                  <>
-                    <Tooltip title="Personal Contact" placement="top-start">
-                      <Person />
-                    </Tooltip>
-                  </>
-                ) : contact.owner_type === "community" ? (
-                  "Community"
-                ) : (
-                  "City"
-                )}
+              <TableCell>
+                <Checkbox
+                  checked={selectedContacts.has(contact.id)}
+                  onChange={() => handleCheckboxChange(contact.id)}
+                />
               </TableCell>
+
               <TableCell>
                 {editingId === contact.id ? (
                   <Grid container spacing={1}>
@@ -356,30 +390,144 @@ export const ContactsTable = ({
                     }}
                   >
                     {/* Only allow editing of user's own contacts */}
-                    {contact.owner_type === "user" &&
-                      contact.owner_id === userId && (
-                        <>
-                          <IconButton
-                            size="small"
-                            onClick={() => startEditing(contact)}
-                            color="primary"
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleDeleteClick(contact)}
-                            color="error"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </>
-                      )}
+
+                    <>
+                      <IconButton
+                        size="small"
+                        onClick={() => startEditing(contact)}
+                        color="primary"
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDeleteClick(contact)}
+                        color="error"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </>
                   </Box>
                 )}
               </TableCell>
             </TableRow>
           ))}
+
+          {canAddNew && isNewContact && (
+            <TableRow key={editForm.id}>
+              <TableCell></TableCell>
+
+              <TableCell>
+                <Grid container spacing={1}>
+                  <Grid item xs={4}>
+                    <TextField
+                      value={editForm.first_name || ""}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          first_name: e.target.value,
+                        })
+                      }
+                      size="small"
+                      fullWidth
+                      label="First"
+                      error={formError && formError.includes("First Name")}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <TextField
+                      value={editForm.middle_name || ""}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          middle_name: e.target.value,
+                        })
+                      }
+                      size="small"
+                      fullWidth
+                      label="Mid"
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <TextField
+                      value={editForm.last_name || ""}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          last_name: e.target.value,
+                        })
+                      }
+                      size="small"
+                      fullWidth
+                      label="Last"
+                      error={formError && formError.includes("Last Name")}
+                      required
+                    />
+                  </Grid>
+                </Grid>
+              </TableCell>
+              <TableCell sx={{ whiteSpace: "nowrap" }}>
+                <TextField
+                  value={editForm.phone || ""}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, phone: e.target.value })
+                  }
+                  size="small"
+                  fullWidth
+                  error={formError && formError.includes("Phone")}
+                  required
+                />
+              </TableCell>
+              <TableCell>
+                <TextField
+                  value={editForm.email || ""}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, email: e.target.value })
+                  }
+                  size="small"
+                  fullWidth
+                />
+              </TableCell>
+              <TableCell>
+                <Creatable
+                  isMulti
+                  value={formatGroupsForSelect(editForm.groups || [], true)}
+                  options={formatGroupsForSelect(groups || [])}
+                  onChange={(newGroups) => {
+                    const stringGroups = formatGroupsForSave(newGroups || []);
+                    handleGroupChange(stringGroups);
+                  }}
+                  styles={selectStyles}
+                  components={selectComponents}
+                  menuPortalTarget={document.body}
+                  noOptionsMessage={() => "Type to create new group"}
+                  menuPosition="fixed"
+                  placeholder="Select or create groups"
+                />
+              </TableCell>
+              <TableCell align="right">
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: 1,
+                  }}
+                >
+                  <IconButton
+                    size="small"
+                    onClick={() => saveEdit(editForm.id)}
+                    color="primary"
+                  >
+                    <SaveIcon />
+                  </IconButton>
+                  <IconButton size="small" onClick={cancelEditing}>
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
+              </TableCell>
+            </TableRow>
+          )}
 
           {/* Add a total row */}
           <TableRow>
@@ -393,6 +541,36 @@ export const ContactsTable = ({
           </TableRow>
         </TableBody>
       </Table>
+      {selectedContacts.size > 0 && (
+        <Box sx={{ mt: 2 }}>
+          <Typography>Move selected contacts to:</Typography>
+          {tableName !== "Personal Contacts" && (
+            <Button onClick={() => handleMoveContacts("user", userId)}>
+              Personal Contacts
+            </Button>
+          )}
+          {userCommunities
+            .filter((community) => community.name !== tableName)
+            .map((community) => (
+              <Button
+                key={community.id}
+                onClick={() => handleMoveContacts("community", community.id)}
+              >
+                {community.name} Community
+              </Button>
+            ))}
+          {userCities
+            .filter((city) => city.name !== tableName)
+            .map((city) => (
+              <Button
+                key={city.id}
+                onClick={() => handleMoveContacts("city", city.id)}
+              >
+                {city.name} City
+              </Button>
+            ))}
+        </Box>
+      )}
     </TableContainer>
   );
 };

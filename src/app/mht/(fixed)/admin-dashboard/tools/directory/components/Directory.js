@@ -21,17 +21,23 @@ import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import { useUserContacts } from "@/hooks/useUserContacts";
 
 import { ContactsTable } from "./ContactsTable";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const ContactsManagement = ({ userId, userCommunities, userCities }) => {
   const {
     contacts,
     loading,
-    error: apiError,
+    error,
     addContact,
     updateContact,
     deleteContact,
+    moveContact,
     refreshContacts,
-  } = useUserContacts(userId, userCommunities, userCities);
+  } = useUserContacts(
+    userId,
+    userCommunities.map((c) => c.id),
+    userCities.map((c) => c.id)
+  );
 
   // Local state
   const [editingId, setEditingId] = useState(null);
@@ -65,6 +71,8 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
   // Extract unique groups from contacts
   useEffect(() => {
     const uniqueGroups = new Set();
+
+    if (!contacts || !contacts.length) return;
 
     contacts.forEach((contact) => {
       let parsedGroups = contact.groups;
@@ -100,7 +108,7 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
 
   // Filter and sort contacts
   useEffect(() => {
-    if (!contacts) return;
+    if (!contacts || !contacts.length) return;
 
     let filtered = [...contacts];
 
@@ -317,6 +325,27 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
     );
   }
 
+  const ContactsTableProps = {
+    moveContact,
+    userCommunities,
+    userCities,
+    editingId,
+    editForm,
+    orderBy,
+    order,
+    saveEdit,
+    cancelEditing,
+    setEditForm,
+    handleGroupChange,
+    handleDeleteClick,
+    startEditing,
+    handleSort,
+    formError,
+    userId,
+    groups,
+    isNewContact,
+  };
+
   return (
     <Paper sx={{ width: "100%", p: 3 }}>
       <Box
@@ -328,6 +357,7 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
         }}
       >
         <Typography variant="h5">Directory</Typography>
+        {/* <JsonViewer data={{ contacts }} /> */}
 
         <Box sx={{ display: "flex", gap: 2 }}>
           <input
@@ -373,7 +403,6 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
           </Button>
         </Box>
       </Box>
-
       {/* Add Search Box */}
       <Box sx={{ mb: 2 }}>
         <TextField
@@ -391,20 +420,13 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
           }}
         />
       </Box>
-
       {/* Loading state */}
       {loading && (
         <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
           <CircularProgress />
         </Box>
       )}
-
       {/* API Error */}
-      {apiError && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          Error loading contacts: {apiError}
-        </Alert>
-      )}
 
       {/* Form Error */}
       {formError && (
@@ -413,28 +435,38 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
         </Alert>
       )}
 
-      {/* <JsonViewer data={JSON.stringify(editingId)} /> */}
+      {/* User Contacts */}
+      <Typography variant="h6">Personal Contacts</Typography>
+      <ContactsTable
+        {...ContactsTableProps}
+        filteredContacts={contacts.userContacts}
+        tableName="Personal Contacts"
+        canAddNew
+      />
 
-      {!loading && !apiError && (
-        <ContactsTable
-          editingId={editingId}
-          editForm={editForm}
-          filteredContacts={filteredContacts}
-          orderBy={orderBy}
-          order={order}
-          saveEdit={saveEdit}
-          cancelEditing={cancelEditing}
-          setEditForm={setEditForm}
-          handleGroupChange={handleGroupChange}
-          handleDeleteClick={handleDeleteClick}
-          startEditing={startEditing}
-          handleSort={handleSort}
-          formError={formError}
-          userId={userId}
-          groups={groups}
-        />
-      )}
+      {/* Community Contacts */}
+      {userCommunities.map((community) => (
+        <Box key={community.id} sx={{ mt: 4 }}>
+          <Typography variant="h6">{community.name} Contacts</Typography>
+          <ContactsTable
+            filteredContacts={contacts.communityContacts[community.id] || []}
+            {...ContactsTableProps}
+            tableName={community.name}
+          />
+        </Box>
+      ))}
 
+      {/* City Contacts */}
+      {userCities.map((city) => (
+        <Box key={city.id} sx={{ mt: 4 }}>
+          <Typography variant="h6">{city.name} Contacts</Typography>
+          <ContactsTable
+            filteredContacts={contacts.cityContacts[city.id] || []}
+            {...ContactsTableProps}
+            tableName={city.name}
+          />
+        </Box>
+      ))}
       <AskYesNoDialog
         open={deleteDialog.open}
         title="Confirm Delete"

@@ -4,12 +4,13 @@ import { Card, Grid } from "@mui/material";
 import BackButton from "@/components/BackButton";
 import Directory from "./components/Directory";
 import { useUser } from "@/hooks/use-user";
-import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const DirectoryPage = () => {
   const { user } = useUser();
-  // const { data: userCommunities } = useUserCommunities(user?.id);
-  // const { data: userCities } = useUserCities(user?.id);
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <Grid container item sm={12} display="flex">
@@ -25,7 +26,6 @@ const DirectoryPage = () => {
           overflowX: "auto",
         }}
       >
-        <JsonViewer data={{ user }} />
         <Directory
           userId={user?.id}
           userCommunities={user?.communities_details}

@@ -1,15 +1,19 @@
 import { supabase } from "@/util/supabase";
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "react-toastify";
 
 export function useUserContacts(userId, userCommunities, userCities) {
-  const [contacts, setContacts] = useState([]);
+  const [contacts, setContacts] = useState({
+    userContacts: [],
+    communityContacts: {},
+    cityContacts: {},
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Fetch all contacts
   const fetchContacts = useCallback(async () => {
     if (!userId) {
-      //|| !userCommunities || !userCities
       setLoading(false);
       return;
     }
@@ -23,7 +27,7 @@ export function useUserContacts(userId, userCommunities, userCities) {
       setContacts(fetchedContacts);
       setError(null);
     } catch (err) {
-      setError(err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -92,6 +96,30 @@ export function useUserContacts(userId, userCommunities, userCities) {
     }
   };
 
+  const moveContact = async (contactId, newOwnerType, newOwnerId) => {
+    try {
+      const { data, error } = await supabase
+        .from("contacts")
+        .update({
+          owner_type: newOwnerType,
+          owner_id: newOwnerId,
+          updated_at: new Date(),
+        })
+        .eq("id", contactId)
+        .select();
+
+      if (error) throw error;
+
+      toast.success("Contact moved successfully");
+
+      // Refresh contacts after moving
+      await fetchContacts();
+      return { data: data[0], error: null };
+    } catch (error) {
+      return { data: null, error: error.message };
+    }
+  };
+
   // Delete contact
   const deleteContact = async (id) => {
     try {
@@ -111,6 +139,7 @@ export function useUserContacts(userId, userCommunities, userCities) {
     loading,
     error,
     addContact,
+    moveContact,
     updateContact,
     deleteContact,
     refreshContacts: fetchContacts,
@@ -118,8 +147,14 @@ export function useUserContacts(userId, userCommunities, userCities) {
 }
 
 async function fetchUserContacts(userId, userCommunities, userCities) {
+  const result = {
+    userContacts: [],
+    communityContacts: {},
+    cityContacts: {},
+  };
+
   // Fetch user's own contacts
-  const { data: userContacts, error: userError } = await supabase
+  const { data: userData, error: userError } = await supabase
     .from("contacts")
     .select("*")
     .eq("owner_id", userId)
@@ -127,35 +162,44 @@ async function fetchUserContacts(userId, userCommunities, userCities) {
 
   if (userError) {
     console.error("Error fetching user contacts:", userError);
-    return [];
+  } else {
+    result.userContacts = userData || [];
   }
 
-  // Fetch contacts from user's communities
-  const { data: communityContacts, error: communityError } = await supabase
-    .from("contacts")
-    .select("*")
-    .in("owner_id", userCommunities)
-    .eq("owner_type", "community")
-    .eq("visibility", true);
+  // Fetch community contacts
+  for (const communityId of userCommunities) {
+    const { data, error } = await supabase
+      .from("contacts")
+      .select("*")
+      .eq("owner_id", communityId)
+      .eq("owner_type", "community");
 
-  if (communityError) {
-    console.error("Error fetching community contacts:", communityError);
-    return userContacts;
+    if (error) {
+      console.error(
+        `Error fetching contacts for community ${communityId}:`,
+        error
+      );
+      result.communityContacts[communityId] = [];
+    } else {
+      result.communityContacts[communityId] = data || [];
+    }
   }
 
-  // Fetch contacts from user's cities
-  const { data: cityContacts, error: cityError } = await supabase
-    .from("contacts")
-    .select("*")
-    .in("owner_id", userCities)
-    .eq("owner_type", "city")
-    .eq("visibility", true);
+  // Fetch city contacts
+  for (const cityId of userCities) {
+    const { data, error } = await supabase
+      .from("contacts")
+      .select("*")
+      .eq("owner_id", cityId)
+      .eq("owner_type", "city");
 
-  if (cityError) {
-    console.error("Error fetching city contacts:", cityError);
-    return [...userContacts, ...communityContacts];
+    if (error) {
+      console.error(`Error fetching contacts for city ${cityId}:`, error);
+      result.cityContacts[cityId] = [];
+    } else {
+      result.cityContacts[cityId] = data || [];
+    }
   }
 
-  // Combine all contacts
-  return [...userContacts, ...communityContacts, ...cityContacts];
+  return result;
 }
