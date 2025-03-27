@@ -33,136 +33,145 @@ export function useSendSMS() {
     return cleanup;
   }, [cleanup]);
 
-  const sendMessages = useCallback(
-    async (message, recipients, mediaUrls = []) => {
-      cleanup(); // Clean up any existing connections
-      setSendStatus("sending");
-      setProgress((prev) => ({
-        ...prev,
-        total: recipients.length,
-        completed: 0,
-        successful: 0,
-        failed: 0,
-        results: [],
-      }));
+  const sendMessages = async (message, recipients, mediaUrls = []) => {
+    const results = [];
+    let completedCount = 0;
+    let successfulCount = 0;
+    let failedCount = 0;
+    const totalCount = recipients.length;
 
-      const messageId = Date.now().toString();
+    // Import the hook we just created for logging
+    const { addTextLog, batchAddTextLogs } = useTextLogs(user?.id);
 
+    // Prepare batch logs array for efficiency
+    const batchLogs = [];
+
+    // Determine the owner_type and owner_id based on context
+    // This would likely come from your component state or props
+    // For this example, we'll assume it's the current user
+    const owner_type = "user";
+    const owner_id = user?.id;
+
+    setProgress({
+      total: totalCount,
+      completed: completedCount,
+      successful: successfulCount,
+      failed: failedCount,
+      results: [],
+    });
+
+    setSendStatus("sending");
+
+    for (const recipient of recipients) {
       try {
-        // Set up event source with timeout
-        eventSourceRef.current = new EventSource(
-          `/api/communications/send-texts/stream?messageId=${messageId}`,
-          { withCredentials: true }
-        );
-
-        const messageCompletionPromise = new Promise((resolve, reject) => {
-          // Set timeout for entire operation
-          timeoutRef.current = setTimeout(() => {
-            reject(new Error("Operation timed out"));
-            cleanup();
-          }, 60000); // 60 second timeout
-
-          eventSourceRef.current.onmessage = (event) => {
-            try {
-              const data = JSON.parse(event.data);
-              console.log("SSE message received:", data);
-
-              switch (data.type) {
-                case "connected":
-                  console.log("SSE Connection established");
-                  break;
-
-                case "complete":
-                  console.log("All messages processed");
-                  clearTimeout(timeoutRef.current);
-                  resolve();
-                  cleanup();
-                  break;
-
-                case "error":
-                  console.error("Stream error:", data.error);
-                  reject(new Error(data.error));
-                  cleanup();
-                  break;
-
-                case "status":
-                  const messageKey = `${data.messageId}-${data.recipient}`;
-                  if (!processedMessagesRef.current.has(messageKey)) {
-                    processedMessagesRef.current.add(messageKey);
-                    setProgress((prev) => {
-                      const newResults = [...prev.results, data];
-                      return {
-                        ...prev,
-                        completed: newResults.length,
-                        successful: newResults.filter(
-                          (r) => r.status === "success"
-                        ).length,
-                        failed: newResults.filter((r) => r.status === "failed")
-                          .length,
-                        results: newResults,
-                      };
-                    });
-                  }
-                  break;
-              }
-            } catch (error) {
-              console.error("Error processing SSE message:", error);
-            }
-          };
-
-          eventSourceRef.current.onerror = (error) => {
-            console.error("SSE connection error:", error);
-            reject(new Error("Stream connection error"));
-            cleanup();
-          };
+        // Call your existing SMS sending API
+        const response = await fetch("/api/communications/send-sms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to: recipient.value,
+            message: message,
+            mediaUrls: mediaUrls,
+          }),
         });
 
-        // Send the messages
-        const response = await fetch(
-          `/api/communications/send-texts?messageId=${messageId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              message,
-              recipients,
-              mediaUrls: Array.isArray(mediaUrls)
-                ? mediaUrls
-                : [mediaUrls].filter(Boolean),
-            }),
-          }
-        );
+        const data = await response.json();
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to send messages");
+          throw new Error(data.error || "Failed to send message");
         }
 
-        await messageCompletionPromise;
-        setSendStatus("completed");
+        // Log the successful message
+        const logEntry = {
+          message_id: data.messageId, // This would come from your SMS provider
+          sender_id: user?.id,
+          recipient_phone: recipient.value,
+          recipient_contact_id: recipient.contactId || null,
+          message_content: message,
+          media_urls: mediaUrls.length > 0 ? JSON.stringify(mediaUrls) : null,
+          status: "sent", // Initial status
+          owner_id: owner_id,
+          owner_type: owner_type,
+          metadata: JSON.stringify({
+            recipientName: `${recipient.firstName || ""} ${
+              recipient.lastName || ""
+            }`.trim(),
+            smsProviderResponse: data,
+          }),
+        };
 
-        // Show completion toast
-        setProgress((prev) => {
-          const message =
-            prev.failed > 0
-              ? `Sent ${prev.successful} of ${prev.total} messages successfully (${prev.failed} failed)`
-              : `Successfully sent ${prev.successful} of ${prev.total} messages`;
+        // Add to batch for efficient insertion
+        batchLogs.push(logEntry);
 
-          prev.failed > 0 ? toast.warning(message) : toast.success(message);
-          return prev;
-        });
+        const result = {
+          recipient: recipient.value,
+          status: "success",
+          error: null,
+          timestamp: new Date().toISOString(),
+        };
+
+        results.push(result);
+        completedCount++;
+        successfulCount++;
       } catch (error) {
-        console.error("Send messages error:", error);
-        setSendStatus("error");
-        cleanup();
-        toast.error(`Failed to send messages: ${error.message}`);
-        throw error;
+        console.error("Error sending message:", error);
+
+        // Log the failed message
+        const logEntry = {
+          sender_id: user?.id,
+          recipient_phone: recipient.value,
+          recipient_contact_id: recipient.contactId || null,
+          message_content: message,
+          media_urls: mediaUrls.length > 0 ? JSON.stringify(mediaUrls) : null,
+          status: "failed",
+          error_message: error.message,
+          owner_id: owner_id,
+          owner_type: owner_type,
+          metadata: JSON.stringify({
+            recipientName: `${recipient.firstName || ""} ${
+              recipient.lastName || ""
+            }`.trim(),
+          }),
+        };
+
+        // Add to batch for efficient insertion
+        batchLogs.push(logEntry);
+
+        const result = {
+          recipient: recipient.value,
+          status: "failed",
+          error: error.message,
+          timestamp: new Date().toISOString(),
+        };
+
+        results.push(result);
+        completedCount++;
+        failedCount++;
       }
-    },
-    [cleanup]
-  );
+
+      setProgress({
+        total: totalCount,
+        completed: completedCount,
+        successful: successfulCount,
+        failed: failedCount,
+        results: [...results],
+      });
+    }
+
+    // Log all messages in a batch for better performance
+    if (batchLogs.length > 0) {
+      try {
+        await batchAddTextLogs(batchLogs);
+      } catch (error) {
+        console.error("Error logging messages:", error);
+        // Don't let logging failure stop the overall process
+        toast.error("Message sent but logging failed");
+      }
+    }
+
+    setSendStatus("completed");
+    return results;
+  };
 
   const reset = useCallback(() => {
     setSendStatus("idle");
