@@ -11,6 +11,8 @@ export function useUserContacts(userId, userCommunities, userCities) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [hasInitialized, setHasInitialized] = useState(false);
+
   // Fetch all contacts
   const fetchContacts = useCallback(async () => {
     if (!userId) {
@@ -31,12 +33,30 @@ export function useUserContacts(userId, userCommunities, userCities) {
     } finally {
       setLoading(false);
     }
+
+    console.log(
+      "fetching contacts" +
+        JSON.stringify({
+          userId,
+          userCommunities,
+          userCities,
+        })
+    );
   }, [userId, userCommunities, userCities]);
 
   // Initial fetch
   useEffect(() => {
-    fetchContacts();
-  }, [fetchContacts]);
+    if (!userId) {
+      return;
+    }
+
+    if (!hasInitialized) {
+      setHasInitialized(true);
+    } else {
+      fetchContacts();
+    }
+    // fetchContacts();
+  }, [hasInitialized, userId]);
 
   // Add new contact
   const addContact = async (newContactData) => {
@@ -59,7 +79,35 @@ export function useUserContacts(userId, userCommunities, userCities) {
 
       if (error) throw error;
 
-      setContacts((prev) => [...prev, data[0]]);
+      // Update the appropriate contacts list based on owner_type
+      setContacts((prev) => {
+        const updated = { ...prev };
+
+        if (contact.owner_type === "user") {
+          updated.userContacts = [...prev.userContacts, data[0]];
+        } else if (contact.owner_type === "community") {
+          const communityId = contact.owner_id;
+          if (!updated.communityContacts[communityId]) {
+            updated.communityContacts[communityId] = [];
+          }
+          updated.communityContacts[communityId] = [
+            ...updated.communityContacts[communityId],
+            data[0],
+          ];
+        } else if (contact.owner_type === "city") {
+          const cityId = contact.owner_id;
+          if (!updated.cityContacts[cityId]) {
+            updated.cityContacts[cityId] = [];
+          }
+          updated.cityContacts[cityId] = [
+            ...updated.cityContacts[cityId],
+            data[0],
+          ];
+        }
+
+        return updated;
+      });
+
       return { data: data[0], error: null };
     } catch (error) {
       return { data: null, error: error.message };
@@ -85,11 +133,35 @@ export function useUserContacts(userId, userCommunities, userCities) {
 
       if (error) throw error;
 
-      setContacts((prev) =>
-        prev.map((contact) =>
+      // Update the appropriate contacts list
+      setContacts((prev) => {
+        const updated = { ...prev };
+
+        // Update in userContacts if found
+        updated.userContacts = prev.userContacts.map((contact) =>
           contact.id === id ? { ...contact, ...updatedData } : contact
-        )
-      );
+        );
+
+        // Update in communityContacts if found
+        Object.keys(prev.communityContacts).forEach((communityId) => {
+          updated.communityContacts[communityId] = prev.communityContacts[
+            communityId
+          ].map((contact) =>
+            contact.id === id ? { ...contact, ...updatedData } : contact
+          );
+        });
+
+        // Update in cityContacts if found
+        Object.keys(prev.cityContacts).forEach((cityId) => {
+          updated.cityContacts[cityId] = prev.cityContacts[cityId].map(
+            (contact) =>
+              contact.id === id ? { ...contact, ...updatedData } : contact
+          );
+        });
+
+        return updated;
+      });
+
       return { data: data[0], error: null };
     } catch (error) {
       return { data: null, error: error.message };
@@ -127,7 +199,32 @@ export function useUserContacts(userId, userCommunities, userCities) {
 
       if (error) throw error;
 
-      setContacts((prev) => prev.filter((contact) => contact.id !== id));
+      // Remove from all contact lists
+      setContacts((prev) => {
+        const updated = { ...prev };
+
+        // Remove from userContacts
+        updated.userContacts = prev.userContacts.filter(
+          (contact) => contact.id !== id
+        );
+
+        // Remove from communityContacts
+        Object.keys(prev.communityContacts).forEach((communityId) => {
+          updated.communityContacts[communityId] = prev.communityContacts[
+            communityId
+          ].filter((contact) => contact.id !== id);
+        });
+
+        // Remove from cityContacts
+        Object.keys(prev.cityContacts).forEach((cityId) => {
+          updated.cityContacts[cityId] = prev.cityContacts[cityId].filter(
+            (contact) => contact.id !== id
+          );
+        });
+
+        return updated;
+      });
+
       return { error: null };
     } catch (error) {
       return { error: error.message };

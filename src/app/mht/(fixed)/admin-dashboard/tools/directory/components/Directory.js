@@ -325,6 +325,16 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
     );
   }
 
+  const handleImportContact = async (event) => {
+    await importContacts(
+      event,
+      addContact,
+      setFormError,
+      refreshContacts,
+      userId
+    );
+  };
+
   const ContactsTableProps = {
     moveContact,
     userCommunities,
@@ -365,7 +375,7 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
             style={{ display: "none" }}
             id="import-file"
             type="file"
-            onChange={importContacts}
+            onChange={handleImportContact}
           />
           <label htmlFor="import-file">
             <Button
@@ -612,23 +622,28 @@ const exportContacts = (filteredContacts) => {
 
 const normalizeHeader = (header) => {
   // Remove special characters and spaces, convert to lowercase
-  const normalized = header.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const normalized = header.toLowerCase();
 
   // Map various possible header names to standard format
   const headerMap = {
+    "first name": "first_name",
     firstname: "first_name",
+    "last name": "last_name",
     lastname: "last_name",
+    "middle name": "middle_name",
     middlename: "middle_name",
+    "contact name": "name",
     contactname: "name",
     email: "email",
+    "email address": "email",
     emailaddress: "email",
     mail: "email",
     phone: "phone",
+    "phone number": "phone",
     phonenumber: "phone",
     telephone: "phone",
     tel: "phone",
     mobile: "phone",
-
     group: "groups",
     groups: "groups",
     category: "groups",
@@ -636,7 +651,7 @@ const normalizeHeader = (header) => {
     tags: "groups",
   };
 
-  return headerMap[normalized] || normalized;
+  return headerMap[normalized] || normalized.replace(/[^a-z0-9]/g, "");
 };
 
 const createOption = (label) => ({
@@ -644,7 +659,13 @@ const createOption = (label) => ({
   value: label.toLowerCase().replace(/\W/g, ""),
 });
 
-const importContacts = (event, addContact, setFormError, refreshContacts) => {
+const importContacts = async (
+  event,
+  addContact,
+  setFormError,
+  refreshContacts,
+  userId
+) => {
   const file = event.target.files[0];
   const reader = new FileReader();
 
@@ -657,14 +678,18 @@ const importContacts = (event, addContact, setFormError, refreshContacts) => {
     // Get and normalize headers
     const headers = lines[0].split(",").map((header) => {
       const normalized = normalizeHeader(header.trim());
-      if (!["name", "email", "phone", "groups"].includes(normalized)) {
+      if (
+        !["first_name", "last_name", "email", "phone", "groups"].includes(
+          normalized
+        )
+      ) {
         errors.push(`Unknown column header: ${header.trim()}`);
       }
       return normalized;
     });
 
     // Check for required headers
-    const requiredHeaders = ["name", "phone"];
+    const requiredHeaders = ["first_name", "last_name", "phone"];
     const missingHeaders = requiredHeaders.filter(
       (header) => !headers.includes(header)
     );
@@ -689,7 +714,6 @@ const importContacts = (event, addContact, setFormError, refreshContacts) => {
         middle_name: "",
         email: "",
         phone: "",
-
         owner_type: "user",
         owner_id: userId,
         groups: [],
@@ -699,9 +723,7 @@ const importContacts = (event, addContact, setFormError, refreshContacts) => {
       headers.forEach((header, j) => {
         if (header === "groups") {
           const groupsArray = values[j].split(";").filter(Boolean);
-          contact.groups = groupsArray.map((group) =>
-            createOption(group.trim())
-          );
+          contact.groups = groupsArray.map((group) => group.trim());
         } else if (header === "phone") {
           contact[header] = formatPhoneNumber(values[j]);
         } else {
@@ -710,7 +732,7 @@ const importContacts = (event, addContact, setFormError, refreshContacts) => {
       });
 
       // Validate the contact
-      if (!contact.name || !contact.phone) {
+      if (!contact.first_name || !contact.last_name || !contact.phone) {
         errors.push(`Line ${i + 1}: Missing required fields`);
         continue;
       }

@@ -122,25 +122,46 @@ export const ContactsTable = ({
   };
 
   // Convert string groups to format needed for react-select
-  const formatGroupsForSelect = (groups, isString) => {
-    let groupStrings;
+  const formatGroupsForSelect = (groups) => {
+    // Handle null or undefined case
+    if (!groups) return [];
 
-    if (
-      !groupStrings ||
-      !Array.isArray(groupStrings) ||
-      groupStrings.length === 0
-    ) {
-      return [];
+    // Handle empty array
+    if (Array.isArray(groups) && groups.length === 0) return [];
+
+    // If groups is a string (JSON string), try to parse it
+    if (typeof groups === "string") {
+      try {
+        const parsedGroups = JSON.parse(groups);
+        if (Array.isArray(parsedGroups)) {
+          return parsedGroups.map((group) => {
+            // If already in object format with value/label
+            if (typeof group === "object" && group !== null && group.value) {
+              return group;
+            }
+            // If it's a string
+            return { label: group, value: group };
+          });
+        }
+      } catch (e) {
+        console.error("Error parsing groups JSON", e);
+        return [];
+      }
     }
 
-    // If already simple strings, return as is
-    if (isString) {
-      groupStrings = JSON.parse(groups);
-    } else {
-      groupStrings = groups;
+    // If groups is already an array
+    if (Array.isArray(groups)) {
+      return groups.map((group) => {
+        // If already in object format
+        if (typeof group === "object" && group !== null && group.value) {
+          return group;
+        }
+        // If it's a string
+        return { label: group, value: group };
+      });
     }
 
-    return groupStrings.map((group) => ({ label: group, value: group }));
+    return [];
   };
 
   // Convert react-select format back to string array
@@ -148,12 +169,18 @@ export const ContactsTable = ({
     if (!groupObjects) return [];
     if (!Array.isArray(groupObjects)) return [];
 
-    // If already simple strings, return as is
-    if (groupObjects.length > 0 && typeof groupObjects[0] === "string") {
-      return groupObjects;
-    }
-
-    return groupObjects.map((group) => group.value);
+    return groupObjects.map((group) => {
+      // If group is already a string
+      if (typeof group === "string") {
+        return group;
+      }
+      // If group is an object with value property
+      if (typeof group === "object" && group !== null && group.value) {
+        return group.value;
+      }
+      // Fallback
+      return String(group);
+    });
   };
 
   const copyPhoneToClipboard = (phone) => {
@@ -331,7 +358,7 @@ export const ContactsTable = ({
                 {editingId === contact.id ? (
                   <Creatable
                     isMulti
-                    value={formatGroupsForSelect(editForm.groups || [], true)}
+                    value={formatGroupsForSelect(editForm.groups || [])}
                     options={formatGroupsForSelect(groups || [])}
                     onChange={(newGroups) => {
                       const stringGroups = formatGroupsForSave(newGroups || []);

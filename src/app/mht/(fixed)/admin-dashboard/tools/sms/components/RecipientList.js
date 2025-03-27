@@ -21,33 +21,20 @@ export const RecipientsList = ({ selectedRecipients, contacts }) => {
 
   // Function to get all contacts from a group
   const getGroupContacts = (groupName) => {
-    if (!groupName || !contacts) return [];
+    return allContacts.filter((contact) => {
+      // Ensure contact has groups
+      if (!contact.groups || !Array.isArray(contact.groups)) return false;
 
-    return contacts
-      .filter(
-        (contact) =>
-          contact.groups &&
-          Array.isArray(contact.groups) &&
-          contact.groups.some((g) => g && g.value === groupName)
-      )
-      .map((contact) => {
-        const { firstName, middleName, lastName, phone } = contact;
-
-        // Construct the full name with optional middle and last names.
-        const fullName = [
-          firstName || "Unknown",
-          middleName || "",
-          lastName || "",
-        ]
-          .filter(Boolean)
-          .join(" ");
-
-        return {
-          value: phone || "",
-          label: `${fullName} (${phone || "No Phone"})`,
-          fromGroup: groupName,
-        };
+      // Check if contact belongs to this group - handles both string and object formats
+      return contact.groups.some((group) => {
+        // Handle group as string
+        if (typeof group === "string") {
+          return group === groupName;
+        }
+        // Handle group as object
+        return group && group.value === groupName;
       });
+    });
   };
 
   // Process recipients and track duplicates with their order of appearance

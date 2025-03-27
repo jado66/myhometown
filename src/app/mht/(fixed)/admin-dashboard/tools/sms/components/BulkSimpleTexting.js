@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Box,
   CssBaseline,
@@ -17,6 +17,7 @@ import {
   IconButton,
   Alert,
   AlertTitle,
+  CircularProgress,
 } from "@mui/material";
 import {
   Send,
@@ -27,6 +28,7 @@ import {
   Clear,
   Warning,
   Error,
+  Refresh as RefreshIcon,
 } from "@mui/icons-material";
 import Select from "react-select";
 import BackButton from "@/components/BackButton";
@@ -35,6 +37,8 @@ import { toast } from "react-toastify";
 import { useRedisHealth } from "@/hooks/health/useRedisHealth";
 import { RecipientsList } from "./RecipientList";
 import { useSearchParams } from "next/navigation";
+import { useUserContacts } from "@/hooks/useUserContacts";
+import { useUser } from "@/hooks/use-user";
 
 const MAX_ATTACHMENTS = 10;
 const MAX_TOTAL_SIZE_MB = 5;
@@ -42,9 +46,22 @@ const MAX_TOTAL_SIZE_BYTES = MAX_TOTAL_SIZE_MB * 1024 * 1024; // Convert MB to b
 
 export default function BulkMMSMessaging() {
   const searchParams = useSearchParams();
+  const { user } = useUser();
+
+  // Get contacts using the same hook as ContactsManagement
+  const {
+    contacts,
+    loading: contactsLoading,
+    error: contactsError,
+    refreshContacts,
+  } = useUserContacts(
+    user?.id,
+    user?.communities_details?.map((c) => c.id) || [],
+    user?.cities_details?.map((c) => c.id) || []
+  );
 
   const [message, setMessage] = useState("");
-  const [contacts, setContacts] = useState([]);
+  const [allContacts, setAllContacts] = useState([]);
   const [groups, setGroups] = useState([]);
   const [selectedRecipients, setSelectedRecipients] = useState([]);
   const [activeTab, setActiveTab] = useState(0);
@@ -58,6 +75,107 @@ export default function BulkMMSMessaging() {
   const [totalFileSize, setTotalFileSize] = useState(0);
 
   const redisHealth = useRedisHealth(60000);
+
+  // Process all contacts from different sources (user, communities, cities)
+  useEffect(() => {
+    if (!contacts) return;
+
+    let contactsList = [];
+
+    // Add user contacts
+    if (contacts.userContacts && Array.isArray(contacts.userContacts)) {
+      contactsList = [...contacts.userContacts];
+    }
+
+    // Add community contacts
+    if (contacts.communityContacts) {
+      Object.values(contacts.communityContacts).forEach(
+        (communityContactList) => {
+          if (Array.isArray(communityContactList)) {
+            contactsList = [...contactsList, ...communityContactList];
+          }
+        }
+      );
+    }
+
+    // Add city contacts
+    if (contacts.cityContacts) {
+      Object.values(contacts.cityContacts).forEach((cityContactList) => {
+        if (Array.isArray(cityContactList)) {
+          contactsList = [...contactsList, ...cityContactList];
+        }
+      });
+    }
+
+    // Format contacts for the Select component
+    const formattedContacts = contactsList.map((contact) => ({
+      value: contact.phone,
+      label: `${contact.first_name} ${contact.last_name} (${contact.phone})`,
+      contactId: contact.id,
+      firstName: contact.first_name,
+      lastName: contact.last_name,
+      phone: contact.phone,
+      email: contact.email,
+      groups: contact.groups || [],
+    }));
+
+    setAllContacts(formattedContacts);
+
+    // Extract unique groups
+    const uniqueGroups = new Set();
+
+    contactsList.forEach((contact) => {
+      let parsedGroups = contact.groups;
+
+      // Handle case where groups is a JSON string
+      if (typeof contact.groups === "string") {
+        try {
+          parsedGroups = JSON.parse(contact.groups);
+        } catch (error) {
+          console.error("Failed to parse groups:", error);
+          parsedGroups = [];
+        }
+      }
+
+      // Process groups regardless of format
+      if (parsedGroups && Array.isArray(parsedGroups)) {
+        parsedGroups.forEach((group) => {
+          // Handle both string format and object format
+          if (typeof group === "string") {
+            uniqueGroups.add(group);
+          } else if (group && group.value) {
+            uniqueGroups.add(group.value);
+          }
+        });
+      }
+    });
+
+    // Convert Set to array of group objects for the Select component
+    const groupsArray = Array.from(uniqueGroups).map((groupValue) => ({
+      value: `group:${groupValue}`,
+      label: (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span>{`Group: ${groupValue}`}</span>
+          <Info
+            style={{ cursor: "pointer", marginLeft: "8px" }}
+            onClick={(e) =>
+              handleGroupInfoClick(e, { value: groupValue, label: groupValue })
+            }
+          />
+        </div>
+      ),
+      originalValue: groupValue,
+    }));
+
+    setGroups(groupsArray);
+    console.log("Setting contacts and groups");
+  }, [contacts]);
 
   useEffect(() => {
     const phone = searchParams.get("phone");
@@ -76,27 +194,13 @@ export default function BulkMMSMessaging() {
         },
       ]);
     }
+    console.log("Setting search params");
   }, [searchParams]);
-
-  useEffect(() => {
-    const savedContacts = JSON.parse(localStorage.getItem("contacts")) || [];
-    const savedGroups = JSON.parse(localStorage.getItem("groups")) || [];
-    setContacts(savedContacts);
-    setGroups(savedGroups);
-  }, []);
-
-  // upon completion send toast message with amount of messages sent / total
-  // useEffect(() => {
-  //   if (sendStatus === "completed") {
-  //     toast.success(
-  //       `Sent ${progress.successful} of ${progress.total} messages`
-  //     );
-  //   }
-  // }, [sendStatus]);
 
   useEffect(() => {
     setHasSent(false);
     setIsSending(false);
+    console.log("Resetting message state");
   }, [message, selectedRecipients, mediaFiles]);
 
   const handleFileSelect = async (event) => {
@@ -190,6 +294,7 @@ export default function BulkMMSMessaging() {
       event.target.value = "";
     }
   };
+
   const handleRemoveMedia = (index) => {
     setMediaFiles((prev) => {
       const removedFile = prev[index];
@@ -227,18 +332,11 @@ export default function BulkMMSMessaging() {
   };
 
   const renderMessageResult = (result) => {
-    console.log(
-      "Timestamp received:",
-      result.timestamp,
-      typeof result.timestamp
-    );
-
     if (result.status === "failed") {
       return `Error: ${result.error}`;
     }
 
     const timeString = formatTimestamp(result.timestamp);
-    console.log("Formatted time:", timeString);
     return `Sent at ${timeString}`;
   };
 
@@ -249,16 +347,15 @@ export default function BulkMMSMessaging() {
         typeof recipient.value === "string" &&
         recipient.value.startsWith("group:")
       ) {
+        // Get the group name without the "group:" prefix
         const groupName = recipient.value.replace("group:", "");
-        const groupContacts = contacts.filter((contact) =>
-          contact.groups.some((g) => g.value === groupName)
-        );
+
+        // Find contacts that belong to this group using the improved function
+        const groupContacts = getGroupContacts(groupName);
+
         return {
-          groupName: recipient.label.props.children[0].props.children,
-          contacts: groupContacts.map((contact) => ({
-            value: contact.phone,
-            label: `${contact.firstName} ${contact.lastName} (${contact.phone})`,
-          })),
+          groupName: groupName,
+          contacts: groupContacts,
         };
       }
       return {
@@ -302,6 +399,7 @@ export default function BulkMMSMessaging() {
   };
 
   const handleGroupInfoClick = (event, group) => {
+    event.stopPropagation();
     setAnchorEl(event.currentTarget);
     setSelectedGroup(group);
   };
@@ -323,9 +421,21 @@ export default function BulkMMSMessaging() {
   };
 
   const getGroupMembers = (groupValue) => {
-    return contacts.filter((contact) =>
-      contact.groups.some((g) => g.value === groupValue)
-    );
+    // Filter contacts that belong to the specified group
+    return allContacts.filter((contact) => {
+      // Ensure contact has groups
+      if (!contact.groups || !Array.isArray(contact.groups)) return false;
+
+      // Check if contact belongs to this group
+      return contact.groups.some((group) => {
+        // Handle group as string
+        if (typeof group === "string") {
+          return group === groupValue;
+        }
+        // Handle group as object
+        return group.value === groupValue;
+      });
+    });
   };
 
   const renderMediaPreviews = (files, showRemove = true) => (
@@ -397,13 +507,39 @@ export default function BulkMMSMessaging() {
           )}
         </Box>
       ))}
-      {/* {mediaFiles.length > 0 && (
-        <Typography variant="caption" sx={{ width: "100%", mt: 1 }}>
-          Total size: {formatFileSize(totalFileSize)} / {MAX_TOTAL_SIZE_MB}MB
-        </Typography>
-      )} */}
     </Box>
   );
+
+  const recipientOptions = useMemo(() => {
+    return [
+      {
+        label: "Groups",
+        options: groups,
+      },
+      {
+        label: "Personal Contacts",
+        options: allContacts.filter((contact) =>
+          contacts.userContacts.some((c) => c.id === contact.contactId)
+        ),
+      },
+      ...(user?.communities_details || []).map((community) => ({
+        label: `${community.name} Contacts`,
+        options: allContacts.filter((contact) =>
+          contacts.communityContacts[community.id]?.some(
+            (c) => c.id === contact.contactId
+          )
+        ),
+      })),
+      ...(user?.cities_details || []).map((city) => ({
+        label: `${city.name} Contacts`,
+        options: allContacts.filter((contact) =>
+          contacts.cityContacts[city.id]?.some(
+            (c) => c.id === contact.contactId
+          )
+        ),
+      })),
+    ];
+  }, [groups, allContacts, contacts]);
 
   const renderProgress = () => {
     if (sendStatus === "idle") return null;
@@ -424,7 +560,6 @@ export default function BulkMMSMessaging() {
         )}
 
         {/* Progress bar */}
-
         <Box sx={{ mb: 2 }}>
           <LinearProgress
             variant="determinate"
@@ -485,29 +620,6 @@ export default function BulkMMSMessaging() {
     </Alert>;
   }
 
-  const uniqueGroups = new Set(groups.map((g) => g.value));
-  const uniqueGroupOptions = Array.from(uniqueGroups).map((value) => {
-    const group = groups.find((g) => g.value === value);
-    return {
-      value: `group:${group.value}`,
-      label: (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <span>{`Group: ${group.label}`}</span>
-          <Info
-            style={{ cursor: "pointer", marginLeft: "8px" }}
-            onClick={(e) => handleGroupInfoClick(e, group)}
-          />
-        </div>
-      ),
-    };
-  });
-
   return (
     <>
       <BackButton
@@ -529,171 +641,190 @@ export default function BulkMMSMessaging() {
         }}
       >
         <Box>
-          {contacts.length === 0 && (
-            <Alert severity="info">
-              You don't have any contacts in your Directory. Visit your{" "}
-              <a href="./directory">Contact Directory</a> to add contacts.
-            </Alert>
-          )}
-
           <CssBaseline />
 
           <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-            {activeTab === 0 && (
-              <Paper elevation={3} sx={{ p: 2, mt: 2 }}>
-                <Typography
-                  variant="h6"
-                  gutterBottom
-                  sx={{ mb: 2, textAlign: "center" }}
-                >
-                  Compose Message
+            {contactsLoading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
+                <CircularProgress />
+                <Typography variant="body1" sx={{ ml: 2 }}>
+                  Loading contacts...
                 </Typography>
+              </Box>
+            ) : contactsError ? (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                Error loading contacts: {contactsError}
+              </Alert>
+            ) : (
+              <>
+                {allContacts.length === 0 && (
+                  <Alert severity="info">
+                    You don't have any contacts in your Directory. Visit your{" "}
+                    <a href="./directory">Contact Directory</a> to add contacts.
+                  </Alert>
+                )}
 
-                <Typography variant="subtitle1" gutterBottom>
-                  Select Recipients
-                </Typography>
-                <Select
-                  isMulti
-                  closeMenuOnSelect={false}
-                  options={[
-                    ...contacts.map((c) => ({
-                      value: c.id,
-                      label: `${c.firstName} ${c.lastName} (${c.phone})`,
-                    })),
-                    ...uniqueGroupOptions,
-                  ]}
-                  value={selectedRecipients}
-                  onChange={handleRecipientSelection}
-                  placeholder="Select recipients or groups"
-                />
-
-                <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                  Message Content
-                </Typography>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  variant="outlined"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  sx={{ mb: 2 }}
-                  error={message.length > 1600}
-                  helperText={
-                    message.length > 1600 &&
-                    "MSM messages are limited to 1600 characters"
-                  }
-                />
-
-                <Divider sx={{ mb: 2 }} />
-
-                <Box sx={{ mb: 2 }}>
-                  <input
-                    type="file"
-                    accept="image/*,video/*"
-                    multiple
-                    style={{ display: "none" }}
-                    id="media-upload"
-                    onChange={handleFileSelect}
-                  />
-                  <label htmlFor="media-upload">
-                    <Button
-                      variant="outlined"
-                      component="span"
-                      startIcon={<AttachFile />}
-                      disabled={
-                        isUploading || mediaFiles.length >= MAX_ATTACHMENTS
-                      }
+                {activeTab === 0 && (
+                  <Paper elevation={3} sx={{ p: 2, mt: 2 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        mb: 2,
+                      }}
                     >
-                      {isUploading ? "Uploading..." : "Attach Media"}
-                    </Button>
-                  </label>
+                      <Typography
+                        variant="h6"
+                        gutterBottom
+                        sx={{ mb: 0, textAlign: "center" }}
+                      >
+                        Compose Message
+                      </Typography>
+                      <Button
+                        size="small"
+                        startIcon={<RefreshIcon />}
+                        onClick={refreshContacts}
+                        variant="outlined"
+                      >
+                        Refresh Contacts
+                      </Button>
+                    </Box>
 
-                  {/* <Typography
-                    variant="caption"
-                    sx={{ display: "block", mt: 1 }}
-                  >
-                    {mediaFiles.length} of {MAX_ATTACHMENTS} attachments used
-                  </Typography> */}
-
-                  {mediaFiles.length > 0 && renderMediaPreviews(mediaFiles)}
-                </Box>
-
-                <Button
-                  sx={{ mt: 2 }}
-                  variant="contained"
-                  color="primary"
-                  onClick={() => setActiveTab(2)}
-                  startIcon={<Send />}
-                  disabled={selectedRecipients.length === 0}
-                >
-                  Review and Send
-                </Button>
-              </Paper>
-            )}
-
-            {activeTab === 2 && (
-              <Paper elevation={3} sx={{ p: 2, mt: 2 }}>
-                <Typography variant="h6" gutterBottom textAlign="center">
-                  Review and Send
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                  Selected Recipients:
-                </Typography>
-                <Paper
-                  elevation={1}
-                  sx={{ p: 2, mb: 2, backgroundColor: "grey.100" }}
-                >
-                  <RecipientsList
-                    selectedRecipients={selectedRecipients}
-                    contacts={contacts}
-                  />
-                </Paper>
-                <Typography variant="body1" gutterBottom>
-                  Message:
-                </Typography>
-                <Paper
-                  elevation={1}
-                  sx={{ p: 2, mb: 2, backgroundColor: "grey.100" }}
-                >
-                  <Typography sx={{ display: "flex" }}>
-                    {message?.trim() || (
-                      <>
-                        <Warning sx={{ mr: 2 }} />
-                        No message provided
-                      </>
-                    )}
-                  </Typography>
-                </Paper>
-                {mediaFiles.length > 0 && (
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body1" gutterBottom>
-                      Attachments:
+                    <Typography variant="subtitle1" gutterBottom>
+                      Select Recipients
                     </Typography>
-                    {renderMediaPreviews(mediaFiles, false)}
-                  </Box>
+                    <Select
+                      isMulti
+                      closeMenuOnSelect={false}
+                      options={recipientOptions}
+                      value={selectedRecipients}
+                      onChange={handleRecipientSelection}
+                      placeholder="Select recipients or groups"
+                    />
+
+                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                      Message Content
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={4}
+                      variant="outlined"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      sx={{ mb: 2 }}
+                      error={message.length > 1600}
+                      helperText={
+                        message.length > 1600 &&
+                        "MSM messages are limited to 1600 characters"
+                      }
+                    />
+
+                    <Divider sx={{ mb: 2 }} />
+
+                    <Box sx={{ mb: 2 }}>
+                      <input
+                        type="file"
+                        accept="image/*,video/*"
+                        multiple
+                        style={{ display: "none" }}
+                        id="media-upload"
+                        onChange={handleFileSelect}
+                      />
+                      <label htmlFor="media-upload">
+                        <Button
+                          variant="outlined"
+                          component="span"
+                          startIcon={<AttachFile />}
+                          disabled={
+                            isUploading || mediaFiles.length >= MAX_ATTACHMENTS
+                          }
+                        >
+                          {isUploading ? "Uploading..." : "Attach Media"}
+                        </Button>
+                      </label>
+
+                      {mediaFiles.length > 0 && renderMediaPreviews(mediaFiles)}
+                    </Box>
+
+                    <Button
+                      sx={{ mt: 2 }}
+                      variant="contained"
+                      color="primary"
+                      onClick={() => setActiveTab(2)}
+                      startIcon={<Send />}
+                      disabled={selectedRecipients.length === 0}
+                    >
+                      Review and Send
+                    </Button>
+                  </Paper>
                 )}
 
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleSend}
-                  startIcon={<Send />}
-                  disabled={hasSent || isSending}
-                >
-                  Send
-                </Button>
-                {hasSent && (
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={handleNewMessage}
-                    sx={{ ml: 2 }}
-                  >
-                    Send Another Message
-                  </Button>
+                {activeTab === 2 && (
+                  <Paper elevation={3} sx={{ p: 2, mt: 2 }}>
+                    <Typography variant="h6" gutterBottom textAlign="center">
+                      Review and Send
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                      Selected Recipients:
+                    </Typography>
+                    <Paper
+                      elevation={1}
+                      sx={{ p: 2, mb: 2, backgroundColor: "grey.100" }}
+                    >
+                      <RecipientsList
+                        selectedRecipients={selectedRecipients}
+                        contacts={allContacts}
+                      />
+                    </Paper>
+                    <Typography variant="body1" gutterBottom>
+                      Message:
+                    </Typography>
+                    <Paper
+                      elevation={1}
+                      sx={{ p: 2, mb: 2, backgroundColor: "grey.100" }}
+                    >
+                      <Typography sx={{ display: "flex" }}>
+                        {message?.trim() || (
+                          <>
+                            <Warning sx={{ mr: 2 }} />
+                            No message provided
+                          </>
+                        )}
+                      </Typography>
+                    </Paper>
+                    {mediaFiles.length > 0 && (
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="body1" gutterBottom>
+                          Attachments:
+                        </Typography>
+                        {renderMediaPreviews(mediaFiles, false)}
+                      </Box>
+                    )}
+
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleSend}
+                      startIcon={<Send />}
+                      disabled={hasSent || isSending}
+                    >
+                      Send
+                    </Button>
+                    {hasSent && (
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        onClick={handleNewMessage}
+                        sx={{ ml: 2 }}
+                      >
+                        Send Another Message
+                      </Button>
+                    )}
+                  </Paper>
                 )}
-              </Paper>
+              </>
             )}
           </Box>
         </Box>
@@ -717,11 +848,13 @@ export default function BulkMMSMessaging() {
               {selectedGroup.label} Members
             </Typography>
             <List dense>
-              {getGroupMembers(selectedGroup.value).map((contact) => (
-                <ListItem key={contact.id}>
+              {getGroupMembers(selectedGroup.originalValue).map((contact) => (
+                <ListItem key={contact.contactId}>
                   <ListItemText
                     primary={`${contact.firstName} ${contact.lastName}`}
-                    secondary={`${contact.phone} | ${contact.email}`}
+                    secondary={`${contact.phone} | ${
+                      contact.email || "No email"
+                    }`}
                   />
                 </ListItem>
               ))}
