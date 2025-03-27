@@ -73,10 +73,12 @@ const Topbar = ({ onSidebarOpen }) => {
     if (isOnDaysOfServicePage) {
       // If on the days-of-service page, navigate to parent path with hash
       const parentPath = pathname.substring(0, pathname.lastIndexOf("/"));
+
       window.location.href = `${parentPath}/#${id}`;
     } else {
       // If not on days-of-service page, use scroll function
       scrollToWithOffset(id, yOffset);
+      window.location.href = `#${id}`;
     }
   };
 
