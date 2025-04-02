@@ -1,4 +1,6 @@
-import React, { useState, useRef } from "react";
+"use client";
+
+import { useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import {
   Box,
@@ -10,15 +12,17 @@ import {
   TableRow,
   Paper,
   TextField,
-  Chip,
   IconButton,
   Button,
   Typography,
+  FormControlLabel,
+  Checkbox,
+  SvgIcon,
 } from "@mui/material";
-import { DragIndicator, Add, Delete } from "@mui/icons-material";
+import { DragHandle, Add, Delete } from "@mui/icons-material";
 import UploadImage from "@/components/util/UploadImage";
 
-const TaskTable = ({ value, onChange }) => {
+const TaskTable = ({ value, onChange, hasPrepDay = false }) => {
   const [tasks, setTasks] = useState(
     value?.tasks || [
       {
@@ -26,14 +30,62 @@ const TaskTable = ({ value, onChange }) => {
         priority: 1,
         todos: [""],
         photos: [],
+        isPrepDay: false,
       },
     ]
+  );
+  const DragHandle = () => (
+    <SvgIcon
+      sx={{
+        cursor: "grab",
+        "&:hover": {
+          color: "primary.main",
+        },
+      }}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="32"
+        height="32"
+        viewBox="0 0 32 32"
+      >
+        <path
+          fill="currentColor"
+          d="M4 20h11v6.17l-2.59-2.58L11 25l5 5l5-5l-1.41-1.41L17 26.17V20h11v-2H4zm7-13l1.41 1.41L15 5.83V12H4v2h24v-2H17V5.83l2.59 2.58L21 7l-5-5z"
+        />
+      </svg>
+    </SvgIcon>
   );
 
   const [volunteerTools, setVolunteerTools] = useState(
     value?.volunteerTools || []
   );
   const [equipment, setEquipment] = useState(value?.equipment || []);
+
+  // Helper function to reassign priorities
+  const reassignPriorities = (taskList) => {
+    let prepDayPriority = 1;
+    let regularPriority = 1;
+
+    return taskList.map((task) => {
+      if (hasPrepDay && task.isPrepDay) {
+        return { ...task, priority: prepDayPriority++ };
+      } else {
+        return { ...task, priority: regularPriority++ };
+      }
+    });
+  };
+
+  // Sort tasks to show prep day tasks first if hasPrepDay is true
+  const sortedTasks = hasPrepDay
+    ? [...tasks].sort((a, b) => {
+        // First sort by isPrepDay (prep day tasks first)
+        if (a.isPrepDay && !b.isPrepDay) return -1;
+        if (!a.isPrepDay && b.isPrepDay) return 1;
+        // Then sort by priority within each group
+        return a.priority - b.priority;
+      })
+    : tasks;
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -42,10 +94,8 @@ const TaskTable = ({ value, onChange }) => {
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
-    const updatedItems = items.map((item, index) => ({
-      ...item,
-      priority: index + 1,
-    }));
+    // Recalculate priorities while maintaining prep day grouping
+    const updatedItems = reassignPriorities(items);
 
     setTasks(updatedItems);
     updateParent(updatedItems, volunteerTools, equipment);
@@ -60,13 +110,19 @@ const TaskTable = ({ value, onChange }) => {
   };
 
   const handleAddTask = () => {
+    // Determine if the new task should be prep day based on context
+    // For example, if hasPrepDay is true and there are prep day tasks,
+    // we might want to add a new prep day task
     const newTask = {
       id: Date.now().toString(),
-      priority: tasks.length + 1,
+      priority: tasks.filter((t) => t.isPrepDay === false).length + 1,
       todos: [""],
       photos: [],
+      isPrepDay: false,
     };
+
     const newTasks = [...tasks, newTask];
+    // No need to reassign priorities here as the new task is already assigned correctly
     setTasks(newTasks);
     updateParent(newTasks, volunteerTools, equipment);
   };
@@ -138,6 +194,27 @@ const TaskTable = ({ value, onChange }) => {
     }
   };
 
+  const handleTogglePrepDay = (taskIndex) => {
+    const newTasks = [...tasks];
+    newTasks[taskIndex].isPrepDay = !newTasks[taskIndex].isPrepDay;
+
+    // Reassign priorities after toggling prep day status
+    const updatedTasks = reassignPriorities(newTasks);
+
+    setTasks(updatedTasks);
+    updateParent(updatedTasks, volunteerTools, equipment);
+  };
+
+  const handleDeleteTask = (taskIndex) => {
+    const newTasks = tasks.filter((_, index) => index !== taskIndex);
+
+    // Reassign priorities after deleting a task
+    const updatedTasks = reassignPriorities(newTasks);
+
+    setTasks(updatedTasks);
+    updateParent(updatedTasks, volunteerTools, equipment);
+  };
+
   return (
     <Box>
       <TableContainer component={Paper}>
@@ -147,6 +224,11 @@ const TaskTable = ({ value, onChange }) => {
               <TableCell style={{ padding: "6px", width: "100px" }}>
                 Priority
               </TableCell>
+              {hasPrepDay && (
+                <TableCell style={{ padding: "6px", width: "100px" }}>
+                  Prep Day
+                </TableCell>
+              )}
               <TableCell style={{ padding: "6px", width: "400px" }}>
                 Task List
               </TableCell>
@@ -159,7 +241,7 @@ const TaskTable = ({ value, onChange }) => {
             <Droppable droppableId="tasks">
               {(provided) => (
                 <TableBody {...provided.droppableProps} ref={provided.innerRef}>
-                  {tasks.map((task, taskIndex) => (
+                  {sortedTasks.map((task, taskIndex) => (
                     <Draggable
                       key={task.id}
                       draggableId={task.id}
@@ -169,6 +251,12 @@ const TaskTable = ({ value, onChange }) => {
                         <TableRow
                           ref={provided.innerRef}
                           {...provided.draggableProps}
+                          sx={{
+                            backgroundColor:
+                              hasPrepDay && task.isPrepDay
+                                ? "rgba(144, 249, 153, 0.2)"
+                                : "inherit",
+                          }}
                         >
                           <TableCell style={{ padding: "6px" }}>
                             <Box
@@ -179,30 +267,33 @@ const TaskTable = ({ value, onChange }) => {
                               }}
                             >
                               <span {...provided.dragHandleProps}>
-                                <DragIndicator />
+                                <DragHandle />
                               </span>
                               {task.priority}
                               <IconButton
                                 size="small"
-                                onClick={() => {
-                                  const newTasks = tasks
-                                    .filter((_, index) => index !== taskIndex)
-                                    .map((task, index) => ({
-                                      ...task,
-                                      priority: index + 1,
-                                    }));
-                                  setTasks(newTasks);
-                                  updateParent(
-                                    newTasks,
-                                    volunteerTools,
-                                    equipment
-                                  );
-                                }}
+                                onClick={() => handleDeleteTask(taskIndex)}
                               >
                                 <Delete fontSize="small" />
                               </IconButton>
                             </Box>
                           </TableCell>
+                          {hasPrepDay && (
+                            <TableCell style={{ padding: "6px" }}>
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={task.isPrepDay || false}
+                                    onChange={() =>
+                                      handleTogglePrepDay(taskIndex)
+                                    }
+                                    size="small"
+                                  />
+                                }
+                                label=""
+                              />
+                            </TableCell>
+                          )}
                           <TableCell style={{ padding: "6px" }}>
                             <Box
                               sx={{
@@ -213,7 +304,7 @@ const TaskTable = ({ value, onChange }) => {
                             >
                               {task.todos.map((todo, todoIndex) => (
                                 <TextField
-                                  key={todoIndex}
+                                  key={`${task.id}-todo-${todoIndex}`}
                                   size="small"
                                   value={todo}
                                   onChange={(e) =>
@@ -246,7 +337,7 @@ const TaskTable = ({ value, onChange }) => {
                                   }}
                                 >
                                   <img
-                                    src={photo}
+                                    src={photo || "/placeholder.svg"}
                                     alt={`Task ${task.priority} photo ${
                                       photoIndex + 1
                                     }`}
@@ -304,34 +395,6 @@ const TaskTable = ({ value, onChange }) => {
       <Button startIcon={<Add />} onClick={handleAddTask} sx={{ mt: 2, mb: 4 }}>
         Add Task
       </Button>
-
-      {/* Tools and Equipment Section - uncomment and complete if needed */}
-      {/* 
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="h6">Volunteer Tools</Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {volunteerTools.map((tool, index) => (
-            <Chip
-              key={index}
-              label={tool}
-              onDelete={() => handleRemoveTool(index)}
-            />
-          ))}
-        </Box>
-      </Box>
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="h6">Equipment</Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {equipment.map((item, index) => (
-            <Chip
-              key={index}
-              label={item}
-              onDelete={() => handleRemoveTool(index, true)}
-            />
-          ))}
-        </Box>
-      </Box>
-      */}
     </Box>
   );
 };
