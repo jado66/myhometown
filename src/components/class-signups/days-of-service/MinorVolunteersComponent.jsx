@@ -114,7 +114,6 @@ export const MinorVolunteersComponent = ({
       const formattedMinor = {
         name: newMinor.name,
         age: parseInt(newMinor.age, 10),
-        hours: parseFloat(newMinor.hours),
       };
 
       const updatedMinors = [...minors, formattedMinor];
@@ -126,7 +125,6 @@ export const MinorVolunteersComponent = ({
       setNewMinor({
         name: "",
         age: "",
-        hours: "",
       });
     }
   };
@@ -154,11 +152,6 @@ export const MinorVolunteersComponent = ({
 
     onChange(updatedMinors);
   };
-
-  // Calculate total hours
-  const totalHours = minors
-    .reduce((sum, minor) => sum + (parseFloat(minor.hours) || 0), 0)
-    .toFixed(1);
 
   const shouldShowMinorsSection = hasMinors || value?.length > 0;
 
@@ -251,29 +244,13 @@ export const MinorVolunteersComponent = ({
                       </Paper>
                     ))}
                   </Box>
-
-                  {/* Total Hours */}
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      pt: 1,
-                    }}
-                  >
-                    <Typography>
-                      <strong>
-                        Total Hours:
-                        {totalHours}
-                      </strong>
-                    </Typography>
-                  </Box>
                 </Box>
               )}
             </Box>
 
             {/* Add New Volunteer Form */}
             <Box>
-              <Typography variant="h6" sx={{ mb: 2 }}>
+              <Typography variant="h6" sx={{ mb: 1 }}>
                 Add Minor Volunteer
               </Typography>
 
@@ -304,20 +281,6 @@ export const MinorVolunteersComponent = ({
                     size="medium"
                   />
                 </Grid>
-                {/* <Grid item xs={12} md={4}>
-                  <TextField
-                    fullWidth
-                    label="Hours Volunteered"
-                    type="number"
-                    inputProps={{ step: "0.1", min: "0.1" }}
-                    value={newMinor.hours}
-                    onChange={(e) => handleInputChange("hours", e.target.value)}
-                    error={!!errors.hours}
-                    helperText={errors.hours}
-                    required
-                    size="medium"
-                  />
-                </Grid> */}
               </Grid>
               <Box sx={{ mt: 2 }}>
                 <Button
@@ -329,6 +292,9 @@ export const MinorVolunteersComponent = ({
                 </Button>
               </Box>
             </Box>
+            <Typography color="text.secondary" sx={{ mt: 2 }}>
+              * Hours will be collected below
+            </Typography>
           </CardContent>
         </Card>
       )}
