@@ -11,6 +11,9 @@ import {
   FormLabel,
   RadioGroup,
   Radio,
+  Grid,
+  Card,
+  CardContent,
 } from "@mui/material";
 import { useProjectForm } from "@/contexts/ProjectFormProvider";
 import ProjectTextField from "./ProjectTextField";
@@ -109,6 +112,119 @@ const Step2 = () => {
 
       <Divider />
 
+      <Box sx={{ my: 4 }}>
+        <FormControl component="fieldset" fullWidth>
+          <FormLabel
+            component="legend"
+            sx={{
+              fontSize: "1.5rem",
+              fontWeight: "bold",
+              mb: 2,
+              color: "text.primary",
+            }}
+          >
+            Does this project need a prep day?
+          </FormLabel>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
+              <Card
+                variant="outlined"
+                sx={{
+                  cursor: "pointer",
+                  border:
+                    formData.has_prep_day === false
+                      ? "2px solid #1976d2"
+                      : "1px solid rgba(0, 0, 0, 0.12)",
+                  boxShadow:
+                    formData.has_prep_day === false
+                      ? "0 4px 8px rgba(0, 0, 0, 0.1)"
+                      : "none",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                  },
+                }}
+                onClick={() => handleInputChange("has_prep_day", false)}
+              >
+                <CardContent
+                  sx={{ display: "flex", alignItems: "center", p: 3 }}
+                >
+                  <Radio
+                    checked={formData.has_prep_day === false}
+                    onChange={() => handleInputChange("has_prep_day", false)}
+                    sx={{ mr: 2 }}
+                  />
+                  <Typography variant="h6">No</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <Card
+                variant="outlined"
+                sx={{
+                  cursor: "pointer",
+                  border:
+                    formData.has_prep_day === true
+                      ? "2px solid #1976d2"
+                      : "1px solid rgba(0, 0, 0, 0.12)",
+                  boxShadow:
+                    formData.has_prep_day === true
+                      ? "0 4px 8px rgba(0, 0, 0, 0.1)"
+                      : "none",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                  },
+                }}
+                onClick={() => handleInputChange("has_prep_day", true)}
+              >
+                <CardContent
+                  sx={{ display: "flex", alignItems: "center", p: 3 }}
+                >
+                  <Radio
+                    checked={formData.has_prep_day === true}
+                    onChange={() => handleInputChange("has_prep_day", true)}
+                    sx={{ mr: 2 }}
+                  />
+                  <Typography variant="h6">Yes</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </FormControl>
+      </Box>
+
+      <Divider />
+
+      {formData.has_prep_day && (
+        <>
+          <Typography variant="h5" sx={{ mb: 1 }}>
+            Prep Day Detailed Planning
+          </Typography>
+
+          <ProjectTextField
+            label="Prep Day Work Summary"
+            multiline
+            key="prep_day_work_summary"
+            rows={4}
+            value={formData.work_summary}
+            onChange={(e) => handleInputChange("work_summary", e.target.value)}
+          />
+          <ProjectTextField
+            label="Prep Day Preferred Remedies (Optional)"
+            multiline
+            key="prep_day_preferred_remedies"
+            rows={4}
+            value={formData.preferred_remedies}
+            onChange={(e) =>
+              handleInputChange("prep_day_preferred_remedies", e.target.value)
+            }
+          />
+        </>
+      )}
+
       <Typography variant="h5" sx={{ mb: 1 }}>
         Detailed Planning
       </Typography>
@@ -122,7 +238,7 @@ const Step2 = () => {
         onChange={(e) => handleInputChange("work_summary", e.target.value)}
       />
       <ProjectTextField
-        label="Preferred Remedies"
+        label="Preferred Remedies (Optional)"
         multiline
         key="preferred_remedies"
         rows={4}
@@ -137,10 +253,18 @@ const Step2 = () => {
       <Typography variant="h5" sx={{ mb: 1 }}>
         Task Planning
       </Typography>
+
+      <Typography variant="subtitle" sx={{ mb: 1 }}>
+        The tasks listed below are the ones that will be completed on the prep
+        day and the day of service. If you have a prep day, please make sure you
+        select &quot;prep day&quot; on the task performed prior to the day of
+        service.
+      </Typography>
       <TaskTable
         value={formData.tasks}
         onChange={(newTasks) => handleInputChange("tasks", newTasks)}
         hideResources={true}
+        hasPrepDay={formData.has_prep_day}
       />
 
       <Divider />
@@ -152,6 +276,7 @@ const Step2 = () => {
         formData={formData}
         handleInputChange={handleInputChange}
         handleToolAdd={handleToolAdd}
+        hasPrepDay={formData.has_prep_day}
       />
 
       <Divider />
@@ -218,23 +343,6 @@ const Step2 = () => {
         value={formData.volunteers_needed}
         onChange={(e) => handleInputChange("volunteers_needed", e.target.value)}
       />
-
-      <FormControl component="fieldset">
-        <FormLabel component="legend">
-          Does this project need a prep day?
-        </FormLabel>
-        <RadioGroup
-          row
-          name="project_duration_flexibility"
-          value={formData.has_prep_day ? "true" : "false"}
-          onChange={(e) =>
-            handleInputChange("has_prep_day", e.target.value === "true")
-          }
-        >
-          <FormControlLabel value="false" control={<Radio />} label="No" />
-          <FormControlLabel value="true" control={<Radio />} label="Yes" />
-        </RadioGroup>
-      </FormControl>
     </Box>
   );
 };
