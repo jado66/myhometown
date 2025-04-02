@@ -19,7 +19,7 @@ import {
   Checkbox,
   SvgIcon,
 } from "@mui/material";
-import { DragHandle, Add, Delete } from "@mui/icons-material";
+import { Add, Delete } from "@mui/icons-material";
 import UploadImage from "@/components/util/UploadImage";
 
 const TaskTable = ({ value, onChange, hasPrepDay = false }) => {
@@ -62,18 +62,43 @@ const TaskTable = ({ value, onChange, hasPrepDay = false }) => {
   );
   const [equipment, setEquipment] = useState(value?.equipment || []);
 
-  // Helper function to reassign priorities
+  // Improved function to reassign priorities based on index
   const reassignPriorities = (taskList) => {
-    let prepDayPriority = 1;
-    let regularPriority = 1;
+    if (!hasPrepDay) {
+      // If no prep day, simply assign priorities based on index
+      return taskList.map((task, index) => ({
+        ...task,
+        priority: index + 1,
+      }));
+    }
 
-    return taskList.map((task) => {
-      if (hasPrepDay && task.isPrepDay) {
-        return { ...task, priority: prepDayPriority++ };
+    // With prep day, we split tasks into two groups and assign priorities
+    // separately within each group
+    const prepDayTasks = [];
+    const regularTasks = [];
+
+    // First, separate tasks into two arrays
+    taskList.forEach((task) => {
+      if (task.isPrepDay) {
+        prepDayTasks.push(task);
       } else {
-        return { ...task, priority: regularPriority++ };
+        regularTasks.push(task);
       }
     });
+
+    // Assign priorities for each group
+    const updatedPrepDayTasks = prepDayTasks.map((task, index) => ({
+      ...task,
+      priority: index + 1,
+    }));
+
+    const updatedRegularTasks = regularTasks.map((task, index) => ({
+      ...task,
+      priority: index + 1,
+    }));
+
+    // Return the combined array with prep day tasks first
+    return [...updatedPrepDayTasks, ...updatedRegularTasks];
   };
 
   // Sort tasks to show prep day tasks first if hasPrepDay is true
@@ -85,7 +110,7 @@ const TaskTable = ({ value, onChange, hasPrepDay = false }) => {
         // Then sort by priority within each group
         return a.priority - b.priority;
       })
-    : tasks;
+    : [...tasks].sort((a, b) => a.priority - b.priority);
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -94,7 +119,7 @@ const TaskTable = ({ value, onChange, hasPrepDay = false }) => {
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
-    // Recalculate priorities while maintaining prep day grouping
+    // Recalculate priorities after reordering
     const updatedItems = reassignPriorities(items);
 
     setTasks(updatedItems);
@@ -110,21 +135,31 @@ const TaskTable = ({ value, onChange, hasPrepDay = false }) => {
   };
 
   const handleAddTask = () => {
-    // Determine if the new task should be prep day based on context
-    // For example, if hasPrepDay is true and there are prep day tasks,
-    // we might want to add a new prep day task
+    const isPrep = hasPrepDay && tasks.some((t) => t.isPrepDay);
+    let newPriority = 1;
+
+    // Calculate correct priority for the new task
+    if (hasPrepDay) {
+      const sameCategoryTasks = tasks.filter((t) => t.isPrepDay === isPrep);
+      newPriority = sameCategoryTasks.length + 1;
+    } else {
+      newPriority = tasks.length + 1;
+    }
+
     const newTask = {
       id: Date.now().toString(),
-      priority: tasks.filter((t) => t.isPrepDay === false).length + 1,
+      priority: newPriority,
       todos: [""],
       photos: [],
       isPrepDay: false,
     };
 
     const newTasks = [...tasks, newTask];
-    // No need to reassign priorities here as the new task is already assigned correctly
-    setTasks(newTasks);
-    updateParent(newTasks, volunteerTools, equipment);
+    // Reassign all priorities to ensure consistency
+    const updatedTasks = reassignPriorities(newTasks);
+
+    setTasks(updatedTasks);
+    updateParent(updatedTasks, volunteerTools, equipment);
   };
 
   const handleTodoKeyDown = (e, taskIndex, todoIndex) => {
@@ -269,7 +304,7 @@ const TaskTable = ({ value, onChange, hasPrepDay = false }) => {
                               <span {...provided.dragHandleProps}>
                                 <DragHandle />
                               </span>
-                              {task.priority}
+                              {taskIndex + 1}
                               <IconButton
                                 size="small"
                                 onClick={() => handleDeleteTask(taskIndex)}
