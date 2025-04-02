@@ -193,10 +193,23 @@ export const WhoAreYouComponent = ({
 
   const handleProjectChange = (selectedOption) => {
     if (selectedOption) {
+      let hasPrepDay = false;
+
+      try {
+        const selectedProject = projects.find(
+          (project) => project.id === selectedOption.value
+        );
+        hasPrepDay = selectedProject.has_prep_day;
+      } catch (error) {
+        console.error("Error fetching project by ID", error);
+      }
+
       setSelectedProject(selectedOption);
       const updatedFormData = {
         type: "groupMember",
         value: selectedOption.label,
+        projectId: selectedOption.value, // Include the project ID in the form data
+        hasPrepDay: hasPrepDay,
       };
 
       onChange(updatedFormData);
@@ -217,11 +230,12 @@ export const WhoAreYouComponent = ({
   };
 
   // Find the current organization option for react-select
-  const groupProjectOptions = projects.map((project, index) => ({
-    value: project.id,
-    label: `${index + 1} ${project.partner_ward} - ${project.project_name}`,
-  }));
-  // .sort((a, b) => a.label.localeCompare(b.label));
+  const groupProjectOptions = projects
+    .map((project, index) => ({
+      value: project.id,
+      label: ` ${project.partner_ward} - ${project.project_name}`,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
 
   // Custom styles for react-select
   const customSelectStyles = {
@@ -475,10 +489,13 @@ export const WhoAreYouComponent = ({
                       className="react-select-container"
                       classNamePrefix="react-select"
                     />
-                    {!organization && (
-                      <FormHelperText>
-                        Please select your group and project
-                      </FormHelperText>
+                    {selectedProject && (
+                      <Typography
+                        variant="caption"
+                        sx={{ mt: 1, ml: 1, color: "text.secondary" }}
+                      >
+                        Selected project ID: {selectedProject.value}
+                      </Typography>
                     )}
                   </FormControl>
                 </Grid>

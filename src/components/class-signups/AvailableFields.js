@@ -461,6 +461,17 @@ export const AVAILABLE_FIELDS = {
     },
   },
 
+  volunteerHours: {
+    label: "Volunteer Hours",
+    type: FIELD_TYPES.volunteerHours,
+    visible: true,
+    required: true,
+    originalLabel: "Volunteer Hourss",
+    helpText:
+      "Please provide the number of hours you intend to volunteer today",
+    category: "Days of Service",
+  },
+
   safetyVideo: {
     label: "Safety Video",
     type: FIELD_TYPES.externalLink,

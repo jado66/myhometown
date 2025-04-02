@@ -32,6 +32,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { MultiLineTypography } from "../MultiLineTypography";
 import { MinorVolunteersComponent } from "./days-of-service/MinorVolunteersComponent";
+import { VolunteerHours } from "./days-of-service/VolunteerHours";
 import { WhoAreYouComponent } from "./days-of-service/WhoAreYouComponent";
 import { DayOfServiceSelect } from "./days-of-service/DayOfServiceSelect";
 import { useClassSignup } from "./ClassSignupContext";
@@ -195,6 +196,17 @@ export const FormField = ({
         return (
           <Box sx={{ mb: 3 }}>
             <MinorVolunteersComponent
+              value={value || []}
+              onChange={(newValue) => onChange(field, newValue)}
+              config={config}
+            />
+            {error && <FormHelperText error>{error}</FormHelperText>}
+          </Box>
+        );
+      case FIELD_TYPES.volunteerHours:
+        return (
+          <Box sx={{ mb: 3 }}>
+            <VolunteerHours
               value={value || []}
               onChange={(newValue) => onChange(field, newValue)}
               config={config}
