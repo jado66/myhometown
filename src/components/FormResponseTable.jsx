@@ -1,18 +1,23 @@
-import React, { useEffect, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
+
+import {
   Typography,
-  Box,
   Chip,
-  IconButton,
+  Box,
+  Paper,
   Tooltip,
+  IconButton,
   CircularProgress,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Tabs,
+  Tab,
+  Button,
 } from "@mui/material";
 import {
   Person,
@@ -20,10 +25,19 @@ import {
   Visibility as VisibilityIcon,
   People,
   Delete as DeleteIcon,
+  FilterList,
+  ImportExport,
+  ExpandMore as ExpandMoreIcon,
+  Event as EventIcon,
+  Assignment,
 } from "@mui/icons-material";
 import moment from "moment";
 import JsonViewer from "./util/debug/DebugOutput";
 
+/**
+ * Enhanced Volunteer Response Table using MaterialReactTable
+ * Modified to group responses by day of service, with each day getting its own table
+ */
 export const FormResponseTable = ({
   formId,
   responses,
@@ -31,171 +45,622 @@ export const FormResponseTable = ({
   onViewResponse,
   onDeleteResponse,
   daysOfService,
+  projectsData,
   isLoading = false,
 }) => {
+  // State for grouped data
+  const [groupedData, setGroupedData] = useState({});
+  const [daysOfServiceList, setDaysOfServiceList] = useState([]);
+  const [currentDayTab, setCurrentDayTab] = useState(0);
+  const [processedData, setProcessedData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState({
     total: 0,
     totalPeople: 0,
     uniqueDays: 0,
+    dayTotals: {},
   });
 
-  const [groupedResponses, setGroupedResponses] = useState({});
-  const [loading, setLoading] = useState(true);
+  // Local storage helpers
+  const getStoredState = (key, defaultValue) => {
+    try {
+      const savedState = localStorage.getItem(key);
+      return savedState ? JSON.parse(savedState) : defaultValue;
+    } catch (error) {
+      console.error(`Error loading ${key} from localStorage:`, error);
+      return defaultValue;
+    }
+  };
 
+  const saveState = (key, state) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(state));
+    } catch (error) {
+      console.error(`Error saving ${key} to localStorage:`, error);
+    }
+  };
+
+  // Table state
+  const [columnSizing, setColumnSizing] = useState(
+    getStoredState("volunteerTableColumnSizes", {
+      fullName: 180,
+      email: 180,
+      phone: 140,
+      whoAreYouType: 150,
+      projectName: 200, // Renamed from projectId
+      dayOfServiceFormatted: 200, // Added new column for day of service
+      submittedAtFormatted: 140,
+      minorCount: 100,
+      hasPrepDay: 100,
+      actions: 100,
+    })
+  );
+
+  const [pagination, setPagination] = useState(
+    getStoredState("volunteerTablePagination", {
+      pageIndex: 0,
+      pageSize: 10,
+    })
+  );
+
+  const [columnVisibility, setColumnVisibility] = useState(
+    getStoredState("volunteerTableColumnVisibility", {
+      fullName: true,
+      email: true,
+      phone: true,
+      whoAreYouType: true,
+      projectName: true, // Renamed from projectId
+      dayOfServiceFormatted: true, // Added for day of service column
+      submittedAtFormatted: true,
+      minorCount: true,
+      hasPrepDay: true,
+      actions: true,
+    })
+  );
+
+  const [sorting, setSorting] = useState(
+    getStoredState("volunteerTableSorting", [])
+  );
+
+  const [density, setDensity] = useState(
+    getStoredState("volunteerTableDensity", "comfortable")
+  );
+
+  const [columnFilters, setColumnFilters] = useState(
+    getStoredState("volunteerTableFilters", [])
+  );
+
+  // Process volunteer data and group by day of service
+  // Process volunteer data and group by day of service
   useEffect(() => {
     if (!responses || !formData) return;
 
     setLoading(true);
 
     try {
-      // Group responses by day of service
-      const groups = {};
-      const stats = responses.reduce(
-        (acc, response) => {
-          const data = response.response_data || response;
-          const serviceDay = data.dayOfService || "unspecified";
+      // Process the raw responses
+      const processed = responses.map((response) => {
+        const data = response.response_data || response;
+        const whoAreYou = data.whoAreYou || {};
 
-          // Create group if it doesn't exist
-          if (!groups[serviceDay]) {
-            groups[serviceDay] = {
-              responses: [],
-              stats: {
-                volunteerCount: 0,
-                minorCount: 0,
-              },
+        // Get day of service name and key
+        const serviceDay = data.dayOfService || "removed";
+
+        // Check if daysOfService is an array or an object and handle accordingly
+        let serviceDayInfo;
+        if (Array.isArray(daysOfService)) {
+          // If it's an array, find the matching day by id
+          serviceDayInfo = daysOfService.find((day) => day.id === serviceDay);
+        } else {
+          // If it's an object with keys, use direct lookup
+          serviceDayInfo = daysOfService?.[serviceDay];
+        }
+
+        const dayOfServiceName = serviceDayInfo?.name || "";
+        const dayOfServiceDate =
+          serviceDayInfo?.end_date || serviceDayInfo?.date
+            ? moment(serviceDayInfo.end_date || serviceDayInfo.date).format(
+                "ddd, MM/DD/yy"
+              )
+            : null;
+
+        const dayOfServiceDisplay = [dayOfServiceName, dayOfServiceDate]
+          .filter(Boolean) // Remove any falsy values (undefined, null, empty strings)
+          .join(" - ");
+
+        // Get project information using project ID
+        const projectId = whoAreYou.projectId || "";
+        const projectInfo = projectsData?.[projectId];
+        const projectName = projectInfo?.name || "-";
+
+        // Count minor volunteers
+        const minorCount = Array.isArray(data.minorVolunteers)
+          ? data.minorVolunteers.length
+          : 0;
+
+        // Format name
+        const fullName = `${response.firstName || ""} ${
+          response.lastName || ""
+        }`.trim();
+
+        // Format date
+        const submittedAtFormatted =
+          response.submittedAt || response.created_at
+            ? moment(response.submittedAt || response.created_at).format(
+                "MM/DD/YY"
+              )
+            : "-";
+
+        // Format location
+        const location = data.addressLine1
+          ? `${data.addressLine1}${
+              data.addressLine2 ? ", " + data.addressLine2 : ""
+            }`
+          : "-";
+
+        return {
+          ...response,
+          ...data,
+          fullName,
+          location,
+          submittedAtFormatted,
+          submittedAtRaw: response.submittedAt || response.created_at,
+          minorCount,
+          dayOfServiceKey: serviceDay,
+          dayOfServiceName,
+          dayOfServiceDate,
+          dayOfServiceFormatted: dayOfServiceDisplay,
+          whoAreYouType: whoAreYou.type || "unknown",
+          whoAreYouValue: whoAreYou.value || "",
+          projectId: whoAreYou.projectId || "",
+          projectName, // Add project name from project info
+          hasPrepDay: whoAreYou.hasPrepDay || false,
+          submissionId: response.submissionId || response.id,
+        };
+      });
+
+      // Group by day of service
+      const grouped = processed.reduce((acc, volunteer) => {
+        const key = volunteer.dayOfServiceKey || "unspecified";
+        if (!acc[key]) {
+          acc[key] = {
+            key: key,
+            name: volunteer.dayOfServiceFormatted,
+            date: volunteer.dayOfServiceDate,
+            formatted: volunteer.dayOfServiceFormatted,
+            volunteers: [],
+          };
+        }
+        acc[key].volunteers.push(volunteer);
+        return acc;
+      }, {});
+
+      // Convert to array and sort by date
+      const daysList = Object.values(grouped).sort((a, b) => {
+        // Sort by date if available
+        if (a.date && b.date) {
+          return moment(a.date, "ddd, MM/DD/yy").diff(
+            moment(b.date, "ddd, MM/DD/yy")
+          );
+        }
+        // Otherwise sort by name
+        return a.name.localeCompare(b.name);
+      });
+
+      // Calculate summary statistics
+      const stats = processed.reduce(
+        (acc, response) => {
+          // Count people (volunteers + minors)
+          acc.totalPeople += 1 + (response.minorCount || 0);
+
+          // Track unique days
+          if (
+            response.dayOfServiceKey &&
+            !acc.daysSet.has(response.dayOfServiceKey)
+          ) {
+            acc.daysSet.add(response.dayOfServiceKey);
+            acc.dayTotals[response.dayOfServiceKey] = {
+              volunteers: 0,
+              people: 0,
             };
           }
 
-          // Add response to group
-          groups[serviceDay].responses.push(response);
-
-          // Update group stats
-          groups[serviceDay].stats.volunteerCount++;
-
-          // Count minor volunteers
-          const minorCount = Array.isArray(data.minorVolunteers)
-            ? data.minorVolunteers.length
-            : 0;
-
-          groups[serviceDay].stats.minorCount += minorCount;
-
-          // Update overall stats
-          acc.totalPeople += 1 + minorCount;
-
-          // Track unique days
-          if (serviceDay !== "unspecified" && !acc.daysSet.has(serviceDay)) {
-            acc.daysSet.add(serviceDay);
+          // Count by day
+          const dayKey = response.dayOfServiceKey || "unspecified";
+          if (!acc.dayTotals[dayKey]) {
+            acc.dayTotals[dayKey] = { volunteers: 0, people: 0 };
           }
+          acc.dayTotals[dayKey].volunteers += 1;
+          acc.dayTotals[dayKey].people += 1 + (response.minorCount || 0);
 
           return acc;
         },
-        { totalPeople: 0, daysSet: new Set() }
+        { totalPeople: 0, daysSet: new Set(), dayTotals: {} }
       );
 
-      // Sort groups by date if possible
-      const sortedGroups = {};
-
-      // First try to sort by event date using the options data
-      const sortedKeys = Object.keys(groups).sort((a, b) => {
-        // If we have date information in the options, use it
-        const serviceDayOptions = daysOfService || {};
-        if (serviceDayOptions[a] && serviceDayOptions[b]) {
-          // Try to extract dates from labels if possible
-          const dateA = extractDateFromLabel(serviceDayOptions[a]);
-          const dateB = extractDateFromLabel(serviceDayOptions[b]);
-
-          if (dateA && dateB) {
-            return dateA - dateB;
-          }
-
-          // Fall back to alphabetical sort of labels
-          return serviceDayOptions[a].localeCompare(serviceDayOptions[b]);
-        }
-
-        // If no date info, just use alphabetical
-        return a.localeCompare(b);
-      });
-
-      // Create the sorted object
-      sortedKeys.forEach((key) => {
-        sortedGroups[key] = groups[key];
-      });
-
-      // Update state
-      setGroupedResponses(sortedGroups);
-
+      // Update state with processed data
+      setProcessedData(processed);
+      setGroupedData(grouped);
+      setDaysOfServiceList(daysList);
       setSummary({
-        total: responses.length,
+        total: processed.length,
         totalPeople: stats.totalPeople,
         uniqueDays: stats.daysSet.size,
+        dayTotals: stats.dayTotals,
       });
+
+      // Set default tab if available
+      if (daysList.length > 0 && currentDayTab >= daysList.length) {
+        setCurrentDayTab(0);
+      }
     } catch (error) {
       console.error("Error processing responses:", error);
     } finally {
       setLoading(false);
     }
-  }, [responses, formData, daysOfService]);
+  }, [responses, formData, daysOfService, projectsData, currentDayTab]); // Include projectsData in dependency array
 
-  // Helper function to try extracting a date from a service day label
-  const extractDateFromLabel = (label) => {
-    if (!label) return null;
-
-    // Try to find a date pattern in the label
-    const dateMatch = label.match(
-      /\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})\b/
-    );
-    if (dateMatch) {
-      const [_, month, day, year] = dateMatch;
-      return new Date(`${month}/${day}/${year}`);
-    }
-
-    // Also check for month names
-    const monthMatch = label.match(
-      /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* (\d{1,2})(?:st|nd|rd|th)?,? (\d{4})\b/i
-    );
-    if (monthMatch) {
-      const [_, month, day, year] = monthMatch;
-      return new Date(`${month} ${day}, ${year}`);
-    }
-
-    return null;
+  // Handle tab change
+  const handleTabChange = (event, newValue) => {
+    setCurrentDayTab(newValue);
   };
 
-  // Helper function to get key volunteer information
-  const getVolunteerInfo = (submission) => {
-    const data = submission.response_data || submission;
+  // Export to CSV function for specific day
+  const exportToCSV = (dayData) => {
+    const visibleColumns = columns.filter(
+      (col) =>
+        columnVisibility[col.accessorKey] !== false &&
+        col.accessorKey !== "actions"
+    );
 
-    // Format name
-    const fullName = `${submission.firstName || ""} ${
-      submission.lastName || ""
-    }`.trim();
+    const headers = visibleColumns.map((col) => col.header).join(",") + "\n";
 
-    // Format date
-    const submittedDate =
-      submission.submittedAt || submission.created_at
-        ? moment(submission.submittedAt || submission.created_at).format(
-            "MM/DD/YY"
-          )
-        : "-";
+    const rows = dayData.volunteers
+      .map((row) =>
+        visibleColumns
+          .map((col) => {
+            const cellValue = row[col.accessorKey];
+            // Handle special formatting for CSV export
+            if (col.accessorKey === "hasPrepDay") {
+              return `"${cellValue ? "Yes" : "No"}"`;
+            } else if (cellValue === null || cellValue === undefined) {
+              return `""`;
+            } else {
+              return `"${String(cellValue).replace(/"/g, '""')}"`;
+            }
+          })
+          .join(",")
+      )
+      .join("\n");
 
-    // Count minor volunteers
-    const minorCount = Array.isArray(data.minorVolunteers)
-      ? data.minorVolunteers.length
-      : 0;
+    const csvContent = headers + rows;
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
 
-    return {
-      fullName,
-      submittedDate,
-      email: data.email || "-",
-      phone: data.phone || "-",
-      location: data.addressLine1
-        ? `${data.addressLine1}${
-            data.addressLine2 ? ", " + data.addressLine2 : ""
-          }`
-        : "-",
-      minorCount,
-      submissionId: submission.submissionId || submission.id,
+    const link = document.createElement("a");
+    link.href = url;
+    const fileName = `volunteers_${(dayData.name || "all")
+      .replace(/\s+/g, "_")
+      .toLowerCase()}.csv`;
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Define table columns - removed the dayOfServiceName column since each table is for a specific day
+  const columns = useMemo(
+    () => [
+      {
+        accessorKey: "fullName",
+        header: "Volunteer",
+        size: columnSizing.fullName,
+      },
+      {
+        accessorKey: "email",
+        header: "Email",
+        size: columnSizing.email,
+        Cell: ({ row }) => (
+          <Typography variant="body2" noWrap>
+            {row.original.email || "-"}
+          </Typography>
+        ),
+      },
+      {
+        accessorKey: "phone",
+        header: "Phone",
+        size: columnSizing.phone,
+        Cell: ({ row }) => (
+          <Typography variant="body2" color="textSecondary" noWrap>
+            {row.original.phone || "-"}
+          </Typography>
+        ),
+      },
+      {
+        accessorKey: "whoAreYouType",
+        header: "Type",
+        size: columnSizing.whoAreYouType,
+        filterFn: "equals",
+        Cell: ({ row }) => (
+          <Chip
+            label={row.original.whoAreYouType || "unknown"}
+            color="primary"
+            variant="outlined"
+            size="small"
+            sx={{ textTransform: "capitalize" }}
+          />
+        ),
+      },
+      {
+        accessorKey: "projectName", // Changed from projectId to projectName
+        header: "Project", // Updated header
+        size: columnSizing.projectName,
+        filterFn: "equals",
+        Cell: ({ row }) => (
+          <Typography variant="body2" noWrap>
+            {row.original.projectName || "-"}
+          </Typography>
+        ),
+      },
+
+      {
+        accessorKey: "submittedAtFormatted",
+        header: "Submitted",
+        size: columnSizing.submittedAtFormatted,
+        sortingFn: "datetime",
+        sortUndefined: -1,
+        Cell: ({ row }) => (
+          <Typography variant="body2" display="flex" alignItems="center">
+            <AccessTimeIcon fontSize="small" sx={{ mr: 0.5, opacity: 0.6 }} />
+            {row.original.submittedAtFormatted}
+          </Typography>
+        ),
+      },
+      {
+        accessorKey: "minorCount",
+        header: "Minors",
+        size: columnSizing.minorCount,
+        filterFn: "equals",
+        Cell: ({ row }) =>
+          row.original.minorCount > 0 ? (
+            <Chip
+              icon={<People fontSize="small" />}
+              label={row.original.minorCount}
+              size="small"
+              color="info"
+            />
+          ) : (
+            <Typography variant="body2">-</Typography>
+          ),
+      },
+      {
+        accessorKey: "hasPrepDay",
+        header: "Prep Day",
+        size: columnSizing.hasPrepDay,
+        filterFn: "equals",
+        Cell: ({ row }) => (
+          <Chip
+            label={row.original.hasPrepDay ? "Yes" : "No"}
+            size="small"
+            color={row.original.hasPrepDay ? "success" : "default"}
+            variant="outlined"
+          />
+        ),
+      },
+      {
+        accessorKey: "actions",
+        header: "Actions",
+        size: columnSizing.actions,
+        enableSorting: false,
+        enableColumnFilter: false,
+        Cell: ({ row }) => (
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <Tooltip title="View Details">
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewResponse?.(row.original);
+                }}
+              >
+                <VisibilityIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete Response">
+              <IconButton
+                size="small"
+                color="error"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteResponse?.({
+                    formId,
+                    submissionId: row.original.submissionId,
+                  });
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        ),
+      },
+    ],
+    [columnSizing, formId, onViewResponse, onDeleteResponse]
+  );
+
+  // Handle state changes
+  const handleColumnSizingChange = (updater) => {
+    const newColumnSizing =
+      typeof updater === "function" ? updater(columnSizing) : updater;
+    setColumnSizing(newColumnSizing);
+    saveState("volunteerTableColumnSizes", newColumnSizing);
+  };
+
+  const handlePaginationChange = (updater) => {
+    const newPagination =
+      typeof updater === "function" ? updater(pagination) : updater;
+    setPagination(newPagination);
+    saveState("volunteerTablePagination", newPagination);
+  };
+
+  const handleColumnVisibilityChange = (updater) => {
+    const newVisibility =
+      typeof updater === "function" ? updater(columnVisibility) : updater;
+    setColumnVisibility(newVisibility);
+    saveState("volunteerTableColumnVisibility", newVisibility);
+  };
+
+  const handleSortingChange = (updater) => {
+    const newSorting =
+      typeof updater === "function" ? updater(sorting) : updater;
+    setSorting(newSorting);
+    saveState("volunteerTableSorting", newSorting);
+  };
+
+  const handleColumnFiltersChange = (updater) => {
+    const newFilters =
+      typeof updater === "function" ? updater(columnFilters) : updater;
+    setColumnFilters(newFilters);
+    saveState("volunteerTableFilters", newFilters);
+  };
+
+  const handleDensityChange = (newDensity) => {
+    setDensity(newDensity);
+    saveState("volunteerTableDensity", newDensity);
+  };
+
+  // Create a table component for a specific day of service
+  const DayTable = ({ dayData }) => {
+    // Check if day data is valid
+    if (!dayData || !dayData.volunteers || dayData.volunteers.length === 0) {
+      return (
+        <Box p={3}>
+          <Typography>
+            No volunteer responses for this day of service.
+          </Typography>
+        </Box>
+      );
+    }
+
+    // Get the day's statistics
+    const dayStats = summary.dayTotals[dayData.key] || {
+      volunteers: 0,
+      people: 0,
     };
+
+    // Use the hook at the component level (not in a conditional)
+    const table = useMaterialReactTable({
+      columns,
+      data: dayData.volunteers,
+      enableColumnDragging: true,
+      enableColumnOrdering: true,
+      enableColumnResizing: true,
+      enablePagination: true,
+      enableColumnVisibility: true,
+      enableDensityToggle: true,
+      enableColumnFilters: true,
+      enableFilters: true,
+      enableRowSelection: true,
+      manualFiltering: false,
+      manualPagination: false,
+      manualSorting: false,
+      columnResizeMode: "onChange",
+      paginationDisplayMode: "pages",
+      positionToolbarAlertBanner: "bottom",
+      initialState: { showColumnFilters: false },
+
+      // Event handlers
+      onColumnSizingChange: handleColumnSizingChange,
+      onPaginationChange: handlePaginationChange,
+      onColumnVisibilityChange: handleColumnVisibilityChange,
+      onSortingChange: handleSortingChange,
+      onColumnFiltersChange: handleColumnFiltersChange,
+      onDensityChange: handleDensityChange,
+
+      // State
+      state: {
+        columnSizing,
+        pagination,
+        columnVisibility,
+        sorting,
+        columnFilters,
+        density,
+      },
+
+      // Top toolbar actions
+      renderTopToolbarCustomActions: ({ table }) => (
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center", p: 1 }}>
+          <Tooltip title="Export to CSV">
+            <Button color="primary" onClick={() => exportToCSV(dayData)}>
+              <Assignment sx={{ mr: 1 }} /> Print
+            </Button>
+          </Tooltip>
+          <Tooltip title="Toggle Filters">
+            <IconButton
+              color="secondary"
+              onClick={() => table.setShowColumnFilters((prev) => !prev)}
+            >
+              <FilterList />
+            </IconButton>
+          </Tooltip>
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", ml: 1 }}>
+            <Tooltip title="Volunteers registered for this day">
+              <Chip
+                icon={<Person fontSize="small" />}
+                label={`${dayStats.volunteers} Volunteers`}
+                color="primary"
+                size="small"
+              />
+            </Tooltip>
+            {dayStats.people > dayStats.volunteers && (
+              <Tooltip title="Total people (volunteers + minors) for this day">
+                <Chip
+                  icon={<People fontSize="small" />}
+                  label={`${dayStats.people} People`}
+                  color="info"
+                  size="small"
+                />
+              </Tooltip>
+            )}
+          </Box>
+        </Box>
+      ),
+
+      // Row props
+      muiTableBodyRowProps: ({ row }) => ({
+        onClick: () => onViewResponse?.(row.original),
+        sx: {
+          cursor: "pointer",
+          "&:hover": {
+            backgroundColor: "rgba(0, 0, 0, 0.04)",
+          },
+        },
+      }),
+
+      // Pagination props
+      muiPaginationProps: {
+        rowsPerPageOptions: [5, 10, 25, 50, 100],
+        showFirstButton: true,
+        showLastButton: true,
+      },
+
+      // Other display options
+      positionPagination: "bottom",
+      rowNumberDisplayMode: "static",
+      muiTableContainerProps: {
+        component: Paper,
+        elevation: 0,
+        sx: { maxHeight: "700px" },
+      },
+      displayColumnDefOptions: {
+        "mrt-row-actions": {
+          size: 100,
+        },
+      },
+      enableBottomToolbar: true,
+    });
+
+    return <MaterialReactTable table={table} />;
   };
 
   if (isLoading || loading) {
@@ -214,150 +679,69 @@ export const FormResponseTable = ({
     );
   }
 
+  // If there's only one day of service or no days defined, show a single table
+  if (daysOfServiceList.length <= 1) {
+    return (
+      <Box sx={{ width: "100%", mb: 4 }}>
+        <Paper sx={{ mb: 2, p: 2 }}>
+          <Typography variant="h6">
+            {daysOfServiceList.length === 1
+              ? daysOfServiceList[0].formatted
+              : "All Volunteers"}
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            Total: {summary.total} volunteers, {summary.totalPeople} people
+            including minors
+          </Typography>
+        </Paper>
+        {daysOfServiceList.length === 1 ? (
+          <DayTable dayData={daysOfServiceList[0]} />
+        ) : (
+          <DayTable dayData={{ key: "all", volunteers: processedData }} />
+        )}
+      </Box>
+    );
+  }
+
+  // Multiple days of service - use tabs
   return (
     <Box sx={{ width: "100%", mb: 4 }}>
-      <JsonViewer data={groupedResponses} />
-      {Object.keys(groupedResponses).length > 0 ? (
-        Object.entries(groupedResponses).map(([serviceDay, group]) => {
-          const dayOfService = daysOfService?.[serviceDay];
-          const { responses: groupResponses, stats } = group;
+      <JsonViewer data={responses} />
 
-          return (
-            <Box key={serviceDay} sx={{ mb: 3 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  width: "100%",
-                  pr: 2,
-                  mb: 2,
-                }}
-              >
-                <Typography variant="h6">
-                  {dayOfService?.name || "Day of Service"}
-                  {dayOfService?.end_date &&
-                    ` - ${moment(dayOfService.end_date).format(
-                      "ddd, MM/DD/yy"
-                    )}`}
-                </Typography>
-                <Box sx={{ display: "flex", gap: 2 }}>
+      <Paper sx={{ mb: 2 }}>
+        <Tabs
+          value={currentDayTab}
+          onChange={handleTabChange}
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{ borderBottom: 1, borderColor: "divider" }}
+        >
+          {daysOfServiceList.map((day, index) => (
+            <Tab
+              key={day.key}
+              label={
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <EventIcon fontSize="small" sx={{ mr: 1 }} />
+                  {day.name}
                   <Chip
-                    label={`${groupResponses.length} volunteer${
-                      groupResponses.length !== 1 ? "s" : ""
-                    }`}
+                    label={summary.dayTotals[day.key]?.volunteers || 0}
                     size="small"
-                    color="secondary"
-                    sx={{ color: "white" }}
+                    sx={{ ml: 1 }}
                   />
-                  {stats.minorCount > 0 && (
-                    <Chip
-                      icon={<People fontSize="small" />}
-                      label={`${stats.minorCount} minor${
-                        stats.minorCount !== 1 ? "s" : ""
-                      }`}
-                      size="small"
-                      color="info"
-                    />
-                  )}
                 </Box>
-              </Box>
+              }
+              value={index}
+            />
+          ))}
+        </Tabs>
+      </Paper>
 
-              <TableContainer component={Paper} elevation={0}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Volunteer</TableCell>
-                      <TableCell>Contact</TableCell>
-                      <TableCell>Date Submitted</TableCell>
-                      <TableCell>Minors</TableCell>
-                      <TableCell align="right">Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {groupResponses.map((response, index) => {
-                      const info = getVolunteerInfo(response);
-                      return (
-                        <TableRow key={info.submissionId || index}>
-                          <TableCell>{info.fullName}</TableCell>
-                          <TableCell>
-                            <Tooltip
-                              title={`Email: ${info.email}\nPhone: ${info.phone}`}
-                            >
-                              <Box>
-                                <Typography variant="body2" noWrap>
-                                  {info.email}
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  color="textSecondary"
-                                  noWrap
-                                >
-                                  {info.phone}
-                                </Typography>
-                              </Box>
-                            </Tooltip>
-                          </TableCell>
-                          <TableCell>{info.submittedDate}</TableCell>
-                          <TableCell>
-                            {info.minorCount > 0 ? (
-                              <Chip
-                                label={info.minorCount}
-                                size="small"
-                                color="primary"
-                              />
-                            ) : (
-                              "-"
-                            )}
-                          </TableCell>
-                          <TableCell align="right">
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "flex-end",
-                              }}
-                            >
-                              <Tooltip title="View Details">
-                                <IconButton
-                                  size="small"
-                                  onClick={() => {
-                                    onViewResponse?.(response);
-                                  }}
-                                >
-                                  <VisibilityIcon />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Delete Response">
-                                <IconButton
-                                  size="small"
-                                  color="error"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDeleteResponse?.({
-                                      formId,
-                                      submissionId: info.submissionId,
-                                    });
-                                  }}
-                                >
-                                  <DeleteIcon />
-                                </IconButton>
-                              </Tooltip>
-                            </Box>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Box>
-          );
-        })
-      ) : (
-        <Typography variant="body1" sx={{ p: 2 }}>
-          No volunteer responses have been submitted yet.
-        </Typography>
+      {/* Show the selected day's table */}
+      {daysOfServiceList.length > currentDayTab && (
+        <DayTable dayData={daysOfServiceList[currentDayTab]} />
       )}
     </Box>
   );
 };
+
+export default FormResponseTable;
