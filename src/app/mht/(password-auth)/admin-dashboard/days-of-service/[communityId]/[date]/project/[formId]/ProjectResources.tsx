@@ -184,7 +184,7 @@ export function ProjectResources({
 
   // Process comma-separated input and add items
   const handleCommaInput = (
-    e: React.KeyboardEvent<HTMLInputElement>,
+    e: any,
     category: ResourceCategory,
     isPrepDay: boolean
   ) => {
@@ -392,7 +392,7 @@ export function ProjectResources({
                                             },
                                           }}
                                         >
-                                          <DragHandle fontSize="small" />
+                                          <DragHandle />
                                         </Box>
                                         {item.name}
                                       </Box>
@@ -533,7 +533,7 @@ export function ProjectResources({
                                             },
                                           }}
                                         >
-                                          <DragHandle fontSize="small" />
+                                          <DragHandle />
                                         </Box>
                                         {item.name}
                                       </Box>

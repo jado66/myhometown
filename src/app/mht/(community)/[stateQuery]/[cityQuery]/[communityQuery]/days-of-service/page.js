@@ -126,38 +126,40 @@ const DaysOfServicePage = ({ params }) => {
         initialContent={community?.daysOfService || {}}
       />
 
-      {/* <Divider sx={{ my: 4 }} />
+      {community?.signUpFormVisibility && (
+        <>
+          <Divider sx={{ my: 4 }} />
 
-      <JsonViewer data={{ defaultConfig }} />
-
-      <Container maxWidth="lg" className="p-8">
-        {submitSuccess ? (
-          <Alert sx={{ my: 4 }}>
-            <AlertTitle>Success!</AlertTitle>
-            Thank you for signing up. Your volunteer registration has been
-            submitted successfully.
-          </Alert>
-        ) : (
-          <>
-            {submitError && (
-              <Alert variant="destructive" className="mb-8">
-                <AlertTitle>Error</AlertTitle>
-                {submitError}
+          <Container maxWidth="lg" className="p-8">
+            {submitSuccess ? (
+              <Alert sx={{ my: 4 }}>
+                <AlertTitle>Success!</AlertTitle>
+                Thank you for signing up. Your volunteer registration has been
+                submitted successfully.
               </Alert>
-            )}
+            ) : (
+              <>
+                {submitError && (
+                  <Alert variant="destructive" className="mb-8">
+                    <AlertTitle>Error</AlertTitle>
+                    {submitError}
+                  </Alert>
+                )}
 
-            {form && (
-              <SignUpForm
-                isEdit={false}
-                form={form}
-                signUpFormId={community?.volunteerSignUpId}
-                handleSubmit={handleSubmit}
-                defaultConfgig={{}}
-              />
+                {form && (
+                  <SignUpForm
+                    isEdit={false}
+                    form={form}
+                    signUpFormId={community?.volunteerSignUpId}
+                    handleSubmit={handleSubmit}
+                    defaultConfgig={{}}
+                  />
+                )}
+              </>
             )}
-          </>
-        )}
-      </Container> */}
+          </Container>
+        </>
+      )}
     </Box>
   );
 };
