@@ -1,3 +1,4 @@
+"use client";
 import { useCallback, useEffect, useState } from "react";
 import {
   Card,
@@ -19,6 +20,9 @@ import {
   List,
   Fab,
   Chip,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -26,16 +30,18 @@ import CategoryIcon from "@mui/icons-material/Category";
 import GroupIcon from "@mui/icons-material/Group";
 import PersonIcon from "@mui/icons-material/Person";
 import Close from "@mui/icons-material/Close";
-import { Phone, School } from "@mui/icons-material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { Assignment, Phone, School } from "@mui/icons-material";
 import { ExampleIcons } from "@/components/events/ClassesTreeView/IconSelect";
 import ClassDetailTable from "./ClassDetailTable";
 import ClassRollTable from "./ClassRollTable";
 import ClassPreview from "@/components/class-signups/stepper-components/ClassPreview";
 import { useClasses } from "@/hooks/use-classes";
-import { Grid3x3 } from "@mui/icons-material";
 import { ViewList } from "@mui/icons-material";
 import { ViewModule } from "@mui/icons-material";
 import { VisibilityOff } from "@mui/icons-material";
+
+import { ReportsDialog } from "./ReportsDialog";
 
 const ClassListView = ({ classItem, onTakeAttendance, onViewClass }) => {
   return (
@@ -254,11 +260,18 @@ const ClassSection = ({
   if (filteredClasses.length === 0) return null;
 
   return (
-    <Box sx={{ mb: 6 }}>
-      <Typography variant="h5" sx={{ mb: 3, mt: 4 }}>
-        {title}
+    <Box sx={{ mb: 3 }}>
+      <Typography
+        variant="h6"
+        sx={{
+          mb: 2,
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        {ExampleIcons[classes[0]?.icon] || null} {title}
       </Typography>
-      <Divider sx={{ mb: 3 }} />
 
       {viewType === "grid" ? (
         <Grid container spacing={3}>
@@ -288,6 +301,103 @@ const ClassSection = ({
   );
 };
 
+// Semester Accordion Component
+const SemesterAccordion = ({
+  semester,
+  searchTerm,
+  onTakeAttendance,
+  onViewClass,
+  viewType,
+  expanded,
+  onChange,
+  index,
+  setSemester,
+}) => {
+  // Check if there are any visible classes after filtering
+  const hasVisibleSections = semester.sections.some((section) => {
+    // Check if the section itself is visible
+    if (!section.visibility) return false;
+
+    const filteredClasses = section.classes.filter((classItem) => {
+      // Check if the class is visible and matches the search term
+      const matchesSearch = classItem.title
+        ?.toLowerCase()
+        .includes((searchTerm || "").toLowerCase());
+      return classItem.visibility !== false && matchesSearch;
+    });
+
+    return filteredClasses.length > 0;
+  });
+
+  // Don't render if the semester has no visible sections or is marked as not visible
+  if (!hasVisibleSections || semester.visibility === false) return null;
+
+  return (
+    <Accordion
+      expanded={expanded === `semester-${semester.id}`}
+      onChange={onChange(`semester-${semester.id}`)}
+      sx={{
+        mb: 2,
+        "&.Mui-expanded": {
+          mb: 3,
+        },
+      }}
+    >
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon />}
+        sx={{
+          backgroundColor: (theme) => theme.palette.action.hover,
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 1,
+            width: "100%",
+          }}
+        >
+          <School />
+          <Typography variant="h5">{semester.title}</Typography>
+          <Box sx={{ flexGrow: 1 }} />
+
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<Assignment />}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent accordion from toggling
+              e.preventDefault(); // Prevent default action
+              setSemester(semester);
+            }}
+          >
+            Generate Reports
+          </Button>
+        </Box>
+      </AccordionSummary>
+      <AccordionDetails>
+        {semester.sections.map((section) => {
+          // Skip rendering sections that are marked as not visible
+          if (section.visibility === false) return null;
+
+          return (
+            <ClassSection
+              key={section.id}
+              title={section.title}
+              classes={section.classes.filter((c) => c.visibility !== false)}
+              searchTerm={searchTerm}
+              onTakeAttendance={onTakeAttendance}
+              onViewClass={onViewClass}
+              viewType={viewType}
+            />
+          );
+        })}
+      </AccordionDetails>
+    </Accordion>
+  );
+};
+
 export default function ClassList({ community, searchTerm, viewType }) {
   const {
     updateClass,
@@ -300,6 +410,77 @@ export default function ClassList({ community, searchTerm, viewType }) {
   const [showClassRoll, setShowClassRoll] = useState(false);
   const [selectedClass, setSelectedClass] = useState(null);
   const [showClassDetails, setShowClassDetails] = useState(false);
+  const [expandedAccordion, setExpandedAccordion] = useState(null); // Initialize as null
+
+  const handleCloseReportsDialog = () => {
+    setSemester(null);
+  };
+
+  const [semester, setSemester] = useState(null);
+
+  // Organize classes into semesters
+  const semesters = useMemo(() => {
+    const semestersMap = {};
+    let currentSemesterId = null;
+    let hasFoundAnyHeaders = false;
+
+    if (community?.classes && community.classes.length > 0) {
+      community.classes.forEach((category) => {
+        if (category.type === "header") {
+          // Headers are our semester markers
+          hasFoundAnyHeaders = true;
+          currentSemesterId = category.id;
+          semestersMap[currentSemesterId] = {
+            id: currentSemesterId,
+            title: category.title,
+            sections: [],
+            visibility: category.visibility !== false,
+          };
+        } else if (category.classes && category.classes.length > 0) {
+          // If we have a current semester ID, add this category to it
+          if (currentSemesterId && semestersMap[currentSemesterId]) {
+            semestersMap[currentSemesterId].sections.push({
+              id: category.id,
+              title: category.title,
+              classes: category.classes || [],
+              icon: category.icon,
+              visibility: category.visibility !== false,
+            });
+          } else {
+            // If no current semester, create a default one
+            const defaultId = "default-semester";
+            if (!semestersMap[defaultId]) {
+              semestersMap[defaultId] = {
+                id: defaultId,
+                title: hasFoundAnyHeaders ? "Other Classes" : "All Classes",
+                sections: [],
+                visibility: true,
+              };
+            }
+
+            semestersMap[defaultId].sections.push({
+              id: category.id,
+              title: category.title,
+              classes: category.classes || [],
+              icon: category.icon,
+              visibility: category.visibility !== false,
+            });
+          }
+        }
+      });
+    }
+
+    // Filter out empty semesters
+    const filteredSemesters = Object.values(semestersMap).filter(
+      (semester) => semester.sections.length > 0
+    );
+
+    return filteredSemesters.length > 0 ? filteredSemesters : [];
+  }, [community?.classes]);
+
+  const handleAccordionChange = (panel) => (event, isExpanded) => {
+    setExpandedAccordion(isExpanded ? panel : null);
+  };
 
   const handleStudentAdd = async (classId, newStudent) => {
     const result = await signupForClass(classId, newStudent);
@@ -383,28 +564,103 @@ export default function ClassList({ community, searchTerm, viewType }) {
     }
   };
 
-  if (!community?.classes.length)
+  if (!community?.classes || community.classes.length === 0) {
     return (
       <Typography sx={{ mb: 4 }}>
         No classes found for this community
       </Typography>
     );
+  }
+
+  // Special case: If there are no headers (semesters) and only one category, show flat list without accordions
+  const hasSingleCategory =
+    community?.classes?.length > 0 &&
+    !community.classes.some((c) => c.type === "header") &&
+    community.classes.length === 1;
+
+  if (
+    hasSingleCategory &&
+    community.classes[0].classes &&
+    community.classes[0].classes.length > 0
+  ) {
+    const category = community.classes[0];
+    return (
+      <>
+        <ClassSection
+          title={category.title}
+          classes={category.classes.filter((c) => c.visibility !== false)}
+          searchTerm={searchTerm}
+          onTakeAttendance={(classObj) => {
+            setSelectedClass(classObj);
+            setShowClassRoll(true);
+          }}
+          onViewClass={(classObj) => {
+            setSelectedClass(classObj);
+            setShowClassDetails(true);
+          }}
+          viewType={viewType}
+        />
+
+        <ClassRollTable
+          classData={selectedClass}
+          show={showClassRoll}
+          onClose={() => setShowClassRoll(false)}
+        />
+
+        <Dialog
+          open={showClassDetails}
+          onClose={() => setShowClassDetails(false)}
+          maxWidth="xl"
+          fullWidth
+        >
+          <DialogTitle>
+            {selectedClass?.title} Class Student Information
+            <IconButton
+              aria-label="close"
+              onClick={() => setShowClassDetails(false)}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[500],
+              }}
+            >
+              <Close />
+            </IconButton>
+          </DialogTitle>
+
+          <Box p={2}>
+            <ClassPreview classData={selectedClass} noBanner />
+            <Divider sx={{ my: 2 }} />
+            <ClassDetailTable
+              key={`${selectedClass?.id}-${selectedClass?.signups?.length}`}
+              classData={selectedClass}
+              onClose={() => setShowClassDetails(false)}
+              onUpdate={(updatedStudents) => {
+                handleStudentUpdate(selectedClass.id, updatedStudents);
+                updateClass(selectedClass.id, { signups: updatedStudents });
+              }}
+              onAddStudent={(newStudent) => {
+                handleStudentAdd(selectedClass.id, newStudent);
+              }}
+              onRemoveSignup={handleRemoveSignup}
+              removeSignupLoading={removeSignupLoading}
+              signupLoading={signupLoading}
+            />
+          </Box>
+        </Dialog>
+      </>
+    );
+  }
 
   return (
     <>
-      {community.classes.map((category, index) =>
-        category.type === "header" ? (
-          <>
-            {index !== 0 && <Divider sx={{ my: 4 }} />}
-            <Typography key={category.id} variant="h3" sx={{ mt: 2, mb: 1 }}>
-              {category.title}
-            </Typography>
-          </>
-        ) : (
-          <ClassSection
-            key={category.id}
-            title={category.title}
-            classes={category.classes}
+      {/* Semesters organized in accordions */}
+      {semesters && semesters.length > 0 ? (
+        semesters.map((semester, index) => (
+          <SemesterAccordion
+            key={semester.id || `semester-${index}`}
+            semester={semester}
             searchTerm={searchTerm}
             onTakeAttendance={(classObj) => {
               setSelectedClass(classObj);
@@ -415,8 +671,16 @@ export default function ClassList({ community, searchTerm, viewType }) {
               setShowClassDetails(true);
             }}
             viewType={viewType}
+            expanded={expandedAccordion}
+            onChange={handleAccordionChange}
+            setSemester={setSemester}
+            index={index}
           />
-        )
+        ))
+      ) : (
+        <Typography sx={{ mb: 4 }}>
+          No classes found for this community
+        </Typography>
       )}
 
       <ClassRollTable
@@ -467,6 +731,12 @@ export default function ClassList({ community, searchTerm, viewType }) {
           />
         </Box>
       </Dialog>
+
+      <ReportsDialog
+        open={semester !== null}
+        onClose={handleCloseReportsDialog}
+        semester={semester}
+      />
     </>
   );
 }
@@ -503,4 +773,17 @@ const formatDate = (dateString) => {
     month: "numeric", // Use "numeric" for numeric month (e.g., 2 for February)
     day: "numeric", // Use "numeric" for numeric day
   });
+};
+
+// Add this hook to organize the data
+const useMemo = (callback, dependencies) => {
+  // This is a simple implementation of React's useMemo
+  // In a real application, you would use React's useMemo hook
+  const [value, setValue] = useState(null);
+
+  useEffect(() => {
+    setValue(callback());
+  }, dependencies);
+
+  return value;
 };

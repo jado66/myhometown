@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
 import moment from "moment";
 import {
   Table,
@@ -18,20 +20,27 @@ import {
   Divider,
   Typography,
   Button,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { toast } from "react-toastify";
 import Close from "@mui/icons-material/Close";
 import ClassPreview from "@/components/class-signups/stepper-components/ClassPreview";
 import { useAttendance } from "@/hooks/use-attendance";
-import JsonViewer from "@/components/util/debug/DebugOutput";
-import { Download } from "@mui/icons-material";
+import { Download, Today } from "@mui/icons-material";
 
 export default function ClassRollTable({ classData, show, onClose }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
+
   const [saveTimeout, setSaveTimeout] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [localAttendance, setLocalAttendance] = useState({});
   const { markBulkAttendance } = useAttendance();
   const [isDirty, setIsDirty] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [todayDateIndex, setTodayDateIndex] = useState(-1);
 
   // Transform attendance array to lookup object on component mount or when classData changes
   useEffect(() => {
@@ -97,6 +106,36 @@ export default function ClassRollTable({ classData, show, onClose }) {
 
   const dates = generateDates();
   const nameFields = getNameFields();
+
+  // Find today's date in the dates array and set initial selected date
+  useEffect(() => {
+    if (dates.length > 0) {
+      const today = moment().format("YYYY-MM-DD");
+      const index = dates.findIndex((date) => date === today);
+      setTodayDateIndex(index);
+
+      // Only set selectedDate if it hasn't been set yet
+      if (!selectedDate) {
+        // If today is a class day, select it
+        if (index !== -1) {
+          setSelectedDate(today);
+        } else {
+          // Otherwise, find the next upcoming class day
+          const futureClassIndex = dates.findIndex((date) =>
+            moment(date).isSameOrAfter(today)
+          );
+
+          if (futureClassIndex !== -1) {
+            // If there's a future class, select it
+            setSelectedDate(dates[futureClassIndex]);
+          } else {
+            // If no future classes, select the most recent past class
+            setSelectedDate(dates[dates.length - 1]);
+          }
+        }
+      }
+    }
+  }, [dates, selectedDate]);
 
   const saveAttendance = useCallback(
     async (isManualSave = false) => {
@@ -175,6 +214,439 @@ export default function ClassRollTable({ classData, show, onClose }) {
     onClose();
   };
 
+  const handleDateChange = (event, newValue) => {
+    setSelectedDate(newValue);
+  };
+
+  const formatDisplayDate = (date) => {
+    const [year, month, day] = date.split("-");
+    return `${month}/${day}/${year.slice(-2)} (${moment(date).format("ddd")})`;
+  };
+
+  // Function to check if the selected date is today
+  const isSelectedDateToday = () => {
+    if (!selectedDate) return false;
+    const today = moment().format("YYYY-MM-DD");
+    return selectedDate === today;
+  };
+
+  // Replace the renderMobileView function with this improved version that includes prev/next buttons
+  const renderMobileView = () => {
+    if (!selectedDate) return null;
+
+    // Find the current date index to enable/disable prev/next buttons appropriately
+    const currentDateIndex = dates.findIndex((date) => date === selectedDate);
+    const hasPrevious = currentDateIndex > 0;
+    const hasNext = currentDateIndex < dates.length - 1;
+    const hasToday = todayDateIndex !== -1;
+
+    const goToPreviousDate = () => {
+      if (hasPrevious) {
+        setSelectedDate(dates[currentDateIndex - 1]);
+      }
+    };
+
+    const goToNextDate = () => {
+      if (hasNext) {
+        setSelectedDate(dates[currentDateIndex + 1]);
+      }
+    };
+
+    const goToToday = () => {
+      if (hasToday) {
+        setSelectedDate(dates[todayDateIndex]);
+      }
+    };
+
+    return (
+      <>
+        <Box sx={{ mb: 2, mt: 2 }}>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>
+            Current Date: {formatDisplayDate(selectedDate)}
+            {isSelectedDateToday() && (
+              <Typography
+                component="span"
+                sx={{ ml: 1, color: "primary.main", fontWeight: "bold" }}
+              >
+                (Today)
+              </Typography>
+            )}
+          </Typography>
+
+          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={goToPreviousDate}
+              disabled={!hasPrevious}
+              startIcon={
+                <Box component="span" sx={{ fontSize: "1.5rem" }}>
+                  ←
+                </Box>
+              }
+              sx={{ minWidth: hasToday ? "30%" : "40%", py: 1 }}
+            >
+              Prev
+            </Button>
+
+            {hasToday && (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={goToToday}
+                disabled={isSelectedDateToday()}
+                startIcon={<Today />}
+                sx={{ minWidth: "30%", py: 1 }}
+              >
+                Today
+              </Button>
+            )}
+
+            <Button
+              variant="outlined"
+              onClick={goToNextDate}
+              disabled={!hasNext}
+              endIcon={
+                <Box component="span" sx={{ fontSize: "1.5rem" }}>
+                  →
+                </Box>
+              }
+              sx={{ minWidth: hasToday ? "30%" : "40%", py: 1 }}
+            >
+              Next
+            </Button>
+          </Box>
+        </Box>
+
+        <TableContainer component={Paper} sx={{ mt: 2 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: "bold" }}>Student</TableCell>
+                <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                  Present
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {classData.signups
+                .filter((signup) => !signup.isWaitlisted)
+                .map((signup, index) => {
+                  // Combine name fields for display
+                  const studentName = nameFields
+                    .map((field) => signup[field.key] || "")
+                    .filter(Boolean)
+                    .join(" ");
+
+                  return (
+                    <TableRow key={index}>
+                      <TableCell>{studentName}</TableCell>
+                      <TableCell align="center">
+                        <Checkbox
+                          checked={
+                            localAttendance[signup.id]?.[selectedDate] || false
+                          }
+                          onChange={(e) =>
+                            handleAttendanceChange(
+                              signup.id,
+                              selectedDate,
+                              e.target.checked
+                            )
+                          }
+                          sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }} // Larger checkbox for mobile
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </>
+    );
+  };
+
+  // Also update the renderTabletView function to include the same navigation buttons
+  const renderTabletView = () => {
+    // Find the current date index to enable/disable prev/next buttons appropriately
+    const currentDateIndex = dates.findIndex((date) => date === selectedDate);
+    const hasPrevious = currentDateIndex > 0;
+    const hasNext = currentDateIndex < dates.length - 1;
+    const hasToday = todayDateIndex !== -1;
+
+    const goToPreviousDate = () => {
+      if (hasPrevious) {
+        setSelectedDate(dates[currentDateIndex - 1]);
+      }
+    };
+
+    const goToNextDate = () => {
+      if (hasNext) {
+        setSelectedDate(dates[currentDateIndex + 1]);
+      }
+    };
+
+    const goToToday = () => {
+      if (hasToday) {
+        setSelectedDate(dates[todayDateIndex]);
+      }
+    };
+
+    return (
+      <>
+        <Box sx={{ mb: 2, mt: 2 }}>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>
+            Current Date: {formatDisplayDate(selectedDate)}
+            {isSelectedDateToday() && (
+              <Typography
+                component="span"
+                sx={{ ml: 1, color: "primary.main", fontWeight: "bold" }}
+              >
+                (Today)
+              </Typography>
+            )}
+          </Typography>
+
+          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={goToPreviousDate}
+              disabled={!hasPrevious}
+              startIcon={
+                <Box component="span" sx={{ fontSize: "1.5rem" }}>
+                  ←
+                </Box>
+              }
+              sx={{ minWidth: hasToday ? "30%" : "40%" }}
+            >
+              Previous Date
+            </Button>
+
+            {hasToday && (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={goToToday}
+                disabled={isSelectedDateToday()}
+                startIcon={<Today />}
+                sx={{ minWidth: "30%" }}
+              >
+                Today
+              </Button>
+            )}
+
+            <Button
+              variant="outlined"
+              onClick={goToNextDate}
+              disabled={!hasNext}
+              endIcon={
+                <Box component="span" sx={{ fontSize: "1.5rem" }}>
+                  →
+                </Box>
+              }
+              sx={{ minWidth: hasToday ? "30%" : "40%" }}
+            >
+              Next Date
+            </Button>
+          </Box>
+        </Box>
+
+        <TableContainer component={Paper} sx={{ mt: 2 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: "bold" }}>Student</TableCell>
+                <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                  {formatDisplayDate(selectedDate)}
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {classData.signups
+                .filter((signup) => !signup.isWaitlisted)
+                .map((signup, index) => {
+                  // Combine name fields for display
+                  const studentName = nameFields
+                    .map((field) => signup[field.key] || "")
+                    .filter(Boolean)
+                    .join(" ");
+
+                  return (
+                    <TableRow key={index}>
+                      <TableCell>{studentName}</TableCell>
+                      <TableCell align="center">
+                        <Checkbox
+                          checked={
+                            localAttendance[signup.id]?.[selectedDate] || false
+                          }
+                          onChange={(e) =>
+                            handleAttendanceChange(
+                              signup.id,
+                              selectedDate,
+                              e.target.checked
+                            )
+                          }
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </>
+    );
+  };
+
+  const renderDesktopView = () => {
+    return (
+      <TableContainer
+        component={Paper}
+        sx={{
+          mt: 4,
+          overflowX: "auto",
+          "& .MuiTableCell-root": {
+            whiteSpace: "nowrap",
+          },
+        }}
+      >
+        <Table
+          sx={{
+            minWidth: 650,
+            "& .sticky-column": {
+              position: "sticky",
+              left: 0,
+              background: "white",
+              zIndex: 1,
+              borderRight: "1px solid rgba(224, 224, 224, 1)",
+              "&:after": {
+                content: '""',
+                position: "absolute",
+                right: 0,
+                top: 0,
+                bottom: 0,
+                width: 1,
+              },
+            },
+            "& .sticky-column-1": {
+              left: 200,
+            },
+            "& .sticky-column-2": {
+              left: 400,
+            },
+          }}
+        >
+          <TableHead>
+            <TableRow>
+              {nameFields.map((field, index) => (
+                <TableCell
+                  key={field.key}
+                  sx={{
+                    minWidth: 200,
+                  }}
+                  className={`sticky-column ${
+                    index > 0 ? `sticky-column-${index}` : ""
+                  }`}
+                ></TableCell>
+              ))}
+              {dates.map((date) => (
+                <TableCell key={date} align="center" sx={{ minWidth: 100 }}>
+                  {moment(date).format("dddd")}
+                </TableCell>
+              ))}
+            </TableRow>
+            <TableRow>
+              {nameFields.map((field, index) => (
+                <TableCell
+                  key={field.key}
+                  sx={{
+                    minWidth: 200,
+                  }}
+                  className={`sticky-column ${
+                    index > 0 ? `sticky-column-${index}` : ""
+                  }`}
+                  rowSpan={2}
+                >
+                  {field.label}
+                </TableCell>
+              ))}
+              {dates.map((date) => {
+                const [year, month, day] = date.split("-");
+                const isToday = date === moment().format("YYYY-MM-DD");
+                return (
+                  <TableCell
+                    key={date}
+                    align="center"
+                    sx={{
+                      minWidth: 100,
+                      ...(isToday && {
+                        fontWeight: "bold",
+                        bgcolor: "rgba(25, 118, 210, 0.08)",
+                      }),
+                    }}
+                  >
+                    {`${month}/${day}/${year.slice(-2)}`}
+                    {isToday && (
+                      <Typography
+                        component="span"
+                        sx={{
+                          ml: 1,
+                          fontSize: "0.75rem",
+                          color: "primary.main",
+                        }}
+                      >
+                        (Today)
+                      </Typography>
+                    )}
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {classData.signups
+              .filter((signup) => !signup.isWaitlisted)
+              .map((signup, index) => (
+                <TableRow key={index}>
+                  {nameFields.map((field, fieldIndex) => (
+                    <TableCell
+                      key={field.key}
+                      className={`sticky-column ${
+                        fieldIndex > 0 ? `sticky-column-${fieldIndex}` : ""
+                      }`}
+                    >
+                      {signup[field.key] || ""}
+                    </TableCell>
+                  ))}
+                  {dates.map((date) => (
+                    <TableCell
+                      key={date}
+                      align="center"
+                      sx={{
+                        ...(date === moment().format("YYYY-MM-DD") && {
+                          bgcolor: "rgba(25, 118, 210, 0.08)",
+                        }),
+                      }}
+                    >
+                      <Checkbox
+                        checked={localAttendance[signup.id]?.[date] || false}
+                        onChange={(e) =>
+                          handleAttendanceChange(
+                            signup.id,
+                            date,
+                            e.target.checked
+                          )
+                        }
+                      />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  };
+
   const renderContent = () => {
     if (!classData) {
       return null;
@@ -203,120 +675,12 @@ export default function ClassRollTable({ classData, show, onClose }) {
           nameFields={nameFields}
           localAttendance={localAttendance}
         />
-        <TableContainer
-          component={Paper}
-          sx={{
-            mt: 4,
-            overflowX: "auto",
-            "& .MuiTableCell-root": {
-              whiteSpace: "nowrap",
-            },
-          }}
-        >
-          <Table
-            sx={{
-              minWidth: 650,
-              "& .sticky-column": {
-                position: "sticky",
-                left: 0,
-                background: "white",
-                zIndex: 1,
-                borderRight: "1px solid rgba(224, 224, 224, 1)",
-                "&:after": {
-                  content: '""',
-                  position: "absolute",
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: 1,
-                },
-              },
-              "& .sticky-column-1": {
-                left: 200,
-              },
-              "& .sticky-column-2": {
-                left: 400,
-              },
-            }}
-          >
-            <TableHead>
-              <TableRow>
-                {nameFields.map((field, index) => (
-                  <TableCell
-                    key={field.key}
-                    sx={{
-                      minWidth: 200,
-                    }}
-                    className={`sticky-column ${
-                      index > 0 ? `sticky-column-${index}` : ""
-                    }`}
-                  ></TableCell>
-                ))}
-                {dates.map((date) => (
-                  <TableCell key={date} align="center" sx={{ minWidth: 100 }}>
-                    {moment(date).format("dddd")}
-                  </TableCell>
-                ))}
-              </TableRow>
-              <TableRow>
-                {nameFields.map((field, index) => (
-                  <TableCell
-                    key={field.key}
-                    sx={{
-                      minWidth: 200,
-                    }}
-                    className={`sticky-column ${
-                      index > 0 ? `sticky-column-${index}` : ""
-                    }`}
-                    rowSpan={2}
-                  >
-                    {field.label}
-                  </TableCell>
-                ))}
-                {dates.map((date) => {
-                  const [year, month, day] = date.split("-");
-                  return (
-                    <TableCell key={date} align="center" sx={{ minWidth: 100 }}>
-                      {`${month}/${day}/${year.slice(-2)}`}
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {classData.signups
-                .filter((signup) => !signup.isWaitlisted)
-                .map((signup, index) => (
-                  <TableRow key={index}>
-                    {nameFields.map((field, fieldIndex) => (
-                      <TableCell
-                        key={field.key}
-                        className={`sticky-column ${
-                          fieldIndex > 0 ? `sticky-column-${fieldIndex}` : ""
-                        }`}
-                      >
-                        {signup[field.key] || ""}
-                      </TableCell>
-                    ))}
-                    {dates.map((date) => (
-                      <TableCell key={date} align="center">
-                        <Checkbox
-                          checked={localAttendance[signup.id]?.[date] || false}
-                          onChange={(e) =>
-                            handleAttendanceChange(
-                              signup.id,
-                              date,
-                              e.target.checked
-                            )
-                          }
-                        />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+
+        {isMobile
+          ? renderMobileView()
+          : isTablet
+          ? renderTabletView()
+          : renderDesktopView()}
       </Box>
     );
   };
@@ -328,24 +692,31 @@ export default function ClassRollTable({ classData, show, onClose }) {
         onClose={handleClose}
         maxWidth="xl"
         fullWidth
-        PaperProps={{ sx: { p: 2 } }}
+        PaperProps={{
+          sx: {
+            p: isMobile ? 1 : 2,
+            m: isMobile ? 1 : "auto",
+            width: isMobile ? "calc(100% - 16px)" : undefined,
+            maxHeight: isMobile ? "calc(100% - 16px)" : undefined,
+          },
+        }}
       >
-        <DialogTitle>
+        <DialogTitle sx={{ p: isMobile ? 2 : 3 }}>
           {classData?.title} Class Roll
           <IconButton
             aria-label="close"
             onClick={handleClose}
             sx={{
               position: "absolute",
-              right: 8,
-              top: 8,
+              right: isMobile ? 4 : 8,
+              top: isMobile ? 4 : 8,
               color: (theme) => theme.palette.grey[500],
             }}
           >
             <Close />
           </IconButton>
         </DialogTitle>
-        <Box p={2}>
+        <Box p={isMobile ? 1 : 2}>
           {classData && <ClassPreview classData={classData} noBanner />}
           <Divider sx={{ my: 2 }} />
           {renderContent()}
@@ -375,6 +746,9 @@ export default function ClassRollTable({ classData, show, onClose }) {
 }
 
 const ExportButton = ({ classData, dates, nameFields, localAttendance }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const handleExport = () => {
     // Generate CSV headers
     const headers = [
@@ -415,14 +789,16 @@ const ExportButton = ({ classData, dates, nameFields, localAttendance }) => {
     <Button
       onClick={handleExport}
       variant="outlined"
+      size={isMobile ? "small" : "medium"}
       sx={{
         position: "absolute",
         top: -8,
         right: 8,
+        fontSize: isMobile ? "0.75rem" : undefined,
       }}
     >
-      <Download className="w-4 h-4" />
-      <span>Export to CSV</span>
+      <Download className={isMobile ? "w-3 h-3 mr-1" : "w-4 h-4 mr-2"} />
+      <span>{isMobile ? "Export" : "Export to CSV"}</span>
     </Button>
   );
 };

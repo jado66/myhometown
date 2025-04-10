@@ -1,7 +1,7 @@
 "use client";
 import { Suspense, useEffect, useState } from "react";
 import ClassList, { ViewToggle } from "./ClassList";
-import { Container, Typography } from "@mui/material";
+import { Container, Divider, Typography, Grid } from "@mui/material";
 import { useCommunities } from "@/hooks/use-communities";
 import { useClasses } from "@/hooks/use-classes";
 import { Box, TextField, InputAdornment } from "@mui/material";
@@ -106,6 +106,20 @@ export default function ClassPage({ params }) {
         {community?.name} Community Classes
       </Typography>
 
+      {/* <Grid
+        container
+        spacing={2}
+        alignItems="center"
+        justifyContent="space-between"
+      >
+        <Grid item xs={12} sm={6}>
+          <pre>{JSON.stringify(mergedCommunityData, null, 2)}</pre>
+        </Grid>
+        <Grid item xs={12} sm={6} textAlign="right"></Grid>
+      </Grid> */}
+
+      <Divider sx={{ mb: 4 }} />
+
       <Box sx={{ mb: 4 }}>
         <TextField
           fullWidth
@@ -125,7 +139,7 @@ export default function ClassPage({ params }) {
         />
       </Box>
       <ViewToggle viewType={viewType} onToggle={toggleView} />
-
+      {/* <pre>{JSON.stringify(mergedCommunityData, null, 2)}</pre> */}
       <Suspense fallback={<div>Loading...</div>}>
         <ClassList
           community={mergedCommunityData}
