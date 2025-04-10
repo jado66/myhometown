@@ -29,13 +29,14 @@ import {
   Info,
   Group,
   School,
+  AssignmentInd,
 } from "@mui/icons-material";
 
 import {
   downloadCSV,
   generateDetailedCSV,
   generateCapacityReportCSV,
-  downloadCapacityReport,
+  generateStudentAttendanceReportCSV,
 } from "@/util/reports/classes/report-helper-functions";
 
 const handleGenerateAttendanceReport = (semester) => {
@@ -56,17 +57,26 @@ const handleGenerateCapacityReport = (semester) => {
   const dateStr = `${today.getFullYear()}-${String(
     today.getMonth() + 1
   ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-  downloadCapacityReport(csvContent, `capacity-report-${dateStr}.csv`);
+  downloadCSV(csvContent, `capacity-report-${dateStr}.csv`);
+};
+
+const handleGenerateStudentAttendanceReport = (semester) => {
+  // Generate safe filename from semester title
+  const safeTitle = semester.title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+  const fileName = `${safeTitle}_student_attendance_${
+    new Date().toISOString().split("T")[0]
+  }.csv`;
+
+  // Generate and download the CSV with student attendance data
+  const csvContent = generateStudentAttendanceReportCSV(semester);
+  downloadCSV(csvContent, fileName);
 };
 
 /**
- * A dialog component that offers three different types of reports to download
+ * A dialog component that offers different types of reports to download
  * @param {boolean} open - Controls dialog visibility
  * @param {function} onClose - Function to call when dialog is closed
  * @param {Object} semester - The semester data to generate reports from
- * @param {function} generateAttendanceReport - Function to generate attendance report
- * @param {function} generateStudentReport - Function to generate student report
- * @param {function} generateClassScheduleReport - Function to generate class schedule report
  */
 export const ReportsDialog = ({ open, onClose, semester }) => {
   const [selectedReport, setSelectedReport] = useState("attendance");
@@ -84,6 +94,9 @@ export const ReportsDialog = ({ open, onClose, semester }) => {
         break;
       case "capacity":
         handleGenerateCapacityReport(semester);
+        break;
+      case "studentAttendance":
+        handleGenerateStudentAttendanceReport(semester);
         break;
       case "schedule":
         handleGenerateAttendanceReport(semester);
@@ -204,7 +217,71 @@ export const ReportsDialog = ({ open, onClose, semester }) => {
               </Paper>
             </Grid>
 
-            {/* Student Report Option */}
+            {/* Student Attendance Report Option */}
+            <Grid item xs={12}>
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 2,
+                  border: selectedReport === "studentAttendance" ? 2 : 1,
+                  borderColor:
+                    selectedReport === "studentAttendance"
+                      ? "primary.main"
+                      : "divider",
+                  transition: "all 0.2s",
+                  "&:hover": {
+                    borderColor: "primary.main",
+                    boxShadow: 1,
+                  },
+                }}
+              >
+                <FormControlLabel
+                  value="studentAttendance"
+                  control={<Radio color="primary" />}
+                  label={
+                    <Box>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <AssignmentInd color="primary" />
+                        <Typography variant="h6" color="primary">
+                          Student Attendance Report
+                        </Typography>
+                      </Box>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mt: 1 }}
+                      >
+                        Provides a detailed list of all students with their
+                        individual attendance records for each class session.
+                        Shows which students attended which classes, with
+                        contact information and attendance percentages for each
+                        student.
+                      </Typography>
+                      <Box sx={{ mt: 1 }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          component="span"
+                        >
+                          Ideal for:
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          component="span"
+                          sx={{ ml: 1 }}
+                        >
+                          Tracking individual student participation and
+                          following up with absent students
+                        </Typography>
+                      </Box>
+                    </Box>
+                  }
+                  sx={{ alignItems: "flex-start", m: 0 }}
+                />
+              </Paper>
+            </Grid>
+
+            {/* Capacity Report Option */}
             <Grid item xs={12}>
               <Paper
                 variant="outlined"
@@ -256,64 +333,6 @@ export const ReportsDialog = ({ open, onClose, semester }) => {
                         >
                           Planning staffing needs and managing resource center
                           capacity limits
-                        </Typography>
-                      </Box>
-                    </Box>
-                  }
-                  sx={{ alignItems: "flex-start", m: 0 }}
-                />
-              </Paper>
-            </Grid>
-
-            {/* Schedule Report Option */}
-            <Grid item xs={12}>
-              <Paper
-                variant="outlined"
-                sx={{
-                  p: 2,
-                  border: selectedReport === "schedule" ? 2 : 1,
-                  borderColor:
-                    selectedReport === "schedule" ? "primary.main" : "divider",
-                  transition: "all 0.2s",
-                  "&:hover": {
-                    borderColor: "primary.main",
-                    boxShadow: 1,
-                  },
-                }}
-              >
-                <FormControlLabel
-                  value="schedule"
-                  control={<Radio color="primary" />}
-                  disabled
-                  label={
-                    <Box>
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <EventNote color="muted" />
-                        <Typography variant="h6" color="muted">
-                          Class Schedule Report
-                        </Typography>
-                      </Box>
-                      <Typography variant="body2" color="muted" sx={{ mt: 1 }}>
-                        Gives a comprehensive overview of all classes in the
-                        semester, including schedules, locations, instructors,
-                        and capacity information. Useful for administrative
-                        planning and resource allocation.
-                      </Typography>
-                      <Box sx={{ mt: 1 }}>
-                        <Typography
-                          variant="body2"
-                          color="muted"
-                          component="span"
-                        >
-                          Ideal for:
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          component="span"
-                          sx={{ ml: 1 }}
-                        >
-                          Planning logistics, creating room schedules, and
-                          semester overview
                         </Typography>
                       </Box>
                     </Box>
