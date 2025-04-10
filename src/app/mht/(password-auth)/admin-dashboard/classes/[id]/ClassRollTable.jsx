@@ -28,6 +28,7 @@ import Close from "@mui/icons-material/Close";
 import ClassPreview from "@/components/class-signups/stepper-components/ClassPreview";
 import { useAttendance } from "@/hooks/use-attendance";
 import { Download, Today } from "@mui/icons-material";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export default function ClassRollTable({ classData, show, onClose }) {
   const theme = useTheme();
@@ -669,6 +670,7 @@ export default function ClassRollTable({ classData, show, onClose }) {
         <Typography variant="h6" sx={{ mt: 4 }}>
           Attendance Table
         </Typography>
+
         <ExportButton
           classData={classData}
           dates={dates}
