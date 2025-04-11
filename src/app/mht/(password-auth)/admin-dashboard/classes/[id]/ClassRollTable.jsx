@@ -671,6 +671,8 @@ export default function ClassRollTable({ classData, show, onClose }) {
           Attendance Table
         </Typography>
 
+        <JsonViewer data={localAttendance} />
+
         <ExportButton
           classData={classData}
           dates={dates}

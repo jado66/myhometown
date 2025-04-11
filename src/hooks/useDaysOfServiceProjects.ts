@@ -780,7 +780,7 @@ export const useDaysOfServiceProjects = () => {
 
         // Calculate height for details
         const details = [
-          `Local Group: ${project.project_development_couple_ward || "N/A"}`,
+          `Local Group: ${project.partner_ward || "N/A"}`,
           `Homeowner: ${project.property_owner || "N/A"}`,
           `Address: ${concatenateAddress(project)}`,
           `Phone: ${project.phone_number || "N/A"}`,

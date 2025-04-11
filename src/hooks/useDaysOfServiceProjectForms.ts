@@ -3,97 +3,7 @@ import { useUser } from "@/hooks/use-user";
 import { toast } from "react-toastify";
 import { supabase } from "@/util/supabase";
 import { debounce } from "@mui/material";
-
-export interface ProjectFormData {
-  // Basic Information
-  projectDeveloper: string;
-  projectDeveloperPhone1: string;
-  projectDeveloperEmail1: string;
-  projectDeveloperPhone2: string;
-  projectDeveloperEmail2: string;
-  projectId: string;
-
-  // Property Information
-  propertyOwner: string;
-  phoneNumber: string;
-  email: string;
-
-  // Address
-  addressStreet1: string;
-  addressStreet2: string;
-  addressCity: string;
-  addressState: string;
-  addressZipCode: string;
-
-  // Project Details
-  workSummary: string;
-  dateOfService: string;
-  volunteersNeeded: number;
-
-  // Resource Couple Information
-  projectDevelopmentCouple: string;
-  projectDevelopmentCouplePhone1: string;
-  projectDevelopmentCoupleEmail1: string;
-  projectDevelopmentCouplePhone2: string;
-  projectDevelopmentCoupleEmail2: string;
-
-  // Planning
-  preferredRemedies: string;
-  tasks: {
-    tasks: Array<{
-      description: string;
-      todos: string[];
-    }>;
-  };
-
-  // Resources & Budget
-  budget: string;
-  budgetEstimates: number;
-  homeownerAbility: string;
-  homeownerAbilityEstimates: number;
-  volunteerTools: string[];
-  equipment: string[];
-  materials: string[];
-
-  // Status Flags
-  materialsProcured: boolean;
-  toolsArranged: boolean;
-  materialsOnSite: boolean;
-  called811: boolean;
-  dumpsterRequested: boolean;
-
-  // Partner Information
-  partnerStake: string;
-  partnerStakeLiaison: string;
-  partnerStakeLiaisonPhone: string;
-  partnerStakeLiaisonEmail: string;
-  partnerWard: string;
-  partnerWardLiaison: string;
-  partnerWardLiaisonPhone1: string;
-  partnerWardLiaisonEmail1: string;
-  partnerWardLiaisonPhone2: string;
-  partnerWardLiaisonEmail2: string;
-
-  // Status Flags
-  partnerStakeContacted: boolean;
-  partnerWardContacted: boolean;
-  siteVisitDoneWithResourceCouple: boolean;
-  siteVisitDoneWithHost: boolean;
-  siteVisitDoneWithPartner: boolean;
-  reviewCompletedWithCouple: boolean;
-  reviewCompletedWithHomeowner: boolean;
-
-  // Review
-  reviewNotes: string;
-
-  // Collaboration
-  collaborators: Array<{
-    email: string;
-    from: string;
-    message: string;
-    date: Date;
-  }>;
-}
+import { ProjectFormData } from "@/types/dos/ProjectFormData";
 
 interface UseProjectFormProps {
   projectId?: string;
@@ -119,18 +29,36 @@ export const useDaysOfServiceProjectForm = ({
         const projectData = {
           ...data,
           updated_by: user?.id,
+          updated_at: new Date().toISOString(),
         };
 
         if (!projectId) {
+          // Create new project
           projectData.created_by = user?.id;
+          projectData.created_at = new Date().toISOString();
+
+          const { data: newProject, error } = await supabase
+            .from("days_of_service_project_forms")
+            .insert(projectData)
+            .select("id")
+            .single();
+
+          if (error) throw error;
+
+          // Update projectId with the new ID
+          if (newProject) {
+            // You might need to handle the new ID here
+            console.log("Created new project with ID:", newProject.id);
+          }
+        } else {
+          // Update existing project
+          const { error } = await supabase
+            .from("days_of_service_project_forms")
+            .update(projectData)
+            .eq("id", projectId);
+
+          if (error) throw error;
         }
-
-        const { error } = await supabase
-          .from("days_of_service_project_forms")
-          .update(projectData)
-          .eq("id", projectId);
-
-        if (error) throw error;
 
         // Only show success toast for manual saves, not debounced ones
         // toast.success("Project saved successfully");
@@ -145,15 +73,35 @@ export const useDaysOfServiceProjectForm = ({
   );
 
   useEffect(() => {
-    if (communityId) {
-    }
-
     if (projectId) {
       loadProject();
     } else {
+      // Initialize with default values for a new project
+      setFormData({
+        community_id: communityId,
+        budget_hidden: false,
+        has_prep_day: false,
+        are_blue_stakes_needed: false,
+        is_dumpster_needed: false,
+        is_second_dumpster_needed: false,
+        materials_procured: false,
+        tools_arranged: false,
+        materials_on_site: false,
+        called_811: false,
+        dumpster_requested: false,
+        partner_stake_contacted: false,
+        partner_ward_contacted: false,
+        site_visit_done_with_resource_couple: false,
+        site_visit_done_with_host: false,
+        site_visit_done_with_partner: false,
+        review_completed_with_couple: false,
+        review_completed_with_homeowner: false,
+        tasks: { tasks: [] },
+        collaborators: [],
+      });
       setIsLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, communityId]);
 
   const loadProject = async () => {
     try {
@@ -170,12 +118,11 @@ export const useDaysOfServiceProjectForm = ({
       }
     } catch (error) {
       toast.error("Failed to load project");
+      console.error("Failed to load project", error);
     } finally {
       setIsLoading(false);
     }
   };
-
-  const handlePartnerChange = (parnterType: string, value: string) => {};
 
   const handleNumberInputChange = (
     field: keyof ProjectFormData,
@@ -211,7 +158,7 @@ export const useDaysOfServiceProjectForm = ({
     debouncedSave(newFormData);
   };
 
-  const handleMultipleInputChange = (inputs) => {
+  const handleMultipleInputChange = (inputs: Partial<ProjectFormData>) => {
     const newFormData = {
       ...formData,
       ...inputs,
@@ -227,10 +174,15 @@ export const useDaysOfServiceProjectForm = ({
     message: string;
     date: Date;
   }) => {
-    setFormData((prev) => ({
-      ...prev,
-      collaborators: [...(prev.collaborators || []), collaborator],
-    }));
+    const newCollaborators = [...(formData.collaborators || []), collaborator];
+
+    const newFormData = {
+      ...formData,
+      collaborators: newCollaborators,
+    };
+
+    setFormData(newFormData);
+    debouncedSave(newFormData);
   };
 
   const finishProject = async () => {
@@ -244,22 +196,33 @@ export const useDaysOfServiceProjectForm = ({
         ...formData,
         community_id: communityId,
         updated_by: user?.id,
+        updated_at: new Date().toISOString(),
       };
 
       if (isFinished) {
         projectData.status = "completed";
       }
 
+      let response;
+
       if (!projectId) {
+        // Create new project
         projectData.created_by = user?.id;
+        projectData.created_at = new Date().toISOString();
+
+        response = await supabase
+          .from("days_of_service_project_forms")
+          .insert(projectData)
+          .select("id");
+      } else {
+        // Update existing project
+        response = await supabase
+          .from("days_of_service_project_forms")
+          .update(projectData)
+          .eq("id", projectId);
       }
 
-      const { error } = await supabase
-        .from("days_of_service_project_forms")
-        .update(projectData)
-        .eq("id", projectId);
-
-      if (error) throw error;
+      if (response.error) throw response.error;
 
       toast.success("Project saved successfully");
     } catch (error) {
@@ -278,7 +241,6 @@ export const useDaysOfServiceProjectForm = ({
     handleInputChange,
     handleMultipleInputChange,
     handleNumberInputChange,
-
     addCollaborator,
     saveProject,
     finishProject,
