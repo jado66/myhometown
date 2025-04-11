@@ -13,6 +13,8 @@ import { Box } from "@mui/material";
 import { useCommunities } from "@/hooks/use-communities";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
 import { isAuthenticatedBudget } from "@/util/auth/simpleAuth";
+import { toast } from "react-toastify";
+
 const API_BASE_URL = "/api/database/project-forms";
 const ProjectFormContext = createContext();
 
@@ -43,6 +45,8 @@ export function ProjectFormProvider({
   });
 
   const { addPartnerToDayOfService } = useDaysOfService();
+  const [isImporting, setIsImporting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const handleSelectChange = async (field, newValue) => {
     const value = newValue ? newValue.value : "";
@@ -210,6 +214,104 @@ export function ProjectFormProvider({
     [isBudgetAdmin]
   );
 
+  // Import project function
+  const importProject = async (file) => {
+    setIsImporting(true);
+    try {
+      // Read the file content
+      const fileContent = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result);
+        reader.onerror = (error) => reject(error);
+        reader.readAsText(file);
+      });
+
+      // Parse the JSON
+      const importedData = JSON.parse(fileContent);
+
+      // Validate the imported data
+      if (!importedData || typeof importedData !== "object") {
+        throw new Error("Invalid import file format");
+      }
+
+      // Clean the imported data by removing any fields not in our schema
+      const cleanedData = {};
+      Object.keys(importedData).forEach((key) => {
+        // Copy all properties from imported data
+        cleanedData[key] = importedData[key];
+      });
+
+      // Set fields that should not be imported
+      const projectSpecificFields = {
+        id: formId, // Keep the current ID if editing existing project
+        created_by: formData.created_by,
+        updated_by: formData.updated_by,
+        created_at: formData.created_at || new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        community_id: communityId,
+      };
+
+      // Update form data with imported data and specific fields
+      const newFormData = {
+        ...cleanedData,
+        ...projectSpecificFields,
+      };
+
+      setFormData(newFormData);
+
+      // Save the imported data to the database
+      await saveProject(false, newFormData);
+
+      toast.success("Project imported successfully");
+    } catch (error) {
+      console.error("Failed to import project", error);
+      toast.error(
+        "Failed to import project: " +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  // Export project function
+  const exportProject = () => {
+    setIsExporting(true);
+    try {
+      // Prepare the export data
+      const exportData = { ...formData };
+
+      // Create a blob with the data
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: "application/json",
+      });
+
+      // Create a download link and click it
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `project_${
+        formData.project_id || formId || "new"
+      }_export.json`;
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success("Project exported successfully");
+    } catch (error) {
+      console.error("Failed to export project", error);
+      toast.error(
+        "Failed to export project: " +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   useEffect(() => {
     return () => {
       debouncedSave.cancel();
@@ -243,6 +345,11 @@ export function ProjectFormProvider({
     stakeOptions,
     wardOptions,
     isBudgetHidden: !(isBudgetAuthenticated || !formData.budget_hidden),
+    // Add import and export functions
+    importProject,
+    exportProject,
+    isImporting,
+    isExporting,
   };
 
   return (

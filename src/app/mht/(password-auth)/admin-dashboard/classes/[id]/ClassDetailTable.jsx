@@ -22,16 +22,54 @@ import {
   Tab,
   Divider,
   Alert,
+  Tooltip,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import { AVAILABLE_FIELDS } from "@/components/class-signups/AvailableFields";
 import { FIELD_TYPES } from "@/components/class-signups/FieldTypes";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { toast } from "react-toastify";
+
+// Utility function to format dates consistently
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+
+  // Create date by parsing the components to ensure consistent timezone handling
+  const date = new Date(dateString);
+
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  });
+};
+
+// Utility function to get attendance data for a specific student
+const getStudentAttendance = (classData, studentId) => {
+  if (!classData?.attendance || !Array.isArray(classData.attendance)) {
+    return { count: 0, dates: [] };
+  }
+
+  const attendanceRecords = classData.attendance.filter(
+    (record) => record.studentId === studentId && record.present === true
+  );
+
+  return {
+    count: attendanceRecords.length,
+    dates: attendanceRecords.map((record) => record.date),
+    lastAttended:
+      attendanceRecords.length > 0
+        ? attendanceRecords.sort(
+            (a, b) => new Date(b.date) - new Date(a.date)
+          )[0].date
+        : null,
+  };
+};
 
 const getFieldConfig = (fieldKey, formConfig) => {
   const customConfig = formConfig[fieldKey] || {};
@@ -88,6 +126,34 @@ const ClassDetailTable = ({
       setWaitlistedRows(waitlisted);
     }
   }, [classData]);
+
+  // Calculate attendance statistics
+  const attendanceStats = useMemo(() => {
+    if (!classData?.attendance || !Array.isArray(classData.attendance)) {
+      return { uniqueCount: 0, totalSessions: 0, attendanceRate: 0 };
+    }
+
+    // Get unique students who have attended
+    const uniqueStudentIds = new Set(
+      classData.attendance
+        .filter((record) => record.present === true)
+        .map((record) => record.studentId)
+    );
+
+    // Get unique sessions (dates)
+    const uniqueDates = new Set(
+      classData.attendance.map((record) => record.date)
+    );
+
+    return {
+      uniqueCount: uniqueStudentIds.size,
+      totalSessions: uniqueDates.size,
+      attendanceRate:
+        rows.length > 0
+          ? Math.round((uniqueStudentIds.size / rows.length) * 100)
+          : 0,
+    };
+  }, [classData?.attendance, rows.length]);
 
   if (!classData || !classData.signupForm || !classData.signups) {
     return null;
@@ -157,7 +223,19 @@ const ClassDetailTable = ({
   };
 
   const handleDeleteClick = useCallback(
-    (id) => () => {
+    (params) => () => {
+      console.log(JSON.stringify(params.row, null, 2));
+      const id = params.row.id;
+
+      const studentAttendance = getStudentAttendance(classData, id);
+
+      if (studentAttendance && studentAttendance.count > 0) {
+        toast.error("Cannot remove student with attendance records.");
+        return;
+      }
+
+      console.log("Student attendance:", studentAttendance);
+
       // Instead of deleting immediately, open confirmation dialog
       setStudentToDelete(id);
       setDeleteConfirmOpen(true);
@@ -494,6 +572,40 @@ const ClassDetailTable = ({
     () => [
       ...baseColumns,
       {
+        field: "attendance",
+        headerName: "Attendance",
+        width: 130,
+        flex: 1,
+        renderCell: (params) => {
+          const studentAttendance = getStudentAttendance(
+            classData,
+            params.row.id
+          );
+          return (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography variant="body2">
+                {studentAttendance.count}{" "}
+                {studentAttendance.count === 1 ? "session" : "sessions"}
+              </Typography>
+              {studentAttendance.count > 0 && (
+                <Tooltip
+                  title={`Last attended: ${formatDate(
+                    studentAttendance.lastAttended
+                  )}`}
+                >
+                  <EventAvailableIcon fontSize="small" color="primary" />
+                </Tooltip>
+              )}
+            </Box>
+          );
+        },
+        sortable: true,
+        valueGetter: (params) => {
+          // For sorting purposes
+          return getStudentAttendance(classData, params.row.id).count;
+        },
+      },
+      {
         field: "createdAt",
         headerName: "Sign Up Date",
         width: 220,
@@ -521,7 +633,7 @@ const ClassDetailTable = ({
           <GridActionsCellItem
             icon={<DeleteIcon />}
             label="Remove Student"
-            onClick={handleDeleteClick(params.id)}
+            onClick={handleDeleteClick(params)}
             disabled={removeSignupLoading}
           />,
         ],
@@ -533,6 +645,7 @@ const ClassDetailTable = ({
       handleDeleteClick,
       removeSignupLoading,
       editLoading,
+      classData,
     ]
   );
 
@@ -540,6 +653,40 @@ const ClassDetailTable = ({
   const waitlistColumns = useMemo(
     () => [
       ...baseColumns,
+      {
+        field: "attendance",
+        headerName: "Attendance",
+        width: 130,
+        flex: 1,
+        renderCell: (params) => {
+          const studentAttendance = getStudentAttendance(
+            classData,
+            params.row.id
+          );
+          return (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography variant="body2">
+                {studentAttendance.count}{" "}
+                {studentAttendance.count === 1 ? "session" : "sessions"}
+              </Typography>
+              {studentAttendance.count > 0 && (
+                <Tooltip
+                  title={`Last attended: ${formatDate(
+                    studentAttendance.lastAttended
+                  )}`}
+                >
+                  <EventAvailableIcon fontSize="small" color="primary" />
+                </Tooltip>
+              )}
+            </Box>
+          );
+        },
+        sortable: true,
+        valueGetter: (params) => {
+          // For sorting purposes
+          return getStudentAttendance(classData, params.row.id).count;
+        },
+      },
       {
         field: "createdAt",
         headerName: "Sign Up Date",
@@ -592,6 +739,7 @@ const ClassDetailTable = ({
       promoteLoading,
       editLoading,
       hasAvailableCapacity,
+      classData,
     ]
   );
 
@@ -637,7 +785,6 @@ const ClassDetailTable = ({
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* Promote Confirmation Dialog */}
       <Dialog
         open={promoteDialogOpen}
@@ -687,7 +834,6 @@ const ClassDetailTable = ({
           </Button>
         </DialogActions>
       </Dialog>
-
       <Box sx={{ mb: 3 }}>
         <Box
           sx={{
@@ -698,6 +844,8 @@ const ClassDetailTable = ({
           }}
         >
           <Typography variant="h6">Class Roster</Typography>
+
+          <JsonViewer data={classData} />
 
           <Button
             variant="contained"
@@ -715,25 +863,25 @@ const ClassDetailTable = ({
           </Button>
         </Box>
 
-        {/* Class capacity information */}
-
-        {classData.capacity ? (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              Enrolled: {enrolledCount}/{totalCapacity}{" "}
-              {enrolledCount === 1 ? "student" : "students"}
-              {isWaitlistEnabled &&
-                ` • Waitlist: ${waitlistedCount}/${waitlistCapacity}`}
-            </Typography>
-          </Box>
-        ) : (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              Enrolled: {enrolledCount}{" "}
-              {enrolledCount === 1 ? "student" : "students"}
-            </Typography>
-          </Box>
-        )}
+        {/* Class capacity and attendance information */}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Enrolled: {enrolledCount}
+            {classData.capacity ? `/${totalCapacity}` : ""}{" "}
+            {enrolledCount === 1 ? "student" : "students"}
+            {isWaitlistEnabled &&
+              ` • Waitlist: ${waitlistedCount}/${waitlistCapacity}`}
+            {" • "}
+            <Tooltip title="Number of unique students who have attended at least one session">
+              <Box component="span">
+                Attended: {attendanceStats.uniqueCount} students (
+                {attendanceStats.attendanceRate}% of enrolled)
+              </Box>
+            </Tooltip>
+            {attendanceStats.totalSessions > 0 &&
+              ` • Total sessions: ${attendanceStats.totalSessions}`}
+          </Typography>
+        </Box>
 
         {/* Tab navigation */}
         {classData.capacity && (
@@ -759,7 +907,7 @@ const ClassDetailTable = ({
           </Box>
         )}
       </Box>
-
+      {/* Regular enrollment table */}
       {/* Regular enrollment table */}
       <div
         role="tabpanel"

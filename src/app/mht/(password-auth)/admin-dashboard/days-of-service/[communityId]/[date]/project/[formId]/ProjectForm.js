@@ -19,6 +19,7 @@ import { VisibilityOff } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
+import { ProjectOptionsMenu } from "./ProjectOptionsMenu";
 
 const allSteps = [
   { label: "Project Information" },
@@ -42,6 +43,10 @@ const ProjectForm = ({ formId, date, communityId }) => {
     saveProject,
     finishProject,
     isBudgetHidden,
+    isImporting,
+    isExporting,
+    importProject,
+    exportProject,
   } = useProjectForm();
 
   const goToStep = (step) => {
@@ -152,7 +157,31 @@ const ProjectForm = ({ formId, date, communityId }) => {
       >
         {/* <JsonViewer data={formData} /> */}
 
-        <CardContent>
+        <CardContent
+          sx={{
+            position: "relative",
+          }}
+        >
+          {/* Top right buttons */}
+          <Box
+            sx={{
+              position: "absolute",
+              top: 16,
+              right: 16,
+              display: {
+                xs: "none",
+                sm: "block",
+              },
+            }}
+          >
+            <ProjectOptionsMenu
+              isExporting={isExporting}
+              isImporting={isImporting}
+              exportProject={exportProject}
+              importProject={importProject}
+            />
+          </Box>
+
           <Typography variant="h4" sx={{ mt: 1, mb: 3, textAlign: "center" }}>
             Days of Service Project Form
           </Typography>

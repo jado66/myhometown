@@ -47,12 +47,13 @@ const ClassListView = ({ classItem, onTakeAttendance, onViewClass }) => {
   return (
     <Card
       sx={{
-        mb: 1,
+        mb: 0.5,
         "&:hover": {
           boxShadow: 6,
           transition: "box-shadow 0.3s ease-in-out",
         },
       }}
+      variant="outlined"
     >
       <CardContent sx={{ py: "8px !important" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -93,6 +94,7 @@ const ClassListView = ({ classItem, onTakeAttendance, onViewClass }) => {
                 }`}
                 size="small"
                 variant="outlined"
+                sx={{ px: 1 }}
               />
             </Stack>
           </Box>
@@ -149,11 +151,14 @@ const ClassGridView = ({ classItem, onTakeAttendance, onViewClass }) => {
         display: "flex",
         flexDirection: "column",
         position: "relative",
+
+        bgcolor: "primary",
         "&:hover": {
           boxShadow: 6,
           transition: "box-shadow 0.3s ease-in-out",
         },
       }}
+      variant="outlined"
     >
       <CardContent
         sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}
@@ -377,20 +382,25 @@ const SemesterAccordion = ({
         </Box>
       </AccordionSummary>
       <AccordionDetails>
-        {semester.sections.map((section) => {
+        {semester.sections.map((section, index) => {
           // Skip rendering sections that are marked as not visible
           if (section.visibility === false) return null;
 
           return (
-            <ClassSection
-              key={section.id}
-              title={section.title}
-              classes={section.classes.filter((c) => c.visibility !== false)}
-              searchTerm={searchTerm}
-              onTakeAttendance={onTakeAttendance}
-              onViewClass={onViewClass}
-              viewType={viewType}
-            />
+            <>
+              <ClassSection
+                key={section.id}
+                title={section.title}
+                classes={section.classes.filter((c) => c.visibility !== false)}
+                searchTerm={searchTerm}
+                onTakeAttendance={onTakeAttendance}
+                onViewClass={onViewClass}
+                viewType={viewType}
+              />
+              {index < semester.sections.length - 1 && (
+                <Divider sx={{ my: 2 }} />
+              )}
+            </>
           );
         })}
       </AccordionDetails>

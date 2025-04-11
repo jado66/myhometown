@@ -1,11 +1,15 @@
 // reportUtils.js - Complete implementation file for all report functionality
 
+import moment from "moment";
+
 /**
  * Generates class dates matching the attendance table logic
  * @param {Object} classItem - The class object containing schedule information
  * @returns {Array} Array of dates in YYYY-MM-DD format
  */
 export const generateClassDates = (classItem) => {
+  // Your existing logging code...
+
   if (!classItem?.startDate || !classItem?.endDate) {
     return [];
   }
@@ -17,9 +21,9 @@ export const generateClassDates = (classItem) => {
 
   const dates = [];
 
-  // Parse dates
-  const startDate = new Date(classItem.startDate + "T00:00:00Z");
-  const endDate = new Date(classItem.endDate + "T23:59:59Z");
+  // Parse dates with moment.parseZone to preserve the intended local date
+  const startDate = moment.utc(classItem.startDate);
+  const endDate = moment.utc(classItem.endDate);
 
   // Day name mapping
   const dayNames = [
@@ -32,28 +36,62 @@ export const generateClassDates = (classItem) => {
     "Saturday",
   ];
 
-  // Iterate through each day
-  let currentDate = new Date(startDate);
-  while (currentDate <= endDate) {
-    const dayOfWeek = dayNames[currentDate.getUTCDay()];
+  // Iterate through each day using moment
+  let currentDate = moment.utc(startDate);
+  while (currentDate.isSameOrBefore(endDate)) {
+    // Get the day of week (0-6, where 0 is Sunday)
+    const dayOfWeek = dayNames[currentDate.day()];
 
     // Check if this day of week has a meeting
     const matchingMeetings =
       classItem.meetings?.filter((meeting) => meeting.day === dayOfWeek) || [];
 
     if (matchingMeetings.length > 0) {
-      // Format date as YYYY-MM-DD
-      const year = currentDate.getUTCFullYear();
-      const month = String(currentDate.getUTCMonth() + 1).padStart(2, "0");
-      const day = String(currentDate.getUTCDate()).padStart(2, "0");
-      dates.push(`${year}-${month}-${day}`);
+      // Format date as YYYY-MM-DD using moment's format method
+      dates.push(currentDate.format("YYYY-MM-DD"));
     }
 
-    // Move to next day
-    currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+    // Move to next day using moment's add method
+    currentDate.add(1, "days");
   }
 
+  console.log(startDate.format("YYYY-MM-DD"), endDate.format("YYYY-MM-DD"));
+  console.log(endDate.format("YYYY-MM-DD"), endDate.format("YYYY-MM-DD"));
+  console.log(JSON.stringify(classItem.meetings));
+  console.log("dates", dates);
+
   return dates;
+};
+
+/**
+ * Format date for display (mm/dd/yy)
+ * @param {string} dateString - Date string in YYYY-MM-DD format
+ * @returns {string} Formatted date
+ */
+export const formatDate = (dateString) => {
+  if (!dateString) return "";
+  // Use moment.parseZone to preserve the date without timezone conversion
+  return moment.utc(dateString).format("M/D/YY");
+};
+
+/**
+ * Get day of week from date string
+ * @param {string} dateString - Date string in YYYY-MM-DD format
+ * @returns {string} Day of week
+ */
+export const getDayOfWeek = (dateString) => {
+  if (!dateString) return "";
+  // Use moment.parseZone to preserve the date without timezone conversion
+  const days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  return days[moment.utc(dateString).day()];
 };
 
 /**
@@ -124,42 +162,6 @@ export const calculateAttendanceStats = (classItem) => {
     totalAttended: 0,
     maxPossibleAttendance,
   };
-};
-
-/**
- * Format date for display (mm/dd/yy)
- * @param {string} dateString - Date string in YYYY-MM-DD format
- * @returns {string} Formatted date
- */
-export const formatDate = (dateString) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  return `${date.getMonth() + 1}/${date.getDate()}/${date
-    .getFullYear()
-    .toString()
-    .substr(-2)}`;
-};
-
-/**
- * Get day of week from date string
- * @param {string} dateString - Date string in YYYY-MM-DD format
- * @returns {string} Day of week
- */
-export const getDayOfWeek = (dateString) => {
-  if (!dateString) return "";
-  const [year, month, day] = dateString.split("-");
-  // Months are 0-indexed in JavaScript Date
-  const date = new Date(year, parseInt(month) - 1, day);
-  const days = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
-  return days[date.getDay()];
 };
 
 /**
@@ -337,6 +339,8 @@ export const generateStudentAttendanceReportCSV = (semester) => {
 
   // Sort dates chronologically
   const sortedDates = Array.from(allDates).sort();
+
+  console.log("sortedDates", JSON.stringify(sortedDates, null, 2));
 
   // Create CSV headers
   const headers = [
@@ -645,7 +649,11 @@ export const generateCapacityReportCSV = (semester) => {
 
   // Add dates as column headers
   sortedDates.forEach((date) => {
-    headers.push(`${formatDate(date)} (${getDayOfWeek(date)})`);
+    const formattedDate = formatDate(date);
+    // Check if the date is a weekend (Saturday or Sunday)
+    const dayOfWeek = moment(date).day();
+
+    headers.push(`${formattedDate} (${dayOfWeek})`);
   });
 
   // Add total column
