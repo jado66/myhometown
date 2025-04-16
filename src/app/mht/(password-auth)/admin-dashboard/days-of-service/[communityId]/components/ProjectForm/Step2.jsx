@@ -209,8 +209,10 @@ const Step2 = () => {
             multiline
             key="prep_day_work_summary"
             rows={4}
-            value={formData.work_summary}
-            onChange={(e) => handleInputChange("work_summary", e.target.value)}
+            value={formData.prep_day_work_summary}
+            onChange={(e) =>
+              handleInputChange("prep_day_work_summary", e.target.value)
+            }
           />
           <ProjectTextField
             label="Prep Day Preferred Remedies (Optional)"
