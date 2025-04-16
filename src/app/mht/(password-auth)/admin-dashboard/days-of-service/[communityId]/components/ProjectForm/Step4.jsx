@@ -91,7 +91,7 @@ const Step4 = () => {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
       <Typography variant="h6">
-        Partner Organization and Ward Information
+        Partner Organization and Group Information
       </Typography>
 
       {/* Partner Organization*/}
