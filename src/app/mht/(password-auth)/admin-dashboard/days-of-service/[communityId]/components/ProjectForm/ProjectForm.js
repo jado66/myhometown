@@ -30,7 +30,7 @@ const allSteps = [
   { label: "Resource Assessment" },
 ];
 
-const ProjectForm = ({ formId, date, communityId }) => {
+const ProjectForm = ({ date, communityId }) => {
   const [showFinishDialog, setShowFinishDialog] = React.useState(false);
 
   const router = useRouter();
@@ -115,19 +115,19 @@ const ProjectForm = ({ formId, date, communityId }) => {
   };
 
   const saveAndExit = () => {
-    saveProject();
-    router.push(
-      process.env.NEXT_PUBLIC_DOMAIN +
+    const route = date
+      ? process.env.NEXT_PUBLIC_DOMAIN +
         `/admin-dashboard/days-of-service/${communityId}/${date}/stake/${formData.partner_stake_id}`
-    );
+      : process.env.NEXT_PUBLIC_DOMAIN +
+        `/admin-dashboard/days-of-service/${communityId}`;
+
+    saveProject();
+    router.push(route);
   };
 
   const handleFinish = () => {
     finishProject();
-    router.push(
-      process.env.NEXT_PUBLIC_DOMAIN +
-        `/admin-dashboard/days-of-service/${communityId}/${date}/stake/${formData.partner_stake_id}`
-    );
+    router.push(route);
   };
 
   const getSteps = () => {

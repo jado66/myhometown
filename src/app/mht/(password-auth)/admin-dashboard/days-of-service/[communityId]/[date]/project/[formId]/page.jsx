@@ -1,11 +1,11 @@
 // pages/project-sheets/[id].js
 "use client";
 import { ProjectFormProvider } from "@/contexts/ProjectFormProvider";
-import ProjectFormsPage from "./ProjectPage";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
 import { useEffect, useState } from "react";
+import ProjectPage from "../../../components/ProjectForm/ProjectPage"; // Adjust the import path as necessary
 
-export default function ProjectPage({ params }) {
+export default function Page({ params }) {
   const { formId, date, communityId } = params;
   console.log("Params date:", date);
 
@@ -51,7 +51,7 @@ export default function ProjectPage({ params }) {
         communityId={communityId}
         dayOfService={dayOfService}
       >
-        <ProjectFormsPage
+        <ProjectPage
           formId={formId}
           date={date}
           communityId={communityId}
