@@ -16,27 +16,33 @@ export const useDaysOfServiceProjects = () => {
     newId: string,
     community_id: string,
     city_id: string,
-    daysOfServiceShortId: string,
-    partner_stake_id: string,
+    daysOfServiceShortId: string | null,
+    partner_stake_id: string | null,
     user: any
   ) => {
     setLoading(true);
     try {
-      const { data: dayOfService, error: dos_error } =
-        await fetchDayOfServiceByShortId(daysOfServiceShortId);
-
-      if (dos_error) throw dos_error;
-
-      const daysOfServiceId = dayOfService?.id;
-
-      const projectData = {
+      const projectData: any = {
         community_id: community_id,
         city_id: city_id,
-        days_of_service_id: daysOfServiceId,
-        partner_stake_id: partner_stake_id,
         updated_by: user?.id,
         created_by: user?.id, // Only set on creation
       };
+
+      // Only fetch and set days_of_service_id if a shortId is provided
+      if (daysOfServiceShortId) {
+        const { data: dayOfService, error: dos_error } =
+          await fetchDayOfServiceByShortId(daysOfServiceShortId);
+
+        if (dos_error) throw dos_error;
+
+        projectData.days_of_service_id = dayOfService?.id;
+      }
+
+      // Only set partner_stake_id if provided
+      if (partner_stake_id) {
+        projectData.partner_stake_id = partner_stake_id;
+      }
 
       // If a newId is provided, use it
       if (newId) {
@@ -51,7 +57,29 @@ export const useDaysOfServiceProjects = () => {
 
       toast.success("Project created successfully");
     } catch (error) {
+      console.error("Project creation error:", error);
       toast.error("Failed to save project");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUnassignedCommunityProjects = async (communityId: string) => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("days_of_service_project_forms")
+        .select("*")
+        .eq("community_id", communityId)
+        .is("days_of_service_id", null);
+
+      if (error) throw error;
+
+      if (data) {
+        return data;
+      }
+    } catch (error) {
+      toast.error("Failed to load unassigned projects");
     } finally {
       setLoading(false);
     }
@@ -1200,6 +1228,7 @@ export const useDaysOfServiceProjects = () => {
     fetchProjectsByCityId,
     fetchProjectsByDaysOfServiceId,
     fetchProjectsByDaysOfStakeId,
+    fetchUnassignedCommunityProjects,
     deleteProject,
   };
 };

@@ -6,9 +6,14 @@ import { useProjectForm } from "@/contexts/ProjectFormProvider";
 import ProjectForm from "./ProjectForm";
 import SavingIndicator from "@/components/SavingIndicator";
 import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
-import JsonViewer from "@/components/util/debug/DebugOutput";
 
-const ProjectFormPage = ({ formId, date, communityId, dayOfService }) => {
+const ProjectPage = ({
+  formId,
+  date,
+  communityId,
+  dayOfService,
+  communityData,
+}) => {
   const { formData } = useProjectForm();
 
   return (
@@ -44,6 +49,7 @@ const ProjectFormPage = ({ formId, date, communityId, dayOfService }) => {
               display: "flex",
               justifyContent: "center",
             }}
+            communityData={communityData}
             isProjectView
           />
         </Container>
@@ -63,4 +69,4 @@ const ProjectFormPage = ({ formId, date, communityId, dayOfService }) => {
   );
 };
 
-export default ProjectFormPage;
+export default ProjectPage;

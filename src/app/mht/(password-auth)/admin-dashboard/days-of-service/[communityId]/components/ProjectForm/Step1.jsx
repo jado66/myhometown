@@ -54,34 +54,36 @@ const Step1 = ({ date }) => {
         onChange={(e) => handleInputChange("project_id", e.target.value)}
         inputProps={{ maxLength: 60 }}
       />
-      <ProjectTextField
-        type="date"
-        label="Day Of Service Date"
-        value={
-          date && moment(date, "MM-DD-YYYY").isValid()
-            ? moment(date, "MM-DD-YYYY").format("YYYY-MM-DD")
-            : ""
-        }
-        disabled
-        sx={{
-          // Style for the input text
-          "& .MuiInputBase-input": {
-            color: "#474747 !important",
-          },
-          "& .MuiInputBase-input.Mui-disabled": {
-            color: "#474747 !important",
-            WebkitTextFillColor: "#474747 !important",
-          },
-          // Style for the label
-          "& .MuiInputLabel-root": {
-            color: "#474747 !important",
-          },
-          "& .MuiInputLabel-root.Mui-disabled": {
-            color: "#474747 !important",
-          },
-        }}
-        InputProps={{ readOnly: true }}
-      />
+      {date && (
+        <ProjectTextField
+          type="date"
+          label="Day Of Service Date"
+          value={
+            date && moment(date, "MM-DD-YYYY").isValid()
+              ? moment(date, "MM-DD-YYYY").format("YYYY-MM-DD")
+              : ""
+          }
+          disabled
+          sx={{
+            // Style for the input text
+            "& .MuiInputBase-input": {
+              color: "#474747 !important",
+            },
+            "& .MuiInputBase-input.Mui-disabled": {
+              color: "#474747 !important",
+              WebkitTextFillColor: "#474747 !important",
+            },
+            // Style for the label
+            "& .MuiInputLabel-root": {
+              color: "#474747 !important",
+            },
+            "& .MuiInputLabel-root.Mui-disabled": {
+              color: "#474747 !important",
+            },
+          }}
+          InputProps={{ readOnly: true }}
+        />
+      )}
       <ProjectTextField
         label="Community"
         value={`${community?.city_name || ""} - ${community?.name || ""}`}

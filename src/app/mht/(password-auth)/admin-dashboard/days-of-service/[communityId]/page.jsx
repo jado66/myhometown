@@ -31,6 +31,8 @@ import { toast } from "react-toastify";
 import { useDaysOfServiceProjects } from "@/hooks/useDaysOfServiceProjects";
 import moment from "moment";
 
+import UnassignedProjects from "./UnassignedProjects";
+
 const CommunitySelectionPage = ({ params }) => {
   const router = useRouter();
   const communityId = params.communityId;
@@ -51,6 +53,12 @@ const CommunitySelectionPage = ({ params }) => {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+
+  const [toggleOnCounter, setToggleOnCounter] = useState(0);
+
+  const toggleUnassignedProjects = () => {
+    setToggleOnCounter((prev) => prev + 1);
+  };
 
   const theme = useTheme();
 
@@ -482,7 +490,26 @@ const CommunitySelectionPage = ({ params }) => {
                         ))}
                     </>
                   ) : null}
+                  <Button
+                    variant="outlined"
+                    onClick={toggleUnassignedProjects}
+                    sx={{
+                      bgcolor: "#e4f5e7",
+                      borderRadius: "20px",
+                      textTransform: "none",
+                      minWidth: "auto",
+                    }}
+                  >
+                    Unassigned Projects
+                  </Button>
                 </Box>
+
+                <UnassignedProjects
+                  communityId={communityId}
+                  cityId={community.city_id}
+                  toggleOnCounter={toggleOnCounter}
+                />
+
                 {daysOfService.length === 0 && (
                   <Typography
                     variant="h6"

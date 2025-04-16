@@ -11,9 +11,11 @@ import { NavigateNext } from "@mui/icons-material";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import moment from "moment";
+import JsonViewer from "../util/debug/DebugOutput";
 
 interface CommunityData {
-  city_name: string;
+  city_name?: string;
+  city?: string;
   name: string;
   community_id: string;
 }
@@ -34,6 +36,7 @@ interface DosBreadcrumbsProps {
   sx?: SxProps<Theme>;
   isProjectView?: boolean;
   stakeId?: string;
+  projectId?: string; // Added projectId prop
 }
 
 const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
@@ -43,6 +46,7 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
   projectName,
   isProjectView,
   stakeId,
+  projectId, // Include projectId in props
   sx,
 }) => {
   const [windowWidth, setWindowWidth] = useState<number>(
@@ -67,8 +71,13 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
     const isSmallScreen = windowWidth < 600;
     const base = [];
 
+    // Handle community level breadcrumb
     if (communityData) {
-      base.push(`${communityData.city_name} - ${communityData.name}`);
+      base.push(
+        `${communityData.city_name || communityData.city} - ${
+          communityData.name
+        }`
+      );
     } else if (dayOfService) {
       base.push(
         isSmallScreen
@@ -77,6 +86,7 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
       );
     }
 
+    // Handle standard day of service path
     if (dayOfService && date) {
       // Safely parse the date for all browsers, especially Safari
       const formatSafeDate = (dateString) => {
@@ -126,6 +136,17 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
         base.push(projectName || "Project Form");
       }
     }
+    // Handle direct project view without day of service
+    else if (isProjectView) {
+      // Only add project name if we have community data
+      if (communityData) {
+        base.push(projectName || "Project Details");
+      } else {
+        // If we don't have community data, add a placeholder
+        base.push("Project");
+        base.push(projectName || "Project Details");
+      }
+    }
 
     return base;
   }, [
@@ -157,16 +178,18 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
     };
 
     switch (index) {
-      // case 0: // Admin Dashboard
-      //   return getUrl(["admin-dashboard"]);
-      // case 1: // Days of Service
-      //   return getUrl(["admin-dashboard", "days-of-service"]);
       case 0: // Community Level
         if (communityId) {
           return getUrl(["admin-dashboard", "days-of-service", communityId]);
+        } else if (isProjectView) {
+          return getUrl([
+            "admin-dashboard",
+            "days-of-service",
+            communityData?._id,
+          ]);
         }
         return pathname;
-      case 1: // Day of Service Level
+      case 1: // Day of Service Level or Project Level
         if (communityId && date) {
           // Modified to include /stake/{stakeId} if stakeId exists
           const segments = [
@@ -179,6 +202,9 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
             segments.push("stake", stakeId);
           }
           return getUrl(segments);
+        } else if (isProjectView && communityId) {
+          // For direct project view without day of service
+          return getUrl(["admin-dashboard", "days-of-service", communityId]);
         }
         return pathname;
       case 2: // View Timeline or Project
@@ -194,6 +220,8 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
               "view-timeline",
             ]);
           }
+        } else if (isProjectView && communityId && projectId) {
+          // For direct project view without day of service
         }
         return pathname;
       default:
@@ -231,68 +259,70 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
   }, []);
 
   return (
-    <Breadcrumbs
-      aria-label="breadcrumb"
-      separator={<NavigateNext fontSize="small" />}
-      sx={{
-        mb: 5,
-        border: "1px solid",
-        borderColor: "grey.300",
-        px: 2,
-        py: 1,
-        borderRadius: 2,
-        "& .MuiBreadcrumbs-separator": {
-          mx: { xs: 0.5, sm: 1 },
-          color: "grey.600",
-        },
-        "& .MuiBreadcrumbs-ol": {
-          flexWrap: "wrap",
-        },
-        ...sx,
-      }}
-    >
-      {pathTitles.map((title, index) => {
-        const last = index === pathTitles.length - 1;
-        const href = generateHref(index);
+    <>
+      <Breadcrumbs
+        aria-label="breadcrumb"
+        separator={<NavigateNext fontSize="small" />}
+        sx={{
+          mb: 5,
+          border: "1px solid",
+          borderColor: "grey.300",
+          px: 2,
+          py: 1,
+          borderRadius: 2,
+          "& .MuiBreadcrumbs-separator": {
+            mx: { xs: 0.5, sm: 1 },
+            color: "grey.600",
+          },
+          "& .MuiBreadcrumbs-ol": {
+            flexWrap: "wrap",
+          },
+          ...sx,
+        }}
+      >
+        {pathTitles.map((title, index) => {
+          const last = index === pathTitles.length - 1;
+          const href = generateHref(index);
 
-        return last ? (
-          <Typography
-            color="textPrimary"
-            key={`breadcrumb-${index}`}
-            sx={{
-              fontWeight: "bold",
-              textTransform: "capitalize",
-              fontSize: { xs: "0.75rem", sm: "0.875rem", md: "1rem" },
-              lineHeight: 1.2,
-              wordBreak: "break-word",
-            }}
-          >
-            {title}
-          </Typography>
-        ) : (
-          <Link
-            href={href}
-            key={`breadcrumb-${index}`}
-            style={{ textDecoration: "none" }}
-          >
+          return last ? (
             <Typography
               color="textPrimary"
+              key={`breadcrumb-${index}`}
               sx={{
+                fontWeight: "bold",
                 textTransform: "capitalize",
                 fontSize: { xs: "0.75rem", sm: "0.875rem", md: "1rem" },
                 lineHeight: 1.2,
                 wordBreak: "break-word",
-                "&:hover": {
-                  textDecoration: "underline",
-                },
               }}
             >
               {title}
             </Typography>
-          </Link>
-        );
-      })}
-    </Breadcrumbs>
+          ) : (
+            <Link
+              href={href}
+              key={`breadcrumb-${index}`}
+              style={{ textDecoration: "none" }}
+            >
+              <Typography
+                color="textPrimary"
+                sx={{
+                  textTransform: "capitalize",
+                  fontSize: { xs: "0.75rem", sm: "0.875rem", md: "1rem" },
+                  lineHeight: 1.2,
+                  wordBreak: "break-word",
+                  "&:hover": {
+                    textDecoration: "underline",
+                  },
+                }}
+              >
+                {title}
+              </Typography>
+            </Link>
+          );
+        })}
+      </Breadcrumbs>
+    </>
   );
 };
 

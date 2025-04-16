@@ -55,7 +55,6 @@ import moment from "moment";
 import { toast } from "react-toastify";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
-import { useLocalStorageProjectForms } from "@/hooks/use-local-storage-project-forms";
 import { supabase } from "@/util/supabase";
 import { useCommunities } from "@/hooks/use-communities";
 import { useDaysOfServiceProjects } from "@/hooks/useDaysOfServiceProjects";
@@ -66,6 +65,12 @@ import { formatSafeDate } from "@/util/dates/formatSafeDate";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
 import Loading from "@/components/util/Loading";
+import { useReportSettings } from "@/hooks/useReportSettings";
+import { ReportSettingsDialog } from "../../../components/ReportSettingsDialog";
+import {
+  generatePDFReport,
+  generateStakeSummaryReport,
+} from "@/util/reports/days-of-service/reportGenerators";
 
 export default function ProjectFormsPage({ params }) {
   const { stakeId, communityId, date } = params;
@@ -89,6 +94,17 @@ export default function ProjectFormsPage({ params }) {
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [menuAnchorEl, setMenuAnchorEl] = useState({});
+
+  const [loading, setLoading] = useState(false);
+
+  const {
+    dialogOpen,
+    reportType,
+    currentProjectId,
+    openReportDialog,
+    closeReportDialog,
+    handleGenerate,
+  } = useReportSettings();
 
   // Replace your current handleMenuClick and handleMenuClose functions with these
   const handleMenuClick = (event, projectId) => {
@@ -171,15 +187,8 @@ export default function ProjectFormsPage({ params }) {
   // Hooks
   const { fetchNewCommunities } = useCommunities();
   const { fetchDayOfServiceByShortId } = useDaysOfService();
-  const {
-    fetchProjectsByDaysOfStakeId,
-    deleteProject,
-    error,
-    addProject,
-    generateReports,
-    generatePDFReport,
-    generateStakeSummaryReport,
-  } = useDaysOfServiceProjects();
+  const { fetchProjectsByDaysOfStakeId, deleteProject, error, addProject } =
+    useDaysOfServiceProjects();
 
   // Fetch day of service data
   useEffect(() => {
@@ -346,34 +355,48 @@ export default function ProjectFormsPage({ params }) {
     );
   };
 
-  const handleGenerateSingleReport = async (e, project) => {
+  const handleGenerateSingleReport = (e, project) => {
     e.stopPropagation();
-    try {
-      const projectTitle = getProjectTitle(project);
+    const projectTitle = getProjectTitle(project);
 
-      await generatePDFReport(project.id, date, projectTitle, dayOfService);
-      // toast.success("Report generated successfully");
-    } catch (error) {
-      console.error("Error generating report:", error);
-      toast.error("Failed to generate project report");
-    }
+    openReportDialog("singleReport", project.id, async (settings) => {
+      setLoading(true);
+      try {
+        await generatePDFReport(
+          project.id,
+          date,
+          projectTitle,
+          dayOfService,
+          settings.includedFields.budget_estimates, // Use budget toggle for includeBudget
+          settings,
+          setLoading
+        );
+      } catch (error) {
+        console.error("Error generating project report:", error);
+        toast.error("Failed to generate project report");
+        setLoading(false);
+      }
+    });
   };
 
   const handleGenerateDayOfServiceReport = async () => {
     if (!dayOfService?.id) {
-      toast.error("Day of Service ID not available");
+      // toast.error("Day of Service ID not available");
       return;
     }
-    try {
-      // Get all projects for this stake
-      const projects = await fetchProjectsByDaysOfStakeId(stakeId, true);
 
-      // Use the new function instead
-      await generateStakeSummaryReport(stakeId, date, dayOfService, projects);
-    } catch (error) {
-      console.error("Error generating projects summary:", error);
-      toast.error("Failed to generate projects summary");
-    }
+    openReportDialog("summaryReport", undefined, async (settings) => {
+      try {
+        // Get all projects for this stake
+        const projects = await fetchProjectsByDaysOfStakeId(stakeId, true);
+
+        // Generate the report with settings
+        await generateStakeSummaryReport(stakeId, date, dayOfService, settings);
+      } catch (error) {
+        console.error("Error generating projects summary:", error);
+        // toast.error("Failed to generate projects summary");
+      }
+    });
   };
 
   // Utility functions
@@ -1100,6 +1123,14 @@ export default function ProjectFormsPage({ params }) {
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
         onClose={handleCancelDelete}
+      />
+
+      <ReportSettingsDialog
+        open={dialogOpen}
+        onClose={closeReportDialog}
+        onGenerate={handleGenerate}
+        reportType={reportType}
+        projectId={currentProjectId}
       />
 
       <Dialog
