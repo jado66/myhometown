@@ -111,6 +111,7 @@ export function useSendSMS() {
           `/api/communications/send-texts/stream?messageId=${messageId}`
         );
 
+        // Inside the onmessage event handler of useSendSMS hook
         eventSourceRef.current.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
@@ -144,7 +145,7 @@ export function useSendSMS() {
 
               // Store log entry for fallback batch logging
               const logEntry = {
-                id: logId, // Include the log ID
+                id: logId,
                 message_id: messageId,
                 sender_id,
                 recipient_phone: recipient,
@@ -166,23 +167,52 @@ export function useSendSMS() {
               };
               batchLogsRef.current.push(logEntry);
 
-              // Try to update the log status individually
+              // Update the log status
               if (logId) {
-                updateTextLogStatus(
-                  logId,
-                  status === "success" ? "sent" : "failed",
-                  status === "success" ? new Date().toISOString() : null,
-                  status === "failed" ? error : null
-                ).catch((err) => {
-                  console.error(
-                    "Error updating log status for",
-                    recipient,
-                    err
-                  );
-                  // We'll fall back to batch processing if individual updates fail
-                });
+                // Try multiple times with exponential backoff if needed
+                const retryUpdate = async (attempts = 3, delay = 500) => {
+                  try {
+                    const result = await updateTextLogStatus(
+                      logId,
+                      status === "success" ? "sent" : "failed",
+                      status === "success" ? new Date().toISOString() : null,
+                      status === "failed" ? error : null
+                    );
+
+                    if (result.error) {
+                      throw new Error(result.error);
+                    }
+
+                    // Log success
+                    console.debug(
+                      `Successfully updated log ${logId} to ${status}`
+                    );
+                  } catch (err) {
+                    console.error(
+                      `Error updating log ${logId} (attempt ${4 - attempts}):`,
+                      err
+                    );
+
+                    if (attempts > 1) {
+                      // Wait and retry with exponential backoff
+                      await new Promise((resolve) =>
+                        setTimeout(resolve, delay)
+                      );
+                      await retryUpdate(attempts - 1, delay * 2);
+                    } else {
+                      console.error(
+                        `Failed to update log ${logId} after multiple attempts`
+                      );
+                      // We'll fall back to batch processing when the stream completes
+                    }
+                  }
+                };
+
+                // Start the retry process
+                retryUpdate();
               }
 
+              // Rest of the existing code...
               const result = {
                 recipient,
                 status,
@@ -203,53 +233,90 @@ export function useSendSMS() {
                 results: [...results],
               });
             } else if (type === "complete") {
+              // Handle the completion event
               console.debug("SSE stream completed for messageId:", messageId);
               setSendStatus("completed");
               toast.success("All messages processed successfully!");
 
               // Fallback: If we have batch logs, try to re-log them all
               if (batchLogsRef.current.length > 0) {
-                // Create new logs without IDs for completed messages
-                const newBatchLogs = batchLogsRef.current.map((log) => {
-                  // Remove the id field from each log for re-logging
-                  const { id, ...logWithoutId } = log;
-                  return logWithoutId;
-                });
+                // Process any logs that might not have been successfully updated
+                const processFailedUpdates = async () => {
+                  for (const log of batchLogsRef.current) {
+                    if (log.id) {
+                      try {
+                        const result = await updateTextLogStatus(
+                          log.id,
+                          log.status,
+                          log.sent_at,
+                          log.error_message
+                        );
 
-                // Try batch updating all logs as a fallback
-                batchAddTextLogs(newBatchLogs, sender_id).catch((err) => {
-                  console.error("Error with fallback batch logging:", err);
-                });
+                        if (result.error) {
+                          console.error(
+                            `Error updating log ${log.id}:`,
+                            result.error
+                          );
+                        } else {
+                          console.debug(
+                            `Successfully updated log ${log.id} in fallback`
+                          );
+                        }
+                      } catch (err) {
+                        console.error(
+                          `Failed to update log ${log.id} in fallback:`,
+                          err
+                        );
+                      }
+                    }
+                  }
+                };
+
+                processFailedUpdates();
               }
 
               cleanup();
 
-              // Fallback: Update any pending logs
+              // Handle any remaining pending logs
               const pendingRecipients = recipients.filter(
                 (r) => !processedMessagesRef.current.has(r.value)
               );
+
               if (pendingRecipients.length > 0) {
                 console.warn(
                   "Pending logs detected:",
                   pendingRecipients.length
                 );
-                pendingRecipients.forEach((recipient) => {
-                  const logId = logIdsRef.current.get(recipient.value);
-                  if (logId) {
-                    updateTextLogStatus(
-                      logId,
-                      "failed",
-                      null,
-                      "No status update received from stream"
-                    ).catch((err) => {
-                      console.error(
-                        "Error updating pending log:",
-                        recipient.value,
-                        err
-                      );
-                    });
+
+                const processPendingLogs = async () => {
+                  for (const recipient of pendingRecipients) {
+                    const logId = logIdsRef.current.get(recipient.value);
+                    if (logId) {
+                      try {
+                        const result = await updateTextLogStatus(
+                          logId,
+                          "failed",
+                          null,
+                          "No status update received from stream"
+                        );
+
+                        if (result.error) {
+                          console.error(
+                            `Error updating pending log ${logId}:`,
+                            result.error
+                          );
+                        }
+                      } catch (err) {
+                        console.error(
+                          `Failed to update pending log ${logId}:`,
+                          err
+                        );
+                      }
+                    }
                   }
-                });
+                };
+
+                processPendingLogs();
               }
             }
           } catch (error) {
@@ -274,6 +341,45 @@ export function useSendSMS() {
             // Try batch updating all logs as a fallback
             batchAddTextLogs(newBatchLogs, sender_id).catch((err) => {
               console.error("Error with fallback batch logging:", err);
+
+              // Last resort: Use batch update endpoint
+              fetch("/api/communications/batch-update-text-logs", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  logs: batchLogsRef.current
+                    .filter((log) => log.id) // Only include logs with IDs
+                    .map((log) => ({
+                      id: log.id,
+                      status: log.status,
+                      sent_at: log.sent_at,
+                      error_message: log.error_message,
+                    })),
+                }),
+              }).catch((batchErr) => {
+                console.error("Failed batch update:", batchErr);
+
+                // Absolute last resort: Update each log individually
+                batchLogsRef.current.forEach((log) => {
+                  if (log.id) {
+                    fetch(`/api/communications/update-text-log`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        logId: log.id,
+                        status: log.status,
+                        sentAt: log.sent_at,
+                        errorMessage: log.error_message,
+                      }),
+                    }).catch((patchErr) => {
+                      console.error(
+                        `Failed direct update for log ID ${log.id}:`,
+                        patchErr
+                      );
+                    });
+                  }
+                });
+              });
             });
           }
 
@@ -342,6 +448,26 @@ export function useSendSMS() {
             // Try batch updating all logs as a fallback
             batchAddTextLogs(newBatchLogs, sender_id).catch((err) => {
               console.error("Error with fallback batch logging:", err);
+
+              // Last resort: Update each log individually via direct API call
+              batchLogsRef.current.forEach((log) => {
+                if (log.id) {
+                  fetch(`/api/text-logs/${log.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      status: log.status,
+                      sent_at: log.sent_at,
+                      error_message: log.error_message,
+                    }),
+                  }).catch((patchErr) => {
+                    console.error(
+                      `Failed direct update for log ID ${log.id}:`,
+                      patchErr
+                    );
+                  });
+                }
+              });
             });
           }
 

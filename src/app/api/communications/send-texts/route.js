@@ -37,7 +37,7 @@ export async function POST(req) {
         await sendMessageToStream(messageId, {
           type: "status",
           status: "success",
-          recipient: recipient.label,
+          recipient: recipient.value,
           messageId,
           timestamp: new Date().toISOString(),
         });
@@ -48,7 +48,7 @@ export async function POST(req) {
         await sendMessageToStream(messageId, {
           type: "status",
           status: "failed",
-          recipient: recipient.label,
+          recipient: recipient.value,
           error: error.message,
           messageId,
           timestamp: new Date().toISOString(),
