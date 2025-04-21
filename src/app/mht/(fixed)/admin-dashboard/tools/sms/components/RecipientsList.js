@@ -8,36 +8,14 @@ import {
   Divider,
 } from "@mui/material";
 import { Error } from "@mui/icons-material";
+import { getGroupMembers } from "@/util/texting/utils";
 
-export const RecipientsList = ({ selectedRecipients, contacts }) => {
-  // Safe check for group membership
-  const isGroupRecipient = (recipient) => {
-    return (
-      recipient &&
-      typeof recipient.value === "string" &&
-      recipient.value.startsWith("group:")
-    );
-  };
+export default function RecipientsList({ selectedRecipients, contacts }) {
+  const isGroupRecipient = (recipient) =>
+    recipient &&
+    typeof recipient.value === "string" &&
+    recipient.value.startsWith("group:");
 
-  // Function to get all contacts from a group
-  const getGroupContacts = (groupName) => {
-    return allContacts.filter((contact) => {
-      // Ensure contact has groups
-      if (!contact.groups || !Array.isArray(contact.groups)) return false;
-
-      // Check if contact belongs to this group - handles both string and object formats
-      return contact.groups.some((group) => {
-        // Handle group as string
-        if (typeof group === "string") {
-          return group === groupName;
-        }
-        // Handle group as object
-        return group && group.value === groupName;
-      });
-    });
-  };
-
-  // Process recipients and track duplicates with their order of appearance
   const processRecipients = () => {
     if (!Array.isArray(selectedRecipients))
       return { groupRecipients: [], individualRecipients: [] };
@@ -45,7 +23,6 @@ export const RecipientsList = ({ selectedRecipients, contacts }) => {
     const phoneNumberMap = new Map();
     const duplicatesInfo = new Map();
 
-    // First, process group recipients
     const groupRecipients = selectedRecipients
       .filter(isGroupRecipient)
       .map((recipient) => {
@@ -55,11 +32,8 @@ export const RecipientsList = ({ selectedRecipients, contacts }) => {
         ) {
           return null;
         }
-
         const groupName = recipient.value.replace("group:", "");
-        const groupContacts = getGroupContacts(groupName);
-
-        // Track all phone numbers from groups
+        const groupContacts = getGroupMembers(groupName, contacts);
         groupContacts.forEach((contact) => {
           if (contact && contact.value) {
             if (!phoneNumberMap.has(contact.value)) {
@@ -75,7 +49,6 @@ export const RecipientsList = ({ selectedRecipients, contacts }) => {
             }
           }
         });
-
         return {
           groupName: recipient.label.props.children[0].props.children,
           contacts: groupContacts.map((contact) => ({
@@ -85,9 +58,8 @@ export const RecipientsList = ({ selectedRecipients, contacts }) => {
           })),
         };
       })
-      .filter(Boolean); // Remove any null entries
+      .filter(Boolean);
 
-    // Then, process individual recipients
     const individualRecipients = selectedRecipients
       .filter((r) => r && r.value && !isGroupRecipient(r))
       .map((recipient) => {
@@ -177,4 +149,4 @@ export const RecipientsList = ({ selectedRecipients, contacts }) => {
       ))}
     </Box>
   );
-};
+}
