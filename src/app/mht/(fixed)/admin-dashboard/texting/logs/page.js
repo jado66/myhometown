@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Box,
   Card,
@@ -16,7 +16,6 @@ import {
   Tabs,
   Tab,
   Chip,
-  IconButton,
   Table,
   TableBody,
   TableCell,
@@ -29,6 +28,11 @@ import {
   MenuItem,
   Select,
   Grid,
+  IconButton,
+  Collapse,
+  Tooltip,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import {
   Search,
@@ -37,6 +41,9 @@ import {
   Error as ErrorIcon,
   Schedule,
   Image,
+  Group as GroupIcon,
+  ExpandMore,
+  ExpandLess,
 } from "@mui/icons-material";
 
 import BackButton from "@/components/BackButton";
@@ -123,7 +130,58 @@ const StatusChip = ({ status }) => {
   );
 };
 
+// New component to show recipient list in details view
+const RecipientsList = ({ recipients, statuses }) => {
+  if (!recipients || recipients.length === 0) return null;
+
+  return (
+    <List dense>
+      {recipients.map((recipient, index) => (
+        <ListItem key={index} divider={index < recipients.length - 1}>
+          <ListItemText
+            primary={recipient}
+            secondary={
+              statuses && statuses[index] ? statuses[index] : "Unknown"
+            }
+          />
+          {statuses && statuses[index] && (
+            <StatusChip status={statuses[index]} />
+          )}
+        </ListItem>
+      ))}
+    </List>
+  );
+};
+
+// Status summary function
+const getStatusSummary = (statuses) => {
+  if (!statuses || statuses.length === 0) return "Unknown";
+
+  const counts = {
+    failed: 0,
+    sent: 0,
+    delivered: 0,
+    unknown: 0,
+  };
+
+  statuses.forEach((status) => {
+    if (status?.toLowerCase() === "failed") counts.failed++;
+    else if (status?.toLowerCase() === "sent") counts.sent++;
+    else if (status?.toLowerCase() === "delivered") counts.delivered++;
+    else counts.unknown++;
+  });
+
+  // Determine primary status (prioritize failed > sent > delivered)
+  let primaryStatus = "delivered";
+  if (counts.failed > 0) primaryStatus = "failed";
+  else if (counts.sent > 0) primaryStatus = "sent";
+
+  return primaryStatus;
+};
+
 export default function TextLogViewer() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { user } = useUser();
 
   // Get text logs using our custom hook
@@ -144,6 +202,7 @@ export default function TextLogViewer() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [sortBy, setSortBy] = useState("created_at");
   const [sortDirection, setSortDirection] = useState("desc");
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
 
   // For viewing message details
   const [selectedLog, setSelectedLog] = useState(null);
@@ -203,7 +262,7 @@ export default function TextLogViewer() {
   };
 
   const handleChangeRowsPerPage = (event) => {
-    const newRowsPerPage = parseInt(event.target.value, 10);
+    const newRowsPerPage = Number.parseInt(event.target.value, 10);
     setRowsPerPage(newRowsPerPage);
     setPage(0);
     fetchTextLogs({
@@ -250,11 +309,19 @@ export default function TextLogViewer() {
     setSelectedLog(null);
   };
 
-  // Merge all logs into a single array for the current tab
+  // Toggle filters visibility
+  const toggleFilters = () => {
+    setFiltersExpanded(!filtersExpanded);
+  };
+
+  // Group logs by message_id
   const currentLogs = useMemo(() => {
+    // First, gather all logs based on the active tab
+    let allLogs = [];
+
     if (activeTab === 0) {
       // All logs
-      let allLogs = [...logs.userLogs];
+      allLogs = [...logs.userLogs];
 
       // Add community logs
       Object.values(logs.communityLogs).forEach((communityLogList) => {
@@ -265,28 +332,51 @@ export default function TextLogViewer() {
       Object.values(logs.cityLogs).forEach((cityLogList) => {
         allLogs = [...allLogs, ...cityLogList];
       });
-
-      return allLogs;
     } else if (activeTab === 1) {
       // User logs only
-      return logs.userLogs;
+      allLogs = logs.userLogs;
     } else if (activeTab === 2) {
       // Community logs
-      let communityLogs = [];
       Object.values(logs.communityLogs).forEach((communityLogList) => {
-        communityLogs = [...communityLogs, ...communityLogList];
+        allLogs = [...allLogs, ...communityLogList];
       });
-      return communityLogs;
     } else if (activeTab === 3) {
       // City logs
-      let cityLogs = [];
       Object.values(logs.cityLogs).forEach((cityLogList) => {
-        cityLogs = [...cityLogs, ...cityLogList];
+        allLogs = [...allLogs, ...cityLogList];
       });
-      return cityLogs;
     }
 
-    return [];
+    // Now group the logs by message_id
+    const groupedLogs = {};
+    allLogs.forEach((log) => {
+      if (!log.message_id) return; // Skip logs without message_id
+
+      if (!groupedLogs[log.message_id]) {
+        // First occurrence of this message_id
+        groupedLogs[log.message_id] = {
+          ...log,
+          recipients: [log.recipient_phone],
+          recipientCount: 1,
+          statuses: [log.status],
+          // Keep track of all individual log IDs for reference
+          individualLogIds: [log.id],
+        };
+      } else {
+        // Add this recipient to the existing group
+        const group = groupedLogs[log.message_id];
+        group.recipients.push(log.recipient_phone);
+        group.recipientCount += 1;
+        group.statuses.push(log.status);
+        group.individualLogIds.push(log.id);
+      }
+    });
+
+    // Set the summary status for each group and convert to array
+    return Object.values(groupedLogs).map((group) => ({
+      ...group,
+      status: getStatusSummary(group.statuses),
+    }));
   }, [logs, activeTab]);
 
   return (
@@ -296,27 +386,46 @@ export default function TextLogViewer() {
       <Card
         sx={{
           width: "100%",
-          m: 3,
-          mt: 5,
-          p: 3,
+          m: { xs: 1, sm: 2, md: 3 },
+          mt: { xs: 3, sm: 4, md: 5 },
+          p: { xs: 2, sm: 3 },
           display: "flex",
           flexDirection: "column",
-          boxShadow: "none",
-          overflowX: "auto",
+          boxShadow: 3,
+          borderRadius: 2,
+          overflow: "visible", // Changed from "hidden" to "visible"
         }}
       >
-        <Typography variant="h5" gutterBottom>
+        <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
           Text Message Logs
         </Typography>
 
         {selectedLog ? (
           // Message details view
-          <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+          <Paper
+            elevation={3}
+            sx={{
+              p: { xs: 2, sm: 3 },
+              mb: 3,
+              borderRadius: 2,
+              boxShadow: 2,
+            }}
+          >
             <Box
-              sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                mb: 2,
+                flexDirection: { xs: "column", sm: "row" },
+                gap: { xs: 2, sm: 0 },
+              }}
             >
               <Typography variant="h6">Message Details</Typography>
-              <Button variant="outlined" onClick={handleCloseDetails}>
+              <Button
+                variant="contained"
+                onClick={handleCloseDetails}
+                size="small"
+              >
                 Back to Logs
               </Button>
             </Box>
@@ -325,25 +434,43 @@ export default function TextLogViewer() {
 
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2">Recipient</Typography>
-                <Typography>{selectedLog.recipient_phone}</Typography>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Message ID
+                </Typography>
+                <Typography variant="body1" fontWeight="medium">
+                  {selectedLog.message_id}
+                </Typography>
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2">Status</Typography>
-                <StatusChip status={selectedLog.status} />
+                <Typography variant="subtitle2" color="text.secondary">
+                  Status
+                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <StatusChip status={selectedLog.status} />
+                  {selectedLog.recipientCount > 1 &&
+                    selectedLog.statuses.some(
+                      (s) => s !== selectedLog.status
+                    ) && (
+                      <Typography variant="caption">Mixed statuses</Typography>
+                    )}
+                </Box>
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2">Sent At</Typography>
-                <Typography>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Sent At
+                </Typography>
+                <Typography variant="body1">
                   {formatDateTime(selectedLog.created_at)}
                 </Typography>
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2">Delivered At</Typography>
-                <Typography>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Delivered At
+                </Typography>
+                <Typography variant="body1">
                   {selectedLog.delivered_at
                     ? formatDateTime(selectedLog.delivered_at)
                     : "Pending"}
@@ -359,10 +486,17 @@ export default function TextLogViewer() {
               )}
 
               <Grid item xs={12}>
-                <Typography variant="subtitle2">Message Content</Typography>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Message Content
+                </Typography>
                 <Paper
                   elevation={1}
-                  sx={{ p: 2, backgroundColor: "grey.100", mt: 1 }}
+                  sx={{
+                    p: 2,
+                    backgroundColor: "grey.50",
+                    mt: 1,
+                    borderRadius: 1,
+                  }}
                 >
                   <Typography>{selectedLog.message_content}</Typography>
                 </Paper>
@@ -370,21 +504,55 @@ export default function TextLogViewer() {
 
               {selectedLog.media_urls && (
                 <Grid item xs={12}>
-                  <Typography variant="subtitle2">Media Attachments</Typography>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Media Attachments
+                  </Typography>
                   <MediaPreviews mediaUrls={selectedLog.media_urls} />
                 </Grid>
               )}
 
+              <Grid item xs={12}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Recipients ({selectedLog.recipientCount})
+                </Typography>
+                <Paper
+                  elevation={1}
+                  sx={{
+                    p: 1,
+                    backgroundColor: "grey.50",
+                    mt: 1,
+                    maxHeight: "300px",
+                    overflow: "auto",
+                    borderRadius: 1,
+                  }}
+                >
+                  <RecipientsList
+                    recipients={
+                      selectedLog.recipients || [selectedLog.recipient_phone]
+                    }
+                    statuses={selectedLog.statuses || [selectedLog.status]}
+                  />
+                </Paper>
+              </Grid>
+
               {selectedLog.metadata && (
                 <Grid item xs={12}>
-                  <Typography variant="subtitle2">
+                  <Typography variant="subtitle2" color="text.secondary">
                     Additional Information
                   </Typography>
                   <Paper
                     elevation={1}
-                    sx={{ p: 2, backgroundColor: "grey.100", mt: 1 }}
+                    sx={{
+                      p: 2,
+                      backgroundColor: "grey.50",
+                      mt: 1,
+                      borderRadius: 1,
+                    }}
                   >
-                    <Typography component="pre" sx={{ whiteSpace: "pre-wrap" }}>
+                    <Typography
+                      component="pre"
+                      sx={{ whiteSpace: "pre-wrap", fontSize: "0.875rem" }}
+                    >
                       {typeof selectedLog.metadata === "string"
                         ? selectedLog.metadata
                         : JSON.stringify(selectedLog.metadata, null, 2)}
@@ -397,119 +565,176 @@ export default function TextLogViewer() {
         ) : (
           // Main logs view
           <>
-            {/* Filter section */}
-            <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Search & Filters
-              </Typography>
-
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={4}>
-                  <TextField
-                    fullWidth
-                    label="Search in message content"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    margin="normal"
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6} md={4}>
-                  <TextField
-                    fullWidth
-                    label="Recipient Phone Number"
-                    value={phoneFilter}
-                    onChange={(e) => setPhoneFilter(e.target.value)}
-                    margin="normal"
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormControl fullWidth margin="normal">
-                    <InputLabel>Status</InputLabel>
-                    <Select
-                      value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                      label="Status"
-                    >
-                      <MenuItem value="">All Statuses</MenuItem>
-                      <MenuItem value="sent">Sent</MenuItem>
-                      <MenuItem value="delivered">Delivered</MenuItem>
-                      <MenuItem value="failed">Failed</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={12} sm={6} md={4}>
-                  <TextField
-                    fullWidth
-                    label="Start Date"
-                    type="date"
-                    value={startDate || ""}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    margin="normal"
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6} md={4}>
-                  <TextField
-                    fullWidth
-                    label="End Date"
-                    type="date"
-                    value={endDate || ""}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    margin="normal"
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={12}
-                  sm={12}
-                  md={4}
-                  sx={{ display: "flex", alignItems: "center" }}
-                >
-                  <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={handleSearch}
-                      startIcon={<Search />}
-                    >
-                      Search
-                    </Button>
-                    <Button variant="outlined" onClick={clearFilters}>
-                      Clear Filters
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      startIcon={<RefreshIcon />}
-                      onClick={() => fetchTextLogs()}
-                    >
-                      Refresh
-                    </Button>
-                  </Box>
-                </Grid>
-              </Grid>
-            </Paper>
-
             {/* Tab navigation */}
-            <Tabs
-              value={activeTab}
-              onChange={handleTabChange}
-              indicatorColor="primary"
-              textColor="primary"
-              variant="scrollable"
-              scrollButtons="auto"
-              sx={{ mb: 2 }}
+            <Paper
+              elevation={1}
+              sx={{
+                mb: 3,
+                borderRadius: 2,
+                overflow: "visible", // Changed from "hidden" to "visible" to prevent content cutoff
+              }}
             >
-              <Tab label="All Messages" />
-              <Tab label="Personal Messages" />
-              <Tab label="Community Messages" />
-              <Tab label="City Messages" />
-            </Tabs>
+              <Tabs
+                value={activeTab}
+                onChange={handleTabChange}
+                indicatorColor="primary"
+                textColor="primary"
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{
+                  borderBottom: 1,
+                  borderColor: "divider",
+                  "& .MuiTab-root": {
+                    minHeight: 48,
+                    py: 1,
+                  },
+                }}
+              >
+                <Tab label="All Messages" />
+                <Tab label="Personal Messages" />
+                <Tab label="Community Messages" />
+                <Tab label="City Messages" />
+              </Tabs>
+
+              {/* Filter section - collapsible on mobile */}
+              <Box sx={{ p: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 2,
+                  }}
+                >
+                  <Typography variant="h6">Search & Filters</Typography>
+                  <IconButton
+                    onClick={toggleFilters}
+                    size="small"
+                    sx={{ display: { md: "none" } }}
+                  >
+                    <Tooltip
+                      title={filtersExpanded ? "Hide filters" : "Show filters"}
+                    >
+                      {filtersExpanded ? <ExpandLess /> : <ExpandMore />}
+                    </Tooltip>
+                  </IconButton>
+                </Box>
+
+                {/* Update the Collapse component to fix overflow issues */}
+                <Collapse
+                  in={filtersExpanded || !isMobile}
+                  sx={{ width: "100%", overflow: "visible" }}
+                >
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6} md={4}>
+                      <TextField
+                        fullWidth
+                        label="Search in message content"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        margin="normal"
+                        size="small"
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6} md={4}>
+                      <TextField
+                        fullWidth
+                        label="Recipient Phone Number"
+                        value={phoneFilter}
+                        onChange={(e) => setPhoneFilter(e.target.value)}
+                        margin="normal"
+                        size="small"
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6} md={4}>
+                      <FormControl fullWidth margin="normal" size="small">
+                        <InputLabel>Status</InputLabel>
+                        <Select
+                          value={statusFilter}
+                          onChange={(e) => setStatusFilter(e.target.value)}
+                          label="Status"
+                        >
+                          <MenuItem value="">All Statuses</MenuItem>
+                          <MenuItem value="sent">Sent</MenuItem>
+                          <MenuItem value="delivered">Delivered</MenuItem>
+                          <MenuItem value="failed">Failed</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6} md={4}>
+                      <TextField
+                        fullWidth
+                        label="Start Date"
+                        type="date"
+                        value={startDate || ""}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        InputLabelProps={{ shrink: true }}
+                        margin="normal"
+                        size="small"
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6} md={4}>
+                      <TextField
+                        fullWidth
+                        label="End Date"
+                        type="date"
+                        value={endDate || ""}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        InputLabelProps={{ shrink: true }}
+                        margin="normal"
+                        size="small"
+                      />
+                    </Grid>
+
+                    <Grid
+                      item
+                      xs={12}
+                      sm={12}
+                      md={4}
+                      sx={{ display: "flex", alignItems: "center" }}
+                    >
+                      <Box
+                        sx={{
+                          mt: 2,
+                          display: "flex",
+                          gap: 1,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={handleSearch}
+                          startIcon={<Search />}
+                          size="small"
+                        >
+                          Search
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          onClick={clearFilters}
+                          size="small"
+                        >
+                          Clear
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          startIcon={<RefreshIcon />}
+                          onClick={() => fetchTextLogs()}
+                          size="small"
+                        >
+                          Refresh
+                        </Button>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Collapse>
+              </Box>
+            </Paper>
 
             {/* Main content - logs table */}
             {loading ? (
@@ -526,81 +751,187 @@ export default function TextLogViewer() {
               </Alert>
             ) : (
               <>
-                <TableContainer component={Paper}>
-                  <Table sx={{ minWidth: 650 }} size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell
-                          onClick={() => handleSort("created_at")}
-                          sx={{ cursor: "pointer", fontWeight: "bold" }}
-                        >
-                          Date/Time{" "}
-                          {sortBy === "created_at" &&
-                            (sortDirection === "asc" ? "↑" : "↓")}
-                        </TableCell>
-                        <TableCell>Recipient</TableCell>
-                        <TableCell>Message</TableCell>
-                        <TableCell>Media</TableCell>
-                        <TableCell
-                          onClick={() => handleSort("status")}
-                          sx={{ cursor: "pointer", fontWeight: "bold" }}
-                        >
-                          Status{" "}
-                          {sortBy === "status" &&
-                            (sortDirection === "asc" ? "↑" : "↓")}
-                        </TableCell>
-                        <TableCell>Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {currentLogs.map((log) => (
-                        <TableRow key={log.id} hover>
-                          <TableCell>
-                            {formatDateTime(log.created_at)}
+                <Alert
+                  severity="info"
+                  sx={{
+                    mb: 2,
+                    borderRadius: 1,
+                  }}
+                  icon={<GroupIcon />}
+                >
+                  Showing {currentLogs.length} bulk message(s) grouped by
+                  message ID
+                </Alert>
+
+                <Paper
+                  elevation={3}
+                  sx={{
+                    mb: 3,
+                    borderRadius: 2,
+                    overflow: "hidden",
+                    width: "100%",
+                  }}
+                >
+                  <TableContainer
+                    sx={{
+                      maxWidth: "100%",
+                      overflowX: "auto",
+                      "&::-webkit-scrollbar": {
+                        height: 8,
+                      },
+                      "&::-webkit-scrollbar-thumb": {
+                        backgroundColor: "rgba(0,0,0,0.2)",
+                        borderRadius: 4,
+                      },
+                    }}
+                  >
+                    <Table sx={{ minWidth: 650 }} size="small">
+                      <TableHead>
+                        <TableRow sx={{ backgroundColor: "grey.100" }}>
+                          <TableCell sx={{ fontWeight: "bold" }}>ID</TableCell>
+                          <TableCell
+                            onClick={() => handleSort("created_at")}
+                            sx={{
+                              cursor: "pointer",
+                              fontWeight: "bold",
+                              "&:hover": {
+                                backgroundColor: "action.hover",
+                              },
+                            }}
+                          >
+                            Date/Time{" "}
+                            {sortBy === "created_at" &&
+                              (sortDirection === "asc" ? "↑" : "↓")}
                           </TableCell>
-                          <TableCell>{log.recipient_phone}</TableCell>
-                          <TableCell>
-                            {log.message_content.length > 50
-                              ? `${log.message_content.substring(0, 50)}...`
-                              : log.message_content}
+                          <TableCell sx={{ fontWeight: "bold" }}>
+                            Recipients
                           </TableCell>
-                          <TableCell>
-                            {log.media_urls && (
-                              <Chip
-                                size="small"
-                                icon={<Image />}
-                                label="Media"
-                              />
-                            )}
+                          <TableCell sx={{ fontWeight: "bold", minWidth: 200 }}>
+                            Message
                           </TableCell>
-                          <TableCell>
-                            <StatusChip status={log.status} />
+                          <TableCell sx={{ fontWeight: "bold" }}>
+                            Media
                           </TableCell>
-                          <TableCell>
-                            <Button
-                              size="small"
-                              onClick={() => handleViewDetails(log)}
-                              variant="outlined"
-                            >
-                              View
-                            </Button>
+                          <TableCell
+                            onClick={() => handleSort("status")}
+                            sx={{
+                              cursor: "pointer",
+                              fontWeight: "bold",
+                              "&:hover": {
+                                backgroundColor: "action.hover",
+                              },
+                            }}
+                          >
+                            Status{" "}
+                            {sortBy === "status" &&
+                              (sortDirection === "asc" ? "↑" : "↓")}
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: "bold" }}>
+                            Actions
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                      </TableHead>
+                      <TableBody>
+                        {currentLogs.map((log, index) => (
+                          <TableRow
+                            key={log.message_id}
+                            hover
+                            sx={{
+                              backgroundColor:
+                                index % 2 === 0
+                                  ? "background.default"
+                                  : "background.paper",
+                              "&:hover": {
+                                backgroundColor: "action.hover",
+                              },
+                            }}
+                          >
+                            <TableCell>{log.message_id}</TableCell>
+                            <TableCell>
+                              {formatDateTime(log.created_at)}
+                            </TableCell>
+                            <TableCell>
+                              {log.recipientCount > 1 ? (
+                                <Tooltip
+                                  title={`${log.recipientCount} recipients`}
+                                >
+                                  <Chip
+                                    icon={<GroupIcon />}
+                                    label={`${log.recipientCount} recipients`}
+                                    color="primary"
+                                    size="small"
+                                    sx={{ "&:hover": { boxShadow: 1 } }}
+                                  />
+                                </Tooltip>
+                              ) : (
+                                log.recipient_phone
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Tooltip title={log.message_content}>
+                                <Typography noWrap sx={{ maxWidth: 300 }}>
+                                  {log.message_content}
+                                </Typography>
+                              </Tooltip>
+                            </TableCell>
+                            <TableCell>
+                              {log.media_urls && (
+                                <Chip
+                                  size="small"
+                                  icon={<Image />}
+                                  label="Media"
+                                  variant="outlined"
+                                  color="secondary"
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <StatusChip status={log.status} />
+                              {log.recipientCount > 1 &&
+                                log.statuses.some((s) => s !== log.status) && (
+                                  <Typography
+                                    variant="caption"
+                                    sx={{ display: "block", mt: 0.5 }}
+                                  >
+                                    Mixed statuses
+                                  </Typography>
+                                )}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                size="small"
+                                onClick={() => handleViewDetails(log)}
+                                variant="contained"
+                                color="primary"
+                              >
+                                View
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
 
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 25, 50]}
-                  component="div"
-                  count={-1} // We don't know the total count, so we use -1 to hide the count display
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                  labelDisplayedRows={({ from, to }) => `${from}-${to}`}
-                />
+                  <TablePagination
+                    rowsPerPageOptions={[5, 10, 25, 50, 100]}
+                    component="div"
+                    count={-1} // We don't know the total count, so we use -1 to hide the count display
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    labelDisplayedRows={({ from, to }) => `${from}-${to}`}
+                    sx={{
+                      borderTop: 1,
+                      borderColor: "divider",
+                      ".MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows":
+                        {
+                          m: 1,
+                        },
+                    }}
+                  />
+                </Paper>
               </>
             )}
           </>
