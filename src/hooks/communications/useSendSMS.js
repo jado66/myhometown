@@ -1,10 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useTextLogs } from "../useTextLogs";
-import { v4 as uuidv4 } from "uuid"; // Add uuid for generating messageId
+import { v4 as uuidv4 } from "uuid";
 
 export function useSendSMS() {
-  const { batchAddTextLogs } = useTextLogs();
+  const { batchAddTextLogs, updateTextLogStatus } = useTextLogs();
 
   const [sendStatus, setSendStatus] = useState("idle");
   const [progress, setProgress] = useState({
@@ -18,6 +18,8 @@ export function useSendSMS() {
   const eventSourceRef = useRef(null);
   const processedMessagesRef = useRef(new Set());
   const timeoutRef = useRef(null);
+  const logIdsRef = useRef(new Map()); // Track log IDs for each recipient
+  const batchLogsRef = useRef([]); // Keep track of logs for fallback batch logging
 
   // Cleanup function
   const cleanup = useCallback(() => {
@@ -30,6 +32,8 @@ export function useSendSMS() {
       timeoutRef.current = null;
     }
     processedMessagesRef.current.clear();
+    logIdsRef.current.clear();
+    batchLogsRef.current = [];
   }, []);
 
   // Cleanup on unmount
@@ -39,14 +43,13 @@ export function useSendSMS() {
 
   const sendMessages = useCallback(
     async (message, recipients, mediaUrls = [], user) => {
-      const messageId = uuidv4(); // Generate unique messageId
+      const messageId = uuidv4();
       const results = [];
       let completedCount = 0;
       let successfulCount = 0;
       let failedCount = 0;
       const totalCount = recipients.length;
 
-      const batchLogs = [];
       const owner_type = "user";
       const owner_id = user?.id;
       const sender_id = user?.id;
@@ -61,7 +64,48 @@ export function useSendSMS() {
 
       setSendStatus("sending");
 
-      // Initialize SSE connection
+      // Step 1: Log all messages as "pending"
+      const pendingLogs = recipients.map((recipient) => ({
+        message_id: messageId,
+        sender_id,
+        recipient_phone: recipient.value,
+        recipient_contact_id: recipient.contactId || null,
+        message_content: message,
+        media_urls: mediaUrls.length > 0 ? JSON.stringify(mediaUrls) : null,
+        status: "pending",
+        error_message: null,
+        owner_id,
+        owner_type,
+        metadata: JSON.stringify({
+          recipientName: `${recipient.firstName || ""} ${
+            recipient.lastName || ""
+          }`.trim(),
+          smsProviderResponse: null,
+        }),
+      }));
+
+      try {
+        const { data: pendingLogData, error: pendingLogError } =
+          await batchAddTextLogs(pendingLogs, sender_id);
+        if (pendingLogError) {
+          console.error("Error logging pending messages:", pendingLogError);
+          toast.error("Failed to log pending messages");
+          setSendStatus("error");
+          return results;
+        }
+
+        // Store log IDs for status updates
+        pendingLogData.forEach((log, index) => {
+          logIdsRef.current.set(recipients[index].value, log.id);
+        });
+      } catch (error) {
+        console.error("Error during batchAddTextLogs:", error);
+        toast.error("Failed to log messages: " + error.message);
+        setSendStatus("error");
+        return results;
+      }
+
+      // Step 2: Initialize SSE connection
       try {
         eventSourceRef.current = new EventSource(
           `/api/communications/send-texts/stream?messageId=${messageId}`
@@ -82,16 +126,26 @@ export function useSendSMS() {
             if (receivedMessageId !== messageId) return;
 
             if (type === "connected") {
-              // Stream connected, proceed with sending
+              console.debug("SSE stream connected for messageId:", messageId);
             } else if (type === "status") {
               // Process status update
-              if (processedMessagesRef.current.has(recipient)) return;
+              if (processedMessagesRef.current.has(recipient)) {
+                console.warn(
+                  "Duplicate status update for recipient:",
+                  recipient
+                );
+                return;
+              }
               processedMessagesRef.current.add(recipient);
 
+              const logId = logIdsRef.current.get(recipient);
               const recipientData =
                 recipients.find((r) => r.value === recipient) || {};
+
+              // Store log entry for fallback batch logging
               const logEntry = {
-                message_id: receivedMessageId,
+                id: logId, // Include the log ID
+                message_id: messageId,
                 sender_id,
                 recipient_phone: recipient,
                 recipient_contact_id: recipientData.contactId || null,
@@ -100,6 +154,7 @@ export function useSendSMS() {
                   mediaUrls.length > 0 ? JSON.stringify(mediaUrls) : null,
                 status: status === "success" ? "sent" : "failed",
                 error_message: status === "failed" ? error : null,
+                sent_at: status === "success" ? new Date().toISOString() : null,
                 owner_id,
                 owner_type,
                 metadata: JSON.stringify({
@@ -109,8 +164,24 @@ export function useSendSMS() {
                   smsProviderResponse: status === "success" ? data : null,
                 }),
               };
+              batchLogsRef.current.push(logEntry);
 
-              batchLogs.push(logEntry);
+              // Try to update the log status individually
+              if (logId) {
+                updateTextLogStatus(
+                  logId,
+                  status === "success" ? "sent" : "failed",
+                  status === "success" ? new Date().toISOString() : null,
+                  status === "failed" ? error : null
+                ).catch((err) => {
+                  console.error(
+                    "Error updating log status for",
+                    recipient,
+                    err
+                  );
+                  // We'll fall back to batch processing if individual updates fail
+                });
+              }
 
               const result = {
                 recipient,
@@ -132,15 +203,52 @@ export function useSendSMS() {
                 results: [...results],
               });
             } else if (type === "complete") {
-              // Stream completed
+              console.debug("SSE stream completed for messageId:", messageId);
               setSendStatus("completed");
+              toast.success("All messages processed successfully!");
+
+              // Fallback: If we have batch logs, try to re-log them all
+              if (batchLogsRef.current.length > 0) {
+                // Create new logs without IDs for completed messages
+                const newBatchLogs = batchLogsRef.current.map((log) => {
+                  // Remove the id field from each log for re-logging
+                  const { id, ...logWithoutId } = log;
+                  return logWithoutId;
+                });
+
+                // Try batch updating all logs as a fallback
+                batchAddTextLogs(newBatchLogs, sender_id).catch((err) => {
+                  console.error("Error with fallback batch logging:", err);
+                });
+              }
+
               cleanup();
 
-              // Log all messages in batch
-              if (batchLogs.length > 0) {
-                batchAddTextLogs(batchLogs).catch((error) => {
-                  console.error("Error logging messages:", error);
-                  toast.error("Messages sent but logging failed");
+              // Fallback: Update any pending logs
+              const pendingRecipients = recipients.filter(
+                (r) => !processedMessagesRef.current.has(r.value)
+              );
+              if (pendingRecipients.length > 0) {
+                console.warn(
+                  "Pending logs detected:",
+                  pendingRecipients.length
+                );
+                pendingRecipients.forEach((recipient) => {
+                  const logId = logIdsRef.current.get(recipient.value);
+                  if (logId) {
+                    updateTextLogStatus(
+                      logId,
+                      "failed",
+                      null,
+                      "No status update received from stream"
+                    ).catch((err) => {
+                      console.error(
+                        "Error updating pending log:",
+                        recipient.value,
+                        err
+                      );
+                    });
+                  }
                 });
               }
             }
@@ -150,21 +258,50 @@ export function useSendSMS() {
         };
 
         eventSourceRef.current.onerror = () => {
-          console.error("Stream error occurred");
+          console.error("SSE stream error for messageId:", messageId);
           setSendStatus("error");
           toast.error("Error receiving status updates");
-          cleanup();
 
-          // Log any partial results
-          if (batchLogs.length > 0) {
-            batchAddTextLogs(batchLogs).catch((error) => {
-              console.error("Error logging messages:", error);
-              toast.error("Messages may have been sent but logging failed");
+          // Fallback: If we have batch logs, try to update them all
+          if (batchLogsRef.current.length > 0) {
+            // Create new logs without IDs for completed messages
+            const newBatchLogs = batchLogsRef.current.map((log) => {
+              // Remove the id field from each log for re-logging
+              const { id, ...logWithoutId } = log;
+              return logWithoutId;
+            });
+
+            // Try batch updating all logs as a fallback
+            batchAddTextLogs(newBatchLogs, sender_id).catch((err) => {
+              console.error("Error with fallback batch logging:", err);
             });
           }
+
+          cleanup();
+
+          // Update pending logs to "failed"
+          recipients.forEach((recipient) => {
+            if (!processedMessagesRef.current.has(recipient.value)) {
+              const logId = logIdsRef.current.get(recipient.value);
+              if (logId) {
+                updateTextLogStatus(
+                  logId,
+                  "failed",
+                  null,
+                  "Stream disconnected"
+                ).catch((err) => {
+                  console.error(
+                    "Error updating pending log:",
+                    recipient.value,
+                    err
+                  );
+                });
+              }
+            }
+          });
         };
 
-        // Send the messages in a single API call
+        // Step 3: Send the messages
         const response = await fetch(
           `/api/communications/send-texts?messageId=${messageId}`,
           {
@@ -187,40 +324,77 @@ export function useSendSMS() {
           throw new Error(data.error || "Failed to initiate message sending");
         }
 
-        // Set a timeout to handle cases where the stream doesn't complete
+        // Step 4: Set timeout for stream completion
         timeoutRef.current = setTimeout(() => {
-          console.error("Stream timeout");
+          console.error("Stream timeout for messageId:", messageId);
           setSendStatus("error");
           toast.error("Message sending timed out");
-          cleanup();
 
-          if (batchLogs.length > 0) {
-            batchAddTextLogs(batchLogs).catch((error) => {
-              console.error("Error logging messages:", error);
-              toast.error("Messages may have been sent but logging failed");
+          // Fallback: If we have batch logs, try to update them all
+          if (batchLogsRef.current.length > 0) {
+            // Create new logs without IDs for completed messages
+            const newBatchLogs = batchLogsRef.current.map((log) => {
+              // Remove the id field from each log for re-logging
+              const { id, ...logWithoutId } = log;
+              return logWithoutId;
+            });
+
+            // Try batch updating all logs as a fallback
+            batchAddTextLogs(newBatchLogs, sender_id).catch((err) => {
+              console.error("Error with fallback batch logging:", err);
             });
           }
-        }, 60000); // 60 seconds timeout
+
+          cleanup();
+
+          // Update pending logs to "failed"
+          recipients.forEach((recipient) => {
+            if (!processedMessagesRef.current.has(recipient.value)) {
+              const logId = logIdsRef.current.get(recipient.value);
+              if (logId) {
+                updateTextLogStatus(
+                  logId,
+                  "failed",
+                  null,
+                  "Stream timed out"
+                ).catch((err) => {
+                  console.error(
+                    "Error updating pending log:",
+                    recipient.value,
+                    err
+                  );
+                });
+              }
+            }
+          });
+        }, 60000); // 60 seconds
       } catch (error) {
         console.error("Error sending messages:", error);
         setSendStatus("error");
         toast.error("Failed to send messages: " + error.message);
         cleanup();
 
-        // Log any partial results
-        if (batchLogs.length > 0) {
-          batchAddTextLogs(batchLogs).catch((error) => {
-            console.error("Error logging messages:", error);
-            toast.error("Messages may have been sent but logging failed");
-          });
-        }
+        // Update all logs to "failed"
+        recipients.forEach((recipient) => {
+          const logId = logIdsRef.current.get(recipient.value);
+          if (logId) {
+            updateTextLogStatus(
+              logId,
+              "failed",
+              null,
+              error.message || "Failed to initiate sending"
+            ).catch((err) => {
+              console.error("Error updating log:", recipient.value, err);
+            });
+          }
+        });
 
         return results;
       }
 
       return results;
     },
-    [batchAddTextLogs, cleanup]
+    [batchAddTextLogs, updateTextLogStatus, cleanup]
   );
 
   const reset = useCallback(() => {
