@@ -9,9 +9,7 @@ import {
   Typography,
   Button,
 } from "@mui/material";
-
 import { Send, Info } from "@mui/icons-material";
-
 import BackButton from "@/components/BackButton";
 import { useSendSMS } from "@/hooks/communications/useSendSMS";
 import { useRedisHealth } from "@/hooks/health/useRedisHealth";
@@ -24,7 +22,7 @@ import MessageComposer from "./MessageComposer";
 import ReviewAndSend from "./ReviewAndSend";
 import ProgressTracker from "./ProgressTracker";
 import GroupInfoPopover from "./GroupInfoPopover";
-import { expandGroups } from "@/util/texting/utils";
+import { expandGroups, formatGroupsForSelect } from "@/util/texting/utils";
 
 export default function BulkMMSMessaging() {
   const searchParams = useSearchParams();
@@ -76,36 +74,32 @@ export default function BulkMMSMessaging() {
         }
       });
     }
-    const formattedContacts = contactsList.map((contact) => ({
-      value: contact.phone,
-      label: `${contact.first_name} ${contact.last_name} (${contact.phone})`,
-      contactId: contact.id,
-      firstName: contact.first_name,
-      lastName: contact.last_name,
-      phone: contact.phone,
-      email: contact.email,
-      groups: contact.groups || [],
-    }));
-    setAllContacts(formattedContacts);
-    const uniqueGroups = new Set();
-    contactsList.forEach((contact) => {
-      let parsedGroups = contact.groups;
+    const formattedContacts = contactsList.map((contact) => {
+      let contactGroups = contact.groups || [];
       if (typeof contact.groups === "string") {
         try {
-          parsedGroups = JSON.parse(contact.groups);
+          contactGroups = JSON.parse(contact.groups);
         } catch (error) {
           console.error("Failed to parse groups:", error);
-          parsedGroups = [];
+          contactGroups = [];
         }
       }
-      if (parsedGroups && Array.isArray(parsedGroups)) {
-        parsedGroups.forEach((group) => {
-          if (typeof group === "string") {
-            uniqueGroups.add(group);
-          } else if (group && group.value) {
-            uniqueGroups.add(group.value);
-          }
-        });
+      return {
+        value: contact.phone,
+        label: `${contact.first_name} ${contact.last_name} (${contact.phone})`,
+        contactId: contact.id,
+        firstName: contact.first_name,
+        lastName: contact.last_name,
+        phone: contact.phone,
+        email: contact.email,
+        groups: Array.isArray(contactGroups) ? contactGroups : [],
+      };
+    });
+    setAllContacts(formattedContacts);
+    const uniqueGroups = new Set();
+    formattedContacts.forEach((contact) => {
+      if (contact.groups && Array.isArray(contact.groups)) {
+        contact.groups.forEach((group) => uniqueGroups.add(group));
       }
     });
     const groupsArray = Array.from(uniqueGroups).map((groupValue) => ({
@@ -122,7 +116,10 @@ export default function BulkMMSMessaging() {
           <Info
             style={{ cursor: "pointer", marginLeft: "8px" }}
             onClick={(e) =>
-              handleGroupInfoClick(e, { value: groupValue, label: groupValue })
+              handleGroupInfoClick(e, {
+                value: `group:${groupValue}`,
+                label: groupValue,
+              })
             }
           />
         </div>
@@ -160,7 +157,7 @@ export default function BulkMMSMessaging() {
     try {
       const mediaUrls = mediaFiles.map((file) => file.url);
       setIsSending(true);
-      await sendMessages(message, uniqueRecipients, mediaUrls);
+      await sendMessages(message, uniqueRecipients, mediaUrls, user);
       setHasSent(true);
       setIsSending(false);
     } catch (error) {
@@ -298,16 +295,30 @@ export default function BulkMMSMessaging() {
           )}
         </Box>
       </Card>
+      {/* Note about how texts are not private */}
+      <ProgressTracker
+        sendStatus={sendStatus}
+        progress={progress}
+        onReset={reset}
+      />
+
+      <Box
+        sx={{
+          padding: 2,
+          ml: 3,
+        }}
+      >
+        <Typography variant="body2" color="text.secondary" align="center">
+          <strong>Note:</strong> Text messages sent through this system are not
+          private and may be monitored. Please do not include sensitive
+          information in your messages.
+        </Typography>
+      </Box>
       <GroupInfoPopover
         anchorEl={anchorEl}
         onClose={handleClosePopover}
         selectedGroup={selectedGroup}
         allContacts={allContacts}
-      />
-      <ProgressTracker
-        sendStatus={sendStatus}
-        progress={progress}
-        onReset={reset}
       />
     </>
   );

@@ -7,6 +7,7 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  Box,
   Button,
 } from "@mui/material";
 import { Check, Close } from "@mui/icons-material";

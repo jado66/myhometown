@@ -26,13 +26,8 @@ export default function RecipientsList({ selectedRecipients, contacts }) {
     const groupRecipients = selectedRecipients
       .filter(isGroupRecipient)
       .map((recipient) => {
-        if (
-          !recipient.value ||
-          !recipient.label?.props?.children?.[0]?.props?.children
-        ) {
-          return null;
-        }
-        const groupName = recipient.value.replace("group:", "");
+        if (!recipient.value || !recipient.originalValue) return null;
+        const groupName = recipient.originalValue;
         const groupContacts = getGroupMembers(groupName, contacts);
         groupContacts.forEach((contact) => {
           if (contact && contact.value) {
@@ -50,7 +45,7 @@ export default function RecipientsList({ selectedRecipients, contacts }) {
           }
         });
         return {
-          groupName: recipient.label.props.children[0].props.children,
+          groupName,
           contacts: groupContacts.map((contact) => ({
             ...contact,
             isDuplicate: duplicatesInfo.has(contact.value),
@@ -63,7 +58,7 @@ export default function RecipientsList({ selectedRecipients, contacts }) {
     const individualRecipients = selectedRecipients
       .filter((r) => r && r.value && !isGroupRecipient(r))
       .map((recipient) => {
-        const isDuplicate = phoneNumberMap.has(recipient.value);
+        const isDuplicate = phoneNumberMap.has(recipient);
         if (!isDuplicate) {
           phoneNumberMap.set(recipient.value, {
             source: "individual",
@@ -72,7 +67,7 @@ export default function RecipientsList({ selectedRecipients, contacts }) {
         } else {
           duplicatesInfo.set(recipient.value, {
             originalSource: phoneNumberMap.get(recipient.value).source,
-            type: phoneNumberMap.get(recipient.value).type,
+            type: phoneNumberMap.get(contact.value).type,
           });
         }
         return {

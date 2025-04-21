@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Grid, Card } from "@mui/material";
-import BulkMMSMessaging from "./components/BulkMmsMessaging";
+import BulkMMSMessaging from "@/components/texting/send/BulkMmsMessaging";
 
 const SendSMS = () => {
   return (

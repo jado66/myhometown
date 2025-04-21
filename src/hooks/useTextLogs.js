@@ -73,7 +73,7 @@ export function useTextLogs(userId, userCommunities = [], userCities = []) {
     } else {
       fetchTextLogs();
     }
-  }, [hasInitialized, userId, fetchTextLogs]);
+  }, [hasInitialized, userId]);
 
   // Add a new text log
   const addTextLog = async (logData) => {
@@ -126,11 +126,11 @@ export function useTextLogs(userId, userCommunities = [], userCities = []) {
   };
 
   // Batch add multiple text logs
-  const batchAddTextLogs = async (logsData) => {
+  const batchAddTextLogs = async (logsData, senderId) => {
     try {
       const logs = logsData.map((log) => ({
         ...log,
-        sender_id: userId,
+        sender_id: senderId,
         created_at: new Date(),
         updated_at: new Date(),
       }));

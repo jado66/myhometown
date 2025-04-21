@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Box, Typography, Button } from "@mui/material";
 import { Refresh as RefreshIcon } from "@mui/icons-material";
 import Select from "react-select";
+import { formatGroupsForSelect } from "@/util/texting/utils";
 
 const RecipientSelector = ({
   selectedRecipients,

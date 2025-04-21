@@ -8,6 +8,7 @@ import {
   ListItemText,
 } from "@mui/material";
 import { getGroupMembers } from "@/util/texting/utils";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const GroupInfoPopover = ({
   anchorEl,
@@ -23,23 +24,19 @@ const GroupInfoPopover = ({
     transformOrigin={{ vertical: "top", horizontal: "left" }}
   >
     {selectedGroup && (
-      <Box sx={{ p: 2, maxWidth: 300 }}>
+      <Box sx={{ p: 2, maxWidth: 600 }}>
         <Typography variant="h6" gutterBottom>
           {selectedGroup.label} Members
         </Typography>
         <List dense>
-          {getGroupMembers(selectedGroup.originalValue, allContacts).map(
-            (contact) => (
-              <ListItem key={contact.contactId}>
-                <ListItemText
-                  primary={`${contact.firstName} ${contact.lastName}`}
-                  secondary={`${contact.phone} | ${
-                    contact.email || "No email"
-                  }`}
-                />
-              </ListItem>
-            )
-          )}
+          {getGroupMembers(selectedGroup.label, allContacts).map((contact) => (
+            <ListItem key={contact.contactId}>
+              <ListItemText
+                primary={`${contact.firstName} ${contact.lastName}`}
+                secondary={`${contact.phone} | ${contact.email || "No email"}`}
+              />
+            </ListItem>
+          ))}
         </List>
       </Box>
     )}

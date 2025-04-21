@@ -24,6 +24,21 @@ export const formatTimestamp = (timestamp) => {
   }
 };
 
+// Convert array of group strings to react-select format
+export const formatGroupsForSelect = (groups) => {
+  if (!groups || !Array.isArray(groups)) return [];
+  return groups.map((group) => ({
+    value: group,
+    label: group,
+  }));
+};
+
+// Convert react-select format back to array of strings
+export const formatGroupsForSave = (groupObjects) => {
+  if (!groupObjects || !Array.isArray(groupObjects)) return [];
+  return groupObjects.map((group) => group.value);
+};
+
 export const expandGroups = (recipients, allContacts) => {
   return recipients.map((recipient) => {
     if (
@@ -33,11 +48,7 @@ export const expandGroups = (recipients, allContacts) => {
       const groupName = recipient.value.replace("group:", "");
       const groupContacts = allContacts.filter((contact) => {
         if (!contact.groups || !Array.isArray(contact.groups)) return false;
-        return contact.groups.some((group) =>
-          typeof group === "string"
-            ? group === groupName
-            : group.value === groupName
-        );
+        return contact.groups.includes(groupName);
       });
       return { groupName, contacts: groupContacts };
     }
@@ -47,11 +58,19 @@ export const expandGroups = (recipients, allContacts) => {
 
 export const getGroupMembers = (groupValue, allContacts) => {
   return allContacts.filter((contact) => {
-    if (!contact.groups || !Array.isArray(contact.groups)) return false;
-    return contact.groups.some((group) =>
-      typeof group === "string"
-        ? group === groupValue
-        : group.value === groupValue
-    );
+    let contactGroups = contact.groups || [];
+    // Handle JSON string case
+    if (typeof contact.groups === "string") {
+      try {
+        contactGroups = JSON.parse(contact.groups);
+      } catch (error) {
+        console.error("Failed to parse contact groups:", error);
+        contactGroups = [];
+      }
+    }
+    // Ensure contactGroups is an array
+    if (!Array.isArray(contactGroups)) return false;
+    // Check if groupValue is included
+    return contactGroups.includes(groupValue);
   });
 };

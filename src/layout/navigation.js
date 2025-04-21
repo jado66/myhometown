@@ -26,6 +26,33 @@ export const pages = () => {
       ],
     },
     {
+      title: "Texting",
+      id: "texting-pages",
+      requiredPermission: "texting",
+      pages: [
+        {
+          title: "Send Messages",
+          href: rootUrl + "/admin-dashboard/texting/send",
+          requiredPermission: "texting",
+        },
+        {
+          title: "Scheduled Messages",
+          href: rootUrl + "/admin-dashboard/texting/scheduled-messages",
+          requiredPermission: "texting",
+        },
+        {
+          title: "Contact Directory",
+          href: rootUrl + "/admin-dashboard/texting/directory",
+          requiredPermission: "texting",
+        },
+        {
+          title: "Logs",
+          href: rootUrl + "/admin-dashboard/texting/logs",
+          requiredPermission: "texting",
+        },
+      ],
+    },
+    {
       title: "Tools",
       id: "supporting-pages",
       pages: [
@@ -33,16 +60,7 @@ export const pages = () => {
         //   title: 'Email Communications',
         //   href:  rootUrl+'/tools/email',
         // },
-        {
-          title: "Texting",
-          href: rootUrl + "/admin-dashboard/tools/sms",
-          // requiredPermission: "texting",
-        },
-        {
-          title: "Contact Directory",
-          href: rootUrl + "/admin-dashboard/tools/directory",
-          // requiredPermission: "texting",
-        },
+
         {
           title: "Classes and Rolls",
           href: rootUrl + "/admin-dashboard/classes",

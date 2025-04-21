@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, Grid } from "@mui/material";
 import BackButton from "@/components/BackButton";
-import Directory from "./components/Directory";
+import Directory from "@/components/texting/directory/Directory";
 import { useUser } from "@/hooks/use-user";
 
 const DirectoryPage = () => {
