@@ -1,9 +1,18 @@
 "use client";
-import React from "react";
+import React, { Suspense } from "react";
 import { Card, Grid } from "@mui/material";
 import BackButton from "@/components/BackButton";
-import Directory from "@/components/texting/directory/Directory";
+import dynamic from "next/dynamic";
 import { useUser } from "@/hooks/use-user";
+
+// Dynamically import the Directory component
+const Directory = dynamic(
+  () => import("@/components/texting/directory/Directory"),
+  {
+    loading: () => <p>Loading directory...</p>,
+    ssr: false, // Set to false if the component uses browser-only APIs
+  }
+);
 
 const DirectoryPage = () => {
   const { user } = useUser();
