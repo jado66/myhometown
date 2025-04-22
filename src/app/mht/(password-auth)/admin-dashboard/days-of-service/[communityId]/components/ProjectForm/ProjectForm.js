@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -20,6 +20,7 @@ import { toast } from "react-toastify";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import { ProjectOptionsMenu } from "./ProjectOptionsMenu";
+import { DayOfServiceAssignmentDialog } from "./DayOfServiceAssignmentDialog";
 
 const allSteps = [
   { label: "Project Information" },
@@ -32,6 +33,10 @@ const allSteps = [
 
 const ProjectForm = ({ date, communityId }) => {
   const [showFinishDialog, setShowFinishDialog] = React.useState(false);
+
+  const [dayOfServiceDialogOpen, setDayOfServiceDialogOpen] = useState(false);
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [isAssigning, setIsAssigning] = useState(false);
 
   const router = useRouter();
   const {
@@ -47,7 +52,27 @@ const ProjectForm = ({ date, communityId }) => {
     isExporting,
     importProject,
     exportProject,
+    assignProjectToServiceDay,
   } = useProjectForm();
+
+  const handleConfirmAssignment = async (selection) => {
+    setIsAssigning(true);
+
+    try {
+      const result = await assignProjectToServiceDay(selection);
+
+      if (result.success) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Error in assignment:", error);
+      toast.error("Failed to assign project");
+    } finally {
+      setIsAssigning(false);
+    }
+  };
 
   const goToStep = (step) => {
     if (step === 2 && isBudgetHidden) {
@@ -157,6 +182,14 @@ const ProjectForm = ({ date, communityId }) => {
       >
         {/* <JsonViewer data={formData} /> */}
 
+        <DayOfServiceAssignmentDialog
+          open={dayOfServiceDialogOpen}
+          onClose={() => setDayOfServiceDialogOpen(false)}
+          onConfirm={handleConfirmAssignment}
+          currentValue={selectedAssignment?.fullOption}
+          title="Assign Project to Day of Service & Organization"
+        />
+
         <CardContent
           sx={{
             position: "relative",
@@ -179,6 +212,7 @@ const ProjectForm = ({ date, communityId }) => {
               isImporting={isImporting}
               exportProject={exportProject}
               importProject={importProject}
+              openDaysOfServiceSelection={() => setDayOfServiceDialogOpen(true)}
             />
           </Box>
 

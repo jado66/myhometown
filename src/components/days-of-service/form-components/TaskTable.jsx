@@ -22,7 +22,7 @@ import {
 import { Add, Delete } from "@mui/icons-material";
 import UploadImage from "@/components/util/UploadImage";
 
-const TaskTable = ({ value, onChange, hasPrepDay = false }) => {
+const TaskTable = ({ value, onChange, hasPrepDay = false, isLocked }) => {
   const [tasks, setTasks] = useState(
     value?.tasks || [
       {
@@ -301,16 +301,22 @@ const TaskTable = ({ value, onChange, hasPrepDay = false }) => {
                                 gap: 1,
                               }}
                             >
-                              <span {...provided.dragHandleProps}>
-                                <DragHandle />
-                              </span>
-                              {taskIndex + 1}
-                              <IconButton
-                                size="small"
-                                onClick={() => handleDeleteTask(taskIndex)}
-                              >
-                                <Delete fontSize="small" />
-                              </IconButton>
+                              {!isLocked && (
+                                <span {...provided.dragHandleProps}>
+                                  <DragHandle />
+                                </span>
+                              )}
+                              <Typography sx={{ ml: isLocked && 1 }}>
+                                {taskIndex + 1}
+                              </Typography>
+                              {!isLocked && (
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleDeleteTask(taskIndex)}
+                                >
+                                  <Delete fontSize="small" />
+                                </IconButton>
+                              )}
                             </Box>
                           </TableCell>
                           {hasPrepDay && (
@@ -323,6 +329,7 @@ const TaskTable = ({ value, onChange, hasPrepDay = false }) => {
                                       handleTogglePrepDay(taskIndex)
                                     }
                                     size="small"
+                                    disabled={isLocked}
                                   />
                                 }
                                 label=""
@@ -354,6 +361,7 @@ const TaskTable = ({ value, onChange, hasPrepDay = false }) => {
                                   }
                                   variant="standard"
                                   fullWidth
+                                  disabled={isLocked}
                                 />
                               ))}
                             </Box>
@@ -382,38 +390,45 @@ const TaskTable = ({ value, onChange, hasPrepDay = false }) => {
                                       objectFit: "cover",
                                     }}
                                   />
-                                  <IconButton
-                                    size="small"
-                                    sx={{
-                                      position: "absolute",
-                                      top: 0,
-                                      right: 0,
-                                      backgroundColor: "rgba(255,255,255,0.7)",
-                                    }}
-                                    onClick={() =>
-                                      handleRemovePhoto(taskIndex, photoIndex)
-                                    }
-                                  >
-                                    <Delete fontSize="small" />
-                                  </IconButton>
+                                  {!isLocked && (
+                                    <IconButton
+                                      size="small"
+                                      sx={{
+                                        position: "absolute",
+                                        top: 0,
+                                        right: 0,
+                                        backgroundColor:
+                                          "rgba(255,255,255,0.7)",
+                                      }}
+                                      onClick={() =>
+                                        handleRemovePhoto(taskIndex, photoIndex)
+                                      }
+                                    >
+                                      <Delete fontSize="small" />
+                                    </IconButton>
+                                  )}
                                 </Box>
                               ))}
-                              <Box
-                                sx={{
-                                  position: "relative",
-                                  width: 100,
-                                  height: 100,
-                                  border: "2px dashed grey",
-                                  display:
-                                    task.photos.length === 0 ? "block" : "none",
-                                }}
-                              >
-                                <UploadImage
-                                  setUrl={(url) =>
-                                    handlePhotoUpload(taskIndex, url)
-                                  }
-                                />
-                              </Box>
+                              {!isLocked && (
+                                <Box
+                                  sx={{
+                                    position: "relative",
+                                    width: 100,
+                                    height: 100,
+                                    border: "2px dashed grey",
+                                    display:
+                                      task.photos.length === 0
+                                        ? "block"
+                                        : "none",
+                                  }}
+                                >
+                                  <UploadImage
+                                    setUrl={(url) =>
+                                      handlePhotoUpload(taskIndex, url)
+                                    }
+                                  />
+                                </Box>
+                              )}
                             </Box>
                           </TableCell>
                         </TableRow>
@@ -427,9 +442,15 @@ const TaskTable = ({ value, onChange, hasPrepDay = false }) => {
           </DragDropContext>
         </Table>
       </TableContainer>
-      <Button startIcon={<Add />} onClick={handleAddTask} sx={{ mt: 2, mb: 4 }}>
-        Add Task
-      </Button>
+      {!isLocked && (
+        <Button
+          startIcon={<Add />}
+          onClick={handleAddTask}
+          sx={{ mt: 2, mb: 4 }}
+        >
+          Add Task
+        </Button>
+      )}
     </Box>
   );
 };

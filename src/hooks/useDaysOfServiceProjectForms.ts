@@ -22,6 +22,65 @@ export const useDaysOfServiceProjectForm = ({
   const [isSaving, setIsSaving] = useState(false);
   const { user } = useUser();
 
+  const assignProjectToServiceDay = async (selection: any) => {
+    try {
+      // Handle the case when selection is null (No Assignment option)
+      if (selection === null) {
+        // Create updated form data with null assignments
+        const updatedFormData = {
+          ...formData,
+          days_of_service_id: null,
+          partner_stake_id: null,
+        };
+
+        // Update the form data state
+        setFormData(updatedFormData);
+
+        // Save the changes to the database
+        debouncedSave(updatedFormData);
+
+        return {
+          success: true,
+          message: "Assignment cleared successfully.",
+        };
+      }
+
+      // Check if we have valid dayId and stakeId for regular assignments
+      if (!selection.dayId || !selection.stakeId) {
+        return {
+          success: false,
+          message:
+            "Invalid selection. Both day of service and organization are required.",
+        };
+      }
+
+      // Create updated form data with the new assignments
+      const updatedFormData = {
+        ...formData,
+        days_of_service_id: selection.dayId,
+        partner_stake_id: selection.stakeId,
+      };
+
+      // Update the form data state
+      setFormData(updatedFormData);
+
+      // Save the changes to the database
+      debouncedSave(updatedFormData);
+
+      return {
+        success: true,
+        message: "Assignment updated successfully.",
+      };
+    } catch (error) {
+      console.error("Error assigning project:", error);
+      return {
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Unknown error occurred",
+      };
+    }
+  };
+
   const debouncedSave = useCallback(
     debounce(async (data: ProjectFormData) => {
       setIsSaving(true);
@@ -245,6 +304,7 @@ export const useDaysOfServiceProjectForm = ({
     saveProject,
     finishProject,
     isLoading,
+    assignProjectToServiceDay,
     isSaving,
   };
 };

@@ -20,7 +20,7 @@ import HomeOwnerEmailSection from "./HomeOwnerEmailSection";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const Step3 = () => {
-  const { formData, handleInputChange } = useProjectForm();
+  const { formData, handleInputChange, isLocked } = useProjectForm();
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -313,18 +313,21 @@ const Step3 = () => {
         value={formData.host_name}
         key="host_name"
         onChange={(e) => handleInputChange("host_name", e.target.value)}
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Host Phone Number"
         value={formData.host_phone}
         key="host_phone"
         onChange={(e) => handleInputChange("host_phone", e.target.value)}
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Host Email"
         value={formData.host_email}
         key="host_email"
         onChange={(e) => handleInputChange("host_email", e.target.value)}
+        isLocked={isLocked}
       />
 
       <Divider />
@@ -339,6 +342,7 @@ const Step3 = () => {
                   e.target.checked
                 )
               }
+              disabled={isLocked}
             />
           }
           label="The Resource Couple has reviewed the project information"
@@ -356,6 +360,7 @@ const Step3 = () => {
                   e.target.checked
                 )
               }
+              disabled={isLocked}
             />
           }
           label="The Property Owner has reviewed the project information"
@@ -373,6 +378,7 @@ const Step3 = () => {
                 e.target.checked
               )
             }
+            disabled={isLocked}
           />
         }
         label="The Resource Couple has done a site visit with Property Owner"
@@ -385,13 +391,14 @@ const Step3 = () => {
         value={formData.review_notes || ""}
         onChange={(e) => handleInputChange("review_notes", e.target.value)}
         placeholder="Note any issues or concerns that need to be addressed"
+        isLocked={isLocked}
       />
 
       <Divider />
 
       <Typography variant="h6">Property Owner Release Information</Typography>
 
-      {!formData.signature_text && (
+      {!formData.signature_text && !isLocked && (
         <Typography variant="subtitle1" color="primary">
           The property owner has not yet signed the liability release form.
           Click on &quot;Send Email&quot; to send the release form to the
@@ -399,7 +406,7 @@ const Step3 = () => {
         </Typography>
       )}
 
-      {!formData.signature_text && <HomeOwnerEmailSection />}
+      {!formData.signature_text && !isLocked && <HomeOwnerEmailSection />}
 
       <Divider />
       <FormControl component="fieldset">
@@ -420,7 +427,7 @@ const Step3 = () => {
           label="The home owner has reviewed and signed the liability release form"
         />
 
-        {!formData.signature_text && (
+        {!formData.signature_text && !isLocked && (
           <FormHelperText
             sx={{
               fontSize: "1rem",

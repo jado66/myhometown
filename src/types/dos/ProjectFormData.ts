@@ -84,7 +84,7 @@ export interface ProjectFormData {
   dumpster_requested?: boolean;
 
   // Partner Information
-  partner_stake_id?: string;
+  partner_stake_id?: string | null;
   partner_stake_liaison?: string;
   partner_stake_liaison_phone?: string;
   partner_stake_liaison_email?: string;
@@ -122,7 +122,7 @@ export interface ProjectFormData {
   // Related IDs
   community_id?: string;
   city_id?: string;
-  days_of_service_id?: string;
+  days_of_service_id?: string | null;
 
   // Timestamps
   created_at?: string | Date;

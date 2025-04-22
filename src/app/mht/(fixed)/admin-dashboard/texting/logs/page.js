@@ -44,6 +44,7 @@ import {
   Group as GroupIcon,
   ExpandMore,
   ExpandLess,
+  InfoOutlined,
 } from "@mui/icons-material";
 
 import BackButton from "@/components/BackButton";
@@ -846,7 +847,14 @@ export default function TextLogViewer() {
                               },
                             }}
                           >
-                            <TableCell>{log.message_id}</TableCell>
+                            <TableCell>
+                              <Tooltip title={log.message_id}>
+                                <InfoOutlined
+                                  fontSize="small"
+                                  color="primary"
+                                />
+                              </Tooltip>
+                            </TableCell>
                             <TableCell>
                               {formatDateTime(log.created_at)}
                             </TableCell>

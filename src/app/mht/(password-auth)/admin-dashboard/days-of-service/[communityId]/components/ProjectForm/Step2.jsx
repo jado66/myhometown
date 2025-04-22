@@ -21,7 +21,7 @@ import TaskTable from "@/components/days-of-service/form-components/TaskTable";
 import { ProjectResources } from "./ProjectResources";
 
 const Step2 = () => {
-  const { formData, handleInputChange } = useProjectForm();
+  const { formData, handleInputChange, isLocked } = useProjectForm();
 
   const handleToolAdd = (e, category) => {
     if (e.key === "Enter" && e.target.value.trim()) {
@@ -67,6 +67,7 @@ const Step2 = () => {
           handleInputChange("project_development_couple_ward", e.target.value)
         }
         helperText="The area whose geographical boundaries encompass this property location. If you have an encompassing zone you should input this field as follows (area - zone) "
+        isLocked={isLocked}
       />
 
       <ProjectTextField
@@ -76,6 +77,7 @@ const Step2 = () => {
         onChange={(e) =>
           handleInputChange("project_development_couple", e.target.value)
         }
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Resource Couple Phone Number (1)"
@@ -84,6 +86,7 @@ const Step2 = () => {
         onChange={(e) =>
           handleInputChange("project_development_couple_phone1", e.target.value)
         }
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Resource Couple Email (1)"
@@ -92,6 +95,7 @@ const Step2 = () => {
         onChange={(e) =>
           handleInputChange("project_development_couple_email1", e.target.value)
         }
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Resource Couple Phone Number (2)"
@@ -100,6 +104,7 @@ const Step2 = () => {
         onChange={(e) =>
           handleInputChange("project_development_couple_phone2", e.target.value)
         }
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Resource Couple Email (2)"
@@ -108,6 +113,7 @@ const Step2 = () => {
         onChange={(e) =>
           handleInputChange("project_development_couple_email2", e.target.value)
         }
+        isLocked={isLocked}
       />
 
       <Divider />
@@ -142,10 +148,14 @@ const Step2 = () => {
                       : "none",
                   transition: "all 0.3s ease",
                   "&:hover": {
-                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                    boxShadow: !isLocked && "0 4px 12px rgba(0, 0, 0, 0.15)",
                   },
                 }}
-                onClick={() => handleInputChange("has_prep_day", false)}
+                onClick={
+                  isLocked
+                    ? undefined
+                    : () => handleInputChange("has_prep_day", false)
+                }
               >
                 <CardContent
                   sx={{ display: "flex", alignItems: "center", p: 3 }}
@@ -154,6 +164,7 @@ const Step2 = () => {
                     checked={formData.has_prep_day === false}
                     onChange={() => handleInputChange("has_prep_day", false)}
                     sx={{ mr: 2 }}
+                    disabled={isLocked}
                   />
                   <Typography variant="h6">No</Typography>
                 </CardContent>
@@ -175,10 +186,14 @@ const Step2 = () => {
                       : "none",
                   transition: "all 0.3s ease",
                   "&:hover": {
-                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                    boxShadow: !isLocked && "0 4px 12px rgba(0, 0, 0, 0.15)",
                   },
                 }}
-                onClick={() => handleInputChange("has_prep_day", true)}
+                onClick={
+                  isLocked
+                    ? undefined
+                    : () => handleInputChange("has_prep_day", true)
+                }
               >
                 <CardContent
                   sx={{ display: "flex", alignItems: "center", p: 3 }}
@@ -187,6 +202,7 @@ const Step2 = () => {
                     checked={formData.has_prep_day === true}
                     onChange={() => handleInputChange("has_prep_day", true)}
                     sx={{ mr: 2 }}
+                    disabled={isLocked}
                   />
                   <Typography variant="h6">Yes</Typography>
                 </CardContent>
@@ -213,6 +229,7 @@ const Step2 = () => {
             onChange={(e) =>
               handleInputChange("prep_day_work_summary", e.target.value)
             }
+            isLocked={isLocked}
           />
           <ProjectTextField
             label="Prep Day Preferred Remedies (Optional)"
@@ -223,6 +240,7 @@ const Step2 = () => {
             onChange={(e) =>
               handleInputChange("prep_day_preferred_remedies", e.target.value)
             }
+            isLocked={isLocked}
           />
         </>
       )}
@@ -238,6 +256,7 @@ const Step2 = () => {
         rows={4}
         value={formData.work_summary}
         onChange={(e) => handleInputChange("work_summary", e.target.value)}
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Preferred Remedies (Optional)"
@@ -248,6 +267,7 @@ const Step2 = () => {
         onChange={(e) =>
           handleInputChange("preferred_remedies", e.target.value)
         }
+        isLocked={isLocked}
       />
 
       <Divider />
@@ -267,6 +287,7 @@ const Step2 = () => {
         onChange={(newTasks) => handleInputChange("tasks", newTasks)}
         hideResources={true}
         hasPrepDay={formData.has_prep_day}
+        isLocked={isLocked}
       />
 
       <Divider />
@@ -279,6 +300,7 @@ const Step2 = () => {
         handleInputChange={handleInputChange}
         handleToolAdd={handleToolAdd}
         hasPrepDay={formData.has_prep_day}
+        isLocked={isLocked}
       />
 
       <Divider />
@@ -291,6 +313,7 @@ const Step2 = () => {
       <FormControlLabel
         control={
           <Checkbox
+            disabled={isLocked}
             checked={formData.are_blue_stakes_needed}
             onChange={(e) =>
               handleInputChange("are_blue_stakes_needed", e.target.checked)
@@ -304,6 +327,7 @@ const Step2 = () => {
       <FormControlLabel
         control={
           <Checkbox
+            disabled={isLocked}
             checked={formData.is_dumpster_needed}
             onChange={(e) =>
               handleInputChange("is_dumpster_needed", e.target.checked)
@@ -318,6 +342,7 @@ const Step2 = () => {
           <FormControlLabel
             control={
               <Checkbox
+                disabled={isLocked}
                 checked={formData.is_second_dumpster_needed}
                 onChange={(e) =>
                   handleInputChange(
@@ -344,6 +369,7 @@ const Step2 = () => {
         min={0}
         value={formData.volunteers_needed}
         onChange={(e) => handleInputChange("volunteers_needed", e.target.value)}
+        isLocked={isLocked}
       />
     </Box>
   );

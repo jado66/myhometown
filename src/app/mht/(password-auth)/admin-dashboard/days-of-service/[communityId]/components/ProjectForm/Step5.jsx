@@ -12,7 +12,7 @@ import {
 import { useProjectForm } from "@/contexts/ProjectFormProvider";
 
 const Step5 = () => {
-  const { formData, handleInputChange } = useProjectForm();
+  const { formData, handleInputChange, isLocked } = useProjectForm();
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -24,6 +24,7 @@ const Step5 = () => {
             onChange={(e) =>
               handleInputChange("materials_procured", e.target.checked)
             }
+            disabled={isLocked}
           />
         }
         label="The materials have been ordered"
@@ -37,6 +38,7 @@ const Step5 = () => {
             onChange={(e) =>
               handleInputChange("tools_arranged", e.target.checked)
             }
+            disabled={isLocked}
           />
         }
         label="Arrangements have been made for the tools and equipment"
@@ -50,6 +52,7 @@ const Step5 = () => {
             onChange={(e) =>
               handleInputChange("materials_on_site", e.target.checked)
             }
+            disabled={isLocked}
           />
         }
         label="Materials are on site"

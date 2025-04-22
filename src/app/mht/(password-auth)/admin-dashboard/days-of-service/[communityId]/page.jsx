@@ -32,6 +32,7 @@ import { useDaysOfServiceProjects } from "@/hooks/useDaysOfServiceProjects";
 import moment from "moment";
 
 import UnassignedProjects from "./UnassignedProjects";
+import { supabase } from "@/util/supabase";
 
 const CommunitySelectionPage = ({ params }) => {
   const router = useRouter();
@@ -158,6 +159,36 @@ const CommunitySelectionPage = ({ params }) => {
     setSelectedServiceDay(null);
     if (wasSuccessful && community?.name) {
       fetchDays();
+    }
+  };
+
+  const toggleLockDayOfService = async (daysOfServiceId, isLocked) => {
+    try {
+      // Get the Supabase client
+
+      // Start a transaction by using supabase's rpc function
+      const { data, error } = await supabase.rpc("toggle_lock_transaction", {
+        p_days_of_service_id: daysOfServiceId,
+        p_is_locked: isLocked,
+      });
+
+      if (error) {
+        console.error("Error toggling lock status:", error);
+        return { success: false, error: error.message };
+      }
+
+      setDaysOfService((prevDays) =>
+        prevDays.map((day) =>
+          day.id === daysOfServiceId ? { ...day, is_locked: isLocked } : day
+        )
+      );
+
+      toast.success("Day of Service has been locked. ");
+    } catch (error) {
+      console.error("Unexpected error in toggleLock:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Unknown error occurred"
+      );
     }
   };
 
@@ -536,6 +567,7 @@ const CommunitySelectionPage = ({ params }) => {
                         handleGenerateDayOfServiceReport={
                           handleGenerateDayOfServiceReport
                         }
+                        toggleLockDayOfService={toggleLockDayOfService}
                       />
                     </Box>
                   ))}

@@ -1,14 +1,47 @@
-import React from "react";
-import { Box, Typography, Divider, IconButton } from "@mui/material";
-import { useProjectForm } from "@/contexts/ProjectFormProvider";
+import React, { useState } from "react";
+import { Box, Typography, Divider, IconButton, Button } from "@mui/material";
 import ProjectTextField from "./ProjectTextField";
+import { DayOfServiceAssignmentDialog } from "./DayOfServiceAssignmentDialog";
 import AddressFormFields from "@/components/days-of-service/form-components/AddressFormFields";
 import { toast } from "react-toastify";
 import { Info } from "@mui/icons-material";
 import moment from "moment";
+import JsonViewer from "@/components/util/debug/DebugOutput";
+import { useProjectForm } from "@/contexts/ProjectFormProvider";
 
 const Step1 = ({ date }) => {
-  const { formData, handleInputChange, community } = useProjectForm();
+  const [dayOfServiceDialogOpen, setDayOfServiceDialogOpen] = useState(false);
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [isAssigning, setIsAssigning] = useState(false);
+
+  const {
+    formData,
+    handleInputChange,
+    community,
+    isLocked,
+    setFormData,
+    saveProject,
+    assignProjectToServiceDay,
+  } = useProjectForm();
+
+  const handleConfirmAssignment = async (selection) => {
+    setIsAssigning(true);
+
+    try {
+      const result = await assignProjectToServiceDay(selection);
+
+      if (result.success) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Error in assignment:", error);
+      toast.error("Failed to assign project");
+    } finally {
+      setIsAssigning(false);
+    }
+  };
 
   const copyIdToClipboard = () => {
     navigator.clipboard.writeText(formData.id);
@@ -29,6 +62,33 @@ const Step1 = ({ date }) => {
       </Typography>
       <Divider />
       <Typography variant="h6">Project Information</Typography>
+      <JsonViewer data={formData} />
+      {!formData.days_of_service_id && (
+        <>
+          <Button
+            color="primary"
+            variant="outlined"
+            size="large"
+            sx={{
+              height: "60px",
+            }}
+            onClick={() => setDayOfServiceDialogOpen(true)}
+            disabled={isLocked || isAssigning}
+          >
+            <Typography variant="h6">
+              Click here to assign a Day of Service
+            </Typography>
+          </Button>
+
+          <DayOfServiceAssignmentDialog
+            open={dayOfServiceDialogOpen}
+            onClose={() => setDayOfServiceDialogOpen(false)}
+            onConfirm={handleConfirmAssignment}
+            currentValue={selectedAssignment?.fullOption}
+            title="Assign Project to Day of Service & Organization"
+          />
+        </>
+      )}
       <ProjectTextField
         label="Project Name"
         value={formData.project_name}
@@ -46,6 +106,7 @@ const Step1 = ({ date }) => {
             </IconButton>
           ),
         }}
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Project Short Description"
@@ -53,6 +114,7 @@ const Step1 = ({ date }) => {
         value={formData.project_id}
         onChange={(e) => handleInputChange("project_id", e.target.value)}
         inputProps={{ maxLength: 60 }}
+        isLocked={isLocked}
       />
       {date && (
         <ProjectTextField
@@ -82,6 +144,7 @@ const Step1 = ({ date }) => {
             },
           }}
           InputProps={{ readOnly: true }}
+          isLocked={isLocked}
         />
       )}
       <ProjectTextField
@@ -105,6 +168,7 @@ const Step1 = ({ date }) => {
             color: "#474747 !important",
           },
         }}
+        isLocked={isLocked}
       />
       <Divider />
       <Typography variant="h6">Project Developer Information</Typography>
@@ -119,6 +183,7 @@ const Step1 = ({ date }) => {
         label="Project Developer(s)"
         value={formData.project_developer}
         onChange={(e) => handleInputChange("project_developer", e.target.value)}
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Project Developer Phone Number 1"
@@ -126,6 +191,7 @@ const Step1 = ({ date }) => {
         onChange={(e) =>
           handleInputChange("project_developer_phone1", e.target.value)
         }
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Project Developer Email Address 1"
@@ -133,6 +199,7 @@ const Step1 = ({ date }) => {
         onChange={(e) =>
           handleInputChange("project_developer_email1", e.target.value)
         }
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Project Developer Phone Number 2"
@@ -140,6 +207,7 @@ const Step1 = ({ date }) => {
         onChange={(e) =>
           handleInputChange("project_developer_phone2", e.target.value)
         }
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Project Developer Email Address 2"
@@ -147,6 +215,7 @@ const Step1 = ({ date }) => {
         onChange={(e) =>
           handleInputChange("project_developer_email2", e.target.value)
         }
+        isLocked={isLocked}
       />
       <Divider />
       <Typography variant="h6" sx={{ mb: 0 }}>
@@ -161,31 +230,37 @@ const Step1 = ({ date }) => {
         label="Property Owner"
         value={formData.property_owner}
         onChange={(e) => handleInputChange("property_owner", e.target.value)}
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Property Owner Phone Number"
         value={formData.phone_number}
         onChange={(e) => handleInputChange("phone_number", e.target.value)}
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Property Owner Email"
         value={formData.email}
         onChange={(e) => handleInputChange("email", e.target.value)}
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Property Owner 2"
         value={formData.property_owner_2}
         onChange={(e) => handleInputChange("property_owner_2", e.target.value)}
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Property Owner Phone Number 2"
         value={formData.phone_number_2}
         onChange={(e) => handleInputChange("phone_number_2", e.target.value)}
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Property Owner Email 2"
         value={formData.email_2}
         onChange={(e) => handleInputChange("email_2", e.target.value)}
+        isLocked={isLocked}
       />
       <Divider />
       <AddressFormFields />

@@ -31,6 +31,7 @@ import {
   useTheme,
   useMediaQuery,
   SvgIcon,
+  ButtonGroup,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -47,6 +48,8 @@ import {
   Group,
   Info,
   LocationOn,
+  Lock,
+  LockOpen,
   Phone,
   Timeline as TimelineIcon,
 } from "@mui/icons-material";
@@ -71,6 +74,7 @@ import {
   generatePDFReport,
   generateStakeSummaryReport,
 } from "@/util/reports/days-of-service/reportGenerators";
+import PermissionGuard from "@/guards/permission-guard";
 
 export default function ProjectFormsPage({ params }) {
   const { stakeId, communityId, date } = params;

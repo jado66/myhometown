@@ -146,6 +146,7 @@ const useUsers = () => {
       const formattedPermissions = {
         texting: userData.permissions?.texting === true,
         administrator: userData.permissions?.administrator === true,
+        dos_admin: userData.permissions?.dos_admin === true,
       };
 
       // Update the user in the database

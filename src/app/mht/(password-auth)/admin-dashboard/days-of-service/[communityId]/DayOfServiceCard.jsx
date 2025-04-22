@@ -1,10 +1,26 @@
 "use client";
 
-import { Typography, Box, Card, Grid, Button, Divider } from "@mui/material";
-import { EditCalendar, LocationOn, x } from "@mui/icons-material";
+import {
+  Typography,
+  Box,
+  Card,
+  Grid,
+  Button,
+  Divider,
+  ButtonGroup,
+} from "@mui/material";
+import {
+  EditCalendar,
+  LocationOn,
+  Lock,
+  LockOpen,
+  x,
+} from "@mui/icons-material";
 import moment from "moment";
 
 import { StakeCard } from "./StakeCard";
+import PermissionGuard from "@/guards/permission-guard";
+import { useUser } from "@/hooks/use-user";
 
 export const DayOfServiceCard = ({
   day,
@@ -15,7 +31,10 @@ export const DayOfServiceCard = ({
   handlePartnerStakeClick,
   handleEditStake,
   handleGenerateDayOfServiceReport,
+  toggleLockDayOfService,
 }) => {
+  const { user } = useUser();
+
   return (
     <Card
       sx={{ backgroundColor: "grey.50", mb: 4, p: { xs: 2, sm: 4 } }}
@@ -64,7 +83,9 @@ export const DayOfServiceCard = ({
         )}
         <Button
           onClick={() => handleEditDay(day)}
-          sx={{ bgcolor: "primary.main", color: "white", ml: 2 }}
+          color="primary"
+          variant="contained"
+          disabled={day.is_locked}
         >
           <EditCalendar sx={{ mr: 1 }} />{" "}
           {isSmallScreen ? "Edit" : "Edit Day of Service"}
@@ -102,9 +123,38 @@ export const DayOfServiceCard = ({
         color="secondary"
         sx={{ mt: 4, ml: 2 }}
         onClick={() => handleOpenAddStakeDialog(day.id)}
+        disabled={day.is_locked}
       >
         Add Partner Organization
       </Button>
+
+      <PermissionGuard requiredPermission="dos_admin" user={user}>
+        {day.is_locked ? (
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<LockOpen />}
+            sx={{ mt: 4, ml: 2 }}
+            onClick={() => {
+              toggleLockDayOfService(day.id, false);
+            }}
+          >
+            Unlock Day Of Service
+          </Button>
+        ) : (
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<Lock />}
+            sx={{ mt: 4, ml: 2 }}
+            onClick={() => {
+              toggleLockDayOfService(day.id, true);
+            }}
+          >
+            Lock Day Of Service
+          </Button>
+        )}
+      </PermissionGuard>
     </Card>
   );
 };

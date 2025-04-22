@@ -43,6 +43,7 @@ interface ProjectResourcesProps {
   formData: FormData;
   handleInputChange: (fieldName: string, value: any) => void;
   hasPrepDay?: boolean;
+  isLocked: boolean;
 }
 
 interface ResourceSection {
@@ -80,6 +81,7 @@ export function ProjectResources({
   formData,
   handleInputChange,
   hasPrepDay = false,
+  isLocked,
 }: ProjectResourcesProps) {
   // State to manage the current input values for both regular and prep day inputs
   const [inputValues, setInputValues] = useState<Record<string, string>>({
@@ -351,256 +353,288 @@ export function ProjectResources({
                               ? "rgba(144, 249, 153, 0.2)"
                               : "transparent",
                             borderRadius: 1,
-                            border: "1px dashed rgba(0, 0, 0, 0.12)",
+                            border:
+                              !isLocked && "1px dashed rgba(0, 0, 0, 0.12)",
                           }}
                         >
-                          {regularItems.map((item, index) => (
-                            <Draggable
-                              key={item.id}
-                              draggableId={item.id}
-                              index={index}
-                            >
-                              {(provided, snapshot) => (
-                                <Box
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  sx={{
-                                    display: "inline-flex",
-                                    transform: snapshot.isDragging
-                                      ? "rotate(5deg)"
-                                      : "none !important",
-                                    zIndex: snapshot.isDragging ? 9999 : 1,
-                                  }}
+                          {regularItems.length > 0
+                            ? items.map((item, index) => (
+                                <Draggable
+                                  key={item.id}
+                                  draggableId={item.id}
+                                  index={index}
                                 >
-                                  <Chip
-                                    label={
-                                      <Box
+                                  {(provided, snapshot) => (
+                                    <Box
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      sx={{
+                                        display: "inline-flex",
+                                        transform: snapshot.isDragging
+                                          ? "rotate(5deg)"
+                                          : "none !important",
+                                        zIndex: snapshot.isDragging ? 9999 : 1,
+                                      }}
+                                    >
+                                      <Chip
+                                        label={
+                                          <Box
+                                            sx={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                            }}
+                                          >
+                                            {!isLocked && (
+                                              <Box
+                                                {...provided.dragHandleProps}
+                                                sx={{
+                                                  display: "flex",
+                                                  mr: 0.5,
+                                                  cursor: "grab",
+                                                  color: "text.secondary",
+                                                  "&:hover": {
+                                                    color: "text.primary",
+                                                  },
+                                                }}
+                                              >
+                                                <DragHandle />
+                                              </Box>
+                                            )}
+                                            {item.name}
+                                          </Box>
+                                        }
+                                        onDelete={
+                                          isLocked
+                                            ? undefined
+                                            : () =>
+                                                handleDelete(
+                                                  section.category,
+                                                  item.id
+                                                )
+                                        }
+                                        size="small"
                                         sx={{
-                                          display: "flex",
-                                          alignItems: "center",
+                                          height: "auto",
+                                          py: 0.5,
+                                          backgroundColor: snapshot.isDragging
+                                            ? "rgba(144, 249, 153, 0.2)"
+                                            : undefined,
                                         }}
-                                      >
-                                        <Box
-                                          {...provided.dragHandleProps}
-                                          sx={{
-                                            display: "flex",
-                                            mr: 0.5,
-                                            cursor: "grab",
-                                            color: "text.secondary",
-                                            "&:hover": {
-                                              color: "text.primary",
-                                            },
-                                          }}
-                                        >
-                                          <DragHandle />
-                                        </Box>
-                                        {item.name}
-                                      </Box>
-                                    }
-                                    onDelete={() =>
-                                      handleDelete(section.category, item.id)
-                                    }
-                                    size="small"
-                                    sx={{
-                                      height: "auto",
-                                      py: 0.5,
-                                      backgroundColor: snapshot.isDragging
-                                        ? "rgba(144, 249, 153, 0.2)"
-                                        : undefined,
-                                    }}
-                                  />
-                                </Box>
-                              )}
-                            </Draggable>
-                          ))}
+                                      />
+                                    </Box>
+                                  )}
+                                </Draggable>
+                              ))
+                            : isLocked
+                            ? "None"
+                            : ""}
                           {provided.placeholder}
 
                           {/* Input field for regular items */}
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                              mt: regularItems.length > 0 ? 1 : 0,
-                            }}
-                          >
-                            <TextField
-                              size="small"
-                              variant="outlined"
-                              placeholder={section.placeholder}
-                              value={inputValues[section.category]}
-                              onChange={(e) =>
-                                handleInputValueChange(
-                                  section.category,
-                                  e.target.value
-                                )
-                              }
-                              onKeyDown={(e) =>
-                                handleCommaInput(e, section.category, false)
-                              }
-                              sx={{ minWidth: 150 }}
-                              inputProps={{
-                                "aria-label": `Add ${section.title.toLowerCase()}`,
+                          {!isLocked && (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                                mt: regularItems.length > 0 ? 1 : 0,
                               }}
-                            />
-                            {inputValues[section.category] && (
-                              <FormHelperText
-                                sx={{
-                                  m: 0,
-                                  color: "error.main",
-                                  display: "flex",
-                                  alignItems: "center",
+                            >
+                              <TextField
+                                size="small"
+                                variant="outlined"
+                                placeholder={section.placeholder}
+                                value={inputValues[section.category]}
+                                onChange={(e) =>
+                                  handleInputValueChange(
+                                    section.category,
+                                    e.target.value
+                                  )
+                                }
+                                onKeyDown={(e) =>
+                                  handleCommaInput(e, section.category, false)
+                                }
+                                sx={{ minWidth: 150 }}
+                                inputProps={{
+                                  "aria-label": `Add ${section.title.toLowerCase()}`,
                                 }}
-                              >
-                                <Info fontSize="small" sx={{ mr: 0.5 }} />
-                                Press Enter to add
-                              </FormHelperText>
-                            )}
-                          </Box>
+                              />
+
+                              {inputValues[section.category] && (
+                                <FormHelperText
+                                  sx={{
+                                    m: 0,
+                                    color: "error.main",
+                                    display: "flex",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <Info fontSize="small" sx={{ mr: 0.5 }} />
+                                  Press Enter to add
+                                </FormHelperText>
+                              )}
+                            </Box>
+                          )}
                         </Box>
                       )}
                     </Droppable>
 
                     {/* Prep day items droppable area */}
-                    <Droppable
-                      droppableId={`${section.category}-prepDay`}
-                      direction="horizontal"
-                    >
-                      {(provided, snapshot) => (
-                        <Box
-                          ref={provided.innerRef}
-                          {...provided.droppableProps}
-                          sx={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 1,
-                            minHeight: 40,
-                            p: 1,
-                            mb: 2,
-                            backgroundColor: snapshot.isDraggingOver
-                              ? "rgba(144, 249, 153, 0.3)"
-                              : "rgba(144, 249, 153, 0.2)",
-                            borderRadius: 1,
-                            border: "1px dashed rgba(144, 202, 249, 0.5)",
-                          }}
-                        >
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              width: "100%",
-                              mb: 0.5,
-                              color: "text.secondary",
-                            }}
-                          >
-                            Prep Day Items
-                          </Typography>
-
-                          {prepDayItems.map((item, index) => (
-                            <Draggable
-                              key={item.id}
-                              draggableId={item.id}
-                              index={index}
-                            >
-                              {(provided, snapshot) => (
-                                <Box
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  sx={{
-                                    display: "inline-flex",
-                                    transform: snapshot.isDragging
-                                      ? "rotate(5deg)"
-                                      : "none !important",
-                                    zIndex: snapshot.isDragging ? 9999 : 1,
-                                  }}
-                                >
-                                  <Chip
-                                    label={
-                                      <Box
-                                        sx={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                        }}
-                                      >
-                                        <Box
-                                          {...provided.dragHandleProps}
-                                          sx={{
-                                            display: "flex",
-                                            mr: 0.5,
-                                            cursor: "grab",
-                                            color: "text.secondary",
-                                            "&:hover": {
-                                              color: "text.primary",
-                                            },
-                                          }}
-                                        >
-                                          <DragHandle />
-                                        </Box>
-                                        {item.name}
-                                      </Box>
-                                    }
-                                    onDelete={() =>
-                                      handleDelete(section.category, item.id)
-                                    }
-                                    size="small"
-                                    sx={{
-                                      height: "auto",
-                                      py: 0.5,
-                                      backgroundColor: snapshot.isDragging
-                                        ? "rgba(144, 249, 153, 0.2)"
-                                        : "rgba(144, 249, 153, 0.3)",
-                                    }}
-                                  />
-                                </Box>
-                              )}
-                            </Draggable>
-                          ))}
-                          {provided.placeholder}
-
-                          {/* Input field for prep day items */}
+                    {(prepDayItems.length > 0 || !isLocked) && (
+                      <Droppable
+                        droppableId={`${section.category}-prepDay`}
+                        direction="horizontal"
+                      >
+                        {(provided, snapshot) => (
                           <Box
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
                             sx={{
                               display: "flex",
-                              alignItems: "center",
+                              flexWrap: "wrap",
                               gap: 1,
-                              mt: prepDayItems.length > 0 ? 1 : 0,
+                              minHeight: 40,
+                              p: 1,
+                              mb: 2,
+                              backgroundColor: snapshot.isDraggingOver
+                                ? "rgba(144, 249, 153, 0.3)"
+                                : "rgba(144, 249, 153, 0.2)",
+                              borderRadius: 1,
+                              border:
+                                !isLocked &&
+                                "1px dashed rgba(144, 202, 249, 0.5)",
                             }}
                           >
-                            <TextField
-                              size="small"
-                              variant="outlined"
-                              placeholder={`Prep day ${section.placeholder.toLowerCase()}`}
-                              value={inputValues[`${section.category}-prepDay`]}
-                              onChange={(e) =>
-                                handleInputValueChange(
-                                  `${section.category}-prepDay`,
-                                  e.target.value
-                                )
-                              }
-                              onKeyDown={(e) =>
-                                handleCommaInput(e, section.category, true)
-                              }
-                              sx={{ minWidth: 150 }}
-                              inputProps={{
-                                "aria-label": `Add prep day ${section.title.toLowerCase()}`,
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                width: "100%",
+                                mb: 0.5,
+                                color: "text.secondary",
                               }}
-                            />
-                            {inputValues[`${section.category}-prepDay`] && (
-                              <FormHelperText
+                            >
+                              Prep Day Items
+                            </Typography>
+
+                            {prepDayItems.map((item, index) => (
+                              <Draggable
+                                key={item.id}
+                                draggableId={item.id}
+                                index={index}
+                              >
+                                {(provided, snapshot) => (
+                                  <Box
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    sx={{
+                                      display: "inline-flex",
+                                      transform: snapshot.isDragging
+                                        ? "rotate(5deg)"
+                                        : "none !important",
+                                      zIndex: snapshot.isDragging ? 9999 : 1,
+                                    }}
+                                  >
+                                    <Chip
+                                      label={
+                                        <Box
+                                          sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                          }}
+                                        >
+                                          {!isLocked && (
+                                            <Box
+                                              {...provided.dragHandleProps}
+                                              sx={{
+                                                display: "flex",
+                                                mr: 0.5,
+                                                cursor: "grab",
+                                                color: "text.secondary",
+                                                "&:hover": {
+                                                  color: "text.primary",
+                                                },
+                                              }}
+                                            >
+                                              <DragHandle />
+                                            </Box>
+                                          )}
+                                          {item.name}
+                                        </Box>
+                                      }
+                                      onDelete={
+                                        isLocked
+                                          ? undefined
+                                          : () =>
+                                              handleDelete(
+                                                section.category,
+                                                item.id
+                                              )
+                                      }
+                                      size="small"
+                                      sx={{
+                                        height: "auto",
+                                        py: 0.5,
+                                        backgroundColor: snapshot.isDragging
+                                          ? "rgba(144, 249, 153, 0.2)"
+                                          : "rgba(144, 249, 153, 0.3)",
+                                      }}
+                                    />
+                                  </Box>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+
+                            {/* Input field for prep day items */}
+                            {!isLocked && (
+                              <Box
                                 sx={{
-                                  m: 0,
-                                  color: "error.main",
                                   display: "flex",
                                   alignItems: "center",
+                                  gap: 1,
+                                  mt: prepDayItems.length > 0 ? 1 : 0,
                                 }}
                               >
-                                <Info fontSize="small" sx={{ mr: 0.5 }} />
-                                Press Enter to add
-                              </FormHelperText>
+                                <TextField
+                                  size="small"
+                                  variant="outlined"
+                                  placeholder={`Prep day ${section.placeholder.toLowerCase()}`}
+                                  value={
+                                    inputValues[`${section.category}-prepDay`]
+                                  }
+                                  onChange={(e) =>
+                                    handleInputValueChange(
+                                      `${section.category}-prepDay`,
+                                      e.target.value
+                                    )
+                                  }
+                                  onKeyDown={(e) =>
+                                    handleCommaInput(e, section.category, true)
+                                  }
+                                  sx={{ minWidth: 150 }}
+                                  inputProps={{
+                                    "aria-label": `Add prep day ${section.title.toLowerCase()}`,
+                                  }}
+                                />
+                                {inputValues[`${section.category}-prepDay`] && (
+                                  <FormHelperText
+                                    sx={{
+                                      m: 0,
+                                      color: "error.main",
+                                      display: "flex",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <Info fontSize="small" sx={{ mr: 0.5 }} />
+                                    Press Enter to add
+                                  </FormHelperText>
+                                )}
+                              </Box>
                             )}
                           </Box>
-                        </Box>
-                      )}
-                    </Droppable>
+                        )}
+                      </Droppable>
+                    )}
                   </DragDropContext>
                 ) : (
                   // Non-draggable version when hasPrepDay is false
@@ -613,64 +647,74 @@ export function ProjectResources({
                       p: 1,
                       minHeight: 40,
                       borderRadius: 1,
-                      border: "1px dashed rgba(0, 0, 0, 0.12)",
+                      border: !isLocked && "1px dashed rgba(0, 0, 0, 0.12)",
                     }}
                   >
-                    {items.map((item) => (
-                      <Chip
-                        key={item.id}
-                        label={item.name}
-                        onDelete={() => handleDelete(section.category, item.id)}
-                        size="small"
-                        sx={{
-                          height: "auto",
-                          py: 0.5,
-                        }}
-                      />
-                    ))}
+                    {items.length > 0
+                      ? items.map((item) => (
+                          <Chip
+                            key={item.id}
+                            label={item.name}
+                            onDelete={
+                              isLocked
+                                ? undefined
+                                : () => handleDelete(section.category, item.id)
+                            }
+                            size="small"
+                            sx={{
+                              height: "auto",
+                              py: 0.5,
+                            }}
+                          />
+                        ))
+                      : isLocked
+                      ? "None"
+                      : ""}
 
                     {/* Input field for non-prep day mode */}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        mt: items.length > 0 ? 1 : 0,
-                      }}
-                    >
-                      <TextField
-                        size="small"
-                        variant="outlined"
-                        placeholder={section.placeholder}
-                        value={inputValues[section.category]}
-                        onChange={(e) =>
-                          handleInputValueChange(
-                            section.category,
-                            e.target.value
-                          )
-                        }
-                        onKeyDown={(e) =>
-                          handleCommaInput(e, section.category, false)
-                        }
-                        sx={{ minWidth: 150 }}
-                        inputProps={{
-                          "aria-label": `Add ${section.title.toLowerCase()}`,
+                    {!isLocked && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          mt: items.length > 0 ? 1 : 0,
                         }}
-                      />
-                      {inputValues[section.category] && (
-                        <FormHelperText
-                          sx={{
-                            m: 0,
-                            color: "error.main",
-                            display: "flex",
-                            alignItems: "center",
+                      >
+                        <TextField
+                          size="small"
+                          variant="outlined"
+                          placeholder={section.placeholder}
+                          value={inputValues[section.category]}
+                          onChange={(e) =>
+                            handleInputValueChange(
+                              section.category,
+                              e.target.value
+                            )
+                          }
+                          onKeyDown={(e) =>
+                            handleCommaInput(e, section.category, false)
+                          }
+                          sx={{ minWidth: 150 }}
+                          inputProps={{
+                            "aria-label": `Add ${section.title.toLowerCase()}`,
                           }}
-                        >
-                          <Info fontSize="small" sx={{ mr: 0.5 }} />
-                          Press Enter to add
-                        </FormHelperText>
-                      )}
-                    </Box>
+                        />
+                        {inputValues[section.category] && (
+                          <FormHelperText
+                            sx={{
+                              m: 0,
+                              color: "error.main",
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Info fontSize="small" sx={{ mr: 0.5 }} />
+                            Press Enter to add
+                          </FormHelperText>
+                        )}
+                      </Box>
+                    )}
                   </Box>
                 )}
               </Box>

@@ -9,6 +9,7 @@ const ProjectTextField = ({
   min,
   max,
   type,
+  isLocked,
   ...props
 }) => {
   // Handle input change with validation
@@ -55,6 +56,7 @@ const ProjectTextField = ({
         shrink: value !== undefined ? true : false,
         sx: { ml: hasInputAdornment && value === undefined ? 2 : 0 },
       }}
+      disabled={isLocked}
     />
   );
 };

@@ -29,11 +29,11 @@ const Step4 = () => {
     formData,
     handleInputChange,
     handleSelectChange,
-
+    isLocked,
     dayOfService,
   } = useProjectForm();
 
-  const partner_stake = dayOfService.partner_stakes.find(
+  const partner_stake = dayOfService?.partner_stakes.find(
     (stake) => stake.id === formData.partner_stake_id
   );
 
@@ -343,6 +343,7 @@ const Step4 = () => {
               onChange={(e) =>
                 handleInputChange("partner_stake_contacted", e.target.checked)
               }
+              disabled={isLocked}
             />
           }
           label="The Partner Organization has been contacted"
@@ -354,6 +355,7 @@ const Step4 = () => {
               onChange={(e) =>
                 handleInputChange("partner_ward_contacted", e.target.checked)
               }
+              disabled={isLocked}
             />
           }
           label="The Partner Group has been contacted"
@@ -367,6 +369,7 @@ const Step4 = () => {
               onChange={(e) =>
                 handleInputChange("site_visit_done_with_host", e.target.checked)
               }
+              disabled={isLocked}
             />
           }
           label="The Host has done a site visit"
@@ -381,6 +384,7 @@ const Step4 = () => {
                   e.target.checked
                 )
               }
+              disabled={isLocked}
             />
           }
           label="The Group Liaison has done a site visit"

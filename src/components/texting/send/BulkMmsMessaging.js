@@ -309,9 +309,9 @@ export default function BulkMMSMessaging() {
         }}
       >
         <Typography variant="body2" color="text.secondary" align="center">
-          <strong>Note:</strong> Text messages sent through this system are not
-          private and may be monitored. Please do not include sensitive
-          information in your messages.
+          <strong>Note:</strong> Text messages sent through this system are
+          stored in the database. Please do not use this service for your own
+          personal use. Please do not include sensitive information.
         </Typography>
       </Box>
       <GroupInfoPopover

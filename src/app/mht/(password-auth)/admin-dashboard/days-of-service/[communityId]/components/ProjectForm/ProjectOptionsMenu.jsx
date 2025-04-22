@@ -15,7 +15,7 @@ import { toast } from "react-toastify";
  * ProjectOptionsMenu - A dropdown menu component for project-related actions
  *
  * @param {Object} props
- * @param {Function} props.onMoveProject - Callback for moving a project
+ * @param {Function} props.openDaysOfServiceSelection - Callback for moving a project
  * @param {Function} props.importProject - Import project function from context
  * @param {Function} props.exportProject - Export project function from context
  * @param {boolean} props.isImporting - Loading state for import operation
@@ -23,11 +23,11 @@ import { toast } from "react-toastify";
  * @param {boolean} props.disabled - Whether the menu should be disabled
  */
 export const ProjectOptionsMenu = ({
-  onMoveProject,
   isImporting = false,
   isExporting = false,
   importProject,
   exportProject,
+  openDaysOfServiceSelection,
 }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const fileInputRef = useRef(null);
@@ -114,7 +114,7 @@ export const ProjectOptionsMenu = ({
       >
         {/* Move project */}
         <MenuItem
-          onClick={handleOptionClick(onMoveProject)}
+          onClick={handleOptionClick(openDaysOfServiceSelection)}
           disabled={disabled}
         >
           <OpenWith sx={{ mr: 1 }} />

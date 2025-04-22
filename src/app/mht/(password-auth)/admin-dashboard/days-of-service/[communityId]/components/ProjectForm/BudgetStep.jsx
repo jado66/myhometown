@@ -11,6 +11,7 @@ const BudgetStep = () => {
     handleInputChange,
     handleNumberInputChange,
     isBudgetAuthenticated,
+    isLocked,
   } = useProjectForm();
 
   return (
@@ -39,6 +40,7 @@ const BudgetStep = () => {
         value={formData.budget}
         onChange={(e) => handleInputChange("budget", e.target.value)}
         helperText="This is a description of the budget for the project. This can include the source of the funds, the intended use of the funds, and any other relevant information."
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Resource Budget Estimates"
@@ -54,6 +56,7 @@ const BudgetStep = () => {
           startAdornment: <InputAdornment position="start">$</InputAdornment>,
         }}
         helperText="This is the total budget for the project in dollars. This also includes the property owner's ability to contribute to the project."
+        isLocked={isLocked}
       />
       <Divider sx={{ my: 1 }} />
 
@@ -65,6 +68,7 @@ const BudgetStep = () => {
         value={formData.homeowner_ability}
         onChange={(e) => handleInputChange("homeowner_ability", e.target.value)}
         helperText="This is the property owner's ability to contribute to the project. This can be in the form of materials, tools, or other resources."
+        isLocked={isLocked}
       />
       <ProjectTextField
         label="Property Owner's Ability Estimates"
@@ -80,6 +84,7 @@ const BudgetStep = () => {
           startAdornment: <InputAdornment position="start">$</InputAdornment>,
         }}
         helperText="This is the property owner's financial ability to contribute to the project in dollars."
+        isLocked={isLocked}
       />
     </Box>
   );

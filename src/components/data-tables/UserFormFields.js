@@ -8,10 +8,13 @@ import {
   Typography,
   Grid,
   FormHelperText,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import CommunitySelect from "./selects/CommunitySelect";
 import CitySelect from "./selects/CitySelect";
 import JsonViewer from "../util/debug/DebugOutput";
+import { Info } from "@mui/icons-material";
 
 const UserFormFields = ({
   userData,
@@ -112,7 +115,7 @@ const UserFormFields = ({
           Permissions
         </Typography>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={4}>
             <FormControlLabel
               control={
                 <Switch
@@ -124,7 +127,7 @@ const UserFormFields = ({
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={4}>
             <FormControlLabel
               control={
                 <Switch
@@ -134,6 +137,23 @@ const UserFormFields = ({
               }
               label="Texting"
             />
+          </Grid>
+
+          <Grid item xs={12} sm={4}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={userData?.permissions?.dos_admin || false}
+                  onChange={handlePermissionChange("dos_admin")}
+                />
+              }
+              label="DOS Admin"
+            />
+            <IconButton size="small">
+              <Tooltip title="Can lock and unlock projects & view Budgets">
+                <Info />
+              </Tooltip>
+            </IconButton>
           </Grid>
         </Grid>
       </Box>

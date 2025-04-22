@@ -47,6 +47,7 @@ export const StakeCard = ({
             e.stopPropagation();
             onEdit(day.id, stake);
           }}
+          disabled={day.is_locked}
         >
           <Edit />
         </IconButton>

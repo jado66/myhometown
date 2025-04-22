@@ -39,6 +39,7 @@ export function ProjectFormProvider({
     handleNumberInputChange,
     isLoading,
     isSaving: isSavingProject,
+    assignProjectToServiceDay,
   } = useDaysOfServiceProjectForm({
     projectId: formId,
     communityId,
@@ -350,6 +351,8 @@ export function ProjectFormProvider({
     exportProject,
     isImporting,
     isExporting,
+    isLocked: formData.is_locked,
+    assignProjectToServiceDay,
   };
 
   return (

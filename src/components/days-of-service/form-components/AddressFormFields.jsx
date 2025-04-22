@@ -93,6 +93,7 @@ const AddressFormFields = () => {
     addressValidation,
     setAddressValidation,
     handleAddressValidated,
+    isLocked,
   } = useProjectForm();
 
   const mapToCamelCase = (data) => ({
@@ -293,6 +294,10 @@ const AddressFormFields = () => {
   ]);
 
   const renderAddressAlert = () => {
+    if (isLocked) {
+      return null;
+    }
+
     if (addressValidation.isChecking) {
       return <Alert severity="info">Verifying address...</Alert>;
     }
@@ -363,6 +368,7 @@ const AddressFormFields = () => {
             }
             error={!!addressValidation.errors.street1}
             helperText={addressValidation.errors.street1}
+            disabled={isLocked}
           />
         </Grid>
 
@@ -374,6 +380,7 @@ const AddressFormFields = () => {
             onChange={(e) =>
               handleInputChange("addressStreet2", e.target.value)
             }
+            disabled={isLocked}
           />
         </Grid>
 
@@ -386,6 +393,7 @@ const AddressFormFields = () => {
             onChange={(e) => handleInputChange("addressCity", e.target.value)}
             error={!!addressValidation.errors.city}
             helperText={addressValidation.errors.city}
+            disabled={isLocked}
           />
         </Grid>
 
@@ -411,8 +419,10 @@ const AddressFormFields = () => {
                 required
                 error={!!addressValidation.errors.state}
                 helperText={addressValidation.errors.state}
+                disabled={isLocked}
               />
             )}
+            disabled={isLocked}
           />
         </Grid>
 
@@ -427,6 +437,7 @@ const AddressFormFields = () => {
             }
             error={!!addressValidation.errors.zipCode}
             inputProps={{ maxLength: 10 }}
+            disabled={isLocked}
           />
         </Grid>
       </Grid>

@@ -66,7 +66,7 @@ const PermissionGuard = ({
     return children;
   }
 
-  if (!user) return null;
+  if (!user) return "No user";
 
   // For section-level guard with child pages
 
