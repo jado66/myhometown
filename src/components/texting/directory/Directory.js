@@ -455,28 +455,30 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
       />
 
       {/* Community Contacts */}
-      {userCommunities.map((community) => (
-        <Box key={community.id} sx={{ mt: 4 }}>
-          <Typography variant="h6">{community.name} Contacts</Typography>
-          <ContactsTable
-            filteredContacts={contacts.communityContacts[community.id] || []}
-            {...ContactsTableProps}
-            tableName={community.name}
-          />
-        </Box>
-      ))}
+      {userCommunities &&
+        userCommunities.map((community) => (
+          <Box key={community.id} sx={{ mt: 4 }}>
+            <Typography variant="h6">{community.name} Contacts</Typography>
+            <ContactsTable
+              filteredContacts={contacts.communityContacts[community.id] || []}
+              {...ContactsTableProps}
+              tableName={community.name}
+            />
+          </Box>
+        ))}
 
       {/* City Contacts */}
-      {userCities.map((city) => (
-        <Box key={city.id} sx={{ mt: 4 }}>
-          <Typography variant="h6">{city.name} Contacts</Typography>
-          <ContactsTable
-            filteredContacts={contacts.cityContacts[city.id] || []}
-            {...ContactsTableProps}
-            tableName={city.name}
-          />
-        </Box>
-      ))}
+      {userCities &&
+        userCities.map((city) => (
+          <Box key={city.id} sx={{ mt: 4 }}>
+            <Typography variant="h6">{city.name} Contacts</Typography>
+            <ContactsTable
+              filteredContacts={contacts.cityContacts[city.id] || []}
+              {...ContactsTableProps}
+              tableName={city.name}
+            />
+          </Box>
+        ))}
       <AskYesNoDialog
         open={deleteDialog.open}
         title="Confirm Delete"
