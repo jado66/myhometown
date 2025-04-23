@@ -144,8 +144,9 @@ const Form = ({ amountOptions, spanish, isMd }) => {
             donor_name: formData.name,
             donor_email: formData.email,
             donor_phone: formData.phone,
+            donation_destination: spanish ? "Rancho Donations" : "General Fund",
           },
-          donation_destination: spanish ? "Rancho Donations" : "General Fund",
+
           language: spanish ? "es" : "en",
         }),
       });
@@ -287,6 +288,8 @@ const Form = ({ amountOptions, spanish, isMd }) => {
         <Typography variant="h6" gutterBottom>
           {paymentType === "recurring"
             ? "Your recurring contribution will help make our communities stronger."
+            : spanish
+            ? "Tu contribución ayudará a fortalecer nuestras comunidades."
             : "Your contribution will help make our communities stronger."}
         </Typography>
 
@@ -325,7 +328,7 @@ const Form = ({ amountOptions, spanish, isMd }) => {
               },
             }}
           >
-            Make Another Donation
+            {spanish ? "Hacer otra donación" : "Make Another Donation"}
           </Box>
         </Box>
       </Box>
@@ -471,7 +474,13 @@ const Form = ({ amountOptions, spanish, isMd }) => {
             },
           }}
         >
-          {isProcessing ? "Processing..." : "Donate"}
+          {isProcessing
+            ? spanish
+              ? "Procesando..."
+              : "Donar"
+            : spanish
+            ? "Processing..."
+            : "Donate"}
         </Box>
       </Box>
     );
