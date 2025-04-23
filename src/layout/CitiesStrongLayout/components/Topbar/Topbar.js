@@ -65,7 +65,7 @@ const Topbar = ({ onSidebarOpen, theme }) => {
                 whiteSpace: "nowrap",
               }}
             >
-              Cities Strong Foundation
+              {isMediumUp ? "Cities Strong Foundation" : "Cities Strong"}
             </Typography>
           </Link>
         </Box>

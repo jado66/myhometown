@@ -25,18 +25,22 @@ import { ChevronLeft } from "@mui/icons-material";
 // Load Stripe (replace with your publishable key)
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIP_PUBLIC_KEY);
 
-export const DonationForm = () => {
+export const DonationForm = ({ amountOptions, spanish, isMd }) => {
+  const elementsOptions = {
+    locale: spanish ? "es" : "en",
+  };
+
   return (
     <Box sx={{ mx: "auto", width: "100%", maxWidth: "600px" }}>
-      <Elements stripe={stripePromise}>
-        <Form />
+      <Elements stripe={stripePromise} options={elementsOptions}>
+        <Form amountOptions={amountOptions} spanish={spanish} isMd={isMd} />
       </Elements>
     </Box>
   );
 };
 
 // Donation Form Component
-const Form = () => {
+const Form = ({ amountOptions, spanish, isMd }) => {
   const [selectedAmount, setSelectedAmount] = useState(null);
   const [customAmount, setCustomAmount] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -65,15 +69,6 @@ const Form = () => {
       return "Valid 5-digit ZIP code is required";
     return null;
   };
-
-  const amountOptions = [
-    { value: 50, label: "$50" },
-    { value: 100, label: "$100" },
-    { value: 250, label: "$250" },
-    { value: 500, label: "$500" },
-    { value: 750, label: "$750" },
-    { value: "custom", label: "Custom" },
-  ];
 
   const handleAmountSelect = (amount) => {
     setSelectedAmount(amount);
@@ -105,7 +100,11 @@ const Form = () => {
       selectedAmount === "custom" ? customAmount : selectedAmount;
 
     if (!donationAmount || donationAmount < 1) {
-      setPaymentError("Please select a valid donation amount");
+      setPaymentError(
+        spanish
+          ? "Por favor, selecciona un monto de donación válido"
+          : "Please select a valid donation amount"
+      );
       return;
     }
 
@@ -146,6 +145,8 @@ const Form = () => {
             donor_email: formData.email,
             donor_phone: formData.phone,
           },
+          donation_destination: spanish ? "Rancho Donations" : "General Fund",
+          language: spanish ? "es" : "en",
         }),
       });
 
@@ -189,6 +190,7 @@ const Form = () => {
           phone: formData.phone,
           amount: donationAmount * 100,
           recurring: paymentType === "recurring",
+          language: spanish ? "sp" : "en",
         }),
       });
 
@@ -211,7 +213,9 @@ const Form = () => {
         fontFamily: 'roboto, "Helvetica Neue", Helvetica, sans-serif',
         fontSmoothing: "antialiased",
         fontSize: "16px",
-        "::placeholder": { color: "#aab7c4" },
+        "::placeholder": {
+          color: "#aab7c4",
+        },
       },
       invalid: {
         color: "#fa755a",
@@ -275,7 +279,9 @@ const Form = () => {
             color: "success.dark",
           }}
         >
-          Thank You For Your Donation!
+          {spanish
+            ? "¡Gracias por tu donación!"
+            : "Thank You For Your Donation!"}
         </Typography>
 
         <Typography variant="h6" gutterBottom>
@@ -285,7 +291,9 @@ const Form = () => {
         </Typography>
 
         <Typography sx={{ mb: 3, color: "text.secondary" }}>
-          A receipt has been sent to your email address.
+          {spanish
+            ? "Se ha enviado un recibo a tu dirección de correo electrónico."
+            : "A receipt has been sent to your email address."}
         </Typography>
 
         <Divider sx={{ my: 3 }} />
@@ -350,7 +358,7 @@ const Form = () => {
             position: "absolute",
           }}
         >
-          <ChevronLeft sx={{ ml: 1 }} /> Back
+          <ChevronLeft sx={{ ml: 1 }} /> {isMd && "Back"}
         </Button>
 
         <Typography
@@ -360,12 +368,12 @@ const Form = () => {
           align="center"
           fontWeight="bold"
         >
-          Your Information
+          {spanish ? "Tu Información" : "Your Information"}
         </Typography>
 
         <TextField
           fullWidth
-          label="Full Name"
+          label={spanish ? "Nombre Completo" : "Full Name"}
           name="name"
           value={formData.name}
           onChange={handleInputChange}
@@ -374,7 +382,7 @@ const Form = () => {
         />
         <TextField
           fullWidth
-          label="Email"
+          label={spanish ? "Correo Electrónico" : "Email"}
           name="email"
           type="email"
           value={formData.email}
@@ -384,7 +392,7 @@ const Form = () => {
         />
         <TextField
           fullWidth
-          label="Phone Number"
+          label={spanish ? "Número de Teléfono" : "Phone Number"}
           name="phone"
           value={formData.phone}
           onChange={handleInputChange}
@@ -395,7 +403,7 @@ const Form = () => {
         <Box sx={{ mb: 3 }}>
           <TextField
             fullWidth
-            label="Billing Zip Code"
+            label={spanish ? "Código Postal" : "Billing Zip Code"}
             name="zipCode"
             value={formData.zipCode}
             onChange={handleInputChange}
@@ -406,7 +414,7 @@ const Form = () => {
         {/* Summary */}
         <Box>
           <Typography sx={{ fontWeight: "bold" }}>
-            You are donating{" "}
+            {spanish ? "Estás donando" : "You are donating"}{" "}
             {selectedAmount === "custom"
               ? `$${customAmount}`
               : `$${selectedAmount}`}
@@ -418,7 +426,9 @@ const Form = () => {
 
         {/* Card Element */}
         <Box sx={{ mb: 3 }}>
-          <Typography gutterBottom>Card Details</Typography>
+          <Typography gutterBottom>
+            {spanish ? "Tarjeta de Crédito" : "Card Details"}
+          </Typography>
           <Box
             sx={{
               p: 1.5,
@@ -487,59 +497,16 @@ const Form = () => {
         align="center"
         fontWeight="bold"
       >
-        Support Our Cause
+        {spanish ? "Apoya Nuestra Causa" : "Support Our Cause"}
       </Typography>
-
-      {/* Payment Type Selection */}
-      {/* <Box sx={{ mb: 3 }}>
-        <Typography gutterBottom>Payment Type</Typography>
-        <Grid container spacing={1}>
-          <Grid item xs={6}>
-            <Box
-              onClick={() => handlePaymentTypeChange("one-time")}
-              sx={{
-                p: 1.5,
-                textAlign: "center",
-                border: "1px solid",
-                borderColor:
-                  paymentType === "one-time" ? "primary.main" : "grey.300",
-                borderRadius: 1,
-                color: paymentType === "one-time" ? "#188d4e" : "text.primary",
-                cursor: "pointer",
-                "&:hover": {
-                  borderColor: "primary.main",
-                },
-              }}
-            >
-              One-Time
-            </Box>
-          </Grid>
-          <Grid item xs={6}>
-            <Box
-              onClick={() => handlePaymentTypeChange("recurring")}
-              sx={{
-                p: 1.5,
-                textAlign: "center",
-                border: "1px solid",
-                borderColor:
-                  paymentType === "recurring" ? "primary.main" : "grey.300",
-                borderRadius: 1,
-                color: paymentType === "recurring" ? "#188d4e" : "text.primary",
-                cursor: "pointer",
-                "&:hover": {
-                  borderColor: "primary.main",
-                },
-              }}
-            >
-              Monthly Recurring
-            </Box>
-          </Grid>
-        </Grid>
-      </Box> */}
 
       {/* Amount Selection */}
       <Box sx={{ mb: 3 }}>
-        <Typography gutterBottom>Select Donation Amount</Typography>
+        <Typography gutterBottom>
+          {spanish
+            ? "Selecciona el Monto de la Donación"
+            : "Select Donation Amount"}
+        </Typography>
         <Grid container spacing={1}>
           {amountOptions.map((option) => (
             <Grid item xs={4} key={option.value}>
@@ -574,13 +541,15 @@ const Form = () => {
       {/* Custom Amount Input */}
       {selectedAmount === "custom" && (
         <Box sx={{ mb: 3 }}>
-          <Typography gutterBottom>Custom Amount ($)</Typography>
+          <Typography gutterBottom>
+            {spanish ? "Monto Personalizado " : "Custom Amount "} ($)
+          </Typography>
           <Box
             component="input"
             type="number"
             value={customAmount}
             onChange={handleCustomAmountChange}
-            placeholder="Enter amount"
+            placeholder={spanish ? "Ingresar monto" : "Enter amount"}
             min="1"
             sx={{
               width: "100%",
@@ -646,6 +615,8 @@ const Form = () => {
           ? "Processing..."
           : paymentType === "recurring"
           ? "Continue Monthly Donation"
+          : spanish
+          ? "Continuar"
           : "Continue"}
       </Box>
     </Box>

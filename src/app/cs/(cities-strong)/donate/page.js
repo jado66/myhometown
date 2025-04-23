@@ -17,7 +17,7 @@ import CitiesStrongShieldIcon from "@/assets/svg/logos/CitiesStrongShieldIcon";
 import Link from "next/link";
 import { Faq } from "@/views/supportingPages/CitiesStrongContact/components";
 import LoadingImage from "@/components/util/LoadingImage";
-import { DonationForm } from "./DonationForm";
+import { DonationForm } from "@/components/stripe-components/DonationForm";
 
 const items = [
   "Complete Transparency",
@@ -28,6 +28,16 @@ const items = [
   "Long term sustainability",
   "Able to build strong community relationships",
   "Easy to involve your staff or family in community projects",
+];
+
+const amountOptions = [
+  { value: 50, label: "$50" },
+  { value: 100, label: "$100" },
+  { value: 250, label: "$250" },
+  { value: 500, label: "$500" },
+  { value: 750, label: "$750" },
+
+  { value: "custom", label: "Custom" },
 ];
 
 const Continue = () => {
@@ -52,7 +62,7 @@ const Continue = () => {
           gutterBottom
           mt={2}
         >
-          Continue
+          Donate
         </Typography>
         <Box marginBottom={2}>
           <Typography
@@ -137,7 +147,7 @@ const Continue = () => {
             </Typography>
 
             {/* Stripe Elements wrapper */}
-            <DonationForm />
+            <DonationForm isMd={isMd} amountOptions={amountOptions} />
 
             <Typography
               sx={{
