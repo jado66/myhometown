@@ -1,0 +1,139 @@
+// src/app/api/scheduled-texts/process/route.js
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { v4 as uuidv4 } from "uuid";
+import { sendTextWithStream } from "@/util/communication/sendTexts";
+
+// Initialize Supabase client with service role for background processing
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
+export async function POST(req) {
+  try {
+    // Verify the request is from Supabase
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const token = authHeader.split(" ")[1];
+    if (token !== process.env.SCHEDULED_TEXTS_WEBHOOK_SECRET) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
+
+    // Get the payload from the request
+    const payload = await req.json();
+    
+    // For Supabase Edge Functions, the payload might be structured differently
+    const record = payload.record || payload;
+    
+    if (!record || !record.id) {
+      return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    }
+
+    // Get the scheduled text details
+    const { data: scheduledText, error: fetchError } = await supabase
+      .from("scheduled_texts")
+      .select("*")
+      .eq("id", record.id)
+      .single();
+
+    if (fetchError || !scheduledText) {
+      console.error("Error fetching scheduled text:", fetchError);
+      return NextResponse.json({ 
+        error: "Scheduled text not found", 
+        details: fetchError?.message 
+      }, { status: 404 });
+    }
+
+    // Generate a message ID for tracking
+    const messageId = uuidv4();
+
+    // Send the text message
+    try {
+      const result = await sendTextWithStream({
+        message: scheduledText.message_content,
+        recipient: {
+          phone: scheduledText.recipient_phone,
+          name: JSON.parse(scheduledText.metadata || '{}').recipientName || scheduledText.recipient_phone,
+        },
+        mediaUrls: scheduledText.media_urls ? JSON.parse(scheduledText.media_urls) : [],
+        messageId,
+      });
+
+      // Log the sent message
+      const { error: logError } = await supabase
+        .from("text_logs")
+        .insert({
+          message_id: messageId,
+          sender_id: scheduledText.user_id,
+          recipient_phone: scheduledText.recipient_phone,
+          recipient_contact_id: scheduledText.recipient_contact_id,
+          message_content: scheduledText.message_content,
+          media_urls: scheduledText.media_urls,
+          status: "sent",
+          sent_at: new Date().toISOString(),
+          owner_id: scheduledText.user_id,
+          owner_type: "user",
+          metadata: scheduledText.metadata,
+          scheduled_text_id: scheduledText.id
+        });
+
+      if (logError) {
+        console.error("Error logging sent text:", logError);
+      }
+
+      // Delete the scheduled text since it's been processed
+      const { error: deleteError } = await supabase
+        .from("scheduled_texts")
+        .delete()
+        .eq("id", scheduledText.id);
+
+      if (deleteError) {
+        console.error("Error deleting scheduled text:", deleteError);
+      }
+
+      return NextResponse.json({ 
+        success: true, 
+        messageId,
+        scheduledTextId: scheduledText.id
+      });
+    } catch (sendError) {
+      console.error("Error sending scheduled text:", sendError);
+      
+      // Log the failed attempt
+      await supabase
+        .from("text_logs")
+        .insert({
+          message_id: messageId,
+          sender_id: scheduledText.user_id,
+          recipient_phone: scheduledText.recipient_phone,
+          recipient_contact_id: scheduledText.recipient_contact_id,
+          message_content: scheduledText.message_content,
+          media_urls: scheduledText.media_urls,
+          status: "failed",
+          error_message: sendError.message,
+          owner_id: scheduledText.user_id,
+          owner_type: "user",
+          metadata: scheduledText.metadata,
+          scheduled_text_id: scheduledText.id
+        });
+
+      return NextResponse.json({ 
+        error: "Failed to send text", 
+        details: sendError.message 
+      }, { status: 500 });
+    }
+  } catch (error) {
+    console.error("Unexpected error in scheduled texts processing:", error);
+    return NextResponse.json({ 
+      error: "Internal server error", 
+      details: error.message 
+    }, { status: 500 });
+  }
+}
