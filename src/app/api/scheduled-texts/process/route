@@ -3,11 +3,10 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
 import { sendTextWithStream } from "@/util/communication/sendTexts";
-
-// Initialize Supabase client with service role for background processing
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+import {
+  completeStream,
+  sendMessageToStream,
+} from "../../communications/send-texts/stream/route";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -28,15 +27,19 @@ export async function POST(req) {
 
     // Get the payload from the request
     const payload = await req.json();
-    
+
     // For Supabase Edge Functions, the payload might be structured differently
     const record = payload.record || payload;
-    
+
     if (!record || !record.id) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
 
     // Get the scheduled text details
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
     const { data: scheduledText, error: fetchError } = await supabase
       .from("scheduled_texts")
       .select("*")
@@ -45,44 +48,99 @@ export async function POST(req) {
 
     if (fetchError || !scheduledText) {
       console.error("Error fetching scheduled text:", fetchError);
-      return NextResponse.json({ 
-        error: "Scheduled text not found", 
-        details: fetchError?.message 
-      }, { status: 404 });
+      return NextResponse.json(
+        {
+          error: "Scheduled text not found",
+          details: fetchError?.message,
+        },
+        { status: 404 }
+      );
     }
 
     // Generate a message ID for tracking
     const messageId = uuidv4();
 
-    // Send the text message
     try {
-      const result = await sendTextWithStream({
-        message: scheduledText.message_content,
-        recipient: {
-          phone: scheduledText.recipient_phone,
-          name: JSON.parse(scheduledText.metadata || '{}').recipientName || scheduledText.recipient_phone,
-        },
-        mediaUrls: scheduledText.media_urls ? JSON.parse(scheduledText.media_urls) : [],
-        messageId,
-      });
+      // Parse recipients from JSON
+      const recipients = JSON.parse(scheduledText.recipients);
 
-      // Log the sent message
-      const { error: logError } = await supabase
+      // Process messages sequentially
+      for (const recipient of recipients) {
+        try {
+          const result = await sendTextWithStream({
+            message: scheduledText.message_content,
+            recipient: {
+              phone: recipient.value || recipient.phone,
+              name:
+                recipient.label ||
+                recipient.name ||
+                `${recipient.firstName || ""} ${
+                  recipient.lastName || ""
+                }`.trim(),
+            },
+            mediaUrls: scheduledText.media_urls
+              ? JSON.parse(scheduledText.media_urls)
+              : [],
+            messageId,
+          });
+
+          // Send status update to stream
+          await sendMessageToStream(messageId, {
+            type: "status",
+            status: "success",
+            recipient: recipient.value || recipient.phone,
+            messageId,
+            timestamp: new Date().toISOString(),
+          });
+        } catch (error) {
+          console.error(
+            `Error sending to ${recipient.value || recipient.phone}:`,
+            error
+          );
+
+          // Send failure status to stream
+          await sendMessageToStream(messageId, {
+            type: "status",
+            status: "failed",
+            recipient: recipient.value || recipient.phone,
+            error: error.message,
+            messageId,
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }
+
+      // Mark stream as complete
+      await completeStream(messageId);
+
+      // Log the sent message for each recipient
+      const { data: logData, error: logError } = await supabase
         .from("text_logs")
-        .insert({
-          message_id: messageId,
-          sender_id: scheduledText.user_id,
-          recipient_phone: scheduledText.recipient_phone,
-          recipient_contact_id: scheduledText.recipient_contact_id,
-          message_content: scheduledText.message_content,
-          media_urls: scheduledText.media_urls,
-          status: "sent",
-          sent_at: new Date().toISOString(),
-          owner_id: scheduledText.user_id,
-          owner_type: "user",
-          metadata: scheduledText.metadata,
-          scheduled_text_id: scheduledText.id
-        });
+        .insert(
+          recipients.map((recipient) => ({
+            message_id: messageId,
+            sender_id: scheduledText.user_id,
+            recipient_phone: recipient.value || recipient.phone,
+            recipient_contact_id: recipient.contactId || null,
+            message_content: scheduledText.message_content,
+            media_urls: scheduledText.media_urls,
+            status: "sent",
+            sent_at: new Date().toISOString(),
+            owner_id: scheduledText.user_id,
+            owner_type: "user",
+            metadata: JSON.stringify({
+              recipientName:
+                recipient.label ||
+                recipient.name ||
+                `${recipient.firstName || ""} ${
+                  recipient.lastName || ""
+                }`.trim(),
+              scheduledSend: true,
+              scheduledId: scheduledText.id,
+              scheduledTime: scheduledText.scheduled_time,
+            }),
+          }))
+        );
 
       if (logError) {
         console.error("Error logging sent text:", logError);
@@ -98,42 +156,33 @@ export async function POST(req) {
         console.error("Error deleting scheduled text:", deleteError);
       }
 
-      return NextResponse.json({ 
-        success: true, 
+      return NextResponse.json({
+        success: true,
         messageId,
-        scheduledTextId: scheduledText.id
+        scheduledTextId: scheduledText.id,
       });
     } catch (sendError) {
       console.error("Error sending scheduled text:", sendError);
-      
-      // Log the failed attempt
-      await supabase
-        .from("text_logs")
-        .insert({
-          message_id: messageId,
-          sender_id: scheduledText.user_id,
-          recipient_phone: scheduledText.recipient_phone,
-          recipient_contact_id: scheduledText.recipient_contact_id,
-          message_content: scheduledText.message_content,
-          media_urls: scheduledText.media_urls,
-          status: "failed",
-          error_message: sendError.message,
-          owner_id: scheduledText.user_id,
-          owner_type: "user",
-          metadata: scheduledText.metadata,
-          scheduled_text_id: scheduledText.id
-        });
 
-      return NextResponse.json({ 
-        error: "Failed to send text", 
-        details: sendError.message 
-      }, { status: 500 });
+      // Complete the stream in case of error
+      await completeStream(messageId);
+
+      return NextResponse.json(
+        {
+          error: "Failed to send text",
+          details: sendError.message,
+        },
+        { status: 500 }
+      );
     }
   } catch (error) {
     console.error("Unexpected error in scheduled texts processing:", error);
-    return NextResponse.json({ 
-      error: "Internal server error", 
-      details: error.message 
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Internal server error",
+        details: error.message,
+      },
+      { status: 500 }
+    );
   }
 }

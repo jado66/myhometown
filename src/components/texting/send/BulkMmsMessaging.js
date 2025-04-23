@@ -289,6 +289,7 @@ export default function BulkMMSMessaging() {
                   hasSent={hasSent}
                   isSending={isSending}
                   onNewMessage={handleNewMessage}
+                  user={user}
                 />
               )}
             </>
