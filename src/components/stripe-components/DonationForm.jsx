@@ -361,7 +361,7 @@ const Form = ({ amountOptions, spanish, isMd }) => {
             position: "absolute",
           }}
         >
-          <ChevronLeft sx={{ ml: 1 }} /> {isMd && "Back"}
+          <ChevronLeft sx={{ ml: 1 }} /> {isMd && (spanish ? "Atrás" : "Back")}
         </Button>
 
         <Typography
@@ -477,9 +477,9 @@ const Form = ({ amountOptions, spanish, isMd }) => {
           {isProcessing
             ? spanish
               ? "Procesando..."
-              : "Donar"
+              : "Processing..."
             : spanish
-            ? "Processing..."
+            ? "Donar"
             : "Donate"}
         </Box>
       </Box>
