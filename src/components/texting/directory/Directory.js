@@ -35,8 +35,8 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
     refreshContacts,
   } = useUserContacts(
     userId,
-    userCommunities.map((c) => c.id),
-    userCities.map((c) => c.id)
+    (userCommunities || []).map((c) => c.id),
+    (userCities || []).map((c) => c.id)
   );
 
   // Local state
@@ -108,7 +108,53 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
 
   // Filter and sort contacts
   useEffect(() => {
-    if (!contacts || !contacts.length) return;
+    const uniqueGroups = new Set();
+
+    if (!contacts || !Array.isArray(contacts)) return;
+
+    // Ensure contacts is an array with elements
+    const contactsArray = contacts?.length ? contacts : [];
+
+    contactsArray.forEach((contact) => {
+      if (!contact) return;
+
+      let parsedGroups = contact.groups;
+
+      // Handle case where groups is a JSON string
+      if (typeof contact.groups === "string") {
+        try {
+          parsedGroups = JSON.parse(contact.groups);
+        } catch (error) {
+          console.error("Failed to parse groups:", error);
+          parsedGroups = [];
+        }
+      }
+
+      // Process groups regardless of format
+      if (parsedGroups && Array.isArray(parsedGroups)) {
+        parsedGroups.forEach((group) => {
+          // Handle both string format and object format
+          if (typeof group === "string") {
+            uniqueGroups.add(group);
+          } else if (group && group.value) {
+            // Legacy object format - extract just the value
+            uniqueGroups.add(group.value);
+          }
+        });
+      }
+    });
+
+    // Convert Set to array of strings
+    const groupsArray = Array.from(uniqueGroups);
+    setGroups(groupsArray);
+  }, [contacts]);
+
+  // Filter and sort contacts
+  useEffect(() => {
+    if (!contacts || !Array.isArray(contacts) || contacts.length === 0) {
+      setFilteredContacts([]);
+      return;
+    }
 
     let filtered = [...contacts];
 
@@ -126,7 +172,8 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
           (contact.email && contact.email.toLowerCase().includes(query)) ||
           (contact.phone && contact.phone.includes(query)) ||
           (contact.groups &&
-            contact.groups.some((g) => g.label.toLowerCase().includes(query)))
+            Array.isArray(contact.groups) &&
+            contact.groups.some((g) => g?.label?.toLowerCase().includes(query)))
       );
     }
 
@@ -137,18 +184,20 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
 
       // Special handling for groups
       if (orderBy === "groups") {
-        aValue = a.groups
-          ? a.groups
-              .map((g) => g.label)
-              .join(", ")
-              .toLowerCase()
-          : "";
-        bValue = b.groups
-          ? b.groups
-              .map((g) => g.label)
-              .join(", ")
-              .toLowerCase()
-          : "";
+        aValue =
+          a.groups && Array.isArray(a.groups)
+            ? a.groups
+                .map((g) => g?.label || "")
+                .join(", ")
+                .toLowerCase()
+            : "";
+        bValue =
+          b.groups && Array.isArray(b.groups)
+            ? b.groups
+                .map((g) => g?.label || "")
+                .join(", ")
+                .toLowerCase()
+            : "";
       }
 
       if (order === "asc") {
