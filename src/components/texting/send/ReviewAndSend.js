@@ -33,6 +33,7 @@ import RecipientsList from "./RecipientsList";
 import MediaPreview from "./MediaPreview";
 import { useScheduledTexts } from "@/hooks/communications/useScheduledTexts";
 import moment from "moment";
+import DevEnvGuard from "@/guards/dev-env-guard";
 
 const ReviewAndSend = ({
   selectedRecipients,
@@ -155,11 +156,13 @@ const ReviewAndSend = ({
               control={<Radio />}
               label="Send Now"
             />
-            <FormControlLabel
-              value="schedule"
-              control={<Radio />}
-              label="Schedule for Later"
-            />
+            <DevEnvGuard>
+              <FormControlLabel
+                value="schedule"
+                control={<Radio />}
+                label="Schedule for Later"
+              />
+            </DevEnvGuard>
           </RadioGroup>
         </FormControl>
       )}

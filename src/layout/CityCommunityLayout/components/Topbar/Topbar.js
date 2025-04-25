@@ -179,7 +179,7 @@ const Topbar = ({ onSidebarOpen }) => {
                     color: "#3A3B3C",
                   },
                 }}
-                href={rootUrl + `/utah/orem/geneva-heights`}
+                href={rootUrl + `/utah/orem`}
               >
                 Orem
               </MenuItem>

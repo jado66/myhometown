@@ -46,7 +46,7 @@ export const pages = () => {
           requiredPermission: "texting",
         },
         {
-          title: "Logs",
+          title: "Texting Logs",
           href: rootUrl + "/admin-dashboard/texting/logs",
           requiredPermission: "texting",
         },

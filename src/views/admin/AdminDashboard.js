@@ -1,6 +1,4 @@
 "use client";
-
-import React from "react";
 import { useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -8,15 +6,13 @@ import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardActions from "@mui/material/CardActions";
-import CardMedia from "@mui/material/CardMedia";
 import Button from "@mui/material/Button";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { Container, Divider } from "@mui/material";
+import { Container, Stack } from "@mui/material";
 import { useUser } from "@/hooks/use-user";
 import Loading from "@/components/util/Loading";
 import NextLink from "next/link";
 import PermissionGuard from "@/guards/permission-guard";
-import { GetApp } from "@/components/GetApp";
+import { useRouter } from "next/navigation";
 
 const AdminDashboardPages = () => {
   const theme = useTheme();
@@ -126,44 +122,38 @@ const AdminDashboardPages = () => {
                   media: "/admin-icons/Days of Service.svg",
                   href: rootUrl + "/admin-dashboard/days-of-service",
                 },
-                // {
-                //   title: "Volunteer Signups",
-                //   subtitle:
-                //     "View volunteer signups. Track who has been contacted.",
-                //   media: "/volunteer.png",
-                //   href: rootUrl + "/admin-dashboard/volunteer-signups",
-                // },
-                // {
-                //   title: "Email Communications",
-                //   subtitle: "Send emails to your city or community members. ",
-                //   media: "/message.png",
-                //   href: rootUrl + "/maintenance",
-                // },
+
                 {
-                  title: "Text (SMS) Communications",
+                  title: "Texting & Communications",
                   subtitle:
-                    "Send text notifications to your city or community members. ",
+                    "Manage all text communications for your city or community members.",
                   media: "/admin-icons/Text SMS Communications.svg",
-                  href: rootUrl + "/admin-dashboard/tools/sms",
+                  actions: [
+                    {
+                      label: "Send Texts",
+                      href: rootUrl + "/admin-dashboard/texting/send",
+                    },
+
+                    {
+                      label: "Manage Directory",
+                      href: rootUrl + "/admin-dashboard/texting/directory",
+                    },
+                    {
+                      label: "View Logs",
+                      href: rootUrl + "/admin-dashboard/texting/logs",
+                    },
+                  ],
                   // requiredPermission: "texting",
                 },
-                // // {
-                //   title: 'Give Butter Campaigns',
-                //   subtitle:
-                //     'Create and manage Give Butter campaigns.',
-                //   media: '/give-butter.png',
-                //   href: '/maintenance'
-                // },
               ].map((item, i) => (
                 <PermissionGuard
                   requiredPermission={item.requiredPermission}
                   user={user}
+                  key={i}
                 >
                   <AdminDashboardCard item={item} i={i} />
                 </PermissionGuard>
               ))}
-              {/* <Divider sx={{ my: 2, width: "100%" }} />
-              <GetApp /> */}
             </Grid>
           </Box>
         </Container>
@@ -177,71 +167,80 @@ export default AdminDashboardPages;
 const AdminDashboardCard = ({ item, i }) => {
   const theme = useTheme();
 
+  const router = useRouter();
+
+  const onClick = () => {
+    router.push(item.href);
+  };
+
   return (
     <Grid item xs={12} sm={6} md={4} key={i}>
-      <NextLink href={item.href} key={i} style={{ textDecoration: "none" }}>
+      <Box
+        display={"block"}
+        width={"100%"}
+        height={"100%"}
+        sx={{
+          textDecoration: "none",
+          transition: "all .2s ease-in-out",
+          "&:hover": {
+            transform: `translateY(-${theme.spacing(1 / 2)})`,
+          },
+          cursor: !item.actions ? "pointer" : "",
+        }}
+        onClick={(e) => {
+          if (!item.actions && onClick) {
+            onClick(e);
+          }
+        }}
+      >
         <Box
-          display={"block"}
+          component={Card}
           width={"100%"}
           height={"100%"}
-          sx={{
-            textDecoration: "none",
-            transition: "all .2s ease-in-out",
-            "&:hover": {
-              transform: `translateY(-${theme.spacing(1 / 2)})`,
-            },
-          }}
+          data-aos={"fade-up"}
+          borderRadius={3}
         >
           <Box
-            component={Card}
-            width={"100%"}
-            height={"100%"}
-            data-aos={"fade-up"}
-            borderRadius={3}
-          >
-            {/* <Card
-              image={item.media}
-              title={item.title}
-              sx={{
-                height: 140,
-              }}
-            /> */}
+            component={"img"}
+            src={item.media}
+            sx={{
+              width: "100%",
+              height: "140px",
+              mx: "auto",
+            }}
+          />
+          <Box component={CardContent}>
             <Box
-              component={"img"}
-              src={item.media}
-              sx={{
-                width: "100%",
-                height: "140px",
-
-                mx: "auto",
-              }}
-            />
-            <Box component={CardContent}>
-              <Box
-                component={Typography}
-                variant={"h6"}
-                gutterBottom
-                fontWeight={500}
-                align={"left"}
-              >
-                {item.title}
-              </Box>
-              <Typography
-                align={"left"}
-                variant={"body2"}
-                color="textSecondary"
-              >
-                {item.subtitle}
-              </Typography>
+              component={Typography}
+              variant={"h6"}
+              gutterBottom
+              fontWeight={500}
+              align={"left"}
+            >
+              {item.title}
             </Box>
-            <Box component={CardActions} justifyContent={"flex-end"}>
-              <Button size="small" href={item.href}>
-                Manage
-              </Button>
-            </Box>
+            <Typography align={"left"} variant={"body2"} color="textSecondary">
+              {item.subtitle}
+            </Typography>
+          </Box>
+          <Box component={CardActions}>
+            {item.actions && (
+              <Stack
+                direction="row"
+                spacing={1}
+                justifyContent={"space-between"}
+                sx={{ flexGrow: 1, px: 1 }}
+              >
+                {item.actions.map((action, index) => (
+                  <NextLink key={index} href={action.href}>
+                    <Button size="small">{action.label}</Button>
+                  </NextLink>
+                ))}
+              </Stack>
+            )}
           </Box>
         </Box>
-      </NextLink>
+      </Box>
     </Grid>
   );
 };

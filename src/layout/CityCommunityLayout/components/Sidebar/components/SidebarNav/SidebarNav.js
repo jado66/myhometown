@@ -128,7 +128,7 @@ const SidebarNav = ({ onClose }) => {
                     </Typography>
                   </NextLink>
                   <NextLink
-                    href={rootUrl + `/utah/orem/geneva-heights`}
+                    href={rootUrl + `/utah/orem`}
                     style={{ textDecoration: "none", color: "#686868" }}
                   >
                     <Typography
