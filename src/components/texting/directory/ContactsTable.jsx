@@ -31,6 +31,7 @@ import {
 } from "@mui/icons-material";
 import Creatable from "react-select/creatable";
 import { toast } from "react-toastify";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export const ContactsTable = ({
   editingId,
@@ -253,6 +254,9 @@ export const ContactsTable = ({
           Delete Selected
         </Button>
       </Box>
+
+      <JsonViewer data={groups} title="Groups" />
+
       <Table size="small">
         <TableHead>
           <TableRow>

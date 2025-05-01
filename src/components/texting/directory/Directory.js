@@ -71,96 +71,100 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
   const [isLoading, setLoading] = useState(false);
 
   // Extract unique groups from contacts
+
+  // TODO make the groups associated with an ID
   useEffect(() => {
+    if (!contacts) return;
+
     const uniqueGroups = new Set();
 
-    if (!contacts || !contacts.length) return;
+    // Helper to process contacts from any collection
+    const processContacts = (contactsArray) => {
+      if (!Array.isArray(contactsArray)) return;
 
-    contacts.forEach((contact) => {
-      let parsedGroups = contact.groups;
+      contactsArray.forEach((contact) => {
+        if (!contact) return;
 
-      // Handle case where groups is a JSON string
-      if (typeof contact.groups === "string") {
-        try {
-          parsedGroups = JSON.parse(contact.groups);
-        } catch (error) {
-          console.error("Failed to parse groups:", error);
-          parsedGroups = [];
-        }
-      }
+        // Parse groups using our helper function
+        const parsedGroups = parseGroups(contact.groups);
 
-      // Process groups regardless of format
-      if (parsedGroups && Array.isArray(parsedGroups)) {
+        // Add each group to our Set
         parsedGroups.forEach((group) => {
-          // Handle both string format and object format
           if (typeof group === "string") {
             uniqueGroups.add(group);
           } else if (group && group.value) {
-            // Legacy object format - extract just the value
             uniqueGroups.add(group.value);
           }
         });
-      }
-    });
+      });
+    };
+
+    // Process user contacts
+    if (contacts.userContacts) {
+      processContacts(contacts.userContacts);
+    }
+
+    // Process community contacts (iterate through each community)
+    if (contacts.communityContacts) {
+      Object.entries(contacts.communityContacts).forEach(
+        ([communityId, communityContacts]) => {
+          processContacts(communityContacts);
+        }
+      );
+    }
+
+    // Process city contacts (iterate through each city)
+    if (contacts.cityContacts) {
+      Object.entries(contacts.cityContacts).forEach(
+        ([cityId, cityContacts]) => {
+          processContacts(cityContacts);
+        }
+      );
+    }
 
     // Convert Set to array of strings
     const groupsArray = Array.from(uniqueGroups);
     setGroups(groupsArray);
+
+    console.log("Extracted groups:", groupsArray);
   }, [contacts]);
 
-  // Filter and sort contacts
+  // Filter and sort contacts - we'll use this only for global search
+  // Each individual contacts table will handle its own sorting
   useEffect(() => {
-    const uniqueGroups = new Set();
-
-    if (!contacts || !Array.isArray(contacts)) return;
-
-    // Ensure contacts is an array with elements
-    const contactsArray = contacts?.length ? contacts : [];
-
-    contactsArray.forEach((contact) => {
-      if (!contact) return;
-
-      let parsedGroups = contact.groups;
-
-      // Handle case where groups is a JSON string
-      if (typeof contact.groups === "string") {
-        try {
-          parsedGroups = JSON.parse(contact.groups);
-        } catch (error) {
-          console.error("Failed to parse groups:", error);
-          parsedGroups = [];
-        }
-      }
-
-      // Process groups regardless of format
-      if (parsedGroups && Array.isArray(parsedGroups)) {
-        parsedGroups.forEach((group) => {
-          // Handle both string format and object format
-          if (typeof group === "string") {
-            uniqueGroups.add(group);
-          } else if (group && group.value) {
-            // Legacy object format - extract just the value
-            uniqueGroups.add(group.value);
-          }
-        });
-      }
-    });
-
-    // Convert Set to array of strings
-    const groupsArray = Array.from(uniqueGroups);
-    setGroups(groupsArray);
-  }, [contacts]);
-
-  // Filter and sort contacts
-  useEffect(() => {
-    if (!contacts || !Array.isArray(contacts) || contacts.length === 0) {
+    if (!contacts || !contacts.userContacts) {
       setFilteredContacts([]);
       return;
     }
 
-    let filtered = [...contacts];
+    // For global search, we collect all contacts from all sources
+    let allContacts = [];
 
-    // Apply search filter
+    // Add user contacts
+    if (Array.isArray(contacts.userContacts)) {
+      allContacts = [...allContacts, ...contacts.userContacts];
+    }
+
+    // Add community contacts
+    if (contacts.communityContacts) {
+      Object.values(contacts.communityContacts).forEach((communityContacts) => {
+        if (Array.isArray(communityContacts)) {
+          allContacts = [...allContacts, ...communityContacts];
+        }
+      });
+    }
+
+    // Add city contacts
+    if (contacts.cityContacts) {
+      Object.values(contacts.cityContacts).forEach((cityContacts) => {
+        if (Array.isArray(cityContacts)) {
+          allContacts = [...allContacts, ...cityContacts];
+        }
+      });
+    }
+
+    // Apply global search filter if needed
+    let filtered = allContacts;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -173,43 +177,21 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
             contact.middle_name.toLowerCase().includes(query)) ||
           (contact.email && contact.email.toLowerCase().includes(query)) ||
           (contact.phone && contact.phone.includes(query)) ||
-          (contact.groups &&
-            Array.isArray(contact.groups) &&
-            contact.groups.some((g) => g?.label?.toLowerCase().includes(query)))
+          // Fixed groups search
+          (() => {
+            const parsedGroups = parseGroups(contact.groups);
+            return parsedGroups.some(
+              (g) =>
+                (typeof g === "string" && g.toLowerCase().includes(query)) ||
+                (g?.label && g.label.toLowerCase().includes(query))
+            );
+          })()
       );
     }
 
-    // Apply sorting
-    filtered.sort((a, b) => {
-      let aValue = a[orderBy]?.toString().toLowerCase() ?? "";
-      let bValue = b[orderBy]?.toString().toLowerCase() ?? "";
-
-      // Special handling for groups
-      if (orderBy === "groups") {
-        aValue =
-          a.groups && Array.isArray(a.groups)
-            ? a.groups
-                .map((g) => g?.label || "")
-                .join(", ")
-                .toLowerCase()
-            : "";
-        bValue =
-          b.groups && Array.isArray(b.groups)
-            ? b.groups
-                .map((g) => g?.label || "")
-                .join(", ")
-                .toLowerCase()
-            : "";
-      }
-
-      if (order === "asc") {
-        return aValue.localeCompare(bValue);
-      }
-      return bValue.localeCompare(aValue);
-    });
-
+    // Note: We don't apply global sorting here as each table will handle its own sorting
     setFilteredContacts(filtered);
-  }, [contacts, searchQuery, orderBy, order]);
+  }, [contacts, searchQuery]);
 
   const handleSort = (property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -508,6 +490,8 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
       <Typography variant="h6">
         {user.isAdmin ? "Personal Contacts" : "Unassigned Contacts"}
       </Typography>
+
+      <JsonViewer data={groups} />
 
       <ContactsTable
         {...ContactsTableProps}
@@ -824,4 +808,23 @@ const importContacts = async (
   };
 
   reader.readAsText(file);
+};
+
+const parseGroups = (groupsData) => {
+  if (!groupsData) return [];
+
+  // If already an array, return it
+  if (Array.isArray(groupsData)) return groupsData;
+
+  // If it's a string, try to parse it as JSON
+  if (typeof groupsData === "string") {
+    try {
+      return JSON.parse(groupsData);
+    } catch (error) {
+      console.error("Failed to parse groups:", error);
+      return [];
+    }
+  }
+
+  return [];
 };
