@@ -14,31 +14,48 @@ const RecipientSelector = ({
   onRefreshContacts,
 }) => {
   const recipientOptions = useMemo(() => {
-    return [
-      { label: "Groups", options: groups },
-      {
+    // Create the base options array with Groups
+    const options = [{ label: "Groups", options: groups }];
+
+    // Only add Personal Contacts if user is admin
+    if (user?.isAdmin) {
+      options.push({
         label: "Personal Contacts",
         options: allContacts.filter((contact) =>
           contacts.userContacts.some((c) => c.id === contact.contactId)
         ),
-      },
-      ...(user?.communities_details || []).map((community) => ({
-        label: `${community.name} Contacts`,
-        options: allContacts.filter((contact) =>
-          contacts.communityContacts[community.id]?.some(
-            (c) => c.id === contact.contactId
-          )
-        ),
-      })),
-      ...(user?.cities_details || []).map((city) => ({
-        label: `${city.name} Contacts`,
-        options: allContacts.filter((contact) =>
-          contacts.cityContacts[city.id]?.some(
-            (c) => c.id === contact.contactId
-          )
-        ),
-      })),
-    ];
+      });
+    }
+
+    // Add community contacts
+    if (user?.communities_details?.length) {
+      options.push(
+        ...user.communities_details.map((community) => ({
+          label: `${community.name} Contacts`,
+          options: allContacts.filter((contact) =>
+            contacts.communityContacts[community.id]?.some(
+              (c) => c.id === contact.contactId
+            )
+          ),
+        }))
+      );
+    }
+
+    // Add city contacts
+    if (user?.cities_details?.length) {
+      options.push(
+        ...user.cities_details.map((city) => ({
+          label: `${city.name} Contacts`,
+          options: allContacts.filter((contact) =>
+            contacts.cityContacts[city.id]?.some(
+              (c) => c.id === contact.contactId
+            )
+          ),
+        }))
+      );
+    }
+
+    return options;
   }, [groups, allContacts, contacts, user]);
 
   return (

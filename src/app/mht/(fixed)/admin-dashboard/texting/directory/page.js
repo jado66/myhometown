@@ -36,7 +36,7 @@ const DirectoryPage = () => {
         }}
       >
         <Directory
-          userId={user?.id}
+          user={user}
           userCommunities={user?.communities_details}
           userCities={user?.cities_details}
         />

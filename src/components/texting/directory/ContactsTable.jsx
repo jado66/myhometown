@@ -27,6 +27,7 @@ import {
   Phone,
   ContentCopy,
   Email,
+  DeleteOutline,
 } from "@mui/icons-material";
 import Creatable from "react-select/creatable";
 import { toast } from "react-toastify";
@@ -41,7 +42,7 @@ export const ContactsTable = ({
   cancelEditing,
   setEditForm,
   handleGroupChange,
-  handleDeleteClick,
+  handleBulkDeleteClick,
   startEditing,
   handleSort,
   formError,
@@ -53,6 +54,7 @@ export const ContactsTable = ({
   tableName,
   canAddNew,
   isNewContact,
+  user,
 }) => {
   const [selectedContacts, setSelectedContacts] = useState(new Set());
 
@@ -197,6 +199,60 @@ export const ContactsTable = ({
 
   return (
     <TableContainer>
+      <Box sx={{ mt: 2, display: "flex", gap: 1, alignItems: "between" }}>
+        {selectedContacts.size > 0 && (
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            <Typography>Move selected contacts to:</Typography>
+            {tableName !== "Personal Contacts" && (
+              <Button onClick={() => handleMoveContacts("user", userId)}>
+                {user.isAdmin ? "Personal Contacts" : "Unassigned Contacts"}
+              </Button>
+            )}
+            {userCommunities
+              .filter((community) => community.name !== tableName)
+              .map((community) => (
+                <Button
+                  key={community.id}
+                  onClick={() => handleMoveContacts("community", community.id)}
+                >
+                  {community.name} Community
+                </Button>
+              ))}
+            {userCities
+              .filter((city) => city.name !== tableName)
+              .map((city) => (
+                <Button
+                  key={city.id}
+                  onClick={() => handleMoveContacts("city", city.id)}
+                >
+                  {city.name} City
+                </Button>
+              ))}
+          </Box>
+        )}
+        <Button
+          variant="outlined"
+          color="error"
+          onClick={() => {
+            if (selectedContacts.size > 0) {
+              const contactIdsArray = Array.from(selectedContacts);
+              handleBulkDeleteClick(contactIdsArray); // Use this function instead of directly deleting
+              setSelectedContacts(new Set()); // Reset selected contacts
+            }
+          }}
+          sx={{ ml: "auto" }}
+          disabled={selectedContacts.size === 0}
+        >
+          Delete Selected
+        </Button>
+      </Box>
       <Table size="small">
         <TableHead>
           <TableRow>
@@ -298,16 +354,7 @@ export const ContactsTable = ({
                     required
                   />
                 ) : isXlScreen ? (
-                  <>
-                    {contact.phone}
-                    <IconButton
-                      size="small"
-                      onClick={() => copyPhoneToClipboard(contact.phone)}
-                      sx={{ ml: 1 }}
-                    >
-                      <ContentCopy />
-                    </IconButton>
-                  </>
+                  <>{contact.phone}</>
                 ) : (
                   <Tooltip title={contact.phone || ""} placement="top-start">
                     <IconButton
@@ -332,16 +379,7 @@ export const ContactsTable = ({
                 ) : (
                   contact.email.trim() &&
                   (isXlScreen ? (
-                    <>
-                      {contact.email}
-                      <IconButton
-                        size="small"
-                        onClick={() => copyEmailToClipboard(contact.email)}
-                        sx={{ ml: 1 }}
-                      >
-                        <ContentCopy />
-                      </IconButton>
-                    </>
+                    <>{contact.email}</>
                   ) : (
                     <Tooltip title={contact.email} placement="top-start">
                       <IconButton
@@ -425,13 +463,6 @@ export const ContactsTable = ({
                         color="primary"
                       >
                         <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDeleteClick(contact)}
-                        color="error"
-                      >
-                        <DeleteIcon />
                       </IconButton>
                     </>
                   </Box>
@@ -568,36 +599,6 @@ export const ContactsTable = ({
           </TableRow>
         </TableBody>
       </Table>
-      {selectedContacts.size > 0 && (
-        <Box sx={{ mt: 2 }}>
-          <Typography>Move selected contacts to:</Typography>
-          {tableName !== "Personal Contacts" && (
-            <Button onClick={() => handleMoveContacts("user", userId)}>
-              Personal Contacts
-            </Button>
-          )}
-          {userCommunities
-            .filter((community) => community.name !== tableName)
-            .map((community) => (
-              <Button
-                key={community.id}
-                onClick={() => handleMoveContacts("community", community.id)}
-              >
-                {community.name} Community
-              </Button>
-            ))}
-          {userCities
-            .filter((city) => city.name !== tableName)
-            .map((city) => (
-              <Button
-                key={city.id}
-                onClick={() => handleMoveContacts("city", city.id)}
-              >
-                {city.name} City
-              </Button>
-            ))}
-        </Box>
-      )}
     </TableContainer>
   );
 };

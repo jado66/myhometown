@@ -23,7 +23,8 @@ import { useUserContacts } from "@/hooks/useUserContacts";
 import { ContactsTable } from "./ContactsTable";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 
-const ContactsManagement = ({ userId, userCommunities, userCities }) => {
+const ContactsManagement = ({ user, userCommunities, userCities }) => {
+  const userId = user?.id || null;
   const {
     contacts,
     loading,
@@ -52,10 +53,10 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
     groups: [],
   });
   const [formError, setFormError] = useState("");
-  const [deleteDialog, setDeleteDialog] = useState({
+  const [bulkDeleteDialog, setBulkDeleteDialog] = useState({
     open: false,
-    contactId: null,
-    contactName: "",
+    contactIds: [],
+    count: 0,
   });
   const [isNewContact, setIsNewContact] = useState(false);
 
@@ -67,6 +68,7 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
   const [order, setOrder] = useState("asc");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredContacts, setFilteredContacts] = useState([]);
+  const [isLoading, setLoading] = useState(false);
 
   // Extract unique groups from contacts
   useEffect(() => {
@@ -327,38 +329,46 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
     setEditForm({ ...editForm, groups: selectedGroups });
   };
 
-  const handleDeleteClick = (contact) => {
-    setDeleteDialog({
+  const handleBulkDeleteClick = (contactIds) => {
+    setBulkDeleteDialog({
       open: true,
-      contactId: contact.id,
-      contactName: contact.name,
+      contactIds: contactIds,
+      count: contactIds.length,
     });
   };
 
-  const handleDeleteConfirm = async () => {
+  const handleBulkDeleteConfirm = async () => {
     try {
-      const { error } = await deleteContact(deleteDialog.contactId);
-      if (error) {
-        setFormError(error);
-      } else {
-        // No need to manually update state, refreshContacts will handle it
+      const contactIds = bulkDeleteDialog.contactIds;
+
+      // Show loading indicator
+      setLoading(true);
+
+      // Delete each contact
+      for (const id of contactIds) {
+        await deleteContact(id);
       }
+
+      // Refresh contacts to update the view
+      refreshContacts();
     } catch (err) {
-      setFormError(err.message);
+      setFormError("Error during bulk deletion: " + err.message);
     } finally {
-      setDeleteDialog({
+      // Close dialog and reset state
+      setBulkDeleteDialog({
         open: false,
-        contactId: null,
-        contactName: "",
+        contactIds: [],
+        count: 0,
       });
+      setLoading(false);
     }
   };
 
-  const handleDeleteCancel = () => {
-    setDeleteDialog({
+  const handleBulkDeleteCancel = () => {
+    setBulkDeleteDialog({
       open: false,
-      contactId: null,
-      contactName: "",
+      contactIds: [],
+      count: 0,
     });
   };
 
@@ -396,13 +406,13 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
     cancelEditing,
     setEditForm,
     handleGroupChange,
-    handleDeleteClick,
     startEditing,
     handleSort,
     formError,
     userId,
     groups,
     isNewContact,
+    handleBulkDeleteClick,
   };
 
   return (
@@ -495,12 +505,16 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
       )}
 
       {/* User Contacts */}
-      <Typography variant="h6">Personal Contacts</Typography>
+      <Typography variant="h6">
+        {user.isAdmin ? "Personal Contacts" : "Unassigned Contacts"}
+      </Typography>
+
       <ContactsTable
         {...ContactsTableProps}
         filteredContacts={contacts.userContacts}
-        tableName="Personal Contacts"
+        tableName="Unassigned Contacts"
         canAddNew
+        user={user}
       />
 
       {/* Community Contacts */}
@@ -529,14 +543,12 @@ const ContactsManagement = ({ userId, userCommunities, userCities }) => {
           </Box>
         ))}
       <AskYesNoDialog
-        open={deleteDialog.open}
-        title="Confirm Delete"
-        description={`Are you sure you want to delete ${
-          deleteDialog.contactName || "this contact"
-        }?`}
-        onConfirm={handleDeleteConfirm}
-        onCancel={handleDeleteCancel}
-        onClose={handleDeleteCancel}
+        open={bulkDeleteDialog.open}
+        title="Confirm Bulk Delete"
+        description={`Are you sure you want to delete ${bulkDeleteDialog.count} contacts?`}
+        onConfirm={handleBulkDeleteConfirm}
+        onCancel={handleBulkDeleteCancel}
+        onClose={handleBulkDeleteCancel}
       />
     </Paper>
   );
