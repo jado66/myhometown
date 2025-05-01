@@ -213,7 +213,7 @@ export const ContactsTable = ({
             <Typography>Move selected contacts to:</Typography>
             {tableName !== "Personal Contacts" && (
               <Button onClick={() => handleMoveContacts("user", userId)}>
-                {user.isAdmin ? "Personal Contacts" : "Unassigned Contacts"}
+                {user?.isAdmin ? "Personal Contacts" : "Unassigned Contacts"}
               </Button>
             )}
             {userCommunities

@@ -213,7 +213,10 @@ export const UserProvider = ({ children }) => {
   return (
     <UserContext.Provider
       value={{
-        user,
+        user: {
+          ...user,
+          isAdmin: user?.permissions?.administrator,
+        },
         authUser,
         isLoading,
         isAdmin: user?.permissions?.administrator,

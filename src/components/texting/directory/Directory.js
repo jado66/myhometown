@@ -491,8 +491,6 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
         {user.isAdmin ? "Personal Contacts" : "Unassigned Contacts"}
       </Typography>
 
-      <JsonViewer data={groups} />
-
       <ContactsTable
         {...ContactsTableProps}
         filteredContacts={contacts.userContacts}
