@@ -107,7 +107,7 @@ const SidebarNav = ({ onClose }) => {
                   color: "black",
                 }}
               >
-                Find My Resource Center
+                Find My Nearest Center
               </Typography>
             </Button>
           </Box>

@@ -146,7 +146,7 @@ const Topbar = ({ onSidebarOpen }) => {
               }}
               onClick={() => scrollToWithOffset("maps", -125)}
             >
-              Find My Resource Center
+              Find My Nearest Center
             </Button>
           </Box>
 
