@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Paper,
   TextField,
@@ -21,6 +21,7 @@ import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import { useUserContacts } from "@/hooks/useUserContacts";
 
 import { ContactsTable } from "./ContactsTable";
+import ContactDialog from "./ContactDialog"; // Import the new dialog component
 import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const ContactsManagement = ({ user, userCommunities, userCities }) => {
@@ -60,6 +61,10 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
   });
   const [isNewContact, setIsNewContact] = useState(false);
 
+  // New states for the dialog
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingContact, setEditingContact] = useState(null);
+
   // State for groups (extracted from contacts)
   const [groups, setGroups] = useState([]);
 
@@ -71,8 +76,6 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
   const [isLoading, setLoading] = useState(false);
 
   // Extract unique groups from contacts
-
-  // TODO make the groups associated with an ID
   useEffect(() => {
     if (!contacts) return;
 
@@ -125,12 +128,9 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
     // Convert Set to array of strings
     const groupsArray = Array.from(uniqueGroups);
     setGroups(groupsArray);
-
-    console.log("Extracted groups:", groupsArray);
   }, [contacts]);
 
   // Filter and sort contacts - we'll use this only for global search
-  // Each individual contacts table will handle its own sorting
   useEffect(() => {
     if (!contacts || !contacts.userContacts) {
       setFilteredContacts([]);
@@ -177,7 +177,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
             contact.middle_name.toLowerCase().includes(query)) ||
           (contact.email && contact.email.toLowerCase().includes(query)) ||
           (contact.phone && contact.phone.includes(query)) ||
-          // Fixed groups search
+          // Search in groups
           (() => {
             const parsedGroups = parseGroups(contact.groups);
             return parsedGroups.some(
@@ -189,7 +189,6 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
       );
     }
 
-    // Note: We don't apply global sorting here as each table will handle its own sorting
     setFilteredContacts(filtered);
   }, [contacts, searchQuery]);
 
@@ -225,7 +224,6 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
       middle_name: "",
       email: "",
       phone: "",
-
       owner_type: "user",
       owner_id: userId,
       groups: [],
@@ -234,10 +232,9 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
   };
 
   const startEditing = (contact) => {
-    setEditingId(contact.id);
-    setEditForm(contact);
-
-    setIsNewContact(false);
+    // Instead of inline editing, open the dialog
+    setEditingContact(contact);
+    setDialogOpen(true);
   };
 
   const cancelEditing = () => {
@@ -276,35 +273,49 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
     }
   };
 
-  const addNewContact = () => {
-    // Generate a temporary ID for the new contact
-    const tempId = "temp-" + Date.now();
+  // New function to open the add contact dialog
+  const openAddContactDialog = () => {
+    setEditingContact(null);
+    setDialogOpen(true);
+  };
 
-    // Set editingId to the temporary ID
-    setEditingId(tempId);
+  // Handle dialog close
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setEditingContact(null);
+  };
 
-    // Reset form values for the new contact
-    resetEditForm();
+  // Handle save from dialog
+  const handleDialogSave = async (contactData) => {
+    try {
+      setLoading(true);
 
-    // Set isNewContact flag to true
-    setIsNewContact(true);
+      if (editingContact) {
+        // Update existing contact
+        const { error } = await updateContact(editingContact.id, contactData);
+        if (error) {
+          setFormError(error);
+          return;
+        }
+      } else {
+        // Add new contact
+        const { error } = await addContact(contactData);
+        if (error) {
+          setFormError(error);
+          return;
+        }
+      }
 
-    // Add temporary contact to filteredContacts for immediate display
-    setFilteredContacts((prev) => [
-      {
-        id: tempId,
-        first_name: "",
-        last_name: "",
-        middle_name: "",
-        email: "",
-        phone: "",
-
-        owner_type: "user",
-        owner_id: userId,
-        groups: [],
-      },
-      ...prev,
-    ]);
+      // Success - close dialog and refresh
+      setDialogOpen(false);
+      setEditingContact(null);
+      refreshContacts();
+      setFormError("");
+    } catch (err) {
+      setFormError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGroupChange = (selectedGroups) => {
@@ -395,6 +406,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
     groups,
     isNewContact,
     handleBulkDeleteClick,
+    user,
   };
 
   return (
@@ -408,7 +420,6 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
         }}
       >
         <Typography variant="h5">Directory</Typography>
-        {/* <JsonViewer data={{ contacts }} /> */}
 
         <Box sx={{ display: "flex", gap: 2 }}>
           <input
@@ -431,7 +442,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
           <Button
             variant="contained"
             startIcon={<FileDownloadIcon />}
-            onClick={exportContacts}
+            onClick={() => exportContacts(filteredContacts)}
             size="small"
           >
             Export CSV
@@ -439,7 +450,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={addNewContact}
+            onClick={openAddContactDialog}
             size="small"
           >
             Add Contact
@@ -454,6 +465,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
           </Button>
         </Box>
       </Box>
+
       {/* Add Search Box */}
       <Box sx={{ mb: 2 }}>
         <TextField
@@ -471,13 +483,13 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
           }}
         />
       </Box>
+
       {/* Loading state */}
       {loading && (
         <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
           <CircularProgress />
         </Box>
       )}
-      {/* API Error */}
 
       {/* Form Error */}
       {formError && (
@@ -496,7 +508,6 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
         filteredContacts={contacts.userContacts}
         tableName="Unassigned Contacts"
         canAddNew
-        user={user}
       />
 
       {/* Community Contacts */}
@@ -524,6 +535,22 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
             />
           </Box>
         ))}
+
+      {/* Contact Add/Edit Dialog */}
+      <ContactDialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        onSave={handleDialogSave}
+        contact={editingContact}
+        userId={userId}
+        userCommunities={userCommunities}
+        userCities={userCities}
+        groups={groups}
+        user={user}
+        title={editingContact ? "Edit Contact" : "Add Contact"}
+      />
+
+      {/* Bulk Delete Confirmation Dialog */}
       <AskYesNoDialog
         open={bulkDeleteDialog.open}
         title="Confirm Bulk Delete"
@@ -538,91 +565,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
 
 export default ContactsManagement;
 
-// const selectStyles = {
-//   control: (provided, state) => ({
-//     ...provided,
-//     minWidth: "200px",
-//     minHeight: "32px",
-//     borderColor: state.isFocused ? "#318D43" : provided.borderColor,
-//     boxShadow: state.isFocused ? `0 0 0 1px #318D43` : provided.boxShadow,
-//     "&:hover": {
-//       borderColor: "#318D43",
-//     },
-//   }),
-//   menu: (provided) => ({
-//     ...provided,
-//     position: "absolute",
-//     width: "100%",
-//     zIndex: 9999,
-//     marginTop: 0,
-//     backgroundColor: "white",
-//     border: "1px solid #e2e8f0",
-//     borderRadius: "6px",
-//     boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-//     overflow: "hidden",
-//   }),
-//   menuList: (provided) => ({
-//     ...provided,
-//     padding: "4px",
-//     fontSize: "14px",
-//   }),
-//   option: (provided, { isFocused, isSelected }) => ({
-//     ...provided,
-//     fontSize: "14px",
-//     backgroundColor: isFocused ? "#f7fafc" : isSelected ? "#e2e8f0" : "white",
-//     color: "#2d3748",
-//     padding: "8px",
-//     "&:active": {
-//       backgroundColor: "#e2e8f0",
-//     },
-//   }),
-//   menuPortal: (provided) => ({
-//     ...provided,
-//     zIndex: 9999,
-//   }),
-// };
-
-// const selectComponents = {
-//   MenuList: ({ children, ...props }) => (
-//     <components.MenuList
-//       {...props}
-//       style={{
-//         padding: "4px",
-//         fontSize: "14px",
-//       }}
-//     >
-//       {React.Children.toArray(children).reverse()}
-//     </components.MenuList>
-//   ),
-//   Menu: ({ children, ...props }) => {
-//     const { options, createOption } = props.selectProps;
-//     return (
-//       <components.Menu
-//         {...props}
-//         style={{
-//           backgroundColor: "white",
-//           border: "1px solid #e2e8f0",
-//           borderRadius: "6px",
-//           boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-//           overflow: "hidden",
-//         }}
-//       >
-//         {createOption && (
-//           <div
-//             style={{
-//               padding: "4px 8px",
-//               borderBottom: "1px solid #e2e8f0",
-//               fontSize: "14px",
-//             }}
-//           >
-//             {createOption}
-//           </div>
-//         )}
-//         {children}
-//       </components.Menu>
-//     );
-//   },
-// };
+// Helper function for formatting phone numbers
 const formatPhoneNumber = (phone) => {
   // Remove all non-numeric characters
   const cleaned = phone.replace(/\D/g, "");
@@ -641,14 +584,21 @@ const formatPhoneNumber = (phone) => {
   return cleaned;
 };
 
-const exportContacts = (filteredContacts) => {
-  const header = "Name,Email,Phone,Website,Groups\n";
-  const csv = filteredContacts
+// Helper function for exporting contacts to CSV
+const exportContacts = (contacts) => {
+  const header = "First Name,Middle Name,Last Name,Email,Phone,Groups\n";
+  const csv = contacts
     .map(
       (contact) =>
-        `${contact.name || ""},${contact.email || ""},${contact.phone || ""},${
-          contact.website || ""
-        },${contact.groups ? contact.groups.map((g) => g.label).join(";") : ""}`
+        `${contact.first_name || ""},${contact.middle_name || ""},${
+          contact.last_name || ""
+        },${contact.email || ""},${contact.phone || ""},${
+          Array.isArray(contact.groups)
+            ? contact.groups.join(";")
+            : typeof contact.groups === "string"
+            ? contact.groups
+            : ""
+        }`
     )
     .join("\n");
 
@@ -665,9 +615,10 @@ const exportContacts = (filteredContacts) => {
   }
 };
 
+// Helper function for normalizing CSV header names
 const normalizeHeader = (header) => {
   // Remove special characters and spaces, convert to lowercase
-  const normalized = header.toLowerCase();
+  const normalized = header.toLowerCase().trim();
 
   // Map various possible header names to standard format
   const headerMap = {
@@ -699,11 +650,7 @@ const normalizeHeader = (header) => {
   return headerMap[normalized] || normalized.replace(/[^a-z0-9]/g, "");
 };
 
-const createOption = (label) => ({
-  label,
-  value: label.toLowerCase().replace(/\W/g, ""),
-});
-
+// Function to import contacts from CSV
 const importContacts = async (
   event,
   addContact,
@@ -724,9 +671,14 @@ const importContacts = async (
     const headers = lines[0].split(",").map((header) => {
       const normalized = normalizeHeader(header.trim());
       if (
-        !["first_name", "last_name", "email", "phone", "groups"].includes(
-          normalized
-        )
+        ![
+          "first_name",
+          "last_name",
+          "email",
+          "phone",
+          "groups",
+          "middle_name",
+        ].includes(normalized)
       ) {
         errors.push(`Unknown column header: ${header.trim()}`);
       }
