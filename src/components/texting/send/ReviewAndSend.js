@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -50,10 +50,43 @@ const ReviewAndSend = ({
   const [sendOption, setSendOption] = useState("now");
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  // Add this helper function
+  const debounce = (func, wait) => {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), wait);
+    };
+  };
+
+  // Add this helper function
+  const roundToNearestFiveMinutes = (time) => {
+    if (!time) return null;
+
+    const minutes = time.minutes();
+    const roundedMinutes = Math.round(minutes / 5) * 5;
+
+    return time.clone().minutes(roundedMinutes).seconds(0);
+  };
+
   // Initialize with moment objects instead of date-fns
   const [scheduleDate, setScheduleDate] = useState(moment().add(1, "days"));
   const [scheduleTime, setScheduleTime] = useState(moment().hour(9).minute(0));
+  const [localScheduleTime, setLocalScheduleTime] = useState(scheduleTime);
   const [schedulingSuccess, setSchedulingSuccess] = useState(false);
+
+  const debouncedSetTime = useCallback(
+    debounce((time) => {
+      const roundedTime = roundToNearestFiveMinutes(time);
+      setScheduleTime(roundedTime);
+      setLocalScheduleTime(roundedTime);
+    }, 1000), // 1 second delay
+    []
+  );
+
+  useEffect(() => {
+    setLocalScheduleTime(scheduleTime);
+  }, [scheduleTime]);
 
   const handleSendOptionChange = (event) => {
     setSendOption(event.target.value);
@@ -270,8 +303,18 @@ const ReviewAndSend = ({
 
                 <TimePicker
                   label="Time"
-                  value={scheduleTime}
-                  onChange={setScheduleTime}
+                  value={localScheduleTime}
+                  onChange={(newTime) => {
+                    setLocalScheduleTime(newTime); // Update local state immediately for responsive UI
+                    debouncedSetTime(newTime); // Debounced rounding and actual state update
+                  }}
+                  slotProps={{
+                    textField: {
+                      helperText: "This will round to the nearest 5 minutes.",
+                    },
+                  }}
+                  style={{ marginBottom: "0px" }}
+                  minutesStep={5}
                   renderInput={(params) => (
                     <TextField
                       {...params}

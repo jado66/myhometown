@@ -1,6 +1,7 @@
 // src/app/api/communications/scheduled-texts/send/route.js
-import { sendSimpleText } from "@/util/communication/sendTexts";
+import { sendTextWithStream } from "@/util/communication/sendTexts";
 import { createClient } from "@supabase/supabase-js";
+import { v4 as uuidv4 } from "uuid";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -15,6 +16,7 @@ export const runtime = "nodejs";
 export async function POST(req) {
   try {
     const { id } = await req.json();
+    const messageId = uuidv4(); // Generate unique messageId for streaming
 
     if (!id) {
       return new Response(
@@ -70,12 +72,15 @@ export async function POST(req) {
     // Send messages sequentially
     for (const recipient of parsedRecipients) {
       try {
-        // Send text with media if available
-        const result = await sendSimpleText({
+        // Use sendTextWithStream instead of sendSimpleText
+        const result = await sendTextWithStream({
           message: message_content,
-          phone: recipient.phone || recipient.label,
-          name: recipient.name || recipient.value,
+          recipient: {
+            phone: recipient.phone || recipient.label,
+            name: recipient.name || recipient.value,
+          },
           mediaUrls: decodedMediaUrls.length > 0 ? decodedMediaUrls : undefined,
+          messageId, // Required for sendTextWithStream
         });
 
         results.push({
@@ -128,6 +133,7 @@ export async function POST(req) {
       JSON.stringify({
         success: true,
         id,
+        messageId,
         results,
         deleted: !deleteError,
         timestamp: new Date().toISOString(),

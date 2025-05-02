@@ -14,35 +14,12 @@ export const runtime = "nodejs";
 export async function GET(req) {
   const url = new URL(req.url);
   const hostname = url.hostname;
-  const isLocalhost = hostname === "localhost" || hostname === "127.0.0.1";
 
   console.log("Processing scheduled texts...");
-
-  // Check for manual test mode - you can use a query parameter
-  const isManualTest = url.searchParams.get("manual") === "true";
-
-  // In production, verify cron authorization unless it's a manual test
-  if (!isLocalhost && !isManualTest) {
-    const authHeader = req.headers.get("authorization");
-    const expectedKey = process.env.CRON_SECRET_KEY;
-
-    if (!authHeader || !expectedKey || authHeader !== `Bearer ${expectedKey}`) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-  }
-
-  if (isManualTest) {
-    console.log("Manual test mode - authorization bypassed");
-  }
 
   try {
     // Get current timestamp
     const now = new Date();
-
-    // Get Supabase client
 
     // Fetch scheduled texts that are due
     const { data: scheduledTexts, error } = await supabase
@@ -81,11 +58,7 @@ export async function GET(req) {
     const results = await Promise.all(
       scheduledTexts.map(async (text) => {
         const response = await fetch(
-          `${
-            isLocalhost
-              ? "http://localhost:3000"
-              : process.env.NEXT_PUBLIC_DOMAIN
-          }/api/communications/scheduled-texts/send`,
+          `${process.env.NEXT_PUBLIC_DOMAIN}/api/communications/scheduled-texts/send`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

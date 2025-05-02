@@ -460,15 +460,6 @@ export default function ScheduledTextsPage() {
           </>
         )}
       </Dialog>
-
-      <Button
-        variant="contained"
-        color="primary"
-        sx={{ mb: 3, mx: "auto" }}
-        onClick={callSendText}
-      >
-        Send NOW
-      </Button>
     </>
   );
 }
