@@ -57,12 +57,25 @@ export async function GET(req) {
     // Process each scheduled text by calling the send endpoint
     const results = await Promise.all(
       scheduledTexts.map(async (text) => {
+        const requestBody = { id: text.id };
+        const bodyString = JSON.stringify(requestBody);
+
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_DOMAIN}/api/communications/scheduled-texts/send`,
+          `${
+            isLocalhost
+              ? "http://localhost:3000"
+              : process.env.NEXT_PUBLIC_DOMAIN
+          }/api/communications/scheduled-texts/send`,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: text.id }),
+            headers: {
+              "Content-Type": "application/json",
+              "Content-Length": Buffer.byteLength(
+                bodyString,
+                "utf8"
+              ).toString(),
+            },
+            body: bodyString,
           }
         );
 
