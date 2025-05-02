@@ -8,5 +8,11 @@
     "env": {
       "ENABLE_EXPERIMENTAL_COREPACK": "1"
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/process-scheduled-texts",
+      "schedule": "*/5 * * * *"
+    }
+  ]
 }

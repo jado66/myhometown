@@ -142,6 +142,19 @@ export default function ScheduledTextsPage() {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
   };
 
+  // debug
+  const callSendText = async () => {
+    const response = await fetch(
+      `/api/cron/process-scheduled-texts?manual=true`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    const result = await response.json();
+    console.log("Send Text Result:", result);
+  };
+
   return (
     <>
       <BackButton top="0px" text="Back to Admin Dashboard" />
@@ -198,7 +211,9 @@ export default function ScheduledTextsPage() {
             <Button
               variant="contained"
               color="primary"
-              href="/communications/bulk"
+              href={
+                process.env.NEXT_PUBLIC_DOMAIN + "/admin-dashboard/texting/send"
+              }
             >
               Create a New Message
             </Button>
@@ -445,6 +460,15 @@ export default function ScheduledTextsPage() {
           </>
         )}
       </Dialog>
+
+      <Button
+        variant="contained"
+        color="primary"
+        sx={{ mb: 3, mx: "auto" }}
+        onClick={callSendText}
+      >
+        Send NOW
+      </Button>
     </>
   );
 }
