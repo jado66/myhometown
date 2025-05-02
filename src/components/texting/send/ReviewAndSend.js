@@ -189,13 +189,12 @@ const ReviewAndSend = ({
               control={<Radio />}
               label="Send Now"
             />
-            <DevEnvGuard>
-              <FormControlLabel
-                value="schedule"
-                control={<Radio />}
-                label="Schedule for Later"
-              />
-            </DevEnvGuard>
+
+            <FormControlLabel
+              value="schedule"
+              control={<Radio />}
+              label="Schedule for Later"
+            />
           </RadioGroup>
         </FormControl>
       )}
