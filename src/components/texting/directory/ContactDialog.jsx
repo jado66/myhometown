@@ -26,7 +26,7 @@ const ContactDialog = ({
   userId,
   userCommunities = [],
   userCities = [],
-  groups = [],
+  groupsByOwner = {}, // Updated to use the structured groupsByOwner
   user,
   title = "Add Contact",
 }) => {
@@ -46,6 +46,9 @@ const ContactDialog = ({
   const [formData, setFormData] = useState(initialFormState);
   const [errors, setErrors] = useState({});
 
+  // State to track available groups based on current owner
+  const [availableGroups, setAvailableGroups] = useState([]);
+
   // Effect to reset form when dialog opens/closes or contact changes
   useEffect(() => {
     if (open) {
@@ -56,13 +59,41 @@ const ContactDialog = ({
           // Ensure groups is in the right format
           groups: formatGroupsForSelect(contact.groups || []),
         });
+
+        // Set available groups based on contact's owner
+        updateAvailableGroups(contact.owner_type, contact.owner_id);
       } else {
         // If adding a new contact
         setFormData(initialFormState);
+        // Set available groups for user by default
+        updateAvailableGroups("user", userId);
       }
       setErrors({});
     }
-  }, [open, contact, userId]);
+  }, [open, contact, userId, groupsByOwner]);
+
+  // Update available groups when owner changes
+  useEffect(() => {
+    if (open) {
+      updateAvailableGroups(formData.owner_type, formData.owner_id);
+    }
+  }, [formData.owner_type, formData.owner_id, groupsByOwner]);
+
+  // Function to update available groups based on owner type and ID
+  const updateAvailableGroups = (ownerType, ownerId) => {
+    let groups = [];
+
+    if (ownerType === "user") {
+      groups = groupsByOwner.user || [];
+    } else if (ownerType === "community") {
+      groups =
+        (groupsByOwner.communities && groupsByOwner.communities[ownerId]) || [];
+    } else if (ownerType === "city") {
+      groups = (groupsByOwner.cities && groupsByOwner.cities[ownerId]) || [];
+    }
+
+    setAvailableGroups(groups);
+  };
 
   // Validate the form
   const validateForm = () => {
@@ -112,15 +143,19 @@ const ContactDialog = ({
         defaultOwnerId = userCities[0].id;
       }
 
+      // When owner changes, reset groups to avoid mixing groups from different owners
       setFormData((prev) => ({
         ...prev,
         owner_type: value,
         owner_id: defaultOwnerId,
+        groups: [], // Reset groups when owner changes
       }));
     } else if (name === "owner_id") {
+      // When owner ID changes (within the same owner type), reset groups
       setFormData((prev) => ({
         ...prev,
         owner_id: value,
+        groups: [], // Reset groups when owner ID changes
       }));
     }
   };
@@ -377,14 +412,25 @@ const ContactDialog = ({
             </>
           )}
 
-          {/* Groups selection */}
+          {/* Groups selection - Updated to use owner-specific groups */}
           <Grid item xs={12}>
             <FormControl fullWidth margin="normal">
-              <FormHelperText>Groups</FormHelperText>
+              <FormHelperText>
+                Groups for{" "}
+                {formData.owner_type === "user"
+                  ? user.isAdmin
+                    ? "Personal Contacts"
+                    : "Unassigned Contacts"
+                  : formData.owner_type === "community"
+                  ? userCommunities.find((c) => c.id === formData.owner_id)
+                      ?.name + " Community"
+                  : userCities.find((c) => c.id === formData.owner_id)?.name +
+                    " City"}
+              </FormHelperText>
               <Creatable
                 isMulti
                 value={formatGroupsForSelect(formData.groups || [])}
-                options={formatGroupsForSelect(groups || [])}
+                options={formatGroupsForSelect(availableGroups || [])}
                 onChange={handleGroupChange}
                 styles={selectStyles}
                 components={selectComponents}

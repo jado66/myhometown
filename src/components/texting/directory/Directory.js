@@ -21,7 +21,7 @@ import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import { useUserContacts } from "@/hooks/useUserContacts";
 
 import { ContactsTable } from "./ContactsTable";
-import ContactDialog from "./ContactDialog"; // Import the new dialog component
+import ContactDialog from "./ContactDialog";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const ContactsManagement = ({ user, userCommunities, userCities }) => {
@@ -65,8 +65,12 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
 
-  // State for groups (extracted from contacts)
-  const [groups, setGroups] = useState([]);
+  // Modified state for groups - now organized by owner
+  const [groupsByOwner, setGroupsByOwner] = useState({
+    user: [], // User groups
+    communities: {}, // Community groups by community ID
+    cities: {}, // City groups by city ID
+  });
 
   // Add state for sorting and searching
   const [orderBy, setOrderBy] = useState("name");
@@ -75,60 +79,114 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
   const [filteredContacts, setFilteredContacts] = useState([]);
   const [isLoading, setLoading] = useState(false);
 
-  // Extract unique groups from contacts
+  // Extract unique groups from contacts, organized by owner
   useEffect(() => {
     if (!contacts) return;
 
-    const uniqueGroups = new Set();
+    const userGroups = new Set();
+    const communityGroups = {};
+    const cityGroups = {};
 
-    // Helper to process contacts from any collection
-    const processContacts = (contactsArray) => {
-      if (!Array.isArray(contactsArray)) return;
-
-      contactsArray.forEach((contact) => {
-        if (!contact) return;
-
-        // Parse groups using our helper function
-        const parsedGroups = parseGroups(contact.groups);
-
-        // Add each group to our Set
-        parsedGroups.forEach((group) => {
-          if (typeof group === "string") {
-            uniqueGroups.add(group);
-          } else if (group && group.value) {
-            uniqueGroups.add(group.value);
-          }
-        });
+    // Initialize community groups sets
+    if (userCommunities) {
+      userCommunities.forEach((community) => {
+        communityGroups[community.id] = new Set();
       });
-    };
+    }
+
+    // Initialize city groups sets
+    if (userCities) {
+      userCities.forEach((city) => {
+        cityGroups[city.id] = new Set();
+      });
+    }
 
     // Process user contacts
     if (contacts.userContacts) {
-      processContacts(contacts.userContacts);
+      contacts.userContacts.forEach((contact) => {
+        if (!contact) return;
+
+        const parsedGroups = parseGroups(contact.groups);
+        parsedGroups.forEach((group) => {
+          if (typeof group === "string") {
+            userGroups.add(group);
+          } else if (group && group.value) {
+            userGroups.add(group.value);
+          }
+        });
+      });
     }
 
-    // Process community contacts (iterate through each community)
+    // Process community contacts
     if (contacts.communityContacts) {
       Object.entries(contacts.communityContacts).forEach(
         ([communityId, communityContacts]) => {
-          processContacts(communityContacts);
+          if (!Array.isArray(communityContacts)) return;
+
+          communityContacts.forEach((contact) => {
+            if (!contact) return;
+
+            const parsedGroups = parseGroups(contact.groups);
+            parsedGroups.forEach((group) => {
+              if (typeof group === "string") {
+                if (communityGroups[communityId]) {
+                  communityGroups[communityId].add(group);
+                }
+              } else if (group && group.value) {
+                if (communityGroups[communityId]) {
+                  communityGroups[communityId].add(group.value);
+                }
+              }
+            });
+          });
         }
       );
     }
 
-    // Process city contacts (iterate through each city)
+    // Process city contacts
     if (contacts.cityContacts) {
       Object.entries(contacts.cityContacts).forEach(
         ([cityId, cityContacts]) => {
-          processContacts(cityContacts);
+          if (!Array.isArray(cityContacts)) return;
+
+          cityContacts.forEach((contact) => {
+            if (!contact) return;
+
+            const parsedGroups = parseGroups(contact.groups);
+            parsedGroups.forEach((group) => {
+              if (typeof group === "string") {
+                if (cityGroups[cityId]) {
+                  cityGroups[cityId].add(group);
+                }
+              } else if (group && group.value) {
+                if (cityGroups[cityId]) {
+                  cityGroups[cityId].add(group.value);
+                }
+              }
+            });
+          });
         }
       );
     }
 
-    // Convert Set to array of strings
-    const groupsArray = Array.from(uniqueGroups);
-    setGroups(groupsArray);
-  }, [contacts]);
+    // Convert Sets to arrays
+    const formattedCommunityGroups = {};
+    Object.entries(communityGroups).forEach(([communityId, groupSet]) => {
+      formattedCommunityGroups[communityId] = Array.from(groupSet);
+    });
+
+    const formattedCityGroups = {};
+    Object.entries(cityGroups).forEach(([cityId, groupSet]) => {
+      formattedCityGroups[cityId] = Array.from(groupSet);
+    });
+
+    // Update state with organized groups
+    setGroupsByOwner({
+      user: Array.from(userGroups),
+      communities: formattedCommunityGroups,
+      cities: formattedCityGroups,
+    });
+  }, [contacts, userCommunities, userCities]);
 
   // Filter and sort contacts - we'll use this only for global search
   useEffect(() => {
@@ -387,6 +445,18 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
     );
   };
 
+  // Get relevant groups for a specific owner type
+  const getGroupsForOwner = (ownerType, ownerId) => {
+    if (ownerType === "user") {
+      return groupsByOwner.user;
+    } else if (ownerType === "community") {
+      return groupsByOwner.communities[ownerId] || [];
+    } else if (ownerType === "city") {
+      return groupsByOwner.cities[ownerId] || [];
+    }
+    return [];
+  };
+
   const ContactsTableProps = {
     moveContact,
     userCommunities,
@@ -403,7 +473,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
     handleSort,
     formError,
     userId,
-    groups,
+
     isNewContact,
     handleBulkDeleteClick,
     user,
@@ -484,6 +554,8 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
         />
       </Box>
 
+      {/* <JsonViewer data={groupsByOwner} /> */}
+
       {/* Loading state */}
       {loading && (
         <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
@@ -508,6 +580,9 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
         filteredContacts={contacts.userContacts}
         tableName="Unassigned Contacts"
         canAddNew
+        groups={getGroupsForOwner("user")}
+        ownerType="user"
+        ownerId={userId}
       />
 
       {/* Community Contacts */}
@@ -519,6 +594,9 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
               filteredContacts={contacts.communityContacts[community.id] || []}
               {...ContactsTableProps}
               tableName={community.name}
+              ownerType="community"
+              groups={getGroupsForOwner("community", community.id)}
+              ownerId={community.id}
             />
           </Box>
         ))}
@@ -532,6 +610,9 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
               filteredContacts={contacts.cityContacts[city.id] || []}
               {...ContactsTableProps}
               tableName={city.name}
+              groups={getGroupsForOwner("city", city.id)}
+              ownerType="city"
+              ownerId={city.id}
             />
           </Box>
         ))}
@@ -545,7 +626,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
         userId={userId}
         userCommunities={userCommunities}
         userCities={userCities}
-        groups={groups}
+        groupsByOwner={groupsByOwner}
         user={user}
         title={editingContact ? "Edit Contact" : "Add Contact"}
       />

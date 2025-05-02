@@ -255,8 +255,6 @@ export const ContactsTable = ({
         </Button>
       </Box>
 
-      <JsonViewer data={groups} title="Groups" />
-
       <Table size="small">
         <TableHead>
           <TableRow>

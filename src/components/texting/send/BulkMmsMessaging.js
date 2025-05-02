@@ -55,9 +55,20 @@ export default function BulkMMSMessaging() {
   useEffect(() => {
     if (!contacts) return;
     let contactsList = [];
-    if (contacts.userContacts && Array.isArray(contacts.userContacts)) {
+
+    // Only include user contacts if the user is an admin
+    if (
+      user?.isAdmin &&
+      contacts.userContacts &&
+      Array.isArray(contacts.userContacts)
+    ) {
+      contactsList = [...contacts.userContacts];
+    } else if (contacts.userContacts && Array.isArray(contacts.userContacts)) {
+      // For non-admin users, include contacts but will handle groups differently
       contactsList = [...contacts.userContacts];
     }
+
+    // Include community contacts for all users
     if (contacts.communityContacts) {
       Object.values(contacts.communityContacts).forEach(
         (communityContactList) => {
@@ -67,6 +78,8 @@ export default function BulkMMSMessaging() {
         }
       );
     }
+
+    // Include city contacts for all users
     if (contacts.cityContacts) {
       Object.values(contacts.cityContacts).forEach((cityContactList) => {
         if (Array.isArray(cityContactList)) {
@@ -74,6 +87,8 @@ export default function BulkMMSMessaging() {
         }
       });
     }
+
+    // Format the contacts for use in the UI
     const formattedContacts = contactsList.map((contact) => {
       let contactGroups = contact.groups || [];
       if (typeof contact.groups === "string") {
@@ -84,6 +99,7 @@ export default function BulkMMSMessaging() {
           contactGroups = [];
         }
       }
+
       return {
         value: contact.phone,
         label: `${contact.first_name} ${contact.last_name} (${contact.phone})`,
@@ -93,15 +109,31 @@ export default function BulkMMSMessaging() {
         phone: contact.phone,
         email: contact.email,
         groups: Array.isArray(contactGroups) ? contactGroups : [],
+        ownerType: contact.owner_type, // Add owner type to track the contact source
+        ownerId: contact.owner_id, // Add owner ID to track the contact source
       };
     });
+
     setAllContacts(formattedContacts);
+
+    // Extract unique groups based on admin status and ownership
     const uniqueGroups = new Set();
+
     formattedContacts.forEach((contact) => {
       if (contact.groups && Array.isArray(contact.groups)) {
-        contact.groups.forEach((group) => uniqueGroups.add(group));
+        // For user contacts, only include groups if user is admin
+        if (contact.ownerType === "user") {
+          if (user?.isAdmin) {
+            contact.groups.forEach((group) => uniqueGroups.add(group));
+          }
+        } else {
+          // For community and city contacts, include all groups
+          contact.groups.forEach((group) => uniqueGroups.add(group));
+        }
       }
     });
+
+    // Create the groups array for the UI
     const groupsArray = Array.from(uniqueGroups).map((groupValue) => ({
       value: `group:${groupValue}`,
       label: (
@@ -126,8 +158,9 @@ export default function BulkMMSMessaging() {
       ),
       originalValue: groupValue,
     }));
+
     setGroups(groupsArray);
-  }, [contacts]);
+  }, [contacts, user?.isAdmin]);
 
   useEffect(() => {
     const phone = searchParams.get("phone");
@@ -141,19 +174,50 @@ export default function BulkMMSMessaging() {
     setIsSending(false);
   }, [message, selectedRecipients, mediaFiles]);
 
+  // Helper function to expand groups but filter out user groups for non-admin users
+  const expandGroupsWithAdminFilter = (selectedRecipients, allContacts) => {
+    // Use the existing expandGroups function from utils
+    const expanded = expandGroups(selectedRecipients, allContacts);
+
+    // If user is not admin, filter out contacts from user groups in the expanded result
+    if (!user?.isAdmin) {
+      return expanded.map((group) => {
+        // For group entries, filter the contacts
+        if (group.isGroup) {
+          return {
+            ...group,
+            contacts: group.contacts.filter(
+              (contact) =>
+                // Keep contacts that aren't from user groups
+                contact.ownerType !== "user"
+            ),
+          };
+        }
+        // For individual contacts, keep them all (they were selected directly)
+        return group;
+      });
+    }
+
+    return expanded;
+  };
+
   const handleSend = async () => {
     const phoneNumberMap = new Map();
     const uniqueRecipients = [];
-    const expandedRecipients = expandGroups(
+
+    // Use the filtered expansion function
+    const expandedRecipients = expandGroupsWithAdminFilter(
       selectedRecipients,
       allContacts
     ).flatMap((group) => group.contacts);
+
     expandedRecipients.forEach((recipient) => {
       if (!phoneNumberMap.has(recipient.value)) {
         phoneNumberMap.set(recipient.value, true);
         uniqueRecipients.push(recipient);
       }
     });
+
     try {
       const mediaUrls = mediaFiles.map((file) => file.url);
       setIsSending(true);
@@ -187,6 +251,26 @@ export default function BulkMMSMessaging() {
     setIsSending(false);
     reset();
     setActiveTab(0);
+  };
+
+  // Updated GroupInfoPopover to respect admin permissions
+  const getFilteredContactsForGroup = (group, allContacts) => {
+    if (!group || !group.originalValue) return [];
+
+    return allContacts.filter((contact) => {
+      // Check if contact has this group
+      const hasGroup =
+        contact.groups &&
+        Array.isArray(contact.groups) &&
+        contact.groups.includes(group.originalValue);
+
+      // If not admin, hide user contacts in group info
+      if (!user?.isAdmin && contact.ownerType === "user") {
+        return false;
+      }
+
+      return hasGroup;
+    });
   };
 
   if (!redisHealth.isConnected && !redisHealth.isLoading) {
@@ -290,13 +374,14 @@ export default function BulkMMSMessaging() {
                   isSending={isSending}
                   onNewMessage={handleNewMessage}
                   user={user}
+                  expandGroups={expandGroupsWithAdminFilter} // Use custom expand function that respects admin status
                 />
               )}
             </>
           )}
         </Box>
       </Card>
-      {/* Note about how texts are not private */}
+
       <ProgressTracker
         sendStatus={sendStatus}
         progress={progress}
@@ -315,11 +400,12 @@ export default function BulkMMSMessaging() {
           personal use. Please do not include sensitive information.
         </Typography>
       </Box>
+
       <GroupInfoPopover
         anchorEl={anchorEl}
         onClose={handleClosePopover}
         selectedGroup={selectedGroup}
-        allContacts={allContacts}
+        allContacts={getFilteredContactsForGroup(selectedGroup, allContacts)} // Filter contacts based on admin status
       />
     </>
   );
