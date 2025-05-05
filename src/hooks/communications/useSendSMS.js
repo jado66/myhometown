@@ -64,6 +64,12 @@ export function useSendSMS() {
 
       setSendStatus("sending");
 
+      // Create a recipients list for metadata - all recipients
+      const allRecipientsData = recipients.map((recipient) => ({
+        name: `${recipient.firstName || ""} ${recipient.lastName || ""}`.trim(),
+        phone: recipient.value,
+      }));
+
       // Step 1: Log all messages as "pending"
       const pendingLogs = recipients.map((recipient) => ({
         message_id: messageId,
@@ -77,9 +83,13 @@ export function useSendSMS() {
         owner_id,
         owner_type,
         metadata: JSON.stringify({
-          recipientName: `${recipient.firstName || ""} ${
-            recipient.lastName || ""
-          }`.trim(),
+          // Store ALL recipients in the metadata instead of just one
+          allRecipients: allRecipientsData,
+          // Include sender info
+          sender: {
+            id: user?.id,
+            name: `${user?.first_name || ""} ${user?.last_name || ""}`.trim(),
+          },
           smsProviderResponse: null,
         }),
       }));
@@ -159,9 +169,15 @@ export function useSendSMS() {
                 owner_id,
                 owner_type,
                 metadata: JSON.stringify({
-                  recipientName: `${recipientData.firstName || ""} ${
-                    recipientData.lastName || ""
-                  }`.trim(),
+                  // Store ALL recipients in the metadata
+                  allRecipients: allRecipientsData,
+                  // Include sender info
+                  sender: {
+                    id: user?.id,
+                    name: `${user?.first_name || ""} ${
+                      user?.last_name || ""
+                    }`.trim(),
+                  },
                   smsProviderResponse: status === "success" ? data : null,
                 }),
               };
@@ -176,7 +192,19 @@ export function useSendSMS() {
                       logId,
                       status === "success" ? "sent" : "failed",
                       status === "success" ? new Date().toISOString() : null,
-                      status === "failed" ? error : null
+                      status === "failed" ? error : null,
+                      JSON.stringify({
+                        // Store ALL recipients in the metadata
+                        allRecipients: allRecipientsData,
+                        // Include sender info
+                        sender: {
+                          id: user?.id,
+                          name: `${user?.first_name || ""} ${
+                            user?.last_name || ""
+                          }`.trim(),
+                        },
+                        smsProviderResponse: status === "success" ? data : null,
+                      })
                     );
 
                     if (result.error) {
@@ -245,11 +273,13 @@ export function useSendSMS() {
                   for (const log of batchLogsRef.current) {
                     if (log.id) {
                       try {
+                        // Make sure we're using the updated metadata structure with all recipients
                         const result = await updateTextLogStatus(
                           log.id,
                           log.status,
                           log.sent_at,
-                          log.error_message
+                          log.error_message,
+                          log.metadata // Use the full metadata we created earlier
                         );
 
                         if (result.error) {
@@ -297,7 +327,19 @@ export function useSendSMS() {
                           logId,
                           "failed",
                           null,
-                          "No status update received from stream"
+                          "No status update received from stream",
+                          JSON.stringify({
+                            // Store ALL recipients in the metadata
+                            allRecipients: allRecipientsData,
+                            // Include sender info
+                            sender: {
+                              id: user?.id,
+                              name: `${user?.first_name || ""} ${
+                                user?.last_name || ""
+                              }`.trim(),
+                            },
+                            smsProviderResponse: null,
+                          })
                         );
 
                         if (result.error) {
@@ -354,6 +396,7 @@ export function useSendSMS() {
                       status: log.status,
                       sent_at: log.sent_at,
                       error_message: log.error_message,
+                      metadata: log.metadata, // Include the metadata with all recipients
                     })),
                 }),
               }).catch((batchErr) => {
@@ -370,6 +413,7 @@ export function useSendSMS() {
                         status: log.status,
                         sentAt: log.sent_at,
                         errorMessage: log.error_message,
+                        metadata: log.metadata, // Include the metadata with all recipients
                       }),
                     }).catch((patchErr) => {
                       console.error(
@@ -394,7 +438,19 @@ export function useSendSMS() {
                   logId,
                   "failed",
                   null,
-                  "Stream disconnected"
+                  "Stream disconnected",
+                  JSON.stringify({
+                    // Store ALL recipients in the metadata
+                    allRecipients: allRecipientsData,
+                    // Include sender info
+                    sender: {
+                      id: user?.id,
+                      name: `${user?.first_name || ""} ${
+                        user?.last_name || ""
+                      }`.trim(),
+                    },
+                    smsProviderResponse: null,
+                  })
                 ).catch((err) => {
                   console.error(
                     "Error updating pending log:",
@@ -459,6 +515,7 @@ export function useSendSMS() {
                       status: log.status,
                       sent_at: log.sent_at,
                       error_message: log.error_message,
+                      metadata: log.metadata, // Include the metadata with all recipients
                     }),
                   }).catch((patchErr) => {
                     console.error(
@@ -482,7 +539,19 @@ export function useSendSMS() {
                   logId,
                   "failed",
                   null,
-                  "Stream timed out"
+                  "Stream timed out",
+                  JSON.stringify({
+                    // Store ALL recipients in the metadata
+                    allRecipients: allRecipientsData,
+                    // Include sender info
+                    sender: {
+                      id: user?.id,
+                      name: `${user?.first_name || ""} ${
+                        user?.last_name || ""
+                      }`.trim(),
+                    },
+                    smsProviderResponse: null,
+                  })
                 ).catch((err) => {
                   console.error(
                     "Error updating pending log:",
@@ -508,7 +577,19 @@ export function useSendSMS() {
               logId,
               "failed",
               null,
-              error.message || "Failed to initiate sending"
+              error.message || "Failed to initiate sending",
+              JSON.stringify({
+                // Store ALL recipients in the metadata
+                allRecipients: allRecipientsData,
+                // Include sender info
+                sender: {
+                  id: user?.id,
+                  name: `${user?.first_name || ""} ${
+                    user?.last_name || ""
+                  }`.trim(),
+                },
+                smsProviderResponse: null,
+              })
             ).catch((err) => {
               console.error("Error updating log:", recipient.value, err);
             });

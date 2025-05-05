@@ -1,6 +1,6 @@
 // @util/texting/utils.js
 export const formatFileSize = (bytes) => {
-  if (bytes === 0) return "0 Bytes";
+  if (bytes === 0) return null;
   const k = 1024;
   const sizes = ["Bytes", "KB", "MB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));

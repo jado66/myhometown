@@ -29,6 +29,7 @@ const allSteps = [
   { label: "Review Project Assignment" },
   { label: "Partner Organization and Group Participation" },
   { label: "Resource Assessment" },
+  { label: "Reporting" },
 ];
 
 const ProjectForm = ({ date, communityId }) => {

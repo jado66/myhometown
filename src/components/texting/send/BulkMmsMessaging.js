@@ -52,6 +52,26 @@ export default function BulkMMSMessaging() {
   const [totalFileSize, setTotalFileSize] = useState(0);
   const redisHealth = useRedisHealth(60000);
 
+  // Helper function to determine file type from URL
+  const getFileTypeFromUrl = (url) => {
+    const extension = url.split(".").pop().toLowerCase();
+
+    // Map common extensions to MIME types
+    const mimeTypes = {
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+      gif: "image/gif",
+      webp: "image/webp",
+      pdf: "application/pdf",
+      mp4: "video/mp4",
+      mov: "video/quicktime",
+      mp3: "audio/mpeg",
+    };
+
+    return mimeTypes[extension] || "image/jpeg"; // Default to image/jpeg if unknown
+  };
+
   useEffect(() => {
     if (!contacts) return;
     let contactsList = [];
@@ -162,11 +182,72 @@ export default function BulkMMSMessaging() {
     setGroups(groupsArray);
   }, [contacts, user?.isAdmin]);
 
+  // Updated URL parameter handling to support multiple recipients and media URLs
   useEffect(() => {
     const phone = searchParams.get("phone");
     const urlMessage = searchParams.get("message");
+    const urlMediaUrls = searchParams.get("mediaUrls");
+
     if (urlMessage) setMessage(decodeURIComponent(urlMessage));
-    if (phone) setSelectedRecipients([{ value: phone, label: `${phone}` }]);
+
+    // Handle multiple phone numbers separated by commas
+    if (phone) {
+      const phoneNumbers = phone.split(",").map((number) => {
+        return { value: number.trim(), label: `${number.trim()}` };
+      });
+      setSelectedRecipients(phoneNumbers);
+    }
+
+    // Handle media URLs passed in the URL
+    if (urlMediaUrls) {
+      try {
+        // First decode the URL parameter
+        const decodedUrlMediaUrls = decodeURIComponent(urlMediaUrls);
+
+        // Check if it starts with '[' to determine if it's already a JSON string
+        let mediaUrlsArray = [];
+
+        if (decodedUrlMediaUrls.startsWith("[")) {
+          // It's a JSON array string, parse it
+          mediaUrlsArray = JSON.parse(decodedUrlMediaUrls);
+        } else {
+          // It's a single URL or comma-separated URLs
+          mediaUrlsArray = decodedUrlMediaUrls.split(",");
+        }
+
+        // Convert URLs to media file format expected by the component
+        const newMediaFiles = mediaUrlsArray.map((url, index) => {
+          // Remove any surrounding quotes if present
+          const cleanUrl = url.replace(/^["'](.*)["']$/, "$1");
+          const filename = cleanUrl.substring(cleanUrl.lastIndexOf("/") + 1);
+
+          return {
+            id: `url-media-${index}`,
+            name: filename,
+            url: cleanUrl,
+            // Add preview property for MediaPreview component
+            preview: cleanUrl,
+            // Set type based on file extension or default to image/jpeg
+            type: getFileTypeFromUrl(cleanUrl),
+            // We don't know the size from just the URL
+            size: 0,
+          };
+        });
+
+        setMediaFiles(newMediaFiles);
+
+        // Calculate total file size (we'll set to 0 since we don't know the actual size)
+        setTotalFileSize(0);
+
+        console.log("Media files set from URL:", newMediaFiles);
+      } catch (error) {
+        console.error(
+          "Failed to parse mediaUrls parameter:",
+          error,
+          urlMediaUrls
+        );
+      }
+    }
   }, [searchParams]);
 
   useEffect(() => {

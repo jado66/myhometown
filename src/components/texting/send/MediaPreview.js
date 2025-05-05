@@ -35,21 +35,23 @@ const MediaPreview = ({ files, onRemove, showRemove = false }) => (
             </Typography>
           </Box>
         )}
-        <Typography
-          variant="caption"
-          sx={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            bgcolor: "rgba(0, 0, 0, 0.6)",
-            color: "white",
-            padding: "4px",
-            textAlign: "center",
-          }}
-        >
-          {formatFileSize(file.size)}
-        </Typography>
+        {file.size > 0 && (
+          <Typography
+            variant="caption"
+            sx={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              bgcolor: "rgba(0, 0, 0, 0.6)",
+              color: "white",
+              padding: "4px",
+              textAlign: "center",
+            }}
+          >
+            {formatFileSize(file.size)}
+          </Typography>
+        )}
         {showRemove && (
           <IconButton
             size="small"

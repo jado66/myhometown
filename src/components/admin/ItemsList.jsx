@@ -358,7 +358,7 @@ function ItemsList({ type }) {
                               size="small"
                               href={
                                 process.env.NEXT_PUBLIC_DOMAIN +
-                                `/admin-dashboard/tools/sms?phone=${
+                                `/admin-dashboard/texting/send?phone=${
                                   item.phone_number
                                 }&message=${encodeURIComponent(
                                   `Hi ${item.user_name},\n\nYour ${

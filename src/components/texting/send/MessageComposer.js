@@ -133,6 +133,7 @@ const MessageComposer = ({
             {isUploading ? "Uploading..." : "Attach Media"}
           </Button>
         </label>
+
         {mediaFiles.length > 0 && (
           <MediaPreview
             files={mediaFiles}
