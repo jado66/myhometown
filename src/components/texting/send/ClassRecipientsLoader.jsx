@@ -9,8 +9,7 @@ import {
   DialogTitle,
   CircularProgress,
 } from "@mui/material";
-import { PersonAdd } from "@mui/icons-material";
-import { useClasses } from "@/hooks/useClasses";
+import { useClasses } from "@/hooks/use-classes";
 
 const ClassRecipientsLoader = ({ onAddRecipients }) => {
   const [open, setOpen] = useState(false);
@@ -86,12 +85,7 @@ const ClassRecipientsLoader = ({ onAddRecipients }) => {
 
   return (
     <>
-      <Button
-        variant="outlined"
-        startIcon={<PersonAdd />}
-        onClick={handleOpen}
-        sx={{ mb: 2 }}
-      >
+      <Button variant="outlined" onClick={handleOpen} sx={{ mb: 2 }}>
         Load Class Members
       </Button>
 

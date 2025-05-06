@@ -60,26 +60,6 @@ const RecipientSelector = ({
 
   return (
     <Box>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 2,
-        }}
-      >
-        <Typography variant="h6" sx={{ mb: 0, textAlign: "center" }}>
-          Compose Message
-        </Typography>
-        <Button
-          size="small"
-          startIcon={<RefreshIcon />}
-          onClick={onRefreshContacts}
-          variant="outlined"
-        >
-          Refresh Contacts
-        </Button>
-      </Box>
       <Typography variant="subtitle1" gutterBottom>
         Select Recipients
       </Typography>

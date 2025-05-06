@@ -22,7 +22,9 @@ import MessageComposer from "./MessageComposer";
 import ReviewAndSend from "./ReviewAndSend";
 import ProgressTracker from "./ProgressTracker";
 import GroupInfoPopover from "./GroupInfoPopover";
+import ClassRecipientsLoader from "@/components/texting/send/ClassRecipientsLoader";
 import { expandGroups, formatGroupsForSelect } from "@/util/texting/utils";
+import { useClasses } from "@/hooks/use-classes";
 
 export default function BulkMMSMessaging() {
   const searchParams = useSearchParams();
@@ -50,7 +52,10 @@ export default function BulkMMSMessaging() {
   const [mediaFiles, setMediaFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [totalFileSize, setTotalFileSize] = useState(0);
+  const [className, setClassName] = useState("");
   const redisHealth = useRedisHealth(60000);
+
+  const { getClass } = useClasses();
 
   // Helper function to determine file type from URL
   const getFileTypeFromUrl = (url) => {
@@ -187,6 +192,8 @@ export default function BulkMMSMessaging() {
     const phone = searchParams.get("phone");
     const urlMessage = searchParams.get("message");
     const urlMediaUrls = searchParams.get("mediaUrls");
+    const classId = searchParams.get("classId"); // New: Check for class ID in URL.
+    const classNameFromUrl = searchParams.get("classTitle"); // New: Check for class name in URL.
 
     if (urlMessage) setMessage(decodeURIComponent(urlMessage));
 
@@ -196,6 +203,16 @@ export default function BulkMMSMessaging() {
         return { value: number.trim(), label: `${number.trim()}` };
       });
       setSelectedRecipients(phoneNumbers);
+    }
+
+    // Handle class ID from URL - we'll implement this function next
+    if (classId) {
+      handleLoadClassFromUrl(classId);
+    }
+
+    // Set class name if provided in the URL
+    if (classNameFromUrl) {
+      setClassName(decodeURIComponent(classNameFromUrl));
     }
 
     // Handle media URLs passed in the URL
@@ -249,6 +266,85 @@ export default function BulkMMSMessaging() {
       }
     }
   }, [searchParams]);
+
+  // Function to load class members from URL parameter
+  const handleLoadClassFromUrl = async (classId) => {
+    try {
+      // Import useClasses hook dynamically to avoid circular dependencies
+
+      const classData = await getClass(classId);
+
+      if (
+        !classData ||
+        !classData.signups ||
+        !Array.isArray(classData.signups)
+      ) {
+        console.error("Could not load class data or no signups found");
+        return;
+      }
+
+      // Filter and format class signups with phone numbers
+      const classRecipients = classData.signups
+        .filter((signup) => signup.phone)
+        .map((signup) => ({
+          value: signup.phone,
+          label: `${signup.first_name || ""} ${signup.last_name || ""} (${
+            signup.phone
+          })`.trim(),
+          contactId: signup.id || null,
+          firstName: signup.first_name || "",
+          lastName: signup.last_name || "",
+          phone: signup.phone,
+          email: signup.email || "",
+          groups: [],
+          ownerType: "class",
+          ownerId: classId,
+        }));
+
+      if (classRecipients.length > 0) {
+        setSelectedRecipients((prevRecipients) => {
+          // Merge with existing recipients, avoiding duplicates by phone number
+          const phoneSet = new Set(prevRecipients.map((r) => r.value));
+          const newRecipients = classRecipients.filter(
+            (r) => !phoneSet.has(r.value)
+          );
+          return [...prevRecipients, ...newRecipients];
+        });
+
+        toast.success(`Loaded ${classRecipients.length} recipients from class`);
+      } else {
+        toast.warning("No valid recipients found in class signups");
+      }
+    } catch (error) {
+      console.error("Error loading class from URL:", error);
+      toast.error("Failed to load class recipients");
+    }
+  };
+
+  // New function to handle adding recipients from ClassRecipientsLoader
+  const handleAddClassRecipients = (newRecipients) => {
+    if (!newRecipients || newRecipients.length === 0) return;
+
+    // Add new recipients while avoiding duplicates by phone number
+    setSelectedRecipients((prevRecipients) => {
+      const phoneSet = new Set(prevRecipients.map((r) => r.value));
+      const filteredNewRecipients = newRecipients.filter(
+        (r) => !phoneSet.has(r.value)
+      );
+
+      if (filteredNewRecipients.length === 0) {
+        toast.info(
+          "All selected class members are already in your recipient list"
+        );
+        return prevRecipients;
+      }
+
+      toast.success(
+        `Added ${filteredNewRecipients.length} recipients from class`
+      );
+      return [...prevRecipients, ...filteredNewRecipients];
+    });
+  };
 
   useEffect(() => {
     setHasSent(false);
@@ -413,6 +509,32 @@ export default function BulkMMSMessaging() {
               )}
               {activeTab === 0 && (
                 <>
+                  {/* Add the Class Recipients Loader above the Recipient Selector */}
+                  {/* <ClassRecipientsLoader
+                    onAddRecipients={handleAddClassRecipients}
+                  /> */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      mb: 2,
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      sx={{ mb: 0, textAlign: "center" }}
+                    >
+                      Compose Message
+                    </Typography>
+                  </Box>
+
+                  {className && (
+                    <Typography variant="h6" sx={{ mb: 2 }}>
+                      Class: {className}
+                    </Typography>
+                  )}
+
                   <RecipientSelector
                     selectedRecipients={selectedRecipients}
                     onRecipientChange={setSelectedRecipients}
