@@ -17,6 +17,7 @@ import { ExampleIcons } from "@/components/events/ClassesTreeView/IconSelect";
 import ClassPreview from "./ClassPreview";
 import { ExpandMore } from "@mui/icons-material";
 import JsonViewer from "@/components/util/debug/DebugOutput";
+import { useEffect } from "react";
 
 export function ViewClassSignupForm({
   testSubmit,
@@ -88,18 +89,49 @@ export function ViewClassSignupForm({
     );
   }
 
-  const isValid = Object.keys(errors).length === 0;
+  const isValid =
+    Object.values(errors).filter((error) => error && error.trim() !== "")
+      .length === 0;
+
+  useEffect(() => {
+    // wait a second and scroll to the top of the component if we are on mobile
+    const scrollToTop = () => {
+      const formElement = document.getElementById("class-signup-form-top");
+      if (formElement) {
+        // Get the element's position relative to the viewport
+        const elementRect = formElement.getBoundingClientRect();
+
+        // Calculate the desired scroll position with offset (e.g., 50px above the element)
+        const offsetPixels = 300; // Adjust this value to your preference
+        const scrollPosition =
+          window.pageYOffset + elementRect.top - offsetPixels;
+
+        // Smoothly scroll to the calculated position
+        window.scrollTo({
+          top: scrollPosition,
+          behavior: "smooth",
+        });
+      }
+    };
+
+    const timer = setTimeout(() => {
+      scrollToTop();
+    }, 1000); // Adjust the delay as needed (e.g., 1000ms = 1 second)
+
+    return () => clearTimeout(timer); // Cleanup the timer on component unmount
+  }, []);
 
   return (
     <Stack spacing={3} component="form">
       <JsonViewer data={formData} title="Class Config" />
-
+      <div id="class-signup-form-top" />
       {type === "class" && (
         <>
           <ClassPreview classData={classConfig} />
           <Divider sx={{ my: 3 }} />
         </>
       )}
+
       {isMainCapacityFull && (
         <Alert severity="info">
           We are sorry, this class is currently full. Signing up will add you to
@@ -197,9 +229,18 @@ export function ViewClassSignupForm({
           )}
         </>
       )}
-      {submitStatus === "error" && (
+      {!isValid && (
         <Typography variant="body1" color="error" sx={{ mt: 2 }}>
           Please fill out all required fields.
+          {errors &&
+            Object.keys(errors).length > 0 &&
+            Object.keys(errors).map((key) => {
+              return (
+                <div key={key}>
+                  {key}: {errors[key]}
+                </div>
+              );
+            })}
         </Typography>
       )}
     </Stack>
