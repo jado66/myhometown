@@ -72,21 +72,7 @@ const ReviewAndSend = ({
   // Initialize with moment objects instead of date-fns
   const [scheduleDate, setScheduleDate] = useState(moment().add(1, "days"));
   const [scheduleTime, setScheduleTime] = useState(moment().hour(9).minute(0));
-  const [localScheduleTime, setLocalScheduleTime] = useState(scheduleTime);
   const [schedulingSuccess, setSchedulingSuccess] = useState(false);
-
-  const debouncedSetTime = useCallback(
-    debounce((time) => {
-      const roundedTime = roundToNearestFiveMinutes(time);
-      setScheduleTime(roundedTime);
-      setLocalScheduleTime(roundedTime);
-    }, 1000), // 1 second delay
-    []
-  );
-
-  useEffect(() => {
-    setLocalScheduleTime(scheduleTime);
-  }, [scheduleTime]);
 
   const handleSendOptionChange = (event) => {
     setSendOption(event.target.value);
@@ -302,18 +288,11 @@ const ReviewAndSend = ({
 
                 <TimePicker
                   label="Time"
-                  value={localScheduleTime}
+                  value={scheduleTime}
                   onChange={(newTime) => {
-                    setLocalScheduleTime(newTime); // Update local state immediately for responsive UI
-                    debouncedSetTime(newTime); // Debounced rounding and actual state update
-                  }}
-                  slotProps={{
-                    textField: {
-                      helperText: "This will round to the nearest 5 minutes.",
-                    },
+                    setScheduleTime(newTime); // Update local state immediately for responsive UI
                   }}
                   style={{ marginBottom: "0px" }}
-                  minutesStep={5}
                   renderInput={(params) => (
                     <TextField
                       {...params}

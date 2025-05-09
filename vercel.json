@@ -11,7 +11,7 @@
   },
   "crons": [
     {
-      "path": "/api/test-cron-sms",
+      "path": "/api/cron/process-scheduled-texts",
       "schedule": "* * * * *"
     }
   ]

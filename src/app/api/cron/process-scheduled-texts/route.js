@@ -12,9 +12,6 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function GET(req) {
-  const url = new URL(req.url);
-  const hostname = url.hostname;
-
   console.log("Processing scheduled texts...");
 
   try {
@@ -26,7 +23,7 @@ export async function GET(req) {
       .from("scheduled_texts")
       .select("id")
       .lt("scheduled_time", now.toISOString())
-      .is("metadata->sent_at", null); // Only get unsent messages
+      .or("metadata->>sent_at.is.null,metadata.is.null"); // Handle both null metadata and null sent_at
 
     if (error) {
       console.error("Error fetching scheduled texts:", error);
@@ -46,6 +43,7 @@ export async function GET(req) {
           success: true,
           message: "No scheduled texts to process",
           count: 0,
+          timestamp: now.toISOString(),
         }),
         {
           status: 200,
@@ -60,13 +58,19 @@ export async function GET(req) {
         const requestBody = { id: text.id };
         const bodyString = JSON.stringify(requestBody);
 
-        const response = await fetch(
-          `${
-            isLocalhost
-              ? "http://localhost:3000"
-              : process.env.NEXT_PUBLIC_DOMAIN
-          }/api/communications/scheduled-texts/send`,
-          {
+        // Determine the base URL (considers both production and development environments)
+        const baseUrl = process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : process.env.NEXT_PUBLIC_DOMAIN
+          ? process.env.NEXT_PUBLIC_DOMAIN
+          : "http://localhost:3000";
+
+        const apiUrl = `${baseUrl}/api/communications/scheduled-texts/send`;
+
+        console.log(`Sending request to: ${apiUrl} for text ID: ${text.id}`);
+
+        try {
+          const response = await fetch(apiUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -76,29 +80,43 @@ export async function GET(req) {
               ).toString(),
             },
             body: bodyString,
-          }
-        );
+          });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`Error response for text ${text.id}:`, errorText);
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Error response for text ${text.id}:`, errorText);
+            return {
+              id: text.id,
+              success: false,
+              error: `HTTP error ${response.status}: ${errorText}`,
+            };
+          }
+
+          const result = await response.json();
+          return { id: text.id, success: true, ...result };
+        } catch (fetchError) {
+          console.error(`Fetch error for text ${text.id}:`, fetchError);
           return {
             id: text.id,
             success: false,
-            error: `HTTP error ${response.status}: ${errorText}`,
+            error: fetchError.message || "Failed to process text",
           };
         }
-
-        const result = await response.json();
-        return { id: text.id, ...result };
       })
     );
+
+    // Count successful and failed texts
+    const successCount = results.filter((result) => result.success).length;
+    const failedCount = results.length - successCount;
 
     return new Response(
       JSON.stringify({
         success: true,
-        count: results.length,
+        total: results.length,
+        successCount,
+        failedCount,
         results,
+        timestamp: now.toISOString(),
       }),
       {
         status: 200,
@@ -110,6 +128,7 @@ export async function GET(req) {
 
     return new Response(
       JSON.stringify({
+        success: false,
         error: error.message,
         timestamp: new Date().toISOString(),
       }),
@@ -121,7 +140,7 @@ export async function GET(req) {
   }
 }
 
-// Also support POST method for your frontend "Send NOW" button
+// Also support POST method for manual triggering
 export async function POST(req) {
   return GET(req);
 }
