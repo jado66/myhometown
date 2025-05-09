@@ -16,7 +16,6 @@ async function verifySignature(request, rawBody) {
     return false;
   }
 
-  // Get the webhook secret from environment variables
   const webhookSecret = process.env.WEBHOOK_SECRET;
 
   if (!webhookSecret) {
