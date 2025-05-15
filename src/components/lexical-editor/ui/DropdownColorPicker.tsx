@@ -6,10 +6,10 @@
  *
  */
 
-import * as React from 'react';
+import * as React from "react";
 
-import ColorPicker from './ColorPicker';
-import DropDown from './DropDown';
+import ColorPicker from "./ColorPicker";
+import DropDown from "./DropDown";
 
 type Props = {
   disabled?: boolean;
@@ -17,6 +17,7 @@ type Props = {
   buttonClassName: string;
   buttonIconClassName?: string;
   buttonLabel?: string;
+  ButtonIcon?: any;
   title?: string;
   stopCloseOnClickSelf?: boolean;
   color: string;
@@ -26,6 +27,7 @@ type Props = {
 export default function DropdownColorPicker({
   disabled = false,
   stopCloseOnClickSelf = true,
+
   color,
   onChange,
   ...rest
@@ -34,7 +36,8 @@ export default function DropdownColorPicker({
     <DropDown
       {...rest}
       disabled={disabled}
-      stopCloseOnClickSelf={stopCloseOnClickSelf}>
+      stopCloseOnClickSelf={stopCloseOnClickSelf}
+    >
       <ColorPicker color={color} onChange={onChange} />
     </DropDown>
   );

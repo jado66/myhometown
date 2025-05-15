@@ -56,7 +56,7 @@ import {
 } from "lexical";
 import { Dispatch, useCallback, useEffect, useState } from "react";
 import * as React from "react";
-
+import FormatColorTextIcon from "@mui/icons-material/FormatColorText";
 import {
   blockTypeToBlockName,
   useToolbarState,
@@ -90,6 +90,43 @@ import {
   formatParagraph,
   formatQuote,
 } from "./utils";
+import {
+  FormatBold,
+  FormatItalic,
+  FormatUnderlined,
+  Redo,
+  Undo,
+  Link,
+  FormatColorFill,
+  ExpandMore,
+  MoreHoriz,
+  Numbers,
+  CheckBox,
+  FormatQuote,
+  Circle,
+  ViewHeadline,
+  HorizontalRule,
+  InsertPageBreak,
+  Image,
+  ArtTrack,
+  CalendarViewMonth,
+  ViewColumn,
+  ChevronRight,
+  Add,
+  AlignHorizontalLeft,
+  FormatAlignCenter,
+  FormatAlignRight,
+  FormatAlignJustify,
+  FormatAlignLeft,
+  FormatIndentDecrease,
+  FormatIndentIncrease,
+} from "@mui/icons-material";
+
+import { H1Icon } from "../../icons/H1Icon";
+import { H2Icon } from "../../icons/H2Icon";
+import { H3Icon } from "../../icons/H3Icon";
+
+import SvgIcon from "@mui/icons-material/FormatColorText";
 
 const rootTypeToRootName = {
   root: "Root",
@@ -133,41 +170,60 @@ const FONT_SIZE_OPTIONS: [string, string][] = [
   ["20px", "20px"],
 ];
 
+function AlignmentIcon({ alignment }: { alignment: ElementFormatType }) {
+  switch (alignment) {
+    case "left":
+      return FormatAlignLeft;
+    case "center":
+      return FormatAlignCenter;
+    case "right":
+      return FormatAlignRight;
+    case "justify":
+      return FormatAlignJustify;
+    case "start":
+      return FormatAlignLeft;
+    case "end":
+      return FormatAlignRight;
+    default:
+      return FormatAlignLeft;
+  }
+}
+
 const ELEMENT_FORMAT_OPTIONS: {
   [key in Exclude<ElementFormatType, "">]: {
-    icon: string;
-    iconRTL: string;
+    icon: any;
+    iconRTL: any;
     name: string;
   };
 } = {
   center: {
-    icon: "center-align",
-    iconRTL: "center-align",
+    icon: <FormatAlignCenter />,
+    iconRTL: <FormatAlignCenter />,
     name: "Center Align",
   },
   end: {
-    icon: "right-align",
-    iconRTL: "left-align",
+    icon: <FormatAlignLeft />,
+    iconRTL: <FormatAlignLeft />,
     name: "End Align",
   },
   justify: {
-    icon: "justify-align",
-    iconRTL: "justify-align",
+    icon: <FormatAlignJustify />,
+    iconRTL: <FormatAlignJustify />,
     name: "Justify Align",
   },
   left: {
-    icon: "left-align",
-    iconRTL: "left-align",
+    icon: <FormatAlignLeft />,
+    iconRTL: <FormatAlignLeft />,
     name: "Left Align",
   },
   right: {
-    icon: "right-align",
-    iconRTL: "right-align",
+    icon: <FormatAlignRight />,
+    iconRTL: <FormatAlignRight />,
     name: "Right Align",
   },
   start: {
-    icon: "left-align",
-    iconRTL: "right-align",
+    icon: <FormatAlignLeft />,
+    iconRTL: <FormatAlignRight />,
     name: "Start Align",
   },
 };
@@ -206,7 +262,7 @@ function BlockFormatDropDown({
         onClick={() => formatParagraph(editor)}
       >
         <div className="icon-text-container">
-          <i className="icon paragraph" />
+          <ViewHeadline />
           <span className="text">Normal</span>
         </div>
         <span className="shortcut">{SHORTCUTS.NORMAL}</span>
@@ -216,7 +272,7 @@ function BlockFormatDropDown({
         onClick={() => formatHeading(editor, blockType, "h1")}
       >
         <div className="icon-text-container">
-          <i className="icon h1" />
+          <H1Icon />
           <span className="text">Heading 1</span>
         </div>
         <span className="shortcut">{SHORTCUTS.HEADING1}</span>
@@ -226,7 +282,8 @@ function BlockFormatDropDown({
         onClick={() => formatHeading(editor, blockType, "h2")}
       >
         <div className="icon-text-container">
-          <i className="icon h2" />
+          <H2Icon />
+
           <span className="text">Heading 2</span>
         </div>
         <span className="shortcut">{SHORTCUTS.HEADING2}</span>
@@ -236,7 +293,7 @@ function BlockFormatDropDown({
         onClick={() => formatHeading(editor, blockType, "h3")}
       >
         <div className="icon-text-container">
-          <i className="icon h3" />
+          <H3Icon />
           <span className="text">Heading 3</span>
         </div>
         <span className="shortcut">{SHORTCUTS.HEADING3}</span>
@@ -246,7 +303,7 @@ function BlockFormatDropDown({
         onClick={() => formatBulletList(editor, blockType)}
       >
         <div className="icon-text-container">
-          <i className="icon bullet-list" />
+          <Circle />
           <span className="text">Bullet List</span>
         </div>
         <span className="shortcut">{SHORTCUTS.BULLET_LIST}</span>
@@ -256,7 +313,7 @@ function BlockFormatDropDown({
         onClick={() => formatNumberedList(editor, blockType)}
       >
         <div className="icon-text-container">
-          <i className="icon numbered-list" />
+          <Numbers />
           <span className="text">Numbered List</span>
         </div>
         <span className="shortcut">{SHORTCUTS.NUMBERED_LIST}</span>
@@ -266,7 +323,7 @@ function BlockFormatDropDown({
         onClick={() => formatCheckList(editor, blockType)}
       >
         <div className="icon-text-container">
-          <i className="icon check-list" />
+          <CheckBox />
           <span className="text">Check List</span>
         </div>
         <span className="shortcut">{SHORTCUTS.CHECK_LIST}</span>
@@ -276,20 +333,10 @@ function BlockFormatDropDown({
         onClick={() => formatQuote(editor, blockType)}
       >
         <div className="icon-text-container">
-          <i className="icon quote" />
+          <FormatQuote />
           <span className="text">Quote</span>
         </div>
         <span className="shortcut">{SHORTCUTS.QUOTE}</span>
-      </DropDownItem>
-      <DropDownItem
-        className={"item wide " + dropDownActiveClass(blockType === "code")}
-        onClick={() => formatCode(editor, blockType)}
-      >
-        <div className="icon-text-container">
-          <i className="icon code" />
-          <span className="text">Code Block</span>
-        </div>
-        <span className="shortcut">{SHORTCUTS.CODE_BLOCK}</span>
       </DropDownItem>
     </DropDown>
   );
@@ -373,9 +420,7 @@ function ElementFormatDropdown({
     <DropDown
       disabled={disabled}
       buttonLabel={formatOption.name}
-      buttonIconClassName={`icon ${
-        isRTL ? formatOption.iconRTL : formatOption.icon
-      }`}
+      ButtonIcon={FormatAlignCenter}
       buttonClassName="toolbar-item spaced alignment"
       buttonAriaLabel="Formatting options for text alignment"
     >
@@ -386,7 +431,7 @@ function ElementFormatDropdown({
         className="item wide"
       >
         <div className="icon-text-container">
-          <i className="icon left-align" />
+          <FormatAlignLeft />
           <span className="text">Left Align</span>
         </div>
         <span className="shortcut">{SHORTCUTS.LEFT_ALIGN}</span>
@@ -398,7 +443,7 @@ function ElementFormatDropdown({
         className="item wide"
       >
         <div className="icon-text-container">
-          <i className="icon center-align" />
+          <FormatAlignCenter />
           <span className="text">Center Align</span>
         </div>
         <span className="shortcut">{SHORTCUTS.CENTER_ALIGN}</span>
@@ -410,7 +455,7 @@ function ElementFormatDropdown({
         className="item wide"
       >
         <div className="icon-text-container">
-          <i className="icon right-align" />
+          <FormatAlignRight />
           <span className="text">Right Align</span>
         </div>
         <span className="shortcut">{SHORTCUTS.RIGHT_ALIGN}</span>
@@ -422,7 +467,7 @@ function ElementFormatDropdown({
         className="item wide"
       >
         <div className="icon-text-container">
-          <i className="icon justify-align" />
+          <FormatAlignJustify />
           <span className="text">Justify Align</span>
         </div>
         <span className="shortcut">{SHORTCUTS.JUSTIFY_ALIGN}</span>
@@ -433,13 +478,10 @@ function ElementFormatDropdown({
         }}
         className="item wide"
       >
-        <i
-          className={`icon ${
-            isRTL
-              ? ELEMENT_FORMAT_OPTIONS.start.iconRTL
-              : ELEMENT_FORMAT_OPTIONS.start.icon
-          }`}
-        />
+        {isRTL
+          ? ELEMENT_FORMAT_OPTIONS.start.iconRTL
+          : ELEMENT_FORMAT_OPTIONS.start.icon}
+
         <span className="text">Start Align</span>
       </DropDownItem>
       <DropDownItem
@@ -448,13 +490,16 @@ function ElementFormatDropdown({
         }}
         className="item wide"
       >
-        <i
+        {/* <i
           className={`icon ${
             isRTL
               ? ELEMENT_FORMAT_OPTIONS.end.iconRTL
               : ELEMENT_FORMAT_OPTIONS.end.icon
-          }`}
-        />
+          }`} */}
+        {isRTL
+          ? ELEMENT_FORMAT_OPTIONS.end.iconRTL
+          : ELEMENT_FORMAT_OPTIONS.end.icon}
+
         <span className="text">End Align</span>
       </DropDownItem>
       <Divider />
@@ -465,7 +510,8 @@ function ElementFormatDropdown({
         className="item wide"
       >
         <div className="icon-text-container">
-          <i className={"icon " + (isRTL ? "indent" : "outdent")} />
+          <FormatIndentDecrease />
+
           <span className="text">Outdent</span>
         </div>
         <span className="shortcut">{SHORTCUTS.OUTDENT}</span>
@@ -477,7 +523,7 @@ function ElementFormatDropdown({
         className="item wide"
       >
         <div className="icon-text-container">
-          <i className={"icon " + (isRTL ? "outdent" : "indent")} />
+          {isRTL ? <FormatIndentDecrease /> : <FormatIndentIncrease />}
           <span className="text">Indent</span>
         </div>
         <span className="shortcut">{SHORTCUTS.INDENT}</span>
@@ -763,7 +809,7 @@ export default function ToolbarPlugin({
         className="toolbar-item spaced"
         aria-label="Undo"
       >
-        <i className="format undo" />
+        <Undo />
       </button>
       <button
         disabled={!toolbarState.canRedo || !isEditable}
@@ -775,7 +821,7 @@ export default function ToolbarPlugin({
         className="toolbar-item"
         aria-label="Redo"
       >
-        <i className="format redo" />
+        <Redo />
       </button>
       <Divider />
       {toolbarState.blockType in blockTypeToBlockName &&
@@ -813,13 +859,13 @@ export default function ToolbarPlugin({
         </DropDown>
       ) : (
         <>
-          <FontDropDown
+          {/* <FontDropDown
             disabled={!isEditable}
             style={"font-family"}
             value={toolbarState.fontFamily}
             editor={activeEditor}
-          />
-          <Divider />
+          /> */}
+          {/* <Divider /> */}
           <FontSize
             selectionFontSize={toolbarState.fontSize.slice(0, -2)}
             editor={activeEditor}
@@ -838,7 +884,7 @@ export default function ToolbarPlugin({
             type="button"
             aria-label={`Format text as bold. Shortcut: ${SHORTCUTS.BOLD}`}
           >
-            <i className="format bold" />
+            <FormatBold />
           </button>
           <button
             disabled={!isEditable}
@@ -852,7 +898,7 @@ export default function ToolbarPlugin({
             type="button"
             aria-label={`Format text as italics. Shortcut: ${SHORTCUTS.ITALIC}`}
           >
-            <i className="format italic" />
+            <FormatItalic />
           </button>
           <button
             disabled={!isEditable}
@@ -867,9 +913,9 @@ export default function ToolbarPlugin({
             type="button"
             aria-label={`Format text to underlined. Shortcut: ${SHORTCUTS.UNDERLINE}`}
           >
-            <i className="format underline" />
+            <FormatUnderlined />
           </button>
-          {canViewerSeeInsertCodeButton && (
+          {/* {canViewerSeeInsertCodeButton && (
             <button
               disabled={!isEditable}
               onClick={() => {
@@ -884,7 +930,7 @@ export default function ToolbarPlugin({
             >
               <i className="format code" />
             </button>
-          )}
+          )} */}
           <button
             disabled={!isEditable}
             onClick={insertLink}
@@ -895,7 +941,7 @@ export default function ToolbarPlugin({
             title={`Insert link (${SHORTCUTS.INSERT_LINK})`}
             type="button"
           >
-            <i className="format link" />
+            <Link />
           </button>
           <DropdownColorPicker
             disabled={!isEditable}
@@ -904,6 +950,7 @@ export default function ToolbarPlugin({
             buttonIconClassName="icon font-color"
             color={toolbarState.fontColor}
             onChange={onFontColorSelect}
+            ButtonIcon={FormatColorTextIcon}
             title="text color"
           />
           <DropdownColorPicker
@@ -912,12 +959,14 @@ export default function ToolbarPlugin({
             buttonAriaLabel="Formatting background color"
             buttonIconClassName="icon bg-color"
             color={toolbarState.bgColor}
+            ButtonIcon={FormatColorFill}
             onChange={onBgColorSelect}
             title="bg color"
           />
           <DropDown
             disabled={!isEditable}
             buttonClassName="toolbar-item spaced"
+            ButtonIcon={MoreHoriz}
             buttonLabel=""
             buttonAriaLabel="Formatting options for additional text styles"
             buttonIconClassName="icon dropdown-more"
@@ -1061,6 +1110,7 @@ export default function ToolbarPlugin({
                 buttonLabel="Insert"
                 buttonAriaLabel="Insert specialized editor node"
                 buttonIconClassName="icon plus"
+                ButtonIcon={Add}
               >
                 <DropDownItem
                   onClick={() => {
@@ -1071,7 +1121,7 @@ export default function ToolbarPlugin({
                   }}
                   className="item"
                 >
-                  <i className="icon horizontal-rule" />
+                  <HorizontalRule />
                   <span className="text">Horizontal Rule</span>
                 </DropDownItem>
                 <DropDownItem
@@ -1080,7 +1130,7 @@ export default function ToolbarPlugin({
                   }}
                   className="item"
                 >
-                  <i className="icon page-break" />
+                  <InsertPageBreak />
                   <span className="text">Page Break</span>
                 </DropDownItem>
                 <DropDownItem
@@ -1094,7 +1144,7 @@ export default function ToolbarPlugin({
                   }}
                   className="item"
                 >
-                  <i className="icon image" />
+                  <Image />
                   <span className="text">Image</span>
                 </DropDownItem>
                 <DropDownItem
@@ -1108,7 +1158,7 @@ export default function ToolbarPlugin({
                   }}
                   className="item"
                 >
-                  <i className="icon image" />
+                  <ArtTrack />
                   <span className="text">Inline Image</span>
                 </DropDownItem>
 
@@ -1123,7 +1173,7 @@ export default function ToolbarPlugin({
                   }}
                   className="item"
                 >
-                  <i className="icon table" />
+                  <CalendarViewMonth />
                   <span className="text">Table</span>
                 </DropDownItem>
 
@@ -1138,7 +1188,7 @@ export default function ToolbarPlugin({
                   }}
                   className="item"
                 >
-                  <i className="icon columns" />
+                  <ViewColumn />
                   <span className="text">Columns Layout</span>
                 </DropDownItem>
 
@@ -1163,7 +1213,7 @@ export default function ToolbarPlugin({
                   }}
                   className="item"
                 >
-                  <i className="icon caret-right" />
+                  <ChevronRight />
                   <span className="text">Collapsible container</span>
                 </DropDownItem>
                 {EmbedConfigs.map((embedConfig) => (
