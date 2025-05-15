@@ -65,8 +65,16 @@ export const ClassCategory = ({
   const [openClassSignup, setOpenClassSignup] = useState(null);
   const [duplicatedClassData, setDuplicatedClassData] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
-  const [expandedClass, setExpandedClass] = useState(null);
+  const [expandedClasses, setExpandedClass] = useState([]);
   const [hoverClass, setHoverClass] = useState(null);
+
+  const toggleExpandedClass = (classId) => {
+    if (expandedClasses.includes(classId)) {
+      setExpandedClass((prev) => prev.filter((id) => id !== classId));
+    } else {
+      setExpandedClass((prev) => [...prev, classId]);
+    }
+  };
 
   const { loadClass } = useLoadedClassesContext();
 
@@ -200,7 +208,8 @@ export const ClassCategory = ({
           forceExpandCategory();
 
           // Then set the expanded class state
-          setExpandedClass(matchingClass.id);
+          // to the matching class ID
+          setExpandedClass((prev) => [...prev, matchingClass.id]);
 
           // Finally, scroll to the element after a delay to ensure expansion is complete
           setTimeout(() => {
@@ -358,10 +367,8 @@ export const ClassCategory = ({
             return (
               <Accordion
                 key={classObj.id}
-                expanded={expandedClass === classObj.id}
-                onChange={(e, isExpanded) =>
-                  setExpandedClass(isExpanded ? classObj.id : null)
-                }
+                expanded={expandedClasses?.includes(classObj.id)}
+                onChange={(e) => toggleExpandedClass(classObj.id)}
                 id={`class-${makeUrlSafeString(classObj.title)}`}
                 component={({ children, ...props }) => (
                   <div

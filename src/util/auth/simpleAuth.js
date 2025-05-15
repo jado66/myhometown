@@ -59,6 +59,10 @@ export const CommunityIdToPasswordHash = {
     name: "Orem - Geneva Heights",
     password: "8631",
   },
+  "fb34e335-5cc6-4e6c-b5fc-2b64588fe921": {
+    name: "Orem - Sharon Park",
+    password: "8631",
+  },
   "66df56bef05bd41ef9493f33": {
     name: "Provo - Pioneer Park",
     password: "0155",

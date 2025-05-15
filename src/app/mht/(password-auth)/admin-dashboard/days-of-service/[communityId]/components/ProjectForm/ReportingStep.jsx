@@ -1,18 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Typography } from "@mui/material";
 import { useProjectForm } from "@/contexts/ProjectFormProvider";
 import ProjectTextField from "./ProjectTextField";
 import TaskReportingTable from "@/components/days-of-service/form-components/TaskReportingTable";
-import WysiwygEditor from "@/views/dayOfService/WysiwygEditor";
-
+import LexicalEditor from "@/components/lexical-editor/LexicalEditor";
+import PlaygroundApp from "@/components/lexical-editor/LexicalEditor";
 const ReportingStep = () => {
   const { formData, handleInputChange, handleNumberInputChange } =
     useProjectForm();
-
   const [editing, setEditing] = useState(true);
 
   // Ensure reported_tasks is initialized based on tasks
-  React.useEffect(() => {
+  useEffect(() => {
     if (!formData.reported_tasks && formData.tasks?.tasks) {
       // Initialize reported_tasks with the structure from tasks
       const initialReportedTasks = formData.tasks.tasks.map((task) => ({
@@ -23,7 +22,7 @@ const ReportingStep = () => {
     }
   }, [formData.tasks]);
 
-  const handleWysiwygChange = (newContent) => {
+  const handleLexicalChange = (newContent) => {
     handleInputChange("report_rich_text", newContent);
   };
 
@@ -41,7 +40,6 @@ const ReportingStep = () => {
           handleNumberInputChange("actual_volunteers", e.target.value)
         }
       />
-
       <ProjectTextField
         label="Actual duration of project (hours)"
         type="number"
@@ -54,11 +52,9 @@ const ReportingStep = () => {
         }
         helperText="This is NOT the total number of man hours. For example, if the project started at 8:00 AM and ended at noon, the duration would be 4 hours."
       />
-
       <Typography variant="h6" sx={{ mt: 3 }}>
         Project Report Pictures
       </Typography>
-
       {formData.tasks?.tasks && (
         <TaskReportingTable
           tasks={formData.tasks.tasks}
@@ -67,18 +63,12 @@ const ReportingStep = () => {
           isLocked={false}
         />
       )}
-
       <Typography variant="h6" sx={{ mt: 3 }}>
         Project Report (Optional)
       </Typography>
-
       {editing ? (
         <Box sx={{ mb: 3 }}>
-          <WysiwygEditor
-            content={formData.report_rich_text || ""}
-            onChange={handleWysiwygChange}
-            placeholder="Start writing..."
-          />
+          <PlaygroundApp />
         </Box>
       ) : (
         <Typography

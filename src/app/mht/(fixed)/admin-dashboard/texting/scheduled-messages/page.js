@@ -306,6 +306,7 @@ export default function ScheduledTextsPage() {
                             size="small"
                             onClick={() => handleViewClick(text)}
                           >
+                            View
                             <InfoOutlined fontSize="small" />
                           </IconButton>
                         </Tooltip>

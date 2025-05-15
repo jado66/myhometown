@@ -60,10 +60,15 @@ export const ClassesTreeView = ({
   };
 
   const toggleExpandCategory = (e, categoryId, forceOpen = false) => {
-    if (expandedItems === categoryId && !forceOpen) {
-      setExpandedItems(null); // Collapse if already expanded
+    if (expandedItems.includes(categoryId) && !forceOpen) {
+      setExpandedItems((prevExpandedItems) =>
+        prevExpandedItems.filter((item) => item !== categoryId)
+      ); // Collapse if already expanded
     } else {
-      setExpandedItems(categoryId); // Expand otherwise
+      setExpandedItems((prevExpandedItems) => [
+        ...prevExpandedItems,
+        categoryId,
+      ]); // Expand otherwise
     }
   };
 
@@ -142,7 +147,7 @@ export const ClassesTreeView = ({
           <SimpleTreeView
             aria-label="classes tree view"
             disabledItemsFocusable={true}
-            expandedItems={expandedItems ? [expandedItems] : []}
+            expandedItems={expandedItems ? expandedItems : []}
           >
             {classes
               .filter(

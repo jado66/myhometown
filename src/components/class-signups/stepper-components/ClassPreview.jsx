@@ -36,7 +36,11 @@ const ClassPreview = ({ classData, noBanner }) => {
         />
       )}
 
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ mb: 3, overflow: "hidden" }}
+      >
         {classData?.description}
       </Typography>
 

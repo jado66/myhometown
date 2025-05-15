@@ -157,12 +157,6 @@ const ProjectForm = ({ date, communityId }) => {
   };
 
   const getSteps = () => {
-    const showReporting = formData.status === "completed";
-
-    if (showReporting) {
-      //append reporting step
-      return allSteps.concat([{ label: "Reporting" }]);
-    }
     return allSteps;
   };
 

@@ -36,7 +36,7 @@ export const pages = () => {
           requiredPermission: "texting",
         },
         {
-          title: "Scheduled Messages",
+          title: "View Scheduled Messages",
           href: rootUrl + "/admin-dashboard/texting/scheduled-messages",
           requiredPermission: "texting",
         },

@@ -128,21 +128,7 @@ const AdminDashboardPages = () => {
                   subtitle:
                     "Manage all text communications for your city or community members.",
                   media: "/admin-icons/Text SMS Communications.svg",
-                  actions: [
-                    {
-                      label: "Send Texts",
-                      href: rootUrl + "/admin-dashboard/texting/send",
-                    },
-
-                    {
-                      label: "Manage Directory",
-                      href: rootUrl + "/admin-dashboard/texting/directory",
-                    },
-                    {
-                      label: "View Logs",
-                      href: rootUrl + "/admin-dashboard/texting/logs",
-                    },
-                  ],
+                  href: rootUrl + "/admin-dashboard/texting",
                   // requiredPermission: "texting",
                 },
               ].map((item, i) => (

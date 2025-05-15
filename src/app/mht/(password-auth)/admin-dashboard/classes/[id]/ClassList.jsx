@@ -34,7 +34,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Assignment, Phone, School } from "@mui/icons-material";
 import { ExampleIcons } from "@/components/events/ClassesTreeView/IconSelect";
 import ClassDetailTable from "./ClassDetailTable";
-import ClassRollTable from "./ClassRollTable";
+import ResponsiveRollTable from "./ResponsiveRollTable";
 import ClassPreview from "@/components/class-signups/stepper-components/ClassPreview";
 import { useClasses } from "@/hooks/use-classes";
 import { ViewList } from "@mui/icons-material";
@@ -646,7 +646,7 @@ export default function ClassList({ community, searchTerm, viewType }) {
           viewType={viewType}
         />
 
-        <ClassRollTable
+        <ResponsiveRollTable
           classData={selectedClass}
           show={showClassRoll}
           onClose={() => setShowClassRoll(false)}
@@ -728,7 +728,7 @@ export default function ClassList({ community, searchTerm, viewType }) {
         </Typography>
       )}
 
-      <ClassRollTable
+      <ResponsiveRollTable
         classData={selectedClass}
         show={showClassRoll}
         onClose={() => setShowClassRoll(false)}

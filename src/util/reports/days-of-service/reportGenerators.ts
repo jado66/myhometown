@@ -55,6 +55,445 @@ const shouldIncludeField = (fieldId: string, settings?: any): boolean => {
   return settings.includedFields[fieldId] === true;
 };
 
+// Type definitions
+interface ReportSettings {
+  anonymizePII?: boolean;
+  includeFields?: string[];
+}
+
+interface TaskImage {
+  url: string;
+  label?: string;
+}
+
+interface Task {
+  title?: string;
+  todos?: string[];
+  images?: TaskImage[];
+}
+
+interface Project {
+  project_name?: string;
+  address_street1?: string;
+  address_street2?: string;
+  address_city?: string;
+  address_state?: string;
+  address_zip_code?: string;
+  actual_volunteers?: number;
+  actual_project_duration?: number;
+  budget_estimates?: number;
+  report_rich_text?: string;
+  reported_tasks?: Task[];
+  status?: string;
+}
+
+interface PartnerStake {
+  id: string;
+  name?: string;
+  liaison_name_1?: string;
+  liaison_email_1?: string;
+  liaison_phone_1?: string;
+  liaison_name_2?: string;
+  liaison_email_2?: string;
+  liaison_phone_2?: string;
+}
+
+interface DayOfService {
+  partner_stakes: PartnerStake[];
+  check_in_location?: string;
+}
+
+/**
+ * Generates a PDF report showing before and after images and results of all projects in a stake
+ */
+export const generateBeforeAndAfterReport = async (
+  stakeId: string,
+  dateOfService: string,
+  dayOfService: DayOfService,
+  settings?: ReportSettings,
+  setLoading?: (loading: boolean) => void
+) => {
+  // Function to format date safely
+  const formatSafeDate = (dateString: string): string => {
+    try {
+      if (!dateString) return "N/A";
+      const date = new Date(dateString);
+      return date instanceof Date && !isNaN(date.getTime())
+        ? date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })
+        : "N/A";
+    } catch (e) {
+      return "N/A";
+    }
+  };
+
+  // Function to anonymize text if needed
+  const anonymizeText = (
+    text: string | null | undefined,
+    shouldAnonymize: boolean,
+    settings?: ReportSettings
+  ): string => {
+    if (!text) return "N/A";
+    if (!settings?.anonymizePII || !shouldAnonymize) return text;
+
+    // Simple anonymization - replace with first letter and asterisks
+    return text.charAt(0) + "*".repeat(Math.max(2, text.length - 1));
+  };
+  // Fetch projects if not provided
+  const projectsData = await fetchProjectsByDaysOfStakeId(stakeId, false);
+
+  if (!projectsData || projectsData.length === 0) {
+    toast.warning("No projects found to generate report");
+    return;
+  }
+
+  // Filter out projects without reporting data
+  const projectsWithReporting = projectsData.filter(
+    (project: Project) => project.reported_tasks || project.report_rich_text
+  );
+
+  if (projectsWithReporting.length === 0) {
+    toast.warning("No projects with reporting data found");
+    return;
+  }
+
+  const partnerStake = dayOfService?.partner_stakes.find(
+    (stake: PartnerStake) => stake.id === stakeId
+  );
+  const formattedDate = formatSafeDate(dateOfService);
+
+  // Initialize PDF
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+  const margin = 10;
+  const maxWidth = pageWidth - 2 * margin;
+
+  // Load logo
+  const logoPath = "/svgs/Primary_Logo_Black_Text.png";
+  const logoWidth = 40;
+  const logoHeight = 6.15;
+  let imgData = null;
+  try {
+    const response = await fetch(logoPath);
+    const blob = await response.blob();
+    imgData = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  } catch (imgError) {
+    console.error("Failed to load logo:", imgError);
+  }
+
+  let yPosition = margin;
+  let currentPage = 1;
+
+  // Helper functions
+  const checkForNewPage = (currentY: number, heightNeeded = 10) => {
+    if (currentY + heightNeeded > pageHeight - margin) {
+      doc.addPage();
+      currentPage++;
+      yPosition = margin;
+      return yPosition;
+    }
+    return currentY;
+  };
+
+  const dividerLine = (yPos: number) => {
+    doc.setLineWidth(0.3);
+    doc.setDrawColor(150, 150, 150);
+    doc.line(margin, yPos, pageWidth - margin, yPos);
+  };
+
+  const addPageHeader = (isNewPage = false) => {
+    if (!isNewPage) yPosition = margin;
+
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Before & After Project Report", margin, yPosition + 4);
+
+    if (imgData) {
+      doc.addImage(
+        imgData,
+        "PNG",
+        pageWidth - logoWidth - margin,
+        yPosition,
+        logoWidth,
+        logoHeight
+      );
+    } else {
+      doc.setFontSize(8);
+      doc.text("MHT Dashboard", pageWidth - margin, yPosition + 2, {
+        align: "right",
+      });
+    }
+
+    yPosition += logoHeight + 6;
+    doc.setFontSize(12);
+
+    if (shouldIncludeField("partner_stake_id", settings)) {
+      doc.text(
+        `Partner Organization: ${partnerStake?.name || "N/A"}`,
+        margin,
+        yPosition
+      );
+      yPosition += 5;
+    }
+
+    doc.text(`Date of Service: ${formattedDate || "N/A"}`, margin, yPosition);
+    yPosition += 5;
+    doc.text(
+      `Total Projects Completed: ${projectsWithReporting.length}`,
+      margin,
+      yPosition
+    );
+    yPosition += 6;
+    dividerLine(yPosition);
+    yPosition += 8;
+  };
+
+  // Add initial header
+  addPageHeader();
+
+  // Sort projects alphabetically by project name
+  projectsWithReporting.sort((a: Project, b: Project) => {
+    const nameA = a.project_name || "";
+    const nameB = b.project_name || "";
+    return nameA.localeCompare(nameB);
+  });
+
+  // Function to add images
+  const addProjectImages = async (
+    project: Project,
+    startY: number
+  ): Promise<number> => {
+    let currentY = startY;
+    const imageWidth = maxWidth / 2 - 5; // Half width for before/after side by side
+    const imageHeight = 60; // Fixed height for images
+    const hasReportedTasks =
+      project.reported_tasks && project.reported_tasks.length > 0;
+
+    if (!hasReportedTasks) {
+      return currentY;
+    }
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text("Before & After Photos", margin, currentY);
+    currentY += 5;
+
+    // Process each task with images
+    for (const task of project.reported_tasks!) {
+      if (!task.images || task.images.length === 0) continue;
+
+      // Get the task description
+      const taskDescription = task.todos?.[0] || "Task";
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "italic");
+      const wrappedDesc = doc.splitTextToSize(taskDescription, maxWidth);
+      doc.text(wrappedDesc, margin, currentY);
+      currentY += wrappedDesc.length * 4 + 2;
+
+      // Organize images into before/after pairs
+      const beforeImages = task.images.filter((img: TaskImage) =>
+        img.label?.toLowerCase().includes("before")
+      );
+      const afterImages = task.images.filter((img: TaskImage) =>
+        img.label?.toLowerCase().includes("after")
+      );
+
+      // Process image pairs
+      const maxPairs = Math.max(beforeImages.length, afterImages.length);
+
+      for (let i = 0; i < maxPairs; i++) {
+        // Check if we need a new page
+        currentY = checkForNewPage(currentY, imageHeight + 15);
+
+        const beforeImage = beforeImages[i];
+        const afterImage = afterImages[i];
+
+        // Add "Before" image if available
+        if (beforeImage && beforeImage.url) {
+          try {
+            // You'd need to implement a function to fetch and convert the image
+            const beforeImgData = await fetchImageAsBase64(beforeImage.url);
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "normal");
+            doc.text("BEFORE:", margin, currentY - 2);
+            doc.addImage(
+              beforeImgData,
+              "JPEG",
+              margin,
+              currentY,
+              imageWidth,
+              imageHeight,
+              undefined,
+              "FAST"
+            );
+          } catch (imgError) {
+            console.error("Failed to load before image:", imgError);
+            doc.setFontSize(8);
+            doc.text("[Image not available]", margin, currentY + 20);
+          }
+        }
+
+        // Add "After" image if available
+        if (afterImage && afterImage.url) {
+          try {
+            const afterImgData = await fetchImageAsBase64(afterImage.url);
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "normal");
+            doc.text("AFTER:", margin + imageWidth + 10, currentY - 2);
+            doc.addImage(
+              afterImgData,
+              "JPEG",
+              margin + imageWidth + 10,
+              currentY,
+              imageWidth,
+              imageHeight,
+              undefined,
+              "FAST"
+            );
+          } catch (imgError) {
+            console.error("Failed to load after image:", imgError);
+            doc.setFontSize(8);
+            doc.text(
+              "[Image not available]",
+              margin + imageWidth + 10,
+              currentY + 20
+            );
+          }
+        }
+
+        currentY += imageHeight + 10; // Move down for the next pair
+      }
+    }
+
+    return currentY;
+  };
+
+  // Process each project with reporting data
+  for (let i = 0; i < projectsWithReporting.length; i++) {
+    const project: Project = projectsWithReporting[i];
+
+    // Check if we need a new page for this project
+    if (i > 0) {
+      yPosition = checkForNewPage(yPosition, 150); // Estimated minimum height needed
+
+      // Add a divider between projects
+      dividerLine(yPosition - 5);
+      yPosition += 5;
+    }
+
+    // Project header
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    const projectName = shouldIncludeField("project_name", settings)
+      ? project.project_name || "Unnamed Project"
+      : `Project ${i + 1}`;
+    doc.text(projectName, margin, yPosition);
+    yPosition += 6;
+
+    // Project location
+    if (shouldIncludeField("address_street1", settings)) {
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      let addressText = "";
+
+      if (settings?.anonymizePII) {
+        addressText = `Location: ${project.address_city || ""}, ${
+          project.address_state || ""
+        }`;
+      } else {
+        addressText = `Location: ${concatenateAddress(project)}`;
+      }
+
+      doc.text(addressText, margin, yPosition);
+      yPosition += 5;
+    }
+
+    // Project statistics
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    let stats = "";
+
+    if (project.actual_volunteers) {
+      stats += `Volunteers: ${project.actual_volunteers} • `;
+    }
+
+    if (project.actual_project_duration) {
+      stats += `Hours: ${project.actual_project_duration} • `;
+    }
+
+    if (project.budget_estimates) {
+      stats += `Budget: $${project.budget_estimates} • `;
+    }
+
+    // Remove trailing separator if exists
+    stats = stats.replace(/• $/, "");
+
+    if (stats) {
+      doc.text(stats, margin, yPosition);
+      yPosition += 8;
+    }
+
+    // Project rich text report if available
+    if (project.report_rich_text) {
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("Project Summary:", margin, yPosition);
+      yPosition += 5;
+
+      doc.setFont("helvetica", "normal");
+      // Convert HTML to plain text and wrap it
+      const plainText = convertHtmlToPlainText(project.report_rich_text);
+      const wrappedText = doc.splitTextToSize(plainText, maxWidth);
+      doc.text(wrappedText, margin, yPosition);
+      yPosition += wrappedText.length * 4 + 8;
+    }
+
+    // Add before and after images
+    yPosition = await addProjectImages(project, yPosition);
+    yPosition += 15; // Add space after the project
+  }
+
+  // Add page numbers
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 5, {
+      align: "right",
+    });
+  }
+
+  // Save PDF
+  const fileName = `${
+    partnerStake?.name || "Stake"
+  }_Before_After_Report_${formattedDate}.pdf`;
+  doc.save(fileName);
+  toast.success("Before & After report generated successfully");
+};
+
+// Helper function to convert HTML to plain text
+const convertHtmlToPlainText = (html: string | null | undefined): string => {
+  if (!html) return "";
+
+  // Create a temporary element to parse the HTML
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = html;
+
+  // Get the text content (without HTML tags)
+  return tempDiv.textContent || tempDiv.innerText || "";
+};
+
 export const generatePDFReport = async (
   identifier: string,
   dateOfService: string,
