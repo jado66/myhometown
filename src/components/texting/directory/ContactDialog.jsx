@@ -385,10 +385,10 @@ const ContactDialog = ({
                 <MenuItem value="user">
                   {user.isAdmin ? "Personal" : "Unassigned"}
                 </MenuItem>
-                {userCommunities.length > 0 && (
+                {userCommunities?.length && userCommunities.length > 0 && (
                   <MenuItem value="community">Community</MenuItem>
                 )}
-                {userCities.length > 0 && (
+                {userCities?.length && userCities?.length > 0 && (
                   <MenuItem value="city">City</MenuItem>
                 )}
               </Select>
