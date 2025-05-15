@@ -1,3 +1,5 @@
+import { formatPhoneNumber } from "@/util/formatting/format-phone-number";
+import { isDuplicateContact } from "@/util/formatting/is-duplicate-contact";
 import { supabase } from "@/util/supabase";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
@@ -59,15 +61,32 @@ export function useUserContacts(userId, userCommunities, userCities) {
   }, [hasInitialized, userId]);
 
   // Add new contact
-  const addContact = async (newContactData) => {
+  const addContact = async (newContactData, noToast) => {
     try {
-      const contact = {
+      // Format the phone number
+      const formattedContactData = {
         ...newContactData,
-        // If owner_type is 'user', set owner_id to userId
+        phone: formatPhoneNumber(newContactData.phone),
+      };
+
+      // Check for duplicates
+      const isDuplicate = await isDuplicateContact(
+        formattedContactData,
+        contacts
+      );
+      if (isDuplicate) {
+        return {
+          data: null,
+          error: "This phone number already exists in your contacts",
+        };
+      }
+
+      const contact = {
+        ...formattedContactData,
         owner_id:
-          newContactData.owner_type === "user"
+          formattedContactData.owner_type === "user"
             ? userId
-            : newContactData.owner_id,
+            : formattedContactData.owner_id,
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -108,8 +127,15 @@ export function useUserContacts(userId, userCommunities, userCities) {
         return updated;
       });
 
+      if (!noToast) {
+        toast.success("Contact added successfully");
+      }
       return { data: data[0], error: null };
     } catch (error) {
+      if (!noToast) {
+        toast.error("Failed to add contact");
+      }
+
       return { data: null, error: error.message };
     }
   };
@@ -117,11 +143,27 @@ export function useUserContacts(userId, userCommunities, userCities) {
   // Update existing contact
   const updateContact = async (id, updatedData) => {
     try {
-      const dataToUpdate = {
+      // Format the phone number
+      const formattedData = {
         ...updatedData,
-        // If owner_type is 'user', set owner_id to userId
+        phone: formatPhoneNumber(updatedData.phone),
+      };
+
+      // Check if the updated phone would create a duplicate
+      // We need to exclude the current contact from the duplicate check
+      const contactToCheck = { ...formattedData, id };
+      const isDuplicate = await isDuplicateContact(contactToCheck, contacts);
+      if (isDuplicate) {
+        return {
+          data: null,
+          error: "This phone number already exists in your contacts",
+        };
+      }
+
+      const dataToUpdate = {
+        ...formattedData,
         owner_id:
-          updatedData.owner_type === "user" ? userId : updatedData.owner_id,
+          formattedData.owner_type === "user" ? userId : formattedData.owner_id,
         updated_at: new Date(),
       };
 
@@ -139,7 +181,7 @@ export function useUserContacts(userId, userCommunities, userCities) {
 
         // Update in userContacts if found
         updated.userContacts = prev.userContacts.map((contact) =>
-          contact.id === id ? { ...contact, ...updatedData } : contact
+          contact.id === id ? { ...contact, ...formattedData } : contact
         );
 
         // Update in communityContacts if found
@@ -147,7 +189,7 @@ export function useUserContacts(userId, userCommunities, userCities) {
           updated.communityContacts[communityId] = prev.communityContacts[
             communityId
           ].map((contact) =>
-            contact.id === id ? { ...contact, ...updatedData } : contact
+            contact.id === id ? { ...contact, ...formattedData } : contact
           );
         });
 
@@ -155,15 +197,17 @@ export function useUserContacts(userId, userCommunities, userCities) {
         Object.keys(prev.cityContacts).forEach((cityId) => {
           updated.cityContacts[cityId] = prev.cityContacts[cityId].map(
             (contact) =>
-              contact.id === id ? { ...contact, ...updatedData } : contact
+              contact.id === id ? { ...contact, ...formattedData } : contact
           );
         });
 
         return updated;
       });
 
+      toast.success("Contact updated successfully");
       return { data: data[0], error: null };
     } catch (error) {
+      toast.error("Failed to update contact");
       return { data: null, error: error.message };
     }
   };

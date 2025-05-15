@@ -132,44 +132,21 @@ const ClassListView = ({ classItem, onTakeAttendance, onViewClass }) => {
               Info
             </Button>
 
-            <PermissionGuard
-              user={user}
-              requiredPermission="texting"
-              alternateContent={
-                <Tooltip title="You do not have permission to send texts.">
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<Phone />}
-                    sx={{
-                      color: "text.disabled",
-                      "&:hover": {
-                        color: "text.disabled",
-                        borderColor: "text.disabled",
-                      },
-                    }}
-                  >
-                    Text
-                  </Button>
-                </Tooltip>
-              }
-            >
-              <Tooltip title="Text Students">
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<Phone />}
-                  href={
-                    process.env.NEXT_PUBLIC_DOMAIN +
-                    `/admin-dashboard/texting/send?classId=${
-                      classItem.id
-                    }&classTitle=${encodeURIComponent(classItem.title)}`
-                  }
-                >
-                  Text
-                </Button>
-              </Tooltip>
-            </PermissionGuard>
+            <Tooltip title="Text Students">
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<Phone />}
+                href={
+                  process.env.NEXT_PUBLIC_DOMAIN +
+                  `/admin-dashboard/texting/send?classId=${
+                    classItem.id
+                  }&classTitle=${encodeURIComponent(classItem.title)}`
+                }
+              >
+                Text
+              </Button>
+            </Tooltip>
           </Stack>
         </Box>
       </CardContent>

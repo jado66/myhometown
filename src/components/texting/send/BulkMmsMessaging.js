@@ -127,7 +127,7 @@ export default function BulkMMSMessaging() {
 
       return {
         value: contact.phone,
-        label: `${contact.first_name} ${contact.last_name} (${contact.phone})`,
+        label: `${contact.first_name} ${contact.last_name} - ${contact.phone}`,
         contactId: contact.id,
         firstName: contact.first_name,
         lastName: contact.last_name,
