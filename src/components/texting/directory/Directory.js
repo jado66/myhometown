@@ -22,7 +22,10 @@ import { useUserContacts } from "@/hooks/useUserContacts";
 
 import { ContactsTable } from "./ContactsTable";
 import ContactDialog from "./ContactDialog";
+import { isDuplicateContact } from "@/util/formatting/is-duplicate-contact";
+import { formatPhoneNumber } from "@/util/formatting/format-phone-number";
 import JsonViewer from "@/components/util/debug/DebugOutput";
+import { toast } from "react-toastify";
 
 const ContactsManagement = ({ user, userCommunities, userCities }) => {
   const userId = user?.id || null;
@@ -311,12 +314,14 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
         const { data, error } = await addContact(editForm);
         if (error) {
           setFormError(error);
+          toast.error(error);
           return;
         }
       } else {
         const { data, error } = await updateContact(id, editForm);
         if (error) {
           setFormError(error);
+          toast.error(error);
           return;
         }
       }
@@ -441,7 +446,8 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
       addContact,
       setFormError,
       refreshContacts,
-      userId
+      userId,
+      contacts
     );
   };
 
@@ -564,11 +570,6 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
       )}
 
       {/* Form Error */}
-      {formError && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {formError}
-        </Alert>
-      )}
 
       {/* User Contacts */}
       <Typography variant="h6">
@@ -629,6 +630,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
         groupsByOwner={groupsByOwner}
         user={user}
         title={editingContact ? "Edit Contact" : "Add Contact"}
+        formError={formError}
       />
 
       {/* Bulk Delete Confirmation Dialog */}
@@ -645,25 +647,6 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
 };
 
 export default ContactsManagement;
-
-// Helper function for formatting phone numbers
-const formatPhoneNumber = (phone) => {
-  // Remove all non-numeric characters
-  const cleaned = phone.replace(/\D/g, "");
-
-  // Check if it's a valid length (assuming US numbers for this example)
-  if (cleaned.length < 10) return cleaned;
-
-  // Format as (XXX) XXX-XXXX if 10 digits
-  if (cleaned.length === 10) {
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(
-      6
-    )}`;
-  }
-
-  // If longer than 10 digits, keep original formatting
-  return cleaned;
-};
 
 // Helper function for exporting contacts to CSV
 const exportContacts = (contacts) => {
@@ -696,57 +679,42 @@ const exportContacts = (contacts) => {
   }
 };
 
-// Helper function for normalizing CSV header names
-const normalizeHeader = (header) => {
-  // Remove special characters and spaces, convert to lowercase
-  const normalized = header.toLowerCase().trim();
-
-  // Map various possible header names to standard format
-  const headerMap = {
-    "first name": "first_name",
-    firstname: "first_name",
-    "last name": "last_name",
-    lastname: "last_name",
-    "middle name": "middle_name",
-    middlename: "middle_name",
-    "contact name": "name",
-    contactname: "name",
-    email: "email",
-    "email address": "email",
-    emailaddress: "email",
-    mail: "email",
-    phone: "phone",
-    "phone number": "phone",
-    phonenumber: "phone",
-    telephone: "phone",
-    tel: "phone",
-    mobile: "phone",
-    group: "groups",
-    groups: "groups",
-    category: "groups",
-    categories: "groups",
-    tags: "groups",
-  };
-
-  return headerMap[normalized] || normalized.replace(/[^a-z0-9]/g, "");
-};
-
 // Function to import contacts from CSV
-const importContacts = async (
+/**
+ * Imports contacts from a CSV file
+ * @param {Event} event - The file input change event
+ * @param {Function} addContact - Function to add a contact to the database
+ * @param {Function} setFormError - Function to set error messages
+ * @param {Function} refreshContacts - Function to refresh contacts after import
+ * @param {string} userId - The current user's ID
+ * @param {Object} currentContacts - The current contacts object for duplicate detection
+ */
+export const importContacts = async (
   event,
   addContact,
   setFormError,
   refreshContacts,
-  userId
+  userId,
+  currentContacts
 ) => {
   const file = event.target.files[0];
+  if (!file) return;
+
   const reader = new FileReader();
 
   reader.onload = async (e) => {
     const content = e.target.result;
     const lines = content.split("\n").filter((line) => line.trim());
+
+    if (lines.length === 0) {
+      setFormError("CSV file is empty");
+      event.target.value = null; // Reset file input
+      return;
+    }
+
     const errors = [];
     const importedContacts = [];
+    const duplicates = [];
 
     // Get and normalize headers
     const headers = lines[0].split(",").map((header) => {
@@ -773,12 +741,15 @@ const importContacts = async (
     );
     if (missingHeaders.length > 0) {
       setFormError(`Missing required columns: ${missingHeaders.join(", ")}`);
+      event.target.value = null; // Reset the file input
       return;
     }
 
     // Process each line
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i];
+      if (!line.trim()) continue; // Skip empty lines
+
       const values = line.split(",").map((val) => val.trim());
       if (values.length !== headers.length) {
         errors.push(`Line ${i + 1}: Invalid number of columns`);
@@ -815,30 +786,103 @@ const importContacts = async (
         continue;
       }
 
+      // Check for duplicates
+      if (isDuplicateContact(contact, currentContacts)) {
+        duplicates.push(
+          `Line ${i + 1}: Duplicate phone number for ${contact.first_name} ${
+            contact.last_name
+          }`
+        );
+        continue; // Skip adding this contact
+      }
+
       try {
         // Add contact through the API
         const { data, error } = await addContact(contact);
         if (error) {
           errors.push(`Line ${i + 1}: ${error}`);
-        } else {
+        } else if (data) {
           importedContacts.push(data);
         }
       } catch (err) {
-        errors.push(`Line ${i + 1}: ${err.message}`);
+        errors.push(`Line ${i + 1}: ${err.message || "Unknown error"}`);
       }
     }
 
+    // Display summary message
+    let message = "";
+    if (importedContacts.length > 0) {
+      message += `Successfully imported ${importedContacts.length} contacts. `;
+    } else {
+      message += "No contacts were imported. ";
+    }
+
+    if (duplicates.length > 0) {
+      message += `Skipped ${duplicates.length} duplicate contacts. `;
+    }
+
     if (errors.length > 0) {
-      setFormError(`Import errors:\n${errors.join("\n")}`);
+      setFormError(`Import results: ${message}\nErrors:\n${errors.join("\n")}`);
+    } else {
+      setFormError(`Import results: ${message}`);
     }
 
     // Refresh contacts after import
     if (importedContacts.length > 0) {
       refreshContacts();
     }
+
+    // Reset the file input to allow reimporting
+    event.target.value = null;
+  };
+
+  reader.onerror = () => {
+    setFormError("Error reading file");
+    event.target.value = null; // Reset file input
   };
 
   reader.readAsText(file);
+};
+
+/**
+ * Helper function for normalizing CSV header names
+ * @param {string} header - The header name to normalize
+ * @returns {string} - The normalized header name
+ */
+const normalizeHeader = (header) => {
+  // Remove special characters and spaces, convert to lowercase
+  const normalized = header.toLowerCase().trim();
+
+  // Map various possible header names to standard format
+  const headerMap = {
+    "first name": "first_name",
+    firstname: "first_name",
+    "last name": "last_name",
+    lastname: "last_name",
+    "middle name": "middle_name",
+    middlename: "middle_name",
+    "contact name": "name",
+    contactname: "name",
+    email: "email",
+    "email address": "email",
+    emailaddress: "email",
+    mail: "email",
+    phone: "phone",
+    "phone number": "phone",
+    phonenumber: "phone",
+    telephone: "phone",
+    tel: "phone",
+    mobile: "phone",
+    cell: "phone",
+    cellphone: "phone",
+    group: "groups",
+    groups: "groups",
+    category: "groups",
+    categories: "groups",
+    tags: "groups",
+  };
+
+  return headerMap[normalized] || normalized.replace(/[^a-z0-9]/g, "");
 };
 
 const parseGroups = (groupsData) => {

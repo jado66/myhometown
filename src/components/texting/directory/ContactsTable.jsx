@@ -216,26 +216,32 @@ export const ContactsTable = ({
                 {user?.isAdmin ? "Personal Contacts" : "Unassigned Contacts"}
               </Button>
             )}
-            {userCommunities
-              .filter((community) => community.name !== tableName)
-              .map((community) => (
-                <Button
-                  key={community.id}
-                  onClick={() => handleMoveContacts("community", community.id)}
-                >
-                  {community.name} Community
-                </Button>
-              ))}
-            {userCities
-              .filter((city) => city.name !== tableName)
-              .map((city) => (
-                <Button
-                  key={city.id}
-                  onClick={() => handleMoveContacts("city", city.id)}
-                >
-                  {city.name} City
-                </Button>
-              ))}
+            {userCommunities &&
+              userCommunities.length > 0 &&
+              userCommunities
+                .filter((community) => community.name !== tableName)
+                .map((community) => (
+                  <Button
+                    key={community.id}
+                    onClick={() =>
+                      handleMoveContacts("community", community.id)
+                    }
+                  >
+                    {community.name} Community
+                  </Button>
+                ))}
+            {userCities &&
+              userCities.length > 0 &&
+              userCities
+                .filter((city) => city.name !== tableName)
+                .map((city) => (
+                  <Button
+                    key={city.id}
+                    onClick={() => handleMoveContacts("city", city.id)}
+                  >
+                    {city.name} City
+                  </Button>
+                ))}
           </Box>
         )}
         <Button

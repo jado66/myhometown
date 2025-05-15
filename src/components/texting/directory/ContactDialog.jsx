@@ -14,6 +14,7 @@ import {
   FormHelperText,
   IconButton,
   Box,
+  Alert,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
 import Creatable from "react-select/creatable";
@@ -29,6 +30,7 @@ const ContactDialog = ({
   groupsByOwner = {}, // Updated to use the structured groupsByOwner
   user,
   title = "Add Contact",
+  formError = null,
 }) => {
   // Initial form state
   const initialFormState = {
@@ -306,6 +308,12 @@ const ContactDialog = ({
         </Box>
       </DialogTitle>
       <DialogContent dividers>
+        {formError && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {formError}
+          </Alert>
+        )}
+
         <Grid container spacing={2}>
           {/* Name fields */}
           <Grid item xs={12} sm={4}>
