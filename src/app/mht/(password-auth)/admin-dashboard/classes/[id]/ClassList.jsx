@@ -250,7 +250,7 @@ const ClassGridView = ({ classItem, onTakeAttendance, onViewClass }) => {
             Class Information
           </Button>
 
-          <Button variant="outlined" startIcon={<Phone />} disabled fullWidth>
+          <Button variant="outlined" startIcon={<Phone />} fullWidth>
             Text Students
           </Button>
         </Stack>
