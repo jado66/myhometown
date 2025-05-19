@@ -47,7 +47,7 @@ export function useScheduledTexts() {
         // Create enhanced metadata with groups information
         const scheduledTextData = {
           message_content: message,
-          scheduled_for: scheduledDateTime,
+          scheduled_time: scheduledDateTime,
           user_id: user.id,
           recipients: JSON.stringify(
             expandedRecipients.map((recipient) => ({
@@ -131,7 +131,7 @@ export function useScheduledTexts() {
         .from("scheduled_texts")
         .select("*")
         .eq("user_id", userId)
-        .order("scheduled_for", { ascending: true });
+        .order("scheduled_time", { ascending: true });
 
       if (fetchError) {
         throw fetchError;
