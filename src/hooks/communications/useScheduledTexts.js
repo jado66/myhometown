@@ -63,7 +63,7 @@ export function useScheduledTexts() {
             }))
           ),
           media_urls: mediaUrls.length > 0 ? JSON.stringify(mediaUrls) : null,
-          status: "pending",
+
           metadata: JSON.stringify({
             // Store the original selected groups
             selectedGroups: selectedGroups,
