@@ -124,7 +124,7 @@ export async function POST(req) {
       // Mark as scheduled message
       isScheduled: true,
       scheduledTextId: id,
-      originalScheduledFor: scheduledText.scheduled_for,
+      originalScheduledFor: scheduledText.scheduled_time,
       // Additional metadata
       messageType: decodedMediaUrls.length > 0 ? "mms" : "sms",
       recipientCount: parsedRecipients.length,
