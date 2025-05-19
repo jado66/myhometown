@@ -42,13 +42,8 @@ import BackButton from "@/components/BackButton";
 
 export default function ScheduledTextsPage() {
   const { user } = useUser();
-  const {
-    getScheduledTexts,
-    deleteScheduledText,
-    batchDeleteScheduledTexts,
-    loading,
-    error,
-  } = useScheduledTexts();
+  const { fetchScheduledTexts, deleteScheduledText, loading, error } =
+    useScheduledTexts();
 
   const [scheduledTexts, setScheduledTexts] = useState([]);
   const [selectedText, setSelectedText] = useState(null);
@@ -61,7 +56,7 @@ export default function ScheduledTextsPage() {
       if (!user?.id) return;
 
       setLoadingTexts(true);
-      const { data } = await getScheduledTexts(user.id);
+      const { data } = await fetchScheduledTexts(user.id);
       setScheduledTexts(data || []);
       setLoadingTexts(false);
     };
@@ -72,7 +67,7 @@ export default function ScheduledTextsPage() {
     const intervalId = setInterval(loadScheduledTexts, 60000);
 
     return () => clearInterval(intervalId);
-  }, [user, getScheduledTexts]);
+  }, [user, fetchScheduledTexts]);
 
   const handleDeleteClick = (text) => {
     setSelectedText(text);
@@ -80,13 +75,15 @@ export default function ScheduledTextsPage() {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!selectedText || !user?.id) return;
+    if (!selectedText) return;
 
-    await deleteScheduledText(selectedText.id, user.id);
+    const { error: deleteError } = await deleteScheduledText(selectedText.id);
 
-    // Refresh the list
-    const { data } = await getScheduledTexts(user.id);
-    setScheduledTexts(data || []);
+    if (!deleteError) {
+      // Refresh the list after successful deletion
+      const { data } = await fetchScheduledTexts(user.id);
+      setScheduledTexts(data || []);
+    }
 
     setDeleteDialogOpen(false);
     setSelectedText(null);
@@ -114,12 +111,10 @@ export default function ScheduledTextsPage() {
       const recipients = JSON.parse(recipientsJson || "[]");
       return recipients.map((r) => ({
         name:
-          r.label ||
           r.name ||
           `${r.firstName || ""} ${r.lastName || ""}`.trim() ||
-          r.value ||
           r.phone,
-        phone: r.value || r.phone,
+        phone: r.phone,
       }));
     } catch (e) {
       console.error("Error parsing recipients:", e);
@@ -137,22 +132,36 @@ export default function ScheduledTextsPage() {
     }
   };
 
+  // Get metadata with error handling
+  const getMetadata = (metadataJson) => {
+    try {
+      return JSON.parse(metadataJson || "{}");
+    } catch (e) {
+      console.error("Error parsing metadata:", e);
+      return {};
+    }
+  };
+
   // Get user timezone using native JavaScript
   const getUserTimeZone = () => {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
   };
 
-  // debug
+  // Debug function (you can remove this in production)
   const callSendText = async () => {
-    const response = await fetch(
-      `/api/cron/process-scheduled-texts?manual=true`,
-      {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-    const result = await response.json();
-    console.log("Send Text Result:", result);
+    try {
+      const response = await fetch(
+        `/api/cron/process-scheduled-texts?manual=true`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      const result = await response.json();
+      console.log("Send Text Result:", result);
+    } catch (error) {
+      console.error("Error calling send text:", error);
+    }
   };
 
   return (
@@ -180,11 +189,23 @@ export default function ScheduledTextsPage() {
             <Schedule sx={{ verticalAlign: "middle", mr: 1 }} />
             Scheduled Messages
           </Typography>
+          {/* Debug button - remove in production */}
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={callSendText}
+            sx={{
+              display:
+                process.env.NODE_ENV === "development" ? "block" : "none",
+            }}
+          >
+            Test Send (Debug)
+          </Button>
         </Box>
 
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
-            Error: {error.message || "Failed to load scheduled messages"}
+            Error: {error || "Failed to load scheduled messages"}
           </Alert>
         )}
 
@@ -211,9 +232,7 @@ export default function ScheduledTextsPage() {
             <Button
               variant="contained"
               color="primary"
-              href={
-                process.env.NEXT_PUBLIC_DOMAIN + "/admin-dashboard/texting/send"
-              }
+              href="/admin-dashboard/texting/send"
             >
               Create a New Message
             </Button>
@@ -235,6 +254,7 @@ export default function ScheduledTextsPage() {
                   const scheduledMoment = moment(text.scheduled_time);
                   const recipientCount = getRecipientCount(text.recipients);
                   const mediaFiles = formatMediaFiles(text.media_urls);
+                  const metadata = getMetadata(text.metadata);
 
                   return (
                     <TableRow key={text.id} hover>
@@ -271,15 +291,33 @@ export default function ScheduledTextsPage() {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          icon={<Group fontSize="small" />}
-                          label={`${recipientCount} ${
-                            recipientCount === 1 ? "recipient" : "recipients"
-                          }`}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                        />
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 0.5,
+                          }}
+                        >
+                          <Chip
+                            icon={<Group fontSize="small" />}
+                            label={`${recipientCount} ${
+                              recipientCount === 1 ? "recipient" : "recipients"
+                            }`}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
+                          {metadata.groupCount > 0 && (
+                            <Chip
+                              label={`${metadata.groupCount} ${
+                                metadata.groupCount === 1 ? "group" : "groups"
+                              }`}
+                              size="small"
+                              color="secondary"
+                              variant="outlined"
+                            />
+                          )}
+                        </Box>
                       </TableCell>
                       <TableCell>
                         {mediaFiles.length > 0 ? (
@@ -398,9 +436,41 @@ export default function ScheduledTextsPage() {
                 </Paper>
               </Box>
 
+              {/* Show group information if available */}
+              {(() => {
+                const metadata = getMetadata(selectedText.metadata);
+                return (
+                  metadata.selectedGroups &&
+                  metadata.selectedGroups.length > 0 && (
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="subtitle1" gutterBottom>
+                        Selected Groups ({metadata.selectedGroups.length})
+                      </Typography>
+                      <Paper variant="outlined" sx={{ p: 2 }}>
+                        {metadata.selectedGroups.map((group, index) => (
+                          <Box
+                            key={index}
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              mb: 1,
+                            }}
+                          >
+                            <Group fontSize="small" sx={{ mr: 1 }} />
+                            <Typography variant="body2">
+                              {group.label || group.originalValue}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Paper>
+                    </Box>
+                  )
+                );
+              })()}
+
               <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle1" gutterBottom>
-                  Recipients ({getRecipientCount(selectedText.recipients)})
+                  All Recipients ({getRecipientCount(selectedText.recipients)})
                 </Typography>
                 <Paper
                   variant="outlined"
@@ -436,7 +506,17 @@ export default function ScheduledTextsPage() {
                               fontSize="small"
                               sx={{ mr: 1, verticalAlign: "middle" }}
                             />
-                            Attachment {index + 1}
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                textDecoration: "none",
+                                color: "inherit",
+                              }}
+                            >
+                              Attachment {index + 1}
+                            </a>
                           </Typography>
                         </Box>
                       )
@@ -444,6 +524,36 @@ export default function ScheduledTextsPage() {
                   </Paper>
                 </Box>
               )}
+
+              {/* Show additional metadata */}
+              {(() => {
+                const metadata = getMetadata(selectedText.metadata);
+                return (
+                  metadata.sender && (
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="subtitle1" gutterBottom>
+                        Message Details
+                      </Typography>
+                      <Paper variant="outlined" sx={{ p: 2 }}>
+                        <Typography variant="body2" gutterBottom>
+                          <strong>Type:</strong>{" "}
+                          {metadata.messageType?.toUpperCase() || "SMS"}
+                        </Typography>
+                        <Typography variant="body2" gutterBottom>
+                          <strong>Scheduled by:</strong>{" "}
+                          {metadata.sender.name || metadata.sender.email}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Created:</strong>{" "}
+                          {moment(metadata.scheduledAt).format(
+                            "MMM D, YYYY [at] h:mm A"
+                          )}
+                        </Typography>
+                      </Paper>
+                    </Box>
+                  )
+                );
+              })()}
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setViewDialogOpen(false)}>Close</Button>
