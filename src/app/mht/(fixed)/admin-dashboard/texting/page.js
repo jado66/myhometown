@@ -108,11 +108,11 @@ const TextingOverviewPage = () => {
                   requiredPermission: "texting",
                 },
                 {
-                  title: "Scheduled Texts",
+                  title: "Scheduled Messages",
                   subtitle:
                     "Schedule messages for future delivery and manage upcoming communications.",
                   media: "/admin-icons/Scheduled Messages.svg",
-                  href: rootUrl + "/admin-dashboard/texting/scheduled-texts",
+                  href: rootUrl + "/admin-dashboard/texting/scheduled-messages",
                   requiredPermission: "texting",
                 },
               ].map((item, i) => (

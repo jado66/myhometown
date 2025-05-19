@@ -585,6 +585,7 @@ export default function BulkMMSMessaging() {
                   onNewMessage={handleNewMessage}
                   user={user}
                   expandGroups={expandGroupsWithAdminFilter} // Use custom expand function that respects admin status
+                  onScheduled={() => setHasSent(true)}
                 />
               )}
             </>
