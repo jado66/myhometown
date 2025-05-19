@@ -65,7 +65,11 @@ const ClassListView = ({ classItem, onTakeAttendance, onViewClass }) => {
           <Box sx={{ flex: 1, display: "flex", alignItems: "center", gap: 2 }}>
             <Typography
               variant="h6"
-              sx={{ minWidth: 200, whiteSpace: "nowrap" }}
+              sx={{
+                minWidth: 200,
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+              }}
             >
               {ExampleIcons[classItem.icon] || null} {classItem.title}
             </Typography>
