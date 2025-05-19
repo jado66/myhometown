@@ -479,8 +479,8 @@ export default function BulkMMSMessaging() {
     <>
       <BackButton
         top="0px"
-        text={activeTab === 0 ? "Back to Admin Dashboard" : "Edit Message"}
-        onClick={activeTab === 0 ? null : () => setActiveTab(0)}
+        text={activeTab === 0 ? "Back" : "Edit Message"}
+        onClick={activeTab === 0 ? undefined : () => setActiveTab(0)}
       />
       <Card
         sx={{
