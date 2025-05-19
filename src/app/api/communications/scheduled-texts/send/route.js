@@ -1,4 +1,4 @@
-// src/app/api/communications/scheduled-texts/send/route.js
+// Updated API route for scheduled texts with group support
 import { sendTextWithStream } from "@/util/communication/sendTexts";
 import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
@@ -49,7 +49,8 @@ export async function POST(req) {
     }
 
     // Extract data
-    const { message_content, recipients, media_urls, user_id } = scheduledText;
+    const { message_content, recipients, media_urls, user_id, metadata } =
+      scheduledText;
 
     // Process recipients
     const results = [];
@@ -62,12 +63,28 @@ export async function POST(req) {
         : media_urls
       : [];
 
+    // Parse existing metadata to get group information
+    let existingMetadata = {};
+    try {
+      existingMetadata = metadata
+        ? typeof metadata === "string"
+          ? JSON.parse(metadata)
+          : metadata
+        : {};
+    } catch (error) {
+      console.error("Error parsing existing metadata:", error);
+    }
+
+    // Extract groups from metadata
+    const selectedGroups = existingMetadata.selectedGroups || [];
+
     // Decode media URLs (they are URL-encoded in the database)
     const decodedMediaUrls = parsedMediaUrls.map((url) =>
       typeof url === "string" ? decodeURIComponent(url) : url
     );
 
     console.log("Decoded media URLs:", decodedMediaUrls);
+    console.log("Selected groups from metadata:", selectedGroups);
 
     // Get user info for logging metadata
     const { data: userData, error: userError } = await supabase
@@ -80,11 +97,41 @@ export async function POST(req) {
       console.error("Error fetching user data:", userError);
     }
 
-    // Prepare metadata with all recipients (similar to useSendSMS.js)
+    // Prepare metadata with all recipients and groups
     const allRecipientsData = parsedRecipients.map((recipient) => ({
       name: recipient.name || recipient.value || recipient.label,
       phone: recipient.phone || recipient.value || recipient.label,
+      contactId: recipient.contactId || null,
+      groups: recipient.groups || [],
+      ownerType: recipient.ownerType || null,
+      ownerId: recipient.ownerId || null,
     }));
+
+    // Create enhanced metadata function
+    const createEnhancedMetadata = (smsProviderResponse = null) => ({
+      // Store ALL recipients in the metadata
+      allRecipients: allRecipientsData,
+      // Store the original selected groups
+      selectedGroups: selectedGroups,
+      // Include sender info
+      sender: {
+        id: user_id,
+        name: userData
+          ? `${userData.first_name || ""} ${userData.last_name || ""}`.trim()
+          : "",
+        email: userData?.email || "",
+      },
+      // Mark as scheduled message
+      isScheduled: true,
+      scheduledTextId: id,
+      originalScheduledFor: scheduledText.scheduled_for,
+      // Additional metadata
+      messageType: decodedMediaUrls.length > 0 ? "mms" : "sms",
+      recipientCount: parsedRecipients.length,
+      groupCount: selectedGroups.length,
+      sentAt: new Date().toISOString(),
+      smsProviderResponse: smsProviderResponse,
+    });
 
     // Step 1: Create pending text logs for each recipient
     const pendingLogs = parsedRecipients.map((recipient) => ({
@@ -99,22 +146,7 @@ export async function POST(req) {
       error_message: null,
       owner_id: user_id,
       owner_type: "user", // Scheduled texts are always user-owned
-      metadata: JSON.stringify({
-        // Store ALL recipients in the metadata
-        allRecipients: allRecipientsData,
-        // Include sender info
-        sender: {
-          id: user_id,
-          name: userData
-            ? `${userData.first_name || ""} ${userData.last_name || ""}`.trim()
-            : "",
-          email: userData?.email || "",
-        },
-        // Mark as scheduled message
-        isScheduled: true,
-        scheduledTextId: id,
-        smsProviderResponse: null,
-      }),
+      metadata: JSON.stringify(createEnhancedMetadata()),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }));
@@ -135,14 +167,6 @@ export async function POST(req) {
         }
       );
     }
-
-    // Create a map of recipient phone to log ID for status updates
-    const logIdMap = new Map();
-    insertedLogs.forEach((log, index) => {
-      const recipient = parsedRecipients[index];
-      const phone = recipient.phone || recipient.value || recipient.label;
-      logIdMap.set(phone, log.id);
-    });
 
     // Step 2: Send messages sequentially and update logs
     for (let i = 0; i < parsedRecipients.length; i++) {
@@ -175,24 +199,9 @@ export async function POST(req) {
             sent_at: result.success ? new Date().toISOString() : null,
             error_message: errorMessage,
             updated_at: new Date().toISOString(),
-            metadata: JSON.stringify({
-              // Store ALL recipients in the metadata
-              allRecipients: allRecipientsData,
-              // Include sender info
-              sender: {
-                id: user_id,
-                name: userData
-                  ? `${userData.first_name || ""} ${
-                      userData.last_name || ""
-                    }`.trim()
-                  : "",
-                email: userData?.email || "",
-              },
-              // Mark as scheduled message
-              isScheduled: true,
-              scheduledTextId: id,
-              smsProviderResponse: result.success ? result : null,
-            }),
+            metadata: JSON.stringify(
+              createEnhancedMetadata(result.success ? result : null)
+            ),
           })
           .eq("id", logId);
 
@@ -220,24 +229,7 @@ export async function POST(req) {
             status: "failed",
             error_message: error.message,
             updated_at: new Date().toISOString(),
-            metadata: JSON.stringify({
-              // Store ALL recipients in the metadata
-              allRecipients: allRecipientsData,
-              // Include sender info
-              sender: {
-                id: user_id,
-                name: userData
-                  ? `${userData.first_name || ""} ${
-                      userData.last_name || ""
-                    }`.trim()
-                  : "",
-                email: userData?.email || "",
-              },
-              // Mark as scheduled message
-              isScheduled: true,
-              scheduledTextId: id,
-              smsProviderResponse: null,
-            }),
+            metadata: JSON.stringify(createEnhancedMetadata()),
           })
           .eq("id", logId);
 
@@ -262,7 +254,7 @@ export async function POST(req) {
       .from("scheduled_texts")
       .update({
         metadata: {
-          ...scheduledText.metadata,
+          ...existingMetadata,
           sent_at: new Date().toISOString(),
           delivery_results: results,
           message_id: messageId, // Link to the message_id used in text_logs
@@ -293,6 +285,7 @@ export async function POST(req) {
         results,
         deleted: !deleteError,
         logsCreated: insertedLogs.length,
+        groupsUsed: selectedGroups.length,
         timestamp: new Date().toISOString(),
       }),
       {
