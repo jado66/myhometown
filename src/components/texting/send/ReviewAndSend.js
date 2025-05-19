@@ -45,29 +45,11 @@ const ReviewAndSend = ({
   isSending,
   onNewMessage,
   user,
+  expandGroups, // Function to expand groups for display purposes
 }) => {
   const { scheduleText, loading: schedulingLoading } = useScheduledTexts();
   const [sendOption, setSendOption] = useState("now");
   const [dialogOpen, setDialogOpen] = useState(false);
-
-  // Add this helper function
-  const debounce = (func, wait) => {
-    let timeout;
-    return (...args) => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => func(...args), wait);
-    };
-  };
-
-  // Add this helper function
-  const roundToNearestFiveMinutes = (time) => {
-    if (!time) return null;
-
-    const minutes = time.minutes();
-    const roundedMinutes = Math.round(minutes / 5) * 5;
-
-    return time.clone().minutes(roundedMinutes).seconds(0);
-  };
 
   // Initialize with moment objects instead of date-fns
   const [scheduleDate, setScheduleDate] = useState(moment().add(1, "days"));
@@ -112,9 +94,40 @@ const ReviewAndSend = ({
 
     const mediaUrls = mediaFiles.map((file) => file.url);
 
+    // Expand groups to get individual recipients for scheduling
+    const expandedRecipients = expandGroups
+      ? expandGroups(selectedRecipients, allContacts).flatMap(
+          (group) => group.contacts
+        )
+      : selectedRecipients;
+
+    // Remove duplicates by phone number
+    const phoneNumberMap = new Map();
+    const uniqueRecipients = [];
+
+    expandedRecipients.forEach((recipient) => {
+      const phone = recipient.value || recipient.phone;
+      if (!phoneNumberMap.has(phone)) {
+        phoneNumberMap.set(phone, true);
+        uniqueRecipients.push(recipient);
+      }
+    });
+
+    // Pass both original selectedRecipients (with groups) and expanded recipients
+    // Create a combined array where we include group info from selectedRecipients
+    // and individual recipient info from uniqueRecipients
+    const recipientsForScheduling = [
+      // Include original group selections
+      ...selectedRecipients.filter(
+        (r) => r.value && r.value.startsWith("group:")
+      ),
+      // Include unique individual recipients
+      ...uniqueRecipients,
+    ];
+
     const result = await scheduleText(
       message,
-      selectedRecipients,
+      recipientsForScheduling, // This now includes both groups and individuals
       scheduledDateTime.toDate(), // Convert to JS Date for the API
       mediaUrls,
       user
@@ -123,6 +136,27 @@ const ReviewAndSend = ({
     if (!result.error) {
       setSchedulingSuccess(true);
     }
+  };
+
+  // Calculate the display count for UI (expanded recipients)
+  const getDisplayRecipientCount = () => {
+    if (expandGroups) {
+      const expandedRecipients = expandGroups(
+        selectedRecipients,
+        allContacts
+      ).flatMap((group) => group.contacts);
+      const phoneNumberMap = new Map();
+      const uniqueCount = expandedRecipients.filter((recipient) => {
+        const phone = recipient.value || recipient.phone;
+        if (phoneNumberMap.has(phone)) {
+          return false;
+        }
+        phoneNumberMap.set(phone, true);
+        return true;
+      }).length;
+      return uniqueCount;
+    }
+    return selectedRecipients.length;
   };
 
   return (
@@ -318,7 +352,7 @@ const ReviewAndSend = ({
                 )}
 
                 <Typography variant="body2" color="text.secondary">
-                  This message will be sent to {selectedRecipients.length}{" "}
+                  This message will be sent to {getDisplayRecipientCount()}{" "}
                   recipient(s) at the specified time.
                 </Typography>
               </Stack>

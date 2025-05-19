@@ -170,7 +170,7 @@ export default function BulkMMSMessaging() {
           }}
         >
           <span>{`Group: ${groupValue}`}</span>
-          <Info
+          {/* <Info
             style={{ cursor: "pointer", marginLeft: "8px" }}
             onClick={(e) =>
               handleGroupInfoClick(e, {
@@ -178,7 +178,7 @@ export default function BulkMMSMessaging() {
                 label: groupValue,
               })
             }
-          />
+          /> */}
         </div>
       ),
       originalValue: groupValue,
@@ -398,7 +398,14 @@ export default function BulkMMSMessaging() {
     try {
       const mediaUrls = mediaFiles.map((file) => file.url);
       setIsSending(true);
-      await sendMessages(message, uniqueRecipients, mediaUrls, user);
+      // Pass selectedRecipients as the 5th parameter to track groups
+      await sendMessages(
+        message,
+        uniqueRecipients,
+        mediaUrls,
+        user,
+        selectedRecipients
+      );
       setHasSent(true);
       setIsSending(false);
     } catch (error) {
@@ -604,12 +611,12 @@ export default function BulkMMSMessaging() {
         </Typography>
       </Box>
 
-      <GroupInfoPopover
+      {/* <GroupInfoPopover
         anchorEl={anchorEl}
         onClose={handleClosePopover}
         selectedGroup={selectedGroup}
         allContacts={getFilteredContactsForGroup(selectedGroup, allContacts)} // Filter contacts based on admin status
-      />
+      /> */}
     </>
   );
 }

@@ -39,6 +39,7 @@ import {
   ExpandLess,
   InfoOutlined,
   Image,
+  LocalOffer as TagIcon,
 } from "@mui/icons-material";
 
 import BackButton from "@/components/BackButton";
@@ -53,6 +54,7 @@ import MediaPreviews from "./MediaPreviews";
 
 // Utility functions
 import { formatDateTime, getStatusSummary } from "./textLogUtils";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export default function TextLogViewer() {
   const theme = useTheme();
@@ -81,6 +83,22 @@ export default function TextLogViewer() {
 
   // For viewing message details
   const [selectedLog, setSelectedLog] = useState(null);
+
+  // Helper function to parse metadata and extract groups
+  const parseMetadata = (metadataString) => {
+    try {
+      return JSON.parse(metadataString);
+    } catch (error) {
+      console.error("Error parsing metadata:", error);
+      return null;
+    }
+  };
+
+  // Helper function to extract groups from metadata
+  const getGroupsFromMetadata = (metadata) => {
+    if (!metadata || !metadata.selectedGroups) return [];
+    return metadata.selectedGroups;
+  };
 
   // Handle search
   const handleSearch = () => {
@@ -228,12 +246,17 @@ export default function TextLogViewer() {
       if (!log.message_id) return; // Skip logs without message_id
 
       if (!groupedLogs[log.message_id]) {
+        // Parse metadata for the first log to get groups
+        const metadata = parseMetadata(log.metadata);
+        const groups = getGroupsFromMetadata(metadata);
+
         // First occurrence of this message_id
         groupedLogs[log.message_id] = {
           ...log,
           recipients: [log.recipient_phone],
           recipientCount: 1,
           statuses: [log.status],
+          groups: groups, // Store the groups from metadata
           // Keep track of all individual log IDs for reference
           individualLogIds: [log.id],
         };
@@ -281,6 +304,24 @@ export default function TextLogViewer() {
           marginLeft: 6,
           marginTop: 2,
         }}
+      />
+
+      <JsonViewer
+        data={{
+          logs,
+          currentLogs,
+          searchTerm,
+          phoneFilter,
+          statusFilter,
+          startDate,
+          endDate,
+          activeTab,
+          page,
+          rowsPerPage,
+          sortBy,
+          sortDirection,
+        }}
+        title="Text Log Viewer State"
       />
 
       <Card
@@ -533,6 +574,18 @@ export default function TextLogViewer() {
  * DetailView component to display message details
  */
 const DetailView = ({ log, onClose }) => {
+  const parseMetadata = (metadataString) => {
+    try {
+      return JSON.parse(metadataString);
+    } catch (error) {
+      console.error("Error parsing metadata:", error);
+      return null;
+    }
+  };
+
+  const metadata = parseMetadata(log.metadata);
+  const groups = metadata?.selectedGroups || [];
+
   return (
     <Box
       sx={{
@@ -592,6 +645,27 @@ const DetailView = ({ log, onClose }) => {
             {log.delivered_at ? formatDateTime(log.delivered_at) : "Pending"}
           </Typography>
         </Grid>
+
+        {/* Display Groups if any */}
+        {groups.length > 0 && (
+          <Grid item xs={12}>
+            <Typography variant="subtitle2" color="text.secondary">
+              Groups Used ({groups.length})
+            </Typography>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
+              {groups.map((group, index) => (
+                <Chip
+                  key={index}
+                  icon={<TagIcon />}
+                  label={group.originalValue || group.label}
+                  color="primary"
+                  variant="outlined"
+                  size="small"
+                />
+              ))}
+            </Box>
+          </Grid>
+        )}
 
         {log.error_message && (
           <Grid item xs={12}>
@@ -659,7 +733,9 @@ const DetailView = ({ log, onClose }) => {
             text="Resend Message"
           />
         </Grid>
-        {/* {log.metadata && (
+
+        {/* Display additional metadata information if available */}
+        {metadata && (
           <Grid item xs={12}>
             <Typography variant="subtitle2" color="text.secondary">
               Additional Information
@@ -673,17 +749,31 @@ const DetailView = ({ log, onClose }) => {
                 borderRadius: 1,
               }}
             >
-              <Typography
-                component="pre"
-                sx={{ whiteSpace: "pre-wrap", fontSize: "0.875rem" }}
-              >
-                {typeof log.metadata === "string"
-                  ? log.metadata
-                  : JSON.stringify(log.metadata, null, 2)}
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                <strong>Message Type:</strong>{" "}
+                {metadata.messageType?.toUpperCase() || "SMS"}
               </Typography>
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                <strong>Recipient Count:</strong>{" "}
+                {metadata.recipientCount || log.recipientCount}
+              </Typography>
+              {metadata.groupCount > 0 && (
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  <strong>Groups Used:</strong> {metadata.groupCount}
+                </Typography>
+              )}
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                <strong>Sender:</strong> {metadata.sender?.name || "Unknown"}
+              </Typography>
+              {metadata.sentAt && (
+                <Typography variant="body2">
+                  <strong>Processing Time:</strong>{" "}
+                  {formatDateTime(metadata.sentAt)}
+                </Typography>
+              )}
             </Paper>
           </Grid>
-        )} */}
+        )}
       </Grid>
     </Box>
   );
@@ -744,7 +834,9 @@ const LogsTable = ({
                 {sortBy === "created_at" &&
                   (sortDirection === "asc" ? "↑" : "↓")}
               </TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Groups</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Recipients</TableCell>
+
               <TableCell sx={{ fontWeight: "bold", minWidth: 200 }}>
                 Message
               </TableCell>
@@ -785,6 +877,38 @@ const LogsTable = ({
                 </TableCell>
                 <TableCell>{formatDateTime(log.created_at)}</TableCell>
                 <TableCell>
+                  {log.groups && log.groups.length > 0 ? (
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                      {log.groups.slice(0, 2).map((group, idx) => (
+                        <Chip
+                          key={idx}
+                          icon={<TagIcon />}
+                          label={group.originalValue || group.label}
+                          color="secondary"
+                          variant="outlined"
+                          size="small"
+                        />
+                      ))}
+                      {log.groups.length > 2 && (
+                        <Tooltip
+                          title={`+${log.groups.length - 2} more groups`}
+                        >
+                          <Chip
+                            label={`+${log.groups.length - 2}`}
+                            color="secondary"
+                            variant="outlined"
+                            size="small"
+                          />
+                        </Tooltip>
+                      )}
+                    </Box>
+                  ) : (
+                    <Typography variant="caption" color="text.secondary">
+                      No groups
+                    </Typography>
+                  )}
+                </TableCell>
+                <TableCell>
                   {log.recipientCount > 1 ? (
                     <Tooltip title={`${log.recipientCount} recipients`}>
                       <Chip
@@ -799,6 +923,7 @@ const LogsTable = ({
                     log.recipient_phone
                   )}
                 </TableCell>
+
                 <TableCell>
                   <Tooltip title={log.message_content}>
                     <Typography noWrap sx={{ maxWidth: 300 }}>
