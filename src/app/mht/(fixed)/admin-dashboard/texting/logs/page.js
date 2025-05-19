@@ -1,7 +1,15 @@
 "use client";
 import React, { Suspense } from "react";
 import { Grid, Card } from "@mui/material";
-import TextLogViewer from "@/components/texting/logs/TextLogViewer";
+import dynamic from "next/dynamic";
+
+const TextLogViewer = dynamic(
+  () => import("@/components/texting/logs/TextLogViewer"),
+  {
+    loading: () => <p>Loading texting logs...</p>,
+    ssr: false, // Set to false if the component uses browser-only APIs
+  }
+);
 
 const TextLogPage = () => {
   return (
