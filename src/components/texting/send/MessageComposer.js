@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Typography, TextField, Button, Divider } from "@mui/material";
-import { AttachFile } from "@mui/icons-material";
+import { AttachFile, Image } from "@mui/icons-material";
 import MediaPreview from "./MediaPreview";
 import { toast } from "react-toastify";
 
@@ -127,10 +127,10 @@ const MessageComposer = ({
           <Button
             variant="outlined"
             component="span"
-            startIcon={<AttachFile />}
+            startIcon={<Image />}
             disabled={isUploading || mediaFiles.length >= MAX_ATTACHMENTS}
           >
-            {isUploading ? "Uploading..." : "Attach Media"}
+            {isUploading ? "Uploading..." : "Attach Image"}
           </Button>
         </label>
 

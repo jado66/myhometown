@@ -13,12 +13,11 @@ import Loading from "@/components/util/Loading";
 import NextLink from "next/link";
 import PermissionGuard from "@/guards/permission-guard";
 import { useRouter } from "next/navigation";
+import BackButton from "@/components/BackButton";
 
-const AdminDashboardPages = () => {
+const TextingOverviewPage = () => {
   const theme = useTheme();
-
   const { user, isLoading } = useUser();
-
   const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
 
   return (
@@ -30,7 +29,6 @@ const AdminDashboardPages = () => {
         }}
       >
         <Container>
-          {/* {<pre>{JSON.stringify(user, null, 2)}</pre>} */}
           <Box padding={5}>
             <Box marginBottom={4}>
               <Typography
@@ -42,7 +40,7 @@ const AdminDashboardPages = () => {
                 color={"primary"}
                 align={"center"}
               >
-                Admin dashboard
+                Texting & Communications
               </Typography>
               <Box
                 component={Typography}
@@ -51,7 +49,7 @@ const AdminDashboardPages = () => {
                 align={"center"}
                 gutterBottom
               >
-                Manage your groups or use admin tools
+                Manage all your text communications
               </Box>
               <Typography
                 variant={"h6"}
@@ -59,7 +57,8 @@ const AdminDashboardPages = () => {
                 color={"textSecondary"}
                 align={"center"}
               >
-                Welcome to the admin dashboard.
+                Send messages, manage contacts, view logs, and schedule texts
+                for your community.
               </Typography>
             </Box>
 
@@ -85,50 +84,35 @@ const AdminDashboardPages = () => {
             >
               {[
                 {
-                  title: "User Management",
+                  title: "Send Texts",
                   subtitle:
-                    "Add, remove, or edit users and their roles to manage who can access your city or community.",
-                  media: "/admin-icons/User Management.svg",
-                  href: rootUrl + "/admin-dashboard/manage-users",
-                  requiredPermission: "admin",
+                    "Compose and send text messages to individuals or groups in your community.",
+                  media: "/admin-icons/Send Text.svg",
+                  href: rootUrl + "/admin-dashboard/texting/send",
+                  requiredPermission: "texting",
                 },
                 {
-                  title: "City Management",
+                  title: "Manage Directory",
                   subtitle:
-                    "Manage your cities. Add, remove, or edit city information.",
-                  media: "/admin-icons/City Management.svg",
-                  href: rootUrl + "/admin-dashboard/cities",
-                  // requiredPermission: "cityManagement",
+                    "Add, edit, or remove contacts and manage your texting directory.",
+                  media: "/admin-icons/Directory Management.svg",
+                  href: rootUrl + "/admin-dashboard/texting/directory",
+                  requiredPermission: "texting",
                 },
                 {
-                  title: "Community Management",
+                  title: "View Logs",
                   subtitle:
-                    "Manage your communities. Add, remove, or edit community information.",
-                  media: "/admin-icons/Community Management.svg",
-                  href: rootUrl + "/admin-dashboard/communities",
-                  // requiredPermission: "communityManagement",
+                    "Review sent messages, delivery status, and communication history.",
+                  media: "/admin-icons/Message Logs.svg",
+                  href: rootUrl + "/admin-dashboard/texting/logs",
+                  requiredPermission: "texting",
                 },
                 {
-                  title: "Classes and Rolls",
+                  title: "Scheduled Texts",
                   subtitle:
-                    "View your classes and rolls. Take attendance and manage your classes.",
-                  media: "/admin-icons/Classes and Rolls.svg",
-                  href: rootUrl + "/admin-dashboard/classes",
-                },
-                {
-                  title: "Days of Service",
-                  subtitle:
-                    "View and manage your days of service. Track your projects and volunteers.",
-                  media: "/admin-icons/Days of Service.svg",
-                  href: rootUrl + "/admin-dashboard/days-of-service",
-                },
-
-                {
-                  title: "Texting & Communications",
-                  subtitle:
-                    "Manage all text communications for your city or community members.",
-                  media: "/admin-icons/Text SMS Communications.svg",
-                  href: rootUrl + "/admin-dashboard/texting",
+                    "Schedule messages for future delivery and manage upcoming communications.",
+                  media: "/admin-icons/Scheduled Messages.svg",
+                  href: rootUrl + "/admin-dashboard/texting/scheduled-texts",
                   requiredPermission: "texting",
                 },
               ].map((item, i) => (
@@ -137,7 +121,7 @@ const AdminDashboardPages = () => {
                   user={user}
                   key={i}
                 >
-                  <AdminDashboardCard item={item} i={i} />
+                  <TextingCard item={item} i={i} />
                 </PermissionGuard>
               ))}
             </Grid>
@@ -148,11 +132,10 @@ const AdminDashboardPages = () => {
   );
 };
 
-export default AdminDashboardPages;
+export default TextingOverviewPage;
 
-const AdminDashboardCard = ({ item, i }) => {
+const TextingCard = ({ item, i }) => {
   const theme = useTheme();
-
   const router = useRouter();
 
   const onClick = () => {
@@ -160,7 +143,18 @@ const AdminDashboardCard = ({ item, i }) => {
   };
 
   return (
-    <Grid item xs={12} sm={6} md={4} key={i}>
+    <Grid item xs={12} sm={6} md={6} key={i}>
+      <BackButton
+        onClick={() => router.back()}
+        sx={{
+          position: "absolute",
+          top: theme.spacing(2),
+          left: theme.spacing(2),
+          zIndex: 1,
+        }}
+        text={"Back to Admin Dashboard"}
+      />
+
       <Box
         display={"block"}
         width={"100%"}
@@ -171,13 +165,9 @@ const AdminDashboardCard = ({ item, i }) => {
           "&:hover": {
             transform: `translateY(-${theme.spacing(1 / 2)})`,
           },
-          cursor: !item.actions ? "pointer" : "",
+          cursor: "pointer",
         }}
-        onClick={(e) => {
-          if (!item.actions && onClick) {
-            onClick(e);
-          }
-        }}
+        onClick={onClick}
       >
         <Box
           component={Card}
@@ -186,15 +176,6 @@ const AdminDashboardCard = ({ item, i }) => {
           data-aos={"fade-up"}
           borderRadius={3}
         >
-          <Box
-            component={"img"}
-            src={item.media}
-            sx={{
-              width: "100%",
-              height: "140px",
-              mx: "auto",
-            }}
-          />
           <Box component={CardContent}>
             <Box
               component={Typography}
@@ -208,22 +189,6 @@ const AdminDashboardCard = ({ item, i }) => {
             <Typography align={"left"} variant={"body2"} color="textSecondary">
               {item.subtitle}
             </Typography>
-          </Box>
-          <Box component={CardActions}>
-            {item.actions && (
-              <Stack
-                direction="row"
-                spacing={1}
-                justifyContent={"space-between"}
-                sx={{ flexGrow: 1, px: 1 }}
-              >
-                {item.actions.map((action, index) => (
-                  <NextLink key={index} href={action.href}>
-                    <Button size="small">{action.label}</Button>
-                  </NextLink>
-                ))}
-              </Stack>
-            )}
           </Box>
         </Box>
       </Box>
