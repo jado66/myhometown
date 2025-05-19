@@ -255,7 +255,17 @@ const ClassGridView = ({ classItem, onTakeAttendance, onViewClass }) => {
             Class Information
           </Button>
 
-          <Button variant="outlined" startIcon={<Phone />} fullWidth>
+          <Button
+            variant="outlined"
+            startIcon={<Phone />}
+            fullWidth
+            href={
+              process.env.NEXT_PUBLIC_DOMAIN +
+              `/admin-dashboard/texting/send?classId=${
+                classItem.id
+              }&classTitle=${encodeURIComponent(classItem.title)}`
+            }
+          >
             Text Students
           </Button>
         </Stack>
