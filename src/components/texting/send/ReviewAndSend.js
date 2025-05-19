@@ -46,6 +46,7 @@ const ReviewAndSend = ({
   onNewMessage,
   user,
   expandGroups, // Function to expand groups for display purposes
+  onScheduled, // New prop to notify parent when message is scheduled
 }) => {
   const { scheduleText, loading: schedulingLoading } = useScheduledTexts();
   const [sendOption, setSendOption] = useState("now");
@@ -135,6 +136,10 @@ const ReviewAndSend = ({
 
     if (!result.error) {
       setSchedulingSuccess(true);
+      // Notify parent component that the message was successfully scheduled
+      if (onScheduled) {
+        onScheduled();
+      }
     }
   };
 
