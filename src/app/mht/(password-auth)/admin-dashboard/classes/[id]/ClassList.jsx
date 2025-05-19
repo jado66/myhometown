@@ -69,6 +69,7 @@ const ClassListView = ({ classItem, onTakeAttendance, onViewClass }) => {
                 minWidth: 200,
                 whiteSpace: "nowrap",
                 textOverflow: "ellipsis",
+                overflow: "hidden",
               }}
             >
               {ExampleIcons[classItem.icon] || null} {classItem.title}
