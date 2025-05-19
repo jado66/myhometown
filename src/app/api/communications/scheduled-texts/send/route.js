@@ -93,7 +93,8 @@ export async function POST(req) {
       recipient_phone: recipient.phone || recipient.value || recipient.label,
       recipient_contact_id: recipient.contactId || null,
       message_content: message_content,
-      media_urls: decodedMediaUrls.length > 0 ? JSON.stringify(decodedMediaUrls) : null,
+      media_urls:
+        decodedMediaUrls.length > 0 ? JSON.stringify(decodedMediaUrls) : null,
       status: "pending",
       error_message: null,
       owner_id: user_id,
@@ -104,7 +105,9 @@ export async function POST(req) {
         // Include sender info
         sender: {
           id: user_id,
-          name: userData ? `${userData.first_name || ""} ${userData.last_name || ""}`.trim() : "",
+          name: userData
+            ? `${userData.first_name || ""} ${userData.last_name || ""}`.trim()
+            : "",
           email: userData?.email || "",
         },
         // Mark as scheduled message
@@ -160,7 +163,9 @@ export async function POST(req) {
         });
 
         const deliveryStatus = result.success ? "sent" : "failed";
-        const errorMessage = result.success ? null : (result.error || "Failed to send");
+        const errorMessage = result.success
+          ? null
+          : result.error || "Failed to send";
 
         // Update the text log with the result
         const { error: updateError } = await supabase
@@ -176,7 +181,11 @@ export async function POST(req) {
               // Include sender info
               sender: {
                 id: user_id,
-                name: userData ? `${userData.first_name || ""} ${userData.last_name || ""}`.trim() : "",
+                name: userData
+                  ? `${userData.first_name || ""} ${
+                      userData.last_name || ""
+                    }`.trim()
+                  : "",
                 email: userData?.email || "",
               },
               // Mark as scheduled message
@@ -198,7 +207,6 @@ export async function POST(req) {
           error: errorMessage,
           logId: logId,
         });
-
       } catch (error) {
         console.error(
           `Error sending to ${recipient.name || recipient.value}:`,
@@ -218,7 +226,11 @@ export async function POST(req) {
               // Include sender info
               sender: {
                 id: user_id,
-                name: userData ? `${userData.first_name || ""} ${userData.last_name || ""}`.trim() : "",
+                name: userData
+                  ? `${userData.first_name || ""} ${
+                      userData.last_name || ""
+                    }`.trim()
+                  : "",
                 email: userData?.email || "",
               },
               // Mark as scheduled message
@@ -230,7 +242,10 @@ export async function POST(req) {
           .eq("id", logId);
 
         if (updateError) {
-          console.error(`Error updating failed text log ${logId}:`, updateError);
+          console.error(
+            `Error updating failed text log ${logId}:`,
+            updateError
+          );
         }
 
         results.push({
@@ -299,3 +314,4 @@ export async function POST(req) {
       }
     );
   }
+}
