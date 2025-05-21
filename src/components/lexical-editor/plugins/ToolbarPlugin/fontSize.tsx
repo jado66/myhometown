@@ -6,21 +6,23 @@
  *
  */
 
-import './fontSize.css';
+import "./fontSize.css";
 
-import {LexicalEditor} from 'lexical';
-import * as React from 'react';
+import { LexicalEditor } from "lexical";
+import * as React from "react";
 
 import {
   MAX_ALLOWED_FONT_SIZE,
   MIN_ALLOWED_FONT_SIZE,
-} from '../../context/ToolbarContext';
-import {SHORTCUTS} from '../ShortcutsPlugin/shortcuts';
+} from "../../context/ToolbarContext";
+import { SHORTCUTS } from "../ShortcutsPlugin/shortcuts";
 import {
   updateFontSize,
   updateFontSizeInSelection,
   UpdateFontSizeType,
-} from './utils';
+} from "./utils";
+import { Add, Remove } from "@mui/icons-material";
+import { IconButton } from "@mui/material";
 
 export function parseAllowedFontSize(input: string): string {
   const match = input.match(/^(\d+(?:\.\d+)?)px$/);
@@ -30,7 +32,7 @@ export function parseAllowedFontSize(input: string): string {
       return input;
     }
   }
-  return '';
+  return "";
 }
 
 export default function FontSize({
@@ -48,16 +50,16 @@ export default function FontSize({
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const inputValueNumber = Number(inputValue);
 
-    if (e.key === 'Tab') {
+    if (e.key === "Tab") {
       return;
     }
-    if (['e', 'E', '+', '-'].includes(e.key) || isNaN(inputValueNumber)) {
+    if (["e", "E", "+", "-"].includes(e.key) || isNaN(inputValueNumber)) {
       e.preventDefault();
-      setInputValue('');
+      setInputValue("");
       return;
     }
     setInputChangeFlag(true);
-    if (e.key === 'Enter' || e.key === 'Escape') {
+    if (e.key === "Enter" || e.key === "Escape") {
       e.preventDefault();
 
       updateFontSizeByInputValue(inputValueNumber);
@@ -65,7 +67,7 @@ export default function FontSize({
   };
 
   const handleInputBlur = () => {
-    if (inputValue !== '' && inputChangeFlag) {
+    if (inputValue !== "" && inputChangeFlag) {
       const inputValueNumber = Number(inputValue);
       updateFontSizeByInputValue(inputValueNumber);
     }
@@ -80,7 +82,7 @@ export default function FontSize({
     }
 
     setInputValue(String(updatedFontSize));
-    updateFontSizeInSelection(editor, String(updatedFontSize) + 'px', null);
+    updateFontSizeInSelection(editor, String(updatedFontSize) + "px", null);
     setInputChangeFlag(false);
   };
 
@@ -90,21 +92,24 @@ export default function FontSize({
 
   return (
     <>
-      <button
-        type="button"
+      <IconButton
+        sx={{
+          borderRadius: "0",
+          my: "auto",
+        }}
         disabled={
           disabled ||
-          (selectionFontSize !== '' &&
+          (selectionFontSize !== "" &&
             Number(inputValue) <= MIN_ALLOWED_FONT_SIZE)
         }
         onClick={() =>
           updateFontSize(editor, UpdateFontSizeType.decrement, inputValue)
         }
-        className="toolbar-item font-decrement"
         aria-label="Decrease font size"
-        title={`Decrease font size (${SHORTCUTS.DECREASE_FONT_SIZE})`}>
-        <i className="format minus-icon" />
-      </button>
+        title={`Decrease font size (${SHORTCUTS.DECREASE_FONT_SIZE})`}
+      >
+        <Remove />
+      </IconButton>
 
       <input
         type="number"
@@ -119,21 +124,24 @@ export default function FontSize({
         onBlur={handleInputBlur}
       />
 
-      <button
-        type="button"
+      <IconButton
+        sx={{
+          borderRadius: "0",
+          my: "auto",
+        }}
         disabled={
           disabled ||
-          (selectionFontSize !== '' &&
+          (selectionFontSize !== "" &&
             Number(inputValue) >= MAX_ALLOWED_FONT_SIZE)
         }
         onClick={() =>
           updateFontSize(editor, UpdateFontSizeType.increment, inputValue)
         }
-        className="toolbar-item font-increment"
         aria-label="Increase font size"
-        title={`Increase font size (${SHORTCUTS.INCREASE_FONT_SIZE})`}>
-        <i className="format add-icon" />
-      </button>
+        title={`Increase font size (${SHORTCUTS.INCREASE_FONT_SIZE})`}
+      >
+        <Add />
+      </IconButton>
     </>
   );
 }

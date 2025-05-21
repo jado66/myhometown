@@ -127,6 +127,7 @@ import { H2Icon } from "../../icons/H2Icon";
 import { H3Icon } from "../../icons/H3Icon";
 
 import SvgIcon from "@mui/icons-material/FormatColorText";
+import { IconButton } from "@mui/material";
 
 const rootTypeToRootName = {
   root: "Root",
@@ -798,31 +799,36 @@ export default function ToolbarPlugin({
   const canViewerSeeInsertCodeButton = !toolbarState.isImageCaption;
 
   return (
-    <div className="toolbar">
-      <button
+    <div className="toolbar" style={{ height: "80px" }}>
+      <IconButton
+        sx={{
+          borderRadius: "0",
+          my: "auto",
+        }}
         disabled={!toolbarState.canUndo || !isEditable}
         onClick={() => {
           activeEditor.dispatchCommand(UNDO_COMMAND, undefined);
         }}
         title={IS_APPLE ? "Undo (⌘Z)" : "Undo (Ctrl+Z)"}
-        type="button"
-        className="toolbar-item spaced"
         aria-label="Undo"
       >
         <Undo />
-      </button>
-      <button
+      </IconButton>
+      <IconButton
+        sx={{
+          borderRadius: "0",
+          my: "auto",
+        }}
         disabled={!toolbarState.canRedo || !isEditable}
         onClick={() => {
           activeEditor.dispatchCommand(REDO_COMMAND, undefined);
         }}
         title={IS_APPLE ? "Redo (⇧⌘Z)" : "Redo (Ctrl+Y)"}
         type="button"
-        className="toolbar-item"
         aria-label="Redo"
       >
         <Redo />
-      </button>
+      </IconButton>
       <Divider />
       {toolbarState.blockType in blockTypeToBlockName &&
         activeEditor === editor && (
@@ -872,51 +878,64 @@ export default function ToolbarPlugin({
             disabled={!isEditable}
           />
           <Divider />
-          <button
+          <IconButton
             disabled={!isEditable}
             onClick={() => {
               activeEditor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
             }}
-            className={
-              "toolbar-item spaced " + (toolbarState.isBold ? "active" : "")
-            }
+            sx={{
+              borderRadius: "0",
+              my: "auto",
+              backgroundColor: toolbarState.isBold ? "#e0e0e0" : "transparent",
+            }}
             title={`Bold (${SHORTCUTS.BOLD})`}
             type="button"
             aria-label={`Format text as bold. Shortcut: ${SHORTCUTS.BOLD}`}
           >
             <FormatBold />
-          </button>
-          <button
+          </IconButton>
+          <IconButton
             disabled={!isEditable}
             onClick={() => {
               activeEditor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic");
             }}
-            className={
-              "toolbar-item spaced " + (toolbarState.isItalic ? "active" : "")
-            }
+            sx={{
+              borderRadius: "0",
+              my: "auto",
+              backgroundColor: toolbarState.isItalic
+                ? "#e0e0e0"
+                : "transparent",
+            }}
             title={`Italic (${SHORTCUTS.ITALIC})`}
             type="button"
             aria-label={`Format text as italics. Shortcut: ${SHORTCUTS.ITALIC}`}
           >
             <FormatItalic />
-          </button>
-          <button
+          </IconButton>
+          <IconButton
             disabled={!isEditable}
             onClick={() => {
               activeEditor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline");
             }}
-            className={
-              "toolbar-item spaced " +
-              (toolbarState.isUnderline ? "active" : "")
-            }
+            sx={{
+              borderRadius: "0",
+              my: "auto",
+              backgroundColor: toolbarState.isUnderline
+                ? "#e0e0e0"
+                : "transparent",
+            }}
             title={`Underline (${SHORTCUTS.UNDERLINE})`}
             type="button"
             aria-label={`Format text to underlined. Shortcut: ${SHORTCUTS.UNDERLINE}`}
           >
             <FormatUnderlined />
-          </button>
+          </IconButton>
           {/* {canViewerSeeInsertCodeButton && (
-            <button
+            <IconButton
+sx={{
+          borderRadius: "0",
+          my: "auto",
+        }}
               disabled={!isEditable}
               onClick={() => {
                 activeEditor.dispatchCommand(FORMAT_TEXT_COMMAND, "code");
@@ -929,20 +948,22 @@ export default function ToolbarPlugin({
               aria-label="Insert code block"
             >
               <i className="format code" />
-            </button>
+            </IconButton>
           )} */}
-          <button
+          <IconButton
             disabled={!isEditable}
             onClick={insertLink}
-            className={
-              "toolbar-item spaced " + (toolbarState.isLink ? "active" : "")
-            }
+            sx={{
+              borderRadius: "0",
+              my: "auto",
+              backgroundColor: toolbarState.isLink ? "#e0e0e0" : "transparent",
+            }}
             aria-label="Insert link"
             title={`Insert link (${SHORTCUTS.INSERT_LINK})`}
             type="button"
           >
             <Link />
-          </button>
+          </IconButton>
           <DropdownColorPicker
             disabled={!isEditable}
             buttonClassName="toolbar-item color-picker"

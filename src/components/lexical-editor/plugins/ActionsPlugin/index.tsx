@@ -9,6 +9,8 @@
 import type { LexicalEditor } from "lexical";
 import type { JSX } from "react";
 
+import { IconButton } from "@mui/material";
+
 import { $createCodeNode, $isCodeNode } from "@lexical/code";
 import {
   editorStateFromSerializedDocument,
@@ -38,13 +40,20 @@ import { useCallback, useEffect, useState } from "react";
 import { INITIAL_SETTINGS } from "../../appSettings";
 import useFlashMessage from "../../hooks/useFlashMessage";
 import useModal from "../../hooks/useModal";
-import Button from "../../ui/Button";
 import { docFromHash, docToHash } from "../../utils/docSerialization";
 import { PLAYGROUND_TRANSFORMERS } from "../MarkdownTransformers";
 import {
   SPEECH_TO_TEXT_COMMAND,
   SUPPORT_SPEECH_RECOGNITION,
 } from "../SpeechToTextPlugin";
+import {
+  Clear,
+  FileUpload,
+  IosShare,
+  Lock,
+  LockOpen,
+  Share,
+} from "@mui/icons-material";
 
 async function sendEditorState(editor: LexicalEditor): Promise<void> {
   const stringifiedEditorState = JSON.stringify(editor.getEditorState());
@@ -180,33 +189,15 @@ export default function ActionsPlugin({
 
   return (
     <div className="actions">
-      {SUPPORT_SPEECH_RECOGNITION && (
-        <button
-          onClick={() => {
-            editor.dispatchCommand(SPEECH_TO_TEXT_COMMAND, !isSpeechToText);
-            setIsSpeechToText(!isSpeechToText);
-          }}
-          className={
-            "action-button action-button-mic " +
-            (isSpeechToText ? "active" : "")
-          }
-          title="Speech To Text"
-          aria-label={`${isSpeechToText ? "Enable" : "Disable"} speech to text`}
-        >
-          <i className="mic" />
-        </button>
-      )}
-      <button
-        className="action-button import"
+      <IconButton
         onClick={() => importFile(editor)}
         title="Import"
         aria-label="Import editor state from JSON"
       >
-        <i className="import" />
-      </button>
+        <FileUpload />
+      </IconButton>
 
-      <button
-        className="action-button export"
+      <IconButton
         onClick={() =>
           exportFile(editor, {
             fileName: `Playground ${new Date().toISOString()}`,
@@ -216,10 +207,9 @@ export default function ActionsPlugin({
         title="Export"
         aria-label="Export editor state to JSON"
       >
-        <i className="export" />
-      </button>
-      <button
-        className="action-button share"
+        <IosShare />
+      </IconButton>
+      <IconButton
         disabled={isCollabActive || INITIAL_SETTINGS.isCollab}
         onClick={() =>
           shareDoc(
@@ -234,10 +224,9 @@ export default function ActionsPlugin({
         title="Share"
         aria-label="Share Playground link to current editor state"
       >
-        <i className="share" />
-      </button>
-      <button
-        className="action-button clear"
+        <Share />
+      </IconButton>
+      <IconButton
         disabled={isEditorEmpty}
         onClick={() => {
           showModal("Clear editor", (onClose) => (
@@ -247,10 +236,9 @@ export default function ActionsPlugin({
         title="Clear"
         aria-label="Clear editor contents"
       >
-        <i className="clear" />
-      </button>
-      <button
-        className={`action-button ${!isEditable ? "unlock" : "lock"}`}
+        <Clear />
+      </IconButton>
+      <IconButton
         onClick={() => {
           // Send latest editor state to commenting validation server
           if (isEditable) {
@@ -261,16 +249,16 @@ export default function ActionsPlugin({
         title="Read-Only Mode"
         aria-label={`${!isEditable ? "Unlock" : "Lock"} read-only mode`}
       >
-        <i className={!isEditable ? "unlock" : "lock"} />
-      </button>
-      <button
-        className="action-button"
+        {!isEditable ? <LockOpen /> : <Lock />}
+      </IconButton>
+      {/* <IconButton
+        className="action-IconButton"
         onClick={handleMarkdownToggle}
         title="Convert From Markdown"
         aria-label="Convert from markdown"
       >
         <i className="markdown" />
-      </button>
+      </IconButton> */}
 
       {modal}
     </div>
@@ -288,7 +276,7 @@ function ShowClearDialog({
     <>
       Are you sure you want to clear the editor?
       <div className="Modal__content">
-        <Button
+        <IconButton
           onClick={() => {
             editor.dispatchCommand(CLEAR_EDITOR_COMMAND, undefined);
             editor.focus();
@@ -296,15 +284,15 @@ function ShowClearDialog({
           }}
         >
           Clear
-        </Button>{" "}
-        <Button
+        </IconButton>{" "}
+        <IconButton
           onClick={() => {
             editor.focus();
             onClose();
           }}
         >
           Cancel
-        </Button>
+        </IconButton>
       </div>
     </>
   );
