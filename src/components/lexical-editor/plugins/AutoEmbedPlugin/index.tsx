@@ -27,6 +27,7 @@ import { DialogActions } from "../../ui/Dialog";
 
 import { INSERT_YOUTUBE_COMMAND } from "../YouTubePlugin";
 import { YouTube } from "@mui/icons-material";
+import { DialogContent, DialogTitle } from "@mui/material";
 
 interface PlaygroundEmbedConfig extends EmbedConfig {
   // Human readable name of the embedded content e.g. Tweet or Google Map.
@@ -48,7 +49,7 @@ interface PlaygroundEmbedConfig extends EmbedConfig {
 export const YoutubeEmbedConfig: PlaygroundEmbedConfig = {
   contentName: "Youtube Video",
 
-  exampleUrl: "https://www.youtube.com/watch?v=jNQXAC9IVRw",
+  exampleUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
 
   // Icon for display.
   icon: <YouTube />,
@@ -161,9 +162,12 @@ export function AutoEmbedDialog({
   embedConfig: PlaygroundEmbedConfig;
   onClose: () => void;
 }): JSX.Element {
-  const [text, setText] = useState("");
+  const [text, setText] = useState(embedConfig.exampleUrl);
   const [editor] = useLexicalComposerContext();
-  const [embedResult, setEmbedResult] = useState<EmbedMatchResult | null>(null);
+  const [embedResult, setEmbedResult] = useState<EmbedMatchResult | null>({
+    id: "dQw4w9WgXcQ",
+    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  });
 
   const validateText = useMemo(
     () =>
@@ -190,31 +194,34 @@ export function AutoEmbedDialog({
   };
 
   return (
-    <div style={{ width: "600px" }}>
-      <div className="Input__wrapper">
-        <input
-          type="text"
-          className="Input__input"
-          placeholder={embedConfig.exampleUrl}
-          value={text}
-          data-test-id={`${embedConfig.type}-embed-modal-url`}
-          onChange={(e) => {
-            const { value } = e.target;
-            setText(value);
-            validateText(value);
-          }}
-        />
-      </div>
-      <DialogActions>
-        <Button
-          disabled={!embedResult}
-          onClick={onClick}
-          data-test-id={`${embedConfig.type}-embed-modal-submit-btn`}
-        >
-          Embed
-        </Button>
-      </DialogActions>
-    </div>
+    <>
+      <DialogTitle>Embed YouTube Video</DialogTitle>
+      <DialogContent>
+        <div className="Input__wrapper">
+          <input
+            type="text"
+            className="Input__input"
+            value={text}
+            data-test-id={`${embedConfig.type}-embed-modal-url`}
+            onChange={(e) => {
+              const { value } = e.target;
+              setText(value);
+              validateText(value);
+            }}
+          />
+        </div>
+
+        <DialogActions>
+          <Button
+            disabled={!embedResult}
+            onClick={onClick}
+            data-test-id={`${embedConfig.type}-embed-modal-submit-btn`}
+          >
+            Embed
+          </Button>
+        </DialogActions>
+      </DialogContent>
+    </>
   );
 }
 

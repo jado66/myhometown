@@ -9,7 +9,14 @@
 import type { LexicalEditor } from "lexical";
 import type { JSX } from "react";
 
-import { IconButton } from "@mui/material";
+import {
+  Dialog,
+  IconButton,
+  DialogTitle,
+  Button,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
 
 import { $createCodeNode, $isCodeNode } from "@lexical/code";
 import {
@@ -116,6 +123,11 @@ export default function ActionsPlugin({
   const [modal, showModal] = useModal();
   const showFlashMessage = useFlashMessage();
   const { isCollabActive } = useCollaborationContext();
+
+  const [isShowClearDialog, setIsShowClearDialog] = useState(false);
+
+  const OnClose = () => setIsShowClearDialog(false);
+
   useEffect(() => {
     if (INITIAL_SETTINGS.isCollab) {
       return;
@@ -209,7 +221,7 @@ export default function ActionsPlugin({
       >
         <IosShare />
       </IconButton>
-      <IconButton
+      {/* <IconButton
         disabled={isCollabActive || INITIAL_SETTINGS.isCollab}
         onClick={() =>
           shareDoc(
@@ -225,13 +237,11 @@ export default function ActionsPlugin({
         aria-label="Share Playground link to current editor state"
       >
         <Share />
-      </IconButton>
+      </IconButton> */}
       <IconButton
         disabled={isEditorEmpty}
         onClick={() => {
-          showModal("Clear editor", (onClose) => (
-            <ShowClearDialog editor={editor} onClose={onClose} />
-          ));
+          setIsShowClearDialog(true);
         }}
         title="Clear"
         aria-label="Clear editor contents"
@@ -249,8 +259,11 @@ export default function ActionsPlugin({
         title="Read-Only Mode"
         aria-label={`${!isEditable ? "Unlock" : "Lock"} read-only mode`}
       >
-        {!isEditable ? <LockOpen /> : <Lock />}
+        {!editor.isEditable() ? <LockOpen /> : <Lock />}
       </IconButton>
+
+      <ClearDialog editor={editor} onClose={OnClose} show={isShowClearDialog} />
+
       {/* <IconButton
         className="action-IconButton"
         onClick={handleMarkdownToggle}
@@ -265,35 +278,79 @@ export default function ActionsPlugin({
   );
 }
 
-function ShowClearDialog({
+function ClearDialog({
   editor,
+  show,
   onClose,
 }: {
   editor: LexicalEditor;
+  show: boolean;
   onClose: () => void;
 }): JSX.Element {
   return (
-    <>
-      Are you sure you want to clear the editor?
-      <div className="Modal__content">
-        <IconButton
+    <Dialog
+      open={show}
+      onClose={() => {
+        editor.focus();
+        onClose();
+      }}
+      aria-labelledby="clear-dialog-title"
+    >
+      <DialogContent>Are you sure you want to clear the editor?</DialogContent>
+      <DialogActions>
+        <Button
           onClick={() => {
             editor.dispatchCommand(CLEAR_EDITOR_COMMAND, undefined);
             editor.focus();
             onClose();
           }}
+          color="primary"
         >
           Clear
-        </IconButton>{" "}
-        <IconButton
+        </Button>
+        <Button
           onClick={() => {
             editor.focus();
             onClose();
           }}
+          color="secondary"
         >
           Cancel
-        </IconButton>
-      </div>
-    </>
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
+
+// function ShowClearDialog({
+//   editor,
+//   onClose,
+// }: {
+//   editor: LexicalEditor;
+//   onClose: () => void;
+// }): JSX.Element {
+//   return (
+//     <>
+//       Are you sure you want to clear the editor?
+//       <div className="Modal__content">
+//         <IconButton
+//           onClick={() => {
+//             editor.dispatchCommand(CLEAR_EDITOR_COMMAND, undefined);
+//             editor.focus();
+//             onClose();
+//           }}
+//         >
+//           Clear
+//         </IconButton>{" "}
+//         <IconButton
+//           onClick={() => {
+//             editor.focus();
+//             onClose();
+//           }}
+//         >
+//           Cancel
+//         </IconButton>
+//       </div>
+//     </>
+//   );
+// }

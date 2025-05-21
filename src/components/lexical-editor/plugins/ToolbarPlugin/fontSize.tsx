@@ -22,7 +22,7 @@ import {
   UpdateFontSizeType,
 } from "./utils";
 import { Add, Remove } from "@mui/icons-material";
-import { IconButton } from "@mui/material";
+import { IconButton, Input } from "@mui/material";
 
 export function parseAllowedFontSize(input: string): string {
   const match = input.match(/^(\d+(?:\.\d+)?)px$/);
@@ -111,17 +111,19 @@ export default function FontSize({
         <Remove />
       </IconButton>
 
-      <input
+      <Input
         type="number"
         title="Font size"
         value={inputValue}
         disabled={disabled}
-        className="toolbar-item font-size-input"
         min={MIN_ALLOWED_FONT_SIZE}
         max={MAX_ALLOWED_FONT_SIZE}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={handleKeyPress}
         onBlur={handleInputBlur}
+        sx={{
+          width: "20px",
+        }}
       />
 
       <IconButton
