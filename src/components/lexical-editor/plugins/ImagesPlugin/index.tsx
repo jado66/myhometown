@@ -43,6 +43,8 @@ import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
+import CircularProgress from "@mui/material/CircularProgress";
+import Typography from "@mui/material/Typography";
 
 import landscapeImage from "../../images/landscape.jpg";
 import yellowFlowerImage from "../../images/yellow-flower.jpg";
@@ -52,57 +54,7 @@ import {
   ImageNode,
   ImagePayload,
 } from "../../nodes/ImageNode";
-
-// Custom MUI styled file input
-function FileInput({ label, onChange, accept, "data-test-id": dataTestId }) {
-  const inputRef = useRef(null);
-
-  const handleButtonClick = () => {
-    inputRef.current.click();
-  };
-
-  const handleFileChange = (e) => {
-    if (onChange) {
-      onChange(e.target.files);
-    }
-  };
-
-  return (
-    <>
-      <DialogTitle>Insert Image</DialogTitle>
-      <DialogContent>
-        <Box sx={{ mb: 2 }}>
-          <input
-            ref={inputRef}
-            type="file"
-            accept={accept}
-            onChange={handleFileChange}
-            style={{ display: "none" }}
-            data-test-id={dataTestId}
-          />
-          <TextField
-            label={label}
-            variant="outlined"
-            fullWidth
-            onClick={handleButtonClick}
-            InputProps={{
-              readOnly: true,
-              endAdornment: (
-                <Button
-                  variant="contained"
-                  component="span"
-                  onClick={handleButtonClick}
-                >
-                  Browse
-                </Button>
-              ),
-            }}
-          />
-        </Box>
-      </DialogContent>
-    </>
-  );
-}
+import { useImageUpload } from "@/hooks/use-upload-image";
 
 export type InsertImagePayload = Readonly<ImagePayload>;
 
@@ -130,6 +82,29 @@ export function InsertImageUriDialogBody({
         margin="normal"
         data-test-id="image-modal-url-input"
       />
+
+      {src && (
+        <Box sx={{ my: 2, textAlign: "center" }}>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            Preview:
+          </Typography>
+          <img
+            src={src}
+            alt="Preview"
+            style={{
+              maxWidth: "100%",
+              maxHeight: "200px",
+              objectFit: "contain",
+              border: "1px solid #e0e0e0",
+              borderRadius: "4px",
+            }}
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
+        </Box>
+      )}
+
       <TextField
         label="Alt Text"
         placeholder="Random unsplash image"
@@ -161,50 +136,125 @@ export function InsertImageUploadedDialogBody({
 }) {
   const [src, setSrc] = useState("");
   const [altText, setAltText] = useState("");
+  const [fileName, setFileName] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isDisabled = src === "";
+  // Use the existing custom image upload hook
+  const { handleFileUpload, loading, error } = useImageUpload(setSrc);
 
-  const loadImage = (files: FileList | null) => {
-    const reader = new FileReader();
-    reader.onload = function () {
-      if (typeof reader.result === "string") {
-        setSrc(reader.result);
-      }
-      return "";
-    };
-    if (files !== null) {
-      reader.readAsDataURL(files[0]);
+  const isDisabled = src === "" || loading;
+
+  // Handle file selection directly
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setFileName(file.name);
+      handleFileUpload(e);
     }
   };
 
+  // Trigger file input click
+  const openFileDialog = () => {
+    if (fileInputRef.current && !loading) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // Display error if any
+  useEffect(() => {
+    if (error) {
+      console.error("Error uploading image:", error);
+    }
+  }, [error]);
+
   return (
     <>
-      <FileInput
-        label="Image Upload"
-        onChange={loadImage}
-        accept="image/*"
-        data-test-id="image-modal-file-upload"
-      />
-      <TextField
-        label="Alt Text"
-        placeholder="Descriptive alternative text"
-        onChange={(e) => setAltText(e.target.value)}
-        value={altText}
-        fullWidth
-        margin="normal"
-        data-test-id="image-modal-alt-text-input"
-      />
-      <DialogActions>
-        <Button
-          variant="contained"
-          color="primary"
-          disabled={isDisabled}
-          onClick={() => onClick({ altText, src })}
-          data-test-id="image-modal-file-upload-btn"
-        >
-          Confirm
-        </Button>
-      </DialogActions>
+      <DialogTitle>Insert Image</DialogTitle>
+      <DialogContent>
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={onFileChange}
+          style={{ display: "none" }}
+          data-test-id="image-modal-file-upload"
+        />
+
+        {/* Upload button */}
+        <Box sx={{ mb: 2, mt: 1 }}>
+          <Button
+            variant="contained"
+            onClick={openFileDialog}
+            disabled={loading}
+            fullWidth
+          >
+            {loading ? (
+              <CircularProgress size={24} sx={{ mr: 1 }} />
+            ) : (
+              "Select Image File"
+            )}
+          </Button>
+
+          {fileName && (
+            <Typography variant="body2" sx={{ mt: 1 }}>
+              Selected: {fileName}
+            </Typography>
+          )}
+        </Box>
+
+        {/* Image preview */}
+        {src && (
+          <Box sx={{ my: 2, textAlign: "center" }}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Preview:
+            </Typography>
+            <img
+              src={src}
+              alt="Preview"
+              style={{
+                maxWidth: "100%",
+                maxHeight: "200px",
+                objectFit: "contain",
+                border: "1px solid #e0e0e0",
+                borderRadius: "4px",
+              }}
+            />
+          </Box>
+        )}
+
+        {loading && (
+          <Box sx={{ display: "flex", alignItems: "center", my: 1 }}>
+            <CircularProgress size={20} sx={{ mr: 1 }} />
+            <Typography variant="body2" color="text.secondary">
+              Uploading image...
+            </Typography>
+          </Box>
+        )}
+
+        <TextField
+          label="Alt Text"
+          placeholder="Descriptive alternative text"
+          onChange={(e) => setAltText(e.target.value)}
+          value={altText}
+          fullWidth
+          margin="normal"
+          data-test-id="image-modal-alt-text-input"
+          disabled={loading}
+        />
+
+        <DialogActions>
+          <Button
+            variant="contained"
+            color="primary"
+            disabled={isDisabled}
+            onClick={() => onClick({ altText, src })}
+            data-test-id="image-modal-file-upload-btn"
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </DialogContent>
     </>
   );
 }
@@ -237,52 +287,33 @@ export function InsertImageDialog({
 
   return (
     <>
-      <DialogTitle>Insert Image</DialogTitle>
-      <DialogContent>
-        {!mode && (
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            <Button
-              variant="contained"
-              fullWidth
-              data-test-id="image-modal-option-sample"
-              onClick={() =>
-                onClick(
-                  hasModifier.current
-                    ? {
-                        altText:
-                          "Daylight fir trees forest glacier green high ice landscape",
-                        src: landscapeImage,
-                      }
-                    : {
-                        altText: "Yellow flower in tilt shift lens",
-                        src: yellowFlowerImage,
-                      }
-                )
-              }
-            >
-              Sample
-            </Button>
-            <Button
-              variant="contained"
-              fullWidth
-              data-test-id="image-modal-option-url"
-              onClick={() => setMode("url")}
-            >
-              URL
-            </Button>
-            <Button
-              variant="contained"
-              fullWidth
-              data-test-id="image-modal-option-file"
-              onClick={() => setMode("file")}
-            >
-              File
-            </Button>
-          </Stack>
-        )}
-        {mode === "url" && <InsertImageUriDialogBody onClick={onClick} />}
-        {mode === "file" && <InsertImageUploadedDialogBody onClick={onClick} />}
-      </DialogContent>
+      {!mode && (
+        <>
+          <DialogTitle>Insert Image</DialogTitle>
+          <DialogContent>
+            <Stack spacing={2} sx={{ pt: 1 }}>
+              <Button
+                variant="contained"
+                fullWidth
+                data-test-id="image-modal-option-url"
+                onClick={() => setMode("url")}
+              >
+                URL
+              </Button>
+              <Button
+                variant="contained"
+                fullWidth
+                data-test-id="image-modal-option-file"
+                onClick={() => setMode("file")}
+              >
+                File
+              </Button>
+            </Stack>
+          </DialogContent>
+        </>
+      )}
+      {mode === "url" && <InsertImageUriDialogBody onClick={onClick} />}
+      {mode === "file" && <InsertImageUploadedDialogBody onClick={onClick} />}
     </>
   );
 }

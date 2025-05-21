@@ -1,40 +1,64 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
+// Improved FileInput component to fix multiple file explorer opens
+function FileInput({ onChange, accept, "data-test-id": dataTestId, disabled }) {
+  const inputRef = useRef(null);
 
-import type {JSX} from 'react';
+  const handleButtonClick = (e) => {
+    // Stop propagation to prevent multiple clicks
+    e.stopPropagation();
 
-import './Input.css';
+    if (!disabled && inputRef.current) {
+      inputRef.current.click();
+    }
+  };
 
-import * as React from 'react';
+  // Prevent the TextField click from triggering if the button was clicked
+  const handleTextFieldClick = (e) => {
+    // Only proceed if we're not clicking on the button itself
+    if (e.target.tagName !== "BUTTON" && !e.target.closest("button")) {
+      if (!disabled && inputRef.current) {
+        e.stopPropagation();
+        inputRef.current.click();
+      }
+    }
+  };
 
-type Props = Readonly<{
-  'data-test-id'?: string;
-  accept?: string;
-  label: string;
-  onChange: (files: FileList | null) => void;
-}>;
+  // Handle the actual file change
+  const handleFileChange = (e) => {
+    // Stop propagation to prevent the event from bubbling up
+    e.stopPropagation();
+    onChange(e);
+  };
 
-export default function FileInput({
-  accept,
-  label,
-  onChange,
-  'data-test-id': dataTestId,
-}: Props): JSX.Element {
   return (
-    <div className="Input__wrapper">
-      <label className="Input__label">{label}</label>
+    <Box sx={{ mb: 2 }}>
       <input
+        ref={inputRef}
         type="file"
         accept={accept}
-        className="Input__input"
-        onChange={(e) => onChange(e.target.files)}
+        onChange={handleFileChange}
+        style={{ display: "none" }}
         data-test-id={dataTestId}
+        disabled={disabled}
       />
-    </div>
+      <TextField
+        label="Upload Image"
+        variant="outlined"
+        fullWidth
+        onClick={handleTextFieldClick}
+        InputProps={{
+          readOnly: true,
+          endAdornment: (
+            <Button
+              variant="contained"
+              component="span"
+              onClick={handleButtonClick}
+              disabled={disabled}
+            >
+              {disabled ? <CircularProgress size={24} /> : "Browse"}
+            </Button>
+          ),
+        }}
+      />
+    </Box>
   );
 }
