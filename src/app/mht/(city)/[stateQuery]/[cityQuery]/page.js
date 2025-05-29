@@ -219,6 +219,7 @@ const Page = ({ params }) => {
 
         <Divider sx={{ my: 4, mx: 4 }} />
 
+        {/* Test Remove me later */}
         <Grid>
           {city.content.imageAccordions.map((accordion, index) => (
             <ImageWithAccordion
