@@ -23,13 +23,7 @@ export const cityTemplate = {
         content: "…and improve the appearance of our neighborhoods.",
       },
     ],
-    video: {
-      title: "Mayor Kaufusi on myHometown",
-      mediaThumbnail:
-        "https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Mayor+final+ss.webp",
-      mediaSrc:
-        "https://myhometown-bucket.s3.us-west-1.amazonaws.com/videos/Provo+Mayor+Final.webm",
-    },
+    video: {},
     imageAccordions: [
       {
         imageSrc: "/myhometown/city-page/Dumpsters.webp",
