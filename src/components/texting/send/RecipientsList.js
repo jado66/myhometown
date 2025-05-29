@@ -20,60 +20,65 @@ export default function RecipientsList({ selectedRecipients, contacts }) {
     if (!Array.isArray(selectedRecipients))
       return { groupRecipients: [], individualRecipients: [] };
 
-    const phoneNumberMap = new Map();
-    const duplicatesInfo = new Map();
+    // First, collect all contacts with their source information
+    const allContactsWithSource = [];
+    const phoneNumberTracker = new Map(); // Track occurrences of each phone number
 
+    // Process group recipients first
     const groupRecipients = selectedRecipients
       .filter(isGroupRecipient)
       .map((recipient) => {
         if (!recipient.value || !recipient.originalValue) return null;
         const groupName = recipient.originalValue;
         const groupContacts = getGroupMembers(groupName, contacts);
-        groupContacts.forEach((contact) => {
+
+        const processedContacts = groupContacts.map((contact) => {
           if (contact && contact.value) {
-            if (!phoneNumberMap.has(contact.value)) {
-              phoneNumberMap.set(contact.value, {
-                source: groupName,
-                type: "group",
-              });
-            } else {
-              duplicatesInfo.set(contact.value, {
-                originalSource: phoneNumberMap.get(contact.value).source,
-                type: phoneNumberMap.get(contact.value).type,
-              });
+            // Track this phone number occurrence
+            if (!phoneNumberTracker.has(contact.value)) {
+              phoneNumberTracker.set(contact.value, 0);
             }
+            const occurrenceIndex = phoneNumberTracker.get(contact.value);
+            phoneNumberTracker.set(contact.value, occurrenceIndex + 1);
+
+            const contactWithSource = {
+              ...contact,
+              sourceGroup: groupName,
+              sourceType: "group",
+              occurrenceIndex,
+              isDuplicate: occurrenceIndex > 0, // Only mark as duplicate if not the first occurrence
+            };
+
+            allContactsWithSource.push(contactWithSource);
+            return contactWithSource;
           }
+          return contact;
         });
+
         return {
           groupName,
-          contacts: groupContacts.map((contact) => ({
-            ...contact,
-            isDuplicate: duplicatesInfo.has(contact.value),
-            duplicateInfo: duplicatesInfo.get(contact.value),
-          })),
+          contacts: processedContacts,
         };
       })
       .filter(Boolean);
 
+    // Process individual recipients
     const individualRecipients = selectedRecipients
       .filter((r) => r && r.value && !isGroupRecipient(r))
       .map((recipient) => {
-        const isDuplicate = phoneNumberMap.has(recipient);
-        if (!isDuplicate) {
-          phoneNumberMap.set(recipient.value, {
-            source: "individual",
-            type: "individual",
-          });
-        } else {
-          duplicatesInfo.set(recipient.value, {
-            originalSource: phoneNumberMap.get(recipient.value).source,
-            type: phoneNumberMap.get(contact.value).type,
-          });
+        // Track this phone number occurrence
+        if (!phoneNumberTracker.has(recipient.value)) {
+          phoneNumberTracker.set(recipient.value, 0);
         }
+        const occurrenceIndex = phoneNumberTracker.get(recipient.value);
+        phoneNumberTracker.set(recipient.value, occurrenceIndex + 1);
+
         return {
           ...recipient,
-          isDuplicate,
-          duplicateInfo: duplicatesInfo.get(recipient.value),
+          sourceGroup: "Individual Contacts",
+          sourceType: "individual",
+          occurrenceIndex,
+          isDuplicate: occurrenceIndex > 0, // Only mark as duplicate if not the first occurrence
         };
       });
 

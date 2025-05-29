@@ -1,16 +1,16 @@
 /**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
+ * Modified PlaygroundApp to accept initialContent and onChange props
+ * with improved state management to prevent unnecessary resets
  */
 
 import type { JSX } from "react";
+import { useEffect, useMemo, useRef, useCallback } from "react";
 
 import { $createLinkNode } from "@lexical/link";
 import { $createListItemNode, $createListNode } from "@lexical/list";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text";
 import {
   $createParagraphNode,
@@ -19,6 +19,7 @@ import {
   $isTextNode,
   DOMConversionMap,
   TextNode,
+  EditorState,
 } from "lexical";
 
 import { isDevPlayground } from "./appSettings";
@@ -38,6 +39,7 @@ import Settings from "./Settings";
 import PlaygroundEditorTheme from "./themes/PlaygroundEditorTheme";
 import { parseAllowedColor } from "./ui/ColorPicker";
 import "./index.css";
+
 console.warn(
   "If you are profiling the playground app, please ensure you turn off the debug view. You can disable it by pressing on the settings control in the bottom-left of your screen and toggling the debug view setting."
 );
@@ -187,25 +189,91 @@ function buildImportMap(): DOMConversionMap {
   return importMap;
 }
 
-function App(): JSX.Element {
+interface PlaygroundAppProps {
+  initialContent?: string | null;
+  onChange?: (editorState: EditorState) => void;
+}
+
+// Component to handle content updates from external prop changes
+function ContentUpdatePlugin({
+  initialContent,
+}: {
+  initialContent?: string | null;
+}) {
+  const [editor] = useLexicalComposerContext();
+  const lastContentRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    // Only update if content actually changed and is different from what we last saw
+    if (initialContent !== lastContentRef.current && initialContent) {
+      try {
+        const parsedState = JSON.parse(initialContent);
+        const newEditorState = editor.parseEditorState(parsedState);
+
+        editor.update(() => {
+          // Check if the current content is different from what we're trying to set
+          const currentState = editor.getEditorState().toJSON();
+          const currentStateString = JSON.stringify(currentState);
+
+          if (currentStateString !== initialContent) {
+            editor.setEditorState(newEditorState);
+          }
+        });
+
+        lastContentRef.current = initialContent;
+      } catch (error) {
+        console.warn("Failed to update editor content:", error);
+      }
+    }
+  }, [editor, initialContent]);
+
+  return null;
+}
+
+function App({ initialContent, onChange }: PlaygroundAppProps): JSX.Element {
   const {
     settings: { isCollab, emptyEditor, measureTypingPerf },
   } = useSettings();
 
-  const initialConfig = {
-    editorState: isCollab
-      ? null
-      : emptyEditor
-      ? undefined
-      : $prepopulatedRichText,
-    html: { import: buildImportMap() },
-    namespace: "Playground",
-    nodes: [...PlaygroundNodes],
-    onError: (error: Error) => {
-      throw error;
+  // Function to create editor state from JSON string
+  const createEditorStateFromJSON = useCallback((jsonString: string) => {
+    try {
+      return JSON.parse(jsonString);
+    } catch (error) {
+      console.warn("Failed to parse initial content, using default:", error);
+      return $prepopulatedRichText;
+    }
+  }, []);
+
+  // Memoize the initial config to prevent recreation on every render
+  const initialConfig = useMemo(
+    () => ({
+      editorState: isCollab
+        ? null
+        : emptyEditor
+        ? undefined
+        : initialContent
+        ? createEditorStateFromJSON(initialContent)
+        : $prepopulatedRichText,
+      html: { import: buildImportMap() },
+      namespace: "Playground",
+      nodes: [...PlaygroundNodes],
+      onError: (error: Error) => {
+        throw error;
+      },
+      theme: PlaygroundEditorTheme,
+    }),
+    [isCollab, emptyEditor, initialContent, createEditorStateFromJSON]
+  );
+
+  const handleEditorChange = useCallback(
+    (editorState: EditorState) => {
+      if (onChange) {
+        onChange(editorState);
+      }
     },
-    theme: PlaygroundEditorTheme,
-  };
+    [onChange]
+  );
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
@@ -219,8 +287,13 @@ function App(): JSX.Element {
             {isDevPlayground ? <DocsPlugin /> : null}
             {isDevPlayground ? <PasteLogPlugin /> : null}
             {isDevPlayground ? <TestRecorderPlugin /> : null}
-
             {measureTypingPerf ? <TypingPerfPlugin /> : null}
+
+            {/* Add OnChangePlugin to capture editor changes */}
+            <OnChangePlugin onChange={handleEditorChange} />
+
+            {/* Plugin to handle external content updates */}
+            <ContentUpdatePlugin initialContent={initialContent} />
           </ToolbarContext>
         </TableContext>
       </SharedHistoryContext>
@@ -228,11 +301,14 @@ function App(): JSX.Element {
   );
 }
 
-export default function PlaygroundApp(): JSX.Element {
+export default function PlaygroundApp({
+  initialContent,
+  onChange,
+}: PlaygroundAppProps): JSX.Element {
   return (
     <SettingsContext>
       <FlashMessageContext>
-        <App />
+        <App initialContent={initialContent} onChange={onChange} />
       </FlashMessageContext>
     </SettingsContext>
   );

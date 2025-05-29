@@ -254,6 +254,15 @@ export default function TextLogViewer() {
     }));
   }, [logs, activeTab]);
 
+  const tabs = user?.permissions?.administrator
+    ? [
+        "All Messages",
+        "Personal Messages",
+        "Community Messages",
+        "City Messages",
+      ]
+    : ["All Messages", "Personal Messages", "City Messages"];
+
   return (
     <>
       <BackButton
@@ -322,12 +331,17 @@ export default function TextLogViewer() {
                   },
                 }}
               >
-                <Tab label="All Messages" />
-                <Tab label="Personal Messages" />
-                <Tab label="Community Messages" />
-                <Tab label="City Messages" />
+                {tabs.map((tab, index) => (
+                  <Tab
+                    key={index}
+                    label={tab}
+                    sx={{
+                      textTransform: "none",
+                      fontWeight: activeTab === index ? "bold" : "normal",
+                    }}
+                  />
+                ))}
               </Tabs>
-
               {/* Filter section - collapsible on mobile */}
               <Box sx={{ p: 2 }}>
                 <Box

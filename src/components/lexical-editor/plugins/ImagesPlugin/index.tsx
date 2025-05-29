@@ -61,94 +61,41 @@ export type InsertImagePayload = Readonly<ImagePayload>;
 export const INSERT_IMAGE_COMMAND: LexicalCommand<InsertImagePayload> =
   createCommand("INSERT_IMAGE_COMMAND");
 
-export function InsertImageUriDialogBody({
+export function InsertImageDialogBody({
   onClick,
 }: {
   onClick: (payload: InsertImagePayload) => void;
 }) {
-  const [src, setSrc] = useState("");
-  const [altText, setAltText] = useState("");
-
-  const isDisabled = src === "";
-
-  return (
-    <>
-      <TextField
-        label="Image URL"
-        placeholder="i.e. https://source.unsplash.com/random"
-        onChange={(e) => setSrc(e.target.value)}
-        value={src}
-        fullWidth
-        margin="normal"
-        data-test-id="image-modal-url-input"
-      />
-
-      {src && (
-        <Box sx={{ my: 2, textAlign: "center" }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Preview:
-          </Typography>
-          <img
-            src={src}
-            alt="Preview"
-            style={{
-              maxWidth: "100%",
-              maxHeight: "200px",
-              objectFit: "contain",
-              border: "1px solid #e0e0e0",
-              borderRadius: "4px",
-            }}
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-            }}
-          />
-        </Box>
-      )}
-
-      <TextField
-        label="Alt Text"
-        placeholder="Random unsplash image"
-        onChange={(e) => setAltText(e.target.value)}
-        value={altText}
-        fullWidth
-        margin="normal"
-        data-test-id="image-modal-alt-text-input"
-      />
-      <DialogActions>
-        <Button
-          variant="contained"
-          color="primary"
-          disabled={isDisabled}
-          onClick={() => onClick({ altText, src })}
-          data-test-id="image-modal-confirm-btn"
-        >
-          Confirm
-        </Button>
-      </DialogActions>
-    </>
-  );
-}
-
-export function InsertImageUploadedDialogBody({
-  onClick,
-}: {
-  onClick: (payload: InsertImagePayload) => void;
-}) {
-  const [src, setSrc] = useState("");
+  const [urlSrc, setUrlSrc] = useState("");
+  const [uploadSrc, setUploadSrc] = useState("");
   const [altText, setAltText] = useState("");
   const [fileName, setFileName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Use the existing custom image upload hook
-  const { handleFileUpload, loading, error } = useImageUpload(setSrc);
+  const { handleFileUpload, loading, error } = useImageUpload(setUploadSrc);
 
+  // Determine which source to use and if form is valid
+  const src = uploadSrc || urlSrc;
   const isDisabled = src === "" || loading;
+
+  // Handle URL input changes
+  const onUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUrlSrc(e.target.value);
+    // Clear upload when URL is entered
+    if (e.target.value) {
+      setUploadSrc("");
+      setFileName("");
+    }
+  };
 
   // Handle file selection directly
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setFileName(file.name);
+      // Clear URL when file is selected
+      setUrlSrc("");
       handleFileUpload(e);
     }
   };
@@ -171,90 +118,124 @@ export function InsertImageUploadedDialogBody({
     <>
       <DialogTitle>Insert Image</DialogTitle>
       <DialogContent>
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={onFileChange}
-          style={{ display: "none" }}
-          data-test-id="image-modal-file-upload"
-        />
-
-        {/* Upload button */}
-        <Box sx={{ mb: 2, mt: 1 }}>
-          <Button
-            variant="contained"
-            onClick={openFileDialog}
-            disabled={loading}
+        <Box sx={{ pt: 1 }}>
+          {/* URL Section */}
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            From URL
+          </Typography>
+          <TextField
+            label="Image URL"
+            placeholder="i.e. https://source.unsplash.com/random"
+            onChange={onUrlChange}
+            value={urlSrc}
             fullWidth
-          >
-            {loading ? (
-              <CircularProgress size={24} sx={{ mr: 1 }} />
-            ) : (
-              "Select Image File"
+            margin="normal"
+            data-test-id="image-modal-url-input"
+            disabled={loading || !!uploadSrc}
+          />
+
+          {/* Divider */}
+          <Box sx={{ my: 3, display: "flex", alignItems: "center" }}>
+            <Divider sx={{ flex: 1 }} />
+            <Typography variant="body2" sx={{ mx: 2, color: "text.secondary" }}>
+              OR
+            </Typography>
+            <Divider sx={{ flex: 1 }} />
+          </Box>
+
+          {/* File Upload Section */}
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Upload File
+          </Typography>
+
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={onFileChange}
+            style={{ display: "none" }}
+            data-test-id="image-modal-file-upload"
+          />
+
+          {/* Upload button */}
+          <Box sx={{ mb: 2 }}>
+            <Button
+              variant="contained"
+              onClick={openFileDialog}
+              disabled={loading || !!urlSrc}
+              fullWidth
+            >
+              {loading ? (
+                <CircularProgress size={24} sx={{ mr: 1 }} />
+              ) : (
+                "Select Image File"
+              )}
+            </Button>
+
+            {fileName && (
+              <Typography variant="body2" sx={{ mt: 1 }}>
+                Selected: {fileName}
+              </Typography>
             )}
-          </Button>
+          </Box>
 
-          {fileName && (
-            <Typography variant="body2" sx={{ mt: 1 }}>
-              Selected: {fileName}
-            </Typography>
+          {loading && (
+            <Box sx={{ display: "flex", alignItems: "center", my: 1 }}>
+              <CircularProgress size={20} sx={{ mr: 1 }} />
+              <Typography variant="body2" color="text.secondary">
+                Uploading image...
+              </Typography>
+            </Box>
           )}
+
+          {/* Image preview - shows for both URL and uploaded images */}
+          {src && (
+            <Box sx={{ my: 2, textAlign: "center" }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Preview:
+              </Typography>
+              <img
+                src={src}
+                alt="Preview"
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "200px",
+                  objectFit: "contain",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "4px",
+                }}
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            </Box>
+          )}
+
+          {/* Alt Text */}
+          <TextField
+            label="Alt Text"
+            placeholder="Descriptive alternative text"
+            onChange={(e) => setAltText(e.target.value)}
+            value={altText}
+            fullWidth
+            margin="normal"
+            data-test-id="image-modal-alt-text-input"
+            disabled={loading}
+          />
         </Box>
-
-        {/* Image preview */}
-        {src && (
-          <Box sx={{ my: 2, textAlign: "center" }}>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Preview:
-            </Typography>
-            <img
-              src={src}
-              alt="Preview"
-              style={{
-                maxWidth: "100%",
-                maxHeight: "200px",
-                objectFit: "contain",
-                border: "1px solid #e0e0e0",
-                borderRadius: "4px",
-              }}
-            />
-          </Box>
-        )}
-
-        {loading && (
-          <Box sx={{ display: "flex", alignItems: "center", my: 1 }}>
-            <CircularProgress size={20} sx={{ mr: 1 }} />
-            <Typography variant="body2" color="text.secondary">
-              Uploading image...
-            </Typography>
-          </Box>
-        )}
-
-        <TextField
-          label="Alt Text"
-          placeholder="Descriptive alternative text"
-          onChange={(e) => setAltText(e.target.value)}
-          value={altText}
-          fullWidth
-          margin="normal"
-          data-test-id="image-modal-alt-text-input"
-          disabled={loading}
-        />
-
-        <DialogActions>
-          <Button
-            variant="contained"
-            color="primary"
-            disabled={isDisabled}
-            onClick={() => onClick({ altText, src })}
-            data-test-id="image-modal-file-upload-btn"
-          >
-            Confirm
-          </Button>
-        </DialogActions>
       </DialogContent>
+      <DialogActions>
+        <Button
+          variant="contained"
+          color="primary"
+          disabled={isDisabled}
+          onClick={() => onClick({ altText, src })}
+          data-test-id="image-modal-confirm-btn"
+        >
+          Confirm
+        </Button>
+      </DialogActions>
     </>
   );
 }
@@ -266,7 +247,6 @@ export function InsertImageDialog({
   activeEditor: LexicalEditor;
   onClose: () => void;
 }): JSX.Element {
-  const [mode, setMode] = useState<null | "url" | "file">(null);
   const hasModifier = useRef(false);
 
   useEffect(() => {
@@ -285,37 +265,7 @@ export function InsertImageDialog({
     onClose();
   };
 
-  return (
-    <>
-      {!mode && (
-        <>
-          <DialogTitle>Insert Image</DialogTitle>
-          <DialogContent>
-            <Stack spacing={2} sx={{ pt: 1 }}>
-              <Button
-                variant="contained"
-                fullWidth
-                data-test-id="image-modal-option-url"
-                onClick={() => setMode("url")}
-              >
-                URL
-              </Button>
-              <Button
-                variant="contained"
-                fullWidth
-                data-test-id="image-modal-option-file"
-                onClick={() => setMode("file")}
-              >
-                File
-              </Button>
-            </Stack>
-          </DialogContent>
-        </>
-      )}
-      {mode === "url" && <InsertImageUriDialogBody onClick={onClick} />}
-      {mode === "file" && <InsertImageUploadedDialogBody onClick={onClick} />}
-    </>
-  );
+  return <InsertImageDialogBody onClick={onClick} />;
 }
 
 export default function ImagesPlugin({

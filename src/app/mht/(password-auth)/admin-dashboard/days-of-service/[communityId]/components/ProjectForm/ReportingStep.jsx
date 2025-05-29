@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Box, Typography } from "@mui/material";
 import { useProjectForm } from "@/contexts/ProjectFormProvider";
+import { EditorState } from "lexical";
 import ProjectTextField from "./ProjectTextField";
 import TaskReportingTable from "@/components/days-of-service/form-components/TaskReportingTable";
-import LexicalEditor from "@/components/lexical-editor/LexicalEditor";
-import PlaygroundApp from "@/components/lexical-editor/LexicalEditor";
+import PlaygroundApp from "@/components/lexical-editor/LexicalEditor"; // Your modified PlaygroundApp
+import JsonViewer from "@/components/util/debug/DebugOutput";
+
 const ReportingStep = () => {
   const { formData, handleInputChange, handleNumberInputChange } =
     useProjectForm();
   const [editing, setEditing] = useState(true);
+  const debounceTimerRef = useRef(null);
 
   // Ensure reported_tasks is initialized based on tasks
   useEffect(() => {
@@ -22,9 +25,32 @@ const ReportingStep = () => {
     }
   }, [formData.tasks]);
 
-  const handleLexicalChange = (newContent) => {
-    handleInputChange("report_rich_text", newContent);
-  };
+  // Handle changes from the Lexical editor with debouncing
+  const handleLexicalChange = useCallback(
+    (editorState) => {
+      // Clear the previous timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      // Set a new timer to update after 500ms of inactivity
+      debounceTimerRef.current = setTimeout(() => {
+        // Convert the editor state to JSON string for storage
+        const jsonString = JSON.stringify(editorState.toJSON());
+        handleInputChange("report_content", jsonString);
+      }, 500);
+    },
+    [handleInputChange]
+  );
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -63,25 +89,19 @@ const ReportingStep = () => {
           isLocked={false}
         />
       )}
+
+      <JsonViewer data={formData} />
+
       <Typography variant="h6" sx={{ mt: 3 }}>
         Project Report (Optional)
       </Typography>
-      {editing ? (
-        <Box sx={{ mb: 3 }}>
-          <PlaygroundApp />
-        </Box>
-      ) : (
-        <Typography
-          variant="body1"
-          sx={{
-            flexGrow: 1,
-            color: "black",
-            mb: 3,
-            fontSize: "larger",
-          }}
-          dangerouslySetInnerHTML={{ __html: formData.report_rich_text || "" }}
+
+      <Box sx={{ mb: 3 }}>
+        <PlaygroundApp
+          initialContent={formData.report_content}
+          onChange={handleLexicalChange}
         />
-      )}
+      </Box>
     </Box>
   );
 };

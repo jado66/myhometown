@@ -180,7 +180,11 @@ function LazyImage({
       src={src}
       alt={altText}
       ref={imageRef}
-      style={imageStyle}
+      style={{
+        ...imageStyle,
+        borderRadius: "12px",
+        boxShadow: "rgba(0, 0, 0, 0.5) 0px 2px 8px 0px",
+      }}
       onError={onError}
       draggable="false"
       onLoad={(e) => {

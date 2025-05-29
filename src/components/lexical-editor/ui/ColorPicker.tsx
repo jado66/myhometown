@@ -28,16 +28,15 @@ export function parseAllowedColor(input: string) {
 }
 
 const basicColors = [
+  "#000000",
+  "#4a4a4a",
+  "#9b9b9b",
+  "#ffffff",
   "#a16faf",
   "#1b75bc",
   "#febc18",
   "#318d43",
   "#e45620",
-
-  "#000000",
-  "#4a4a4a",
-  "#9b9b9b",
-  "#ffffff",
 ];
 
 const WIDTH = 214;
@@ -116,7 +115,7 @@ export default function ColorPicker({
       style={{ width: WIDTH }}
       ref={innerDivRef}
     >
-      <TextInput label="Hex" onChange={onSetHex} value={inputColor} />
+      {/* <TextInput label="Hex" onChange={onSetHex} value={inputColor} /> */}
       <div className="color-picker-basic-color">
         {basicColors.map((basicColor) => (
           <button
@@ -130,7 +129,7 @@ export default function ColorPicker({
           />
         ))}
       </div>
-      <MoveWrapper
+      {/* <MoveWrapper
         className="color-picker-saturation"
         style={{ backgroundColor: `hsl(${selfColor.hsv.h}, 100%, 50%)` }}
         onChange={onMoveSaturation}
@@ -143,8 +142,8 @@ export default function ColorPicker({
             top: saturationPosition.y,
           }}
         />
-      </MoveWrapper>
-      <MoveWrapper className="color-picker-hue" onChange={onMoveHue}>
+      </MoveWrapper> */}
+      {/* <MoveWrapper className="color-picker-hue" onChange={onMoveHue}>
         <div
           className="color-picker-hue_cursor"
           style={{
@@ -152,7 +151,7 @@ export default function ColorPicker({
             left: huePosition.x,
           }}
         />
-      </MoveWrapper>
+      </MoveWrapper> */}
       <div
         className="color-picker-color"
         style={{ backgroundColor: selfColor.hex }}
