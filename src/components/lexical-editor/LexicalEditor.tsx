@@ -1,6 +1,7 @@
 /**
  * Modified PlaygroundApp to accept initialContent and onChange props
  * with improved state management to prevent unnecessary resets
+ * and conditional UI rendering based on editable state
  */
 
 import type { JSX } from "react";
@@ -192,6 +193,7 @@ function buildImportMap(): DOMConversionMap {
 interface PlaygroundAppProps {
   initialContent?: string | null;
   onChange?: (editorState: EditorState) => void;
+  editable?: boolean;
 }
 
 // Component to handle content updates from external prop changes
@@ -230,7 +232,11 @@ function ContentUpdatePlugin({
   return null;
 }
 
-function App({ initialContent, onChange }: PlaygroundAppProps): JSX.Element {
+function App({
+  initialContent,
+  onChange,
+  editable = true,
+}: PlaygroundAppProps): JSX.Element {
   const {
     settings: { isCollab, emptyEditor, measureTypingPerf },
   } = useSettings();
@@ -248,6 +254,7 @@ function App({ initialContent, onChange }: PlaygroundAppProps): JSX.Element {
   // Memoize the initial config to prevent recreation on every render
   const initialConfig = useMemo(
     () => ({
+      editable: editable,
       editorState: isCollab
         ? null
         : emptyEditor
@@ -263,7 +270,7 @@ function App({ initialContent, onChange }: PlaygroundAppProps): JSX.Element {
       },
       theme: PlaygroundEditorTheme,
     }),
-    [isCollab, emptyEditor, initialContent, createEditorStateFromJSON]
+    [isCollab, editable, emptyEditor, initialContent, createEditorStateFromJSON]
   );
 
   const handleEditorChange = useCallback(
@@ -280,16 +287,20 @@ function App({ initialContent, onChange }: PlaygroundAppProps): JSX.Element {
       <SharedHistoryContext>
         <TableContext>
           <ToolbarContext>
-            <div className="editor-shell">
-              <Editor />
+            <div className={`editor-shell ${!editable ? "readonly" : ""}`}>
+              <Editor hideToolbar={!editable} />
             </div>
-            <Settings />
-            {isDevPlayground ? <DocsPlugin /> : null}
-            {isDevPlayground ? <PasteLogPlugin /> : null}
-            {isDevPlayground ? <TestRecorderPlugin /> : null}
-            {measureTypingPerf ? <TypingPerfPlugin /> : null}
 
-            {/* Add OnChangePlugin to capture editor changes */}
+            {/* Only show Settings in edit mode */}
+            {editable && <Settings />}
+
+            {/* Development plugins - only show in edit mode */}
+            {editable && <DocsPlugin />}
+            {editable && <PasteLogPlugin />}
+            {editable && <TestRecorderPlugin />}
+            {editable && measureTypingPerf ? <TypingPerfPlugin /> : null}
+
+            {/* Always include OnChangePlugin for state updates */}
             <OnChangePlugin onChange={handleEditorChange} />
 
             {/* Plugin to handle external content updates */}
@@ -304,11 +315,16 @@ function App({ initialContent, onChange }: PlaygroundAppProps): JSX.Element {
 export default function PlaygroundApp({
   initialContent,
   onChange,
+  editable = true,
 }: PlaygroundAppProps): JSX.Element {
   return (
     <SettingsContext>
       <FlashMessageContext>
-        <App initialContent={initialContent} onChange={onChange} />
+        <App
+          initialContent={initialContent}
+          onChange={onChange}
+          editable={editable}
+        />
       </FlashMessageContext>
     </SettingsContext>
   );

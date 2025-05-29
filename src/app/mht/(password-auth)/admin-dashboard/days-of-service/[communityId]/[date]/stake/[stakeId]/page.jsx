@@ -74,6 +74,9 @@ import {
   generatePDFReport,
   generateStakeSummaryReport,
 } from "@/util/reports/days-of-service/reportGenerators";
+
+import { generateStakeReportingReport } from "@/util/reports/days-of-service/postDayOfServiceReport";
+
 import PermissionGuard from "@/guards/permission-guard";
 
 export default function ProjectFormsPage({ params }) {
@@ -401,6 +404,14 @@ export default function ProjectFormsPage({ params }) {
         // toast.error("Failed to generate projects summary");
       }
     });
+  };
+
+  const handleGenerateStakeReportingReport = async () => {
+    if (!dayOfService?.id) {
+      return;
+    }
+
+    await generateStakeReportingReport(stakeId, date, dayOfService, setLoading);
   };
 
   // Utility functions
@@ -1117,6 +1128,16 @@ export default function ProjectFormsPage({ params }) {
           sx={{ width: { xs: "100%", sm: "auto" } }}
         >
           Print Organization&apos;s Projects Summary
+        </Button>
+
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={handleGenerateStakeReportingReport}
+          startIcon={<Assignment />}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
+        >
+          Print Post Day-of-Service Report
         </Button>
       </Box>
 

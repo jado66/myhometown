@@ -64,6 +64,7 @@ const DaysOfServicePage = ({ params }) => {
         secondaryHeaderText: contentData.secondaryHeaderText,
         daysOfServiceImage: contentData.daysOfServiceImage,
         bodyContent: contentData.bodyContent,
+        wysiwygContent: contentData.wysiwygContent,
       };
 
       // Update the community with the new daysOfService object

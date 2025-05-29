@@ -307,9 +307,6 @@ function BlockFormatDropDown({
             <ViewHeadline />
           </ListItemIcon>
           <ListItemText>Normal</ListItemText>
-          <Typography variant="body2" color="text.secondary">
-            {SHORTCUTS.NORMAL}
-          </Typography>
         </MenuItem>
         <MenuItem
           onClick={() => {
@@ -318,13 +315,8 @@ function BlockFormatDropDown({
           }}
           selected={blockType === "h1"}
         >
-          <ListItemIcon>
-            <H1Icon />
-          </ListItemIcon>
+          <ListItemIcon>H1</ListItemIcon>
           <ListItemText>Heading 1</ListItemText>
-          <Typography variant="body2" color="text.secondary">
-            {SHORTCUTS.HEADING1}
-          </Typography>
         </MenuItem>
         <MenuItem
           onClick={() => {
@@ -333,13 +325,8 @@ function BlockFormatDropDown({
           }}
           selected={blockType === "h2"}
         >
-          <ListItemIcon>
-            <H2Icon />
-          </ListItemIcon>
+          <ListItemIcon>H2</ListItemIcon>
           <ListItemText>Heading 2</ListItemText>
-          <Typography variant="body2" color="text.secondary">
-            {SHORTCUTS.HEADING2}
-          </Typography>
         </MenuItem>
         <MenuItem
           onClick={() => {
@@ -348,13 +335,18 @@ function BlockFormatDropDown({
           }}
           selected={blockType === "h3"}
         >
-          <ListItemIcon>
-            <H3Icon />
-          </ListItemIcon>
+          <ListItemIcon>H3</ListItemIcon>
           <ListItemText>Heading 3</ListItemText>
-          <Typography variant="body2" color="text.secondary">
-            {SHORTCUTS.HEADING3}
-          </Typography>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            formatHeading(editor, blockType, "h4");
+            handleClose();
+          }}
+          selected={blockType === "h4"}
+        >
+          <ListItemIcon>H4</ListItemIcon>
+          <ListItemText>Heading 4</ListItemText>
         </MenuItem>
         <MenuItem
           onClick={() => {
@@ -367,9 +359,6 @@ function BlockFormatDropDown({
             <Circle />
           </ListItemIcon>
           <ListItemText>Bullet List</ListItemText>
-          <Typography variant="body2" color="text.secondary">
-            {SHORTCUTS.BULLET_LIST}
-          </Typography>
         </MenuItem>
         <MenuItem
           onClick={() => {
@@ -382,9 +371,6 @@ function BlockFormatDropDown({
             <Numbers />
           </ListItemIcon>
           <ListItemText>Numbered List</ListItemText>
-          <Typography variant="body2" color="text.secondary">
-            {SHORTCUTS.NUMBERED_LIST}
-          </Typography>
         </MenuItem>
         <MenuItem
           onClick={() => {
@@ -397,9 +383,6 @@ function BlockFormatDropDown({
             <CheckBox />
           </ListItemIcon>
           <ListItemText>Check List</ListItemText>
-          <Typography variant="body2" color="text.secondary">
-            {SHORTCUTS.CHECK_LIST}
-          </Typography>
         </MenuItem>
         <MenuItem
           onClick={() => {
@@ -412,9 +395,6 @@ function BlockFormatDropDown({
             <FormatQuote />
           </ListItemIcon>
           <ListItemText>Quote</ListItemText>
-          <Typography variant="body2" color="text.secondary">
-            {SHORTCUTS.QUOTE}
-          </Typography>
         </MenuItem>
       </Menu>
     </>

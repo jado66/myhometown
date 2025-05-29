@@ -68,7 +68,7 @@ const skipCollaborationInit =
   // @ts-expect-error
   window.parent != null && window.parent.frames.right === window;
 
-export default function Editor(): JSX.Element {
+export default function Editor({ hideToolbar }): JSX.Element {
   const { historyState } = useSharedHistoryContext();
   const {
     settings: {
@@ -130,7 +130,7 @@ export default function Editor(): JSX.Element {
 
   return (
     <>
-      {isRichText && (
+      {isRichText && !hideToolbar && (
         <ToolbarPlugin
           editor={editor}
           activeEditor={activeEditor}
@@ -138,7 +138,7 @@ export default function Editor(): JSX.Element {
           setIsLinkEditMode={setIsLinkEditMode}
         />
       )}
-      {isRichText && (
+      {isRichText && !hideToolbar && (
         <ShortcutsPlugin
           editor={activeEditor}
           setIsLinkEditMode={setIsLinkEditMode}
@@ -242,10 +242,12 @@ export default function Editor(): JSX.Element {
         <div>{showTableOfContents && <TableOfContentsPlugin />}</div>
         {shouldUseLexicalContextMenu && <ContextMenuPlugin />}
         {shouldAllowHighlightingWithBrackets && <SpecialTextPlugin />}
-        <ActionsPlugin
-          isRichText={isRichText}
-          shouldPreserveNewLinesInMarkdown={shouldPreserveNewLinesInMarkdown}
-        />
+        {!hideToolbar && (
+          <ActionsPlugin
+            isRichText={isRichText}
+            shouldPreserveNewLinesInMarkdown={shouldPreserveNewLinesInMarkdown}
+          />
+        )}
       </div>
       {showTreeView && <TreeViewPlugin />}
     </>

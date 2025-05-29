@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   useTheme,
   Typography,
@@ -13,6 +13,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import WysiwygEditor from "./WysiwygEditor";
 import UploadImage from "@/components/util/UploadImage";
 import { toast } from "react-toastify";
+import PlaygroundApp from "@/components/lexical-editor/LexicalEditor";
 
 // Assuming you have this component available or will create it
 
@@ -39,6 +40,10 @@ export const CustomDaysOfServiceContent = ({
           yards and parks, refurbish homes, repaint fences, fix code violations
           and more. If there's a need, we're here to help.`
   );
+  const [wysiwygContent, setWysiwygContent] = useState(
+    initialContent.wysiwygContent
+  );
+  const debounceTimerRef = useRef(null);
 
   useEffect(() => {
     if (initialContent) {
@@ -62,6 +67,7 @@ export const CustomDaysOfServiceContent = ({
         bodyContent,
         videoUrl: initialContent.videoUrl || "...",
         posterUrl: initialContent.posterUrl || "...",
+        wysiwygContent: wysiwygContent,
       });
     }
     setEditing(false);
@@ -89,6 +95,23 @@ export const CustomDaysOfServiceContent = ({
   const handleChangeImage = (url) => {
     setImage(url);
   };
+
+  const handleLexicalChange = useCallback(
+    (editorState) => {
+      // Clear the previous timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      // Set a new timer to update after 500ms of inactivity
+      debounceTimerRef.current = setTimeout(() => {
+        // Convert the editor state to JSON string for storage
+        const jsonString = JSON.stringify(editorState.toJSON());
+        setWysiwygContent(jsonString);
+      }, 100);
+    },
+    [setWysiwygContent]
+  );
 
   return (
     <>
@@ -197,7 +220,6 @@ export const CustomDaysOfServiceContent = ({
             )}
           </>
         )}
-
         {/* 4. Editable image section */}
         <Grid
           item
@@ -253,62 +275,66 @@ export const CustomDaysOfServiceContent = ({
             </Box>
           </Grid>
         </Grid>
-
         {/* 5. WYSIWYG editor */}
-        {editing ? (
-          <Box sx={{ mb: 3 }}>
-            <WysiwygEditor
-              content={bodyContent}
-              onChange={handleContentChange}
-              placeholder="Start writing..."
-            />
-          </Box>
-        ) : (
-          <Typography
-            variant="body1"
-            sx={{
-              flexGrow: 1,
-              color: "black",
-              mb: 3,
-              fontSize: "larger",
-            }}
-            dangerouslySetInnerHTML={{ __html: bodyContent }}
-          />
-        )}
-
-        {isEditMode && (
-          <>
-            {!editing ? (
-              <Button
-                startIcon={<Edit />}
-                variant="outlined"
-                onClick={() => setEditing(true)}
-                sx={{ alignSelf: "flex-end" }}
-              >
-                Edit Content
-              </Button>
-            ) : (
-              <Box sx={{ display: "flex", gap: 2, alignSelf: "flex-end" }}>
+        <Grid
+          item
+          xs={12}
+          display="flex"
+          justifyContent="center"
+          sx={{
+            mb: 3,
+            position: "relative",
+          }}
+        >
+          {editing ? (
+            <Box sx={{ mb: 3 }}>
+              <PlaygroundApp
+                initialContent={wysiwygContent}
+                onChange={handleLexicalChange}
+              />
+            </Box>
+          ) : (
+            <PlaygroundApp initialContent={wysiwygContent} editable={false} />
+          )}
+          {isEditMode && (
+            <>
+              {!editing ? (
                 <Button
-                  startIcon={<Cancel />}
+                  startIcon={<Edit />}
                   variant="outlined"
-                  color="error"
-                  onClick={handleCancel}
+                  onClick={() => setEditing(true)}
+                  sx={{
+                    alignSelf: "flex-end",
+                    position: "absolute",
+                    top: 16,
+                    right: 0,
+                  }}
                 >
-                  Cancel
+                  Edit
                 </Button>
-                <Button
-                  startIcon={<Save />}
-                  variant="contained"
-                  color="primary"
-                  onClick={handleSave}
-                >
-                  Save Changes
-                </Button>
-              </Box>
-            )}
-          </>
-        )}
+              ) : (
+                <Box sx={{ display: "flex", gap: 2, alignSelf: "flex-end" }}>
+                  <Button
+                    startIcon={<Cancel />}
+                    variant="outlined"
+                    color="error"
+                    onClick={handleCancel}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    startIcon={<Save />}
+                    variant="contained"
+                    color="primary"
+                    onClick={handleSave}
+                  >
+                    Save Changes
+                  </Button>
+                </Box>
+              )}
+            </>
+          )}
+        </Grid>
       </Grid>
     </>
   );
