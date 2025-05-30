@@ -10,10 +10,10 @@ import {
 } from "@mui/material";
 import { Edit, Save, Cancel, Link as LinkIcon } from "@mui/icons-material";
 import useMediaQuery from "@mui/material/useMediaQuery";
-// import WysiwygEditor from "./WysiwygEditor";
+import WysiwygEditor from "./WysiwygEditor";
 import UploadImage from "@/components/util/UploadImage";
 import { toast } from "react-toastify";
-// import PlaygroundApp from "@/components/lexical-editor/LexicalEditor";
+import PlaygroundApp from "@/components/lexical-editor/LexicalEditor";
 
 // Assuming you have this component available or will create it
 
@@ -286,7 +286,7 @@ export const CustomDaysOfServiceContent = ({
             position: "relative",
           }}
         >
-          {/* {editing ? (
+          {editing ? (
             <Box sx={{ mb: 3 }}>
               <PlaygroundApp
                 initialContent={wysiwygContent}
@@ -295,7 +295,7 @@ export const CustomDaysOfServiceContent = ({
             </Box>
           ) : (
             <PlaygroundApp initialContent={wysiwygContent} editable={false} />
-          )} */}
+          )}
           {isEditMode && (
             <>
               {!editing ? (
