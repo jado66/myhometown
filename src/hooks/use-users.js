@@ -70,7 +70,9 @@ const useUsers = () => {
     setError(null);
 
     try {
-      // Create invitation link for the user
+      console.log("Starting user invitation process...");
+
+      // Send the full user data to the API so it can create the user record immediately
       const response = await fetch("/api/auth/invite", {
         method: "POST",
         headers: {
@@ -80,6 +82,7 @@ const useUsers = () => {
           email: userData.email,
           firstName: userData.first_name,
           lastName: userData.last_name,
+          userData: userData, // Pass the full user data
         }),
       });
 
@@ -88,45 +91,104 @@ const useUsers = () => {
         throw new Error(error.message || "Failed to send invitation");
       }
 
-      const { data: inviteData } = await response.json();
+      const responseData = await response.json();
+      console.log("Invitation API response:", responseData);
 
-      // Add or update the user profile data
-      const { data, error: dbError } = await supabase
-        .from("users")
-        .upsert([
-          {
-            id: inviteData.user?.id, // Handle case where user might not be returned
-            email: userData.email,
-            first_name: userData.first_name,
-            last_name: userData.last_name,
-            contact_number: userData.contact_number,
-            permissions: userData.permissions,
-            cities: userData.cities?.map((c) => c.id) || [],
-            communities: userData.communities?.map((c) => c.id) || [],
-          },
-        ])
-        .select()
-        .single();
+      const invitedUser = responseData.data?.user;
+      const userRecord = responseData.data?.userRecord;
 
-      if (dbError) throw dbError;
+      if (!invitedUser || !invitedUser.id) {
+        throw new Error("No user ID returned from invitation API");
+      }
 
-      setUsers((prevUsers) => [
-        ...prevUsers,
+      console.log("User auth created with ID:", invitedUser.id);
+      console.log("User record created:", !!userRecord);
+
+      // Create user record if API didn't create it
+      let finalUserRecord = userRecord;
+      if (!userRecord) {
+        console.log("Creating user record as fallback...");
+
+        const { data, error: dbError } = await supabase
+          .from("users")
+          .insert([
+            {
+              id: invitedUser.id,
+              email: userData.email,
+              first_name: userData.first_name,
+              last_name: userData.last_name,
+              contact_number: userData.contact_number,
+              permissions: userData.permissions,
+              cities: userData.cities?.map((c) => c.id) || [],
+              communities: userData.communities?.map((c) => c.id) || [],
+            },
+          ])
+          .select()
+          .single();
+
+        if (dbError) {
+          if (dbError.code === "23505") {
+            // User already exists, try to update
+            const { data: updateData, error: updateError } = await supabase
+              .from("users")
+              .update({
+                email: userData.email,
+                first_name: userData.first_name,
+                last_name: userData.last_name,
+                contact_number: userData.contact_number,
+                permissions: userData.permissions,
+                cities: userData.cities?.map((c) => c.id) || [],
+                communities: userData.communities?.map((c) => c.id) || [],
+              })
+              .eq("id", invitedUser.id)
+              .select()
+              .single();
+
+            if (updateError) {
+              throw new Error(
+                `Failed to update user record: ${updateError.message}`
+              );
+            }
+            finalUserRecord = updateData;
+          } else {
+            throw new Error(`Failed to create user record: ${dbError.message}`);
+          }
+        } else {
+          finalUserRecord = data;
+        }
+      }
+
+      console.log("Final user record:", finalUserRecord);
+
+      // Update local state
+      const newUser = {
+        ...finalUserRecord,
+        id: finalUserRecord.id,
+        cities: userData.cities || [],
+        communities: userData.communities || [],
+        cities_details: (userData.cities || []).map((c) => ({
+          ...c,
+          state: "Utah",
+        })),
+        communities_details: userData.communities || [],
+      };
+
+      setUsers((prevUsers) => [...prevUsers, newUser]);
+
+      // Update user select options
+      setUserSelectOptions((prevOptions) => [
+        ...prevOptions,
         {
-          ...data,
-          id: data.id,
-          cities: userData.cities,
-          communities: userData.communities,
-          cities_details: userData.cities.map((c) => {
-            return { ...c, state: "Utah" };
-          }), // Use the provided cities
-          communities_details: userData.communities,
+          value: newUser.id,
+          label: `${newUser.first_name} ${newUser.last_name}`,
+          data: newUser,
         },
       ]);
 
-      toast.success("User invited successfully");
-      return { success: true, data };
+      toast.success("User invited and created successfully");
+      return { success: true, data: newUser };
     } catch (err) {
+      console.error("Add user error:", err);
       setError(err.message);
       toast.error(err.message);
       return { success: false, error: err.message };
@@ -243,83 +305,24 @@ const useUsers = () => {
     try {
       console.log("Attempting to delete user with ID:", userId);
 
-      // Step 1: Check if user exists in auth system first
-      let authUserExists = false;
-      try {
-        const { data: authUser, error: getUserError } =
-          await supabase.auth.admin.getUserById(userId);
-        if (authUser && !getUserError) {
-          authUserExists = true;
-          console.log("Auth user found:", authUser.user?.email);
-        }
-      } catch (error) {
-        console.log("Auth user not found or error checking:", error.message);
+      // Call the API to delete the user
+      const response = await fetch("/api/auth/delete-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to delete user");
       }
 
-      // Step 2: Delete from auth system first (if exists)
-      if (authUserExists) {
-        console.log("Deleting from auth system...");
-        const { error: authError } = await supabase.auth.admin.deleteUser(
-          userId
-        );
+      console.log("User deletion successful:", data);
 
-        if (authError) {
-          console.error("Auth deletion error:", authError);
-          // Don't throw immediately - we might still want to clean up the database record
-          console.log(
-            "Auth deletion failed, but continuing with database cleanup..."
-          );
-        } else {
-          console.log("Successfully deleted from auth system");
-        }
-      }
-
-      // Step 3: Delete related invitation records first (if using custom invitation system)
-      try {
-        // Get user email first for invitation cleanup
-        const { data: userData } = await supabase
-          .from("users")
-          .select("email")
-          .eq("id", userId)
-          .single();
-
-        if (userData?.email) {
-          console.log("Cleaning up invitation records for:", userData.email);
-          const { error: inviteError } = await supabase
-            .from("user_invitations")
-            .delete()
-            .eq("email", userData.email);
-
-          if (inviteError) {
-            console.warn(
-              "Failed to delete invitation records:",
-              inviteError.message
-            );
-            // Don't throw - this is not critical
-          }
-        }
-      } catch (error) {
-        console.warn("Error during invitation cleanup:", error.message);
-        // Continue with deletion
-      }
-
-      // Step 4: Delete from users table
-      console.log("Deleting from users table...");
-      const { error: dbError } = await supabase
-        .from("users")
-        .delete()
-        .eq("id", userId);
-
-      if (dbError) {
-        console.error("Database deletion error:", dbError);
-        throw new Error(
-          `Failed to delete user from database: ${dbError.message}`
-        );
-      }
-
-      console.log("Successfully deleted from users table");
-
-      // Step 5: Update local state
+      // Update local state
       setUsers((prevUsers) => prevUsers.filter((u) => u.id !== userId));
       toast.success("User deleted successfully");
       return { success: true };

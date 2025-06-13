@@ -114,16 +114,16 @@ export const UserFormDialog = ({
               </Button>
 
               {/* Show both buttons - you can choose which one to keep */}
-              <Button
+              {/* <Button
                 onClick={() => onPasswordReset(formData.email)}
                 color="warning"
                 disabled={loading || resendingInvite}
                 startIcon={<Key />}
               >
                 Password Reset
-              </Button>
+              </Button> */}
 
-              {onResendInvitation && (
+              {/* {onResendInvitation && (
                 <Button
                   onClick={handleResendInvitation}
                   color="info"
@@ -132,7 +132,7 @@ export const UserFormDialog = ({
                 >
                   {resendingInvite ? "Sending..." : "Resend Invitation"}
                 </Button>
-              )}
+              )} */}
             </Box>
           )}
           <Box>

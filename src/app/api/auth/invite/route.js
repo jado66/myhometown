@@ -1,6 +1,6 @@
 import { myHometownTransporter } from "@/util/email/nodemailer-transporter";
 import { createClient } from "@supabase/supabase-js";
-import { v4 as uuidv4 } from "uuid"; // Make sure to install: npm install uuid
+import { v4 as uuidv4 } from "uuid";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -86,17 +86,22 @@ const formattedInviteHtml = (email, firstName, lastName, inviteLink) => {
 };
 
 export async function POST(request) {
-  console.log("🚀 Invite API called");
+  console.log("🚀 Enhanced Invite API called");
 
   try {
-    // Step 1: Parse request body
-    console.log("📥 Parsing request body...");
-    const { email, firstName, lastName } = await request.json();
-    console.log("📧 Request data:", { email, firstName, lastName });
+    // Parse request body
+    const body = await request.json();
+    const { email, firstName, lastName, userData } = body;
 
-    // Step 2: Validate input
+    console.log("📧 Request data:", {
+      email,
+      firstName,
+      lastName,
+      hasUserData: !!userData,
+    });
+
+    // Validate input
     if (!email || !firstName || !lastName) {
-      console.error("❌ Missing required fields");
       return new Response(
         JSON.stringify({
           message: "Missing required fields: email, firstName, lastName",
@@ -105,84 +110,53 @@ export async function POST(request) {
       );
     }
 
-    // Step 3: Check environment variables
-    console.log("🔧 Checking environment variables...");
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      console.error("❌ Missing NEXT_PUBLIC_SUPABASE_URL");
-      throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL environment variable");
-    }
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.error("❌ Missing SUPABASE_SERVICE_ROLE_KEY");
-      throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY environment variable");
-    }
-    if (!process.env.NEXT_PUBLIC_DOMAIN) {
-      console.error("❌ Missing NEXT_PUBLIC_DOMAIN");
-      throw new Error("Missing NEXT_PUBLIC_DOMAIN environment variable");
-    }
-    console.log("✅ Environment variables OK");
-
-    // Step 4: Test Supabase connection
-    console.log("🗄️ Testing Supabase connection...");
+    // Check for existing auth user
+    console.log("👤 Checking for existing auth user...");
+    let authUser = null;
     try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("count")
-        .single();
-      if (error && error.code !== "PGRST116") {
-        // PGRST116 is "not found" which is OK
-        console.error("❌ Supabase connection test failed:", error);
-        throw new Error(`Supabase connection failed: ${error.message}`);
-      }
-      console.log("✅ Supabase connection OK");
-    } catch (connError) {
-      console.error("❌ Supabase connection error:", connError);
-      throw new Error(`Database connection failed: ${connError.message}`);
-    }
-
-    // Step 5: Check if user_invitations table exists
-    console.log("📋 Checking user_invitations table...");
-    try {
-      const { error: tableError } = await supabase
-        .from("user_invitations")
-        .select("count")
-        .limit(1);
-
-      if (tableError) {
-        console.error("❌ user_invitations table error:", tableError);
-        if (
-          tableError.message.includes("relation") &&
-          tableError.message.includes("does not exist")
-        ) {
-          throw new Error(
-            "user_invitations table does not exist. Please run the SQL schema first."
-          );
+      const { data: users, error: listError } =
+        await supabase.auth.admin.listUsers();
+      if (!listError && users) {
+        authUser = users.users.find((u) => u.email === email);
+        if (authUser) {
+          console.log("✅ Found existing auth user:", authUser.id);
         }
-        throw new Error(`Database table error: ${tableError.message}`);
       }
-      console.log("✅ user_invitations table exists");
-    } catch (tableErr) {
-      console.error("❌ Table check failed:", tableErr);
-      throw tableErr;
+    } catch (error) {
+      console.log("⚠️ Could not check existing users:", error.message);
     }
 
-    // Step 6: Generate invitation token
-    console.log("🎫 Generating invitation token...");
-    let invitationToken;
-    try {
-      invitationToken = uuidv4();
-      console.log(
-        "✅ Token generated:",
-        invitationToken.substring(0, 8) + "..."
-      );
-    } catch (uuidError) {
-      console.error("❌ UUID generation failed:", uuidError);
-      throw new Error(
-        "Failed to generate invitation token. Make sure 'uuid' package is installed."
-      );
+    // Create auth user if doesn't exist
+    if (!authUser) {
+      console.log("➕ Creating new auth user...");
+      try {
+        const { data: newAuthUser, error: createError } =
+          await supabase.auth.admin.createUser({
+            email,
+            email_confirm: true,
+            user_metadata: {
+              first_name: firstName,
+              last_name: lastName,
+              invitation_pending: true,
+            },
+          });
+
+        if (createError) {
+          throw createError;
+        }
+
+        authUser = newAuthUser.user;
+        console.log("✅ Auth user created:", authUser.id);
+      } catch (createError) {
+        console.error("❌ Failed to create auth user:", createError);
+        throw new Error(`Failed to create auth user: ${createError.message}`);
+      }
     }
 
-    // Step 7: Check for existing invitation
-    console.log("🔍 Checking for existing invitation...");
+    // Generate invitation token
+    const invitationToken = uuidv4();
+
+    // Check for existing invitation
     const { data: existingInvitation, error: lookupError } = await supabase
       .from("user_invitations")
       .select("*")
@@ -190,35 +164,26 @@ export async function POST(request) {
       .eq("used", false)
       .single();
 
-    if (lookupError && lookupError.code !== "PGRST116") {
-      console.error("❌ Lookup error:", lookupError);
-      throw new Error(`Database lookup failed: ${lookupError.message}`);
-    }
-
     let token = invitationToken;
 
     if (existingInvitation) {
-      console.log("♻️ Reusing existing invitation token");
+      console.log("♻️ Updating existing invitation");
       token = existingInvitation.token;
 
-      // Update the invitation with new details
-      console.log("📝 Updating existing invitation...");
       const { error: updateError } = await supabase
         .from("user_invitations")
         .update({
           first_name: firstName,
           last_name: lastName,
+          user_id: authUser.id,
           created_at: new Date().toISOString(),
         })
         .eq("id", existingInvitation.id);
 
       if (updateError) {
-        console.error("❌ Update error:", updateError);
         throw new Error(`Failed to update invitation: ${updateError.message}`);
       }
-      console.log("✅ Invitation updated");
     } else {
-      // Create new invitation record
       console.log("➕ Creating new invitation...");
       const { error: insertError } = await supabase
         .from("user_invitations")
@@ -226,24 +191,85 @@ export async function POST(request) {
           {
             email,
             token,
+            user_id: authUser.id,
             first_name: firstName,
             last_name: lastName,
           },
         ]);
 
       if (insertError) {
-        console.error("❌ Insert error:", insertError);
         throw new Error(`Failed to create invitation: ${insertError.message}`);
       }
-      console.log("✅ New invitation created");
     }
 
-    // Step 8: Create invitation link
-    const inviteLink = `${process.env.NEXT_PUBLIC_DOMAIN}/auth/setup-password?token=${token}`;
-    console.log("🔗 Invitation link created:", inviteLink);
+    // Create user record immediately if userData is provided
+    let userRecord = null;
+    if (userData) {
+      console.log("🆕 Creating user record immediately...");
 
-    // Step 9: Send email
-    console.log("📬 Sending invitation email...");
+      try {
+        const { data: insertedUser, error: userError } = await supabase
+          .from("users")
+          .insert([
+            {
+              id: authUser.id,
+              email: email,
+              first_name: firstName,
+              last_name: lastName,
+              contact_number: userData.contact_number || null,
+              permissions: userData.permissions || {},
+              cities: userData.cities?.map((c) => c.id) || [],
+              communities: userData.communities?.map((c) => c.id) || [],
+            },
+          ])
+          .select()
+          .single();
+
+        if (userError) {
+          // If user already exists, update instead
+          if (userError.code === "23505") {
+            console.log("User record exists, updating...");
+            const { data: updatedUser, error: updateError } = await supabase
+              .from("users")
+              .update({
+                email: email,
+                first_name: firstName,
+                last_name: lastName,
+                contact_number: userData.contact_number || null,
+                permissions: userData.permissions || {},
+                cities: userData.cities?.map((c) => c.id) || [],
+                communities: userData.communities?.map((c) => c.id) || [],
+              })
+              .eq("id", authUser.id)
+              .select()
+              .single();
+
+            if (updateError) {
+              console.warn(
+                "⚠️ Failed to update user record:",
+                updateError.message
+              );
+            } else {
+              userRecord = updatedUser;
+              console.log("✅ User record updated");
+            }
+          } else {
+            console.warn("⚠️ Failed to create user record:", userError.message);
+          }
+        } else {
+          userRecord = insertedUser;
+          console.log("✅ User record created");
+        }
+      } catch (userCreateError) {
+        console.warn("⚠️ Error creating user record:", userCreateError.message);
+        // Don't fail the whole invitation process for this
+      }
+    }
+
+    // Create invitation link
+    const inviteLink = `${process.env.NEXT_PUBLIC_DOMAIN}/auth/setup-password?token=${token}`;
+
+    // Send email
     try {
       const info = await myHometownTransporter.sendMail({
         to: email,
@@ -257,12 +283,19 @@ export async function POST(request) {
       throw new Error(`Failed to send email: ${emailError.message}`);
     }
 
-    console.log("🎉 Invitation process completed successfully");
-
     return new Response(
       JSON.stringify({
         message: "Invitation sent successfully",
-        token, // Remove this in production
+        data: {
+          user: {
+            id: authUser.id,
+            email: email,
+            first_name: firstName,
+            last_name: lastName,
+          },
+          userRecord: userRecord, // Include the created user record if available
+          token: token,
+        },
       }),
       {
         status: 200,
@@ -271,14 +304,11 @@ export async function POST(request) {
     );
   } catch (error) {
     console.error("💥 Invitation API error:", error);
-    console.error("Error stack:", error.stack);
 
     return new Response(
       JSON.stringify({
         message: "Error sending invitation",
         error: error.message,
-        details:
-          process.env.NODE_ENV === "development" ? error.stack : undefined,
       }),
       {
         status: 500,

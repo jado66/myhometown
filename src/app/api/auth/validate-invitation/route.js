@@ -43,6 +43,7 @@ export async function GET(request) {
           email: invitation.email,
           firstName: invitation.first_name,
           lastName: invitation.last_name,
+          userId: invitation.user_id, // Include the user ID
         },
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }

@@ -117,56 +117,39 @@ const SetupPasswordPage = () => {
 
       const token = searchParams.get("token");
 
-      // Create or sign up the user
-      const { data: authData, error: signUpError } = await supabase.auth.signUp(
-        {
-          email: invitation.email,
-          password: password,
-          options: {
-            data: {
-              first_name: invitation.firstName,
-              last_name: invitation.lastName,
-            },
-          },
-        }
-      );
-
-      if (signUpError && !signUpError.message.includes("already registered")) {
-        throw signUpError;
-      }
-
-      // If user already exists, sign them in
-      if (signUpError && signUpError.message.includes("already registered")) {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: invitation.email,
-          password: password,
-        });
-
-        if (signInError) {
-          // If sign in fails, try to update the password
-          const { error: updateError } = await supabase.auth.updateUser({
-            password: password,
-          });
-
-          if (updateError) {
-            throw new Error(
-              "Unable to set password. Please contact your administrator."
-            );
-          }
-        }
-      }
-
-      // Mark the invitation as used
-      const response = await fetch("/api/auth/mark-invitation-used", {
+      // Call the API to setup the password
+      const response = await fetch("/api/auth/setup-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({
+          token,
+          password,
+          email: invitation.email,
+          firstName: invitation.firstName,
+          lastName: invitation.lastName,
+          userId: invitation.userId,
+        }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        console.warn("Failed to mark invitation as used, but continuing...");
+        throw new Error(data.error || "Failed to setup password");
+      }
+
+      console.log("Password setup successful");
+
+      // Now sign in the user using the regular client
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: invitation.email,
+        password: password,
+      });
+
+      if (signInError) {
+        console.warn("Auto sign-in failed:", signInError.message);
+        // Don't throw here - the account is created, they can sign in manually
       }
 
       // Redirect to the admin dashboard
