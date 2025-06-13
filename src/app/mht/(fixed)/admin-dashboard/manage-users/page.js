@@ -36,6 +36,7 @@ function ManagementContent() {
     handleEditUser,
     handleDeleteUser,
     handlePasswordReset,
+    handleResendInvitation, // Add this line
     initialUserState,
   } = useUsers();
 
@@ -73,6 +74,17 @@ function ManagementContent() {
     }
   };
 
+  // New function to handle resend invitation
+  const handleResendInvite = async (userData) => {
+    const result = await handleResendInvitation({
+      email: userData.email,
+      first_name: userData.first_name,
+      last_name: userData.last_name,
+    });
+
+    return result;
+  };
+
   if (!hasLoaded) {
     return (
       <Box display="flex" justifyContent="center">
@@ -90,6 +102,7 @@ function ManagementContent() {
         initialData={userToEdit || initialUserState}
         onDelete={handleAskDeleteUser}
         onPasswordReset={handlePasswordReset}
+        onResendInvitation={handleResendInvite} // Add this line
         loading={loading}
       />
 

@@ -23,31 +23,47 @@ const SetupPasswordPage = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [tokenExpired, setTokenExpired] = useState(false);
+  const [tokenValid, setTokenValid] = useState(false);
+  const [invitation, setInvitation] = useState(null);
+  const [validatingToken, setValidatingToken] = useState(true);
 
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
     setMounted(true);
-
-    // Check for error parameters in URL
-    const error = searchParams.get("error");
-    const errorCode = searchParams.get("error_code");
-    const errorDescription = searchParams.get("error_description");
-
-    if (error === "access_denied" && errorCode === "otp_expired") {
-      setTokenExpired(true);
-      setError(
-        "Your invitation link has expired. Please request a new invitation from your administrator."
-      );
-    } else if (error) {
-      setError(
-        errorDescription?.replace(/\+/g, " ") ||
-          "Invalid or expired invitation link"
-      );
-    }
+    validateInvitation();
   }, [searchParams]);
+
+  const validateInvitation = async () => {
+    const token = searchParams.get("token");
+
+    if (!token) {
+      setError(
+        "No invitation token provided. Please check your invitation link."
+      );
+      setValidatingToken(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/auth/validate-invitation?token=${token}`
+      );
+      const data = await response.json();
+
+      if (data.valid) {
+        setTokenValid(true);
+        setInvitation(data.invitation);
+      } else {
+        setError(data.message || "Invalid invitation link");
+      }
+    } catch (err) {
+      setError("Error validating invitation link");
+    } finally {
+      setValidatingToken(false);
+    }
+  };
 
   const handleTogglePassword = (field) => {
     if (field === "password") {
@@ -99,29 +115,58 @@ const SetupPasswordPage = () => {
         throw new Error(passwordError);
       }
 
-      // Get current session
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
+      const token = searchParams.get("token");
 
-      if (sessionError) {
-        throw sessionError;
+      // Create or sign up the user
+      const { data: authData, error: signUpError } = await supabase.auth.signUp(
+        {
+          email: invitation.email,
+          password: password,
+          options: {
+            data: {
+              first_name: invitation.firstName,
+              last_name: invitation.lastName,
+            },
+          },
+        }
+      );
+
+      if (signUpError && !signUpError.message.includes("already registered")) {
+        throw signUpError;
       }
 
-      if (!session) {
-        throw new Error(
-          "No active session found. Please try clicking the link from your email again."
-        );
+      // If user already exists, sign them in
+      if (signUpError && signUpError.message.includes("already registered")) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: invitation.email,
+          password: password,
+        });
+
+        if (signInError) {
+          // If sign in fails, try to update the password
+          const { error: updateError } = await supabase.auth.updateUser({
+            password: password,
+          });
+
+          if (updateError) {
+            throw new Error(
+              "Unable to set password. Please contact your administrator."
+            );
+          }
+        }
       }
 
-      // Update the password
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: password,
+      // Mark the invitation as used
+      const response = await fetch("/api/auth/mark-invitation-used", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token }),
       });
 
-      if (updateError) {
-        throw updateError;
+      if (!response.ok) {
+        console.warn("Failed to mark invitation as used, but continuing...");
       }
 
       // Redirect to the admin dashboard
@@ -138,8 +183,8 @@ const SetupPasswordPage = () => {
     return null;
   }
 
-  // If token is expired, only show the error message and return button
-  if (tokenExpired) {
+  // Show loading while validating token
+  if (validatingToken) {
     return (
       <Container component="main" maxWidth="xs">
         <Box
@@ -169,7 +214,46 @@ const SetupPasswordPage = () => {
             </Box>
 
             <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
-              Link Expired
+              Validating Invitation...
+            </Typography>
+          </Paper>
+        </Box>
+      </Container>
+    );
+  }
+
+  // If token is invalid, show error message
+  if (!tokenValid) {
+    return (
+      <Container component="main" maxWidth="xs">
+        <Box
+          sx={{
+            marginTop: 8,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Paper
+            elevation={3}
+            sx={{
+              padding: 4,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
+            <Box sx={{ mb: 3 }}>
+              <img
+                src="/svgs/Primary_Logo_Black_Text.svg"
+                alt="MyHometown"
+                style={{ height: "60px", width: "auto" }}
+              />
+            </Box>
+
+            <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
+              Invalid Invitation
             </Typography>
 
             <Typography color="error" sx={{ mb: 3, textAlign: "center" }}>
@@ -226,7 +310,11 @@ const SetupPasswordPage = () => {
             Set Up Your Password
           </Typography>
 
-          <Typography variant="body1" color="#318d43" sx={{ mb: 3 }}>
+          <Typography variant="body1" color="#318d43" sx={{ mb: 1 }}>
+            Welcome, {invitation?.firstName} {invitation?.lastName}!
+          </Typography>
+
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             Create a secure password for your account
           </Typography>
 
@@ -240,23 +328,6 @@ const SetupPasswordPage = () => {
                 <Typography color="error" sx={{ mb: 2 }}>
                   {error}
                 </Typography>
-                {tokenExpired && (
-                  <Button
-                    variant="outlined"
-                    onClick={() => router.push(process.env.NEXT_PUBLIC_DOMAIN)}
-                    sx={{
-                      mt: 1,
-                      color: "#318d43",
-                      borderColor: "#318d43",
-                      "&:hover": {
-                        borderColor: "#4ab55f",
-                        backgroundColor: "rgba(49, 141, 67, 0.04)",
-                      },
-                    }}
-                  >
-                    Return to Login
-                  </Button>
-                )}
               </Box>
             )}
 

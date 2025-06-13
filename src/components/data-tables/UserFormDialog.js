@@ -8,7 +8,7 @@ import {
   Box,
   FormLabel,
 } from "@mui/material";
-import { Delete, Key } from "@mui/icons-material";
+import { Delete, Key, Email } from "@mui/icons-material";
 import JsonViewer from "../util/debug/DebugOutput";
 import UserFormFields from "./UserFormFields";
 import { supabase } from "@/util/supabase";
@@ -28,9 +28,11 @@ export const UserFormDialog = ({
   initialData = null,
   onDelete,
   onPasswordReset,
+  onResendInvitation, // New prop
   loading = false,
 }) => {
   const [formData, setFormData] = useState(initialData);
+  const [resendingInvite, setResendingInvite] = useState(false);
   const isEditMode = !!initialData?.id;
 
   useEffect(() => {
@@ -66,6 +68,19 @@ export const UserFormDialog = ({
     onSubmit(formData);
   };
 
+  const handleResendInvitation = async () => {
+    if (!onResendInvitation || !formData) return;
+
+    setResendingInvite(true);
+    try {
+      await onResendInvitation(formData);
+    } catch (error) {
+      console.error("Error resending invitation:", error);
+    } finally {
+      setResendingInvite(false);
+    }
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>{isEditMode ? "Edit User" : "Create User"}</DialogTitle>
@@ -88,30 +103,47 @@ export const UserFormDialog = ({
           }}
         >
           {isEditMode && (
-            <Box>
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button
                 onClick={() => onDelete(formData)}
                 color="error"
-                disabled={loading}
+                disabled={loading || resendingInvite}
                 startIcon={<Delete />}
               >
                 Delete User
               </Button>
-              {/* <Button
+
+              {/* Show both buttons - you can choose which one to keep */}
+              <Button
                 onClick={() => onPasswordReset(formData.email)}
                 color="warning"
-                disabled={loading}
+                disabled={loading || resendingInvite}
                 startIcon={<Key />}
               >
-                Reset Password
-              </Button> */}
+                Password Reset
+              </Button>
+
+              {onResendInvitation && (
+                <Button
+                  onClick={handleResendInvitation}
+                  color="info"
+                  disabled={loading || resendingInvite}
+                  startIcon={<Email />}
+                >
+                  {resendingInvite ? "Sending..." : "Resend Invitation"}
+                </Button>
+              )}
             </Box>
           )}
           <Box>
-            <Button onClick={onClose} disabled={loading}>
+            <Button onClick={onClose} disabled={loading || resendingInvite}>
               Cancel
             </Button>
-            <Button type="submit" color="primary" disabled={loading}>
+            <Button
+              type="submit"
+              color="primary"
+              disabled={loading || resendingInvite}
+            >
               {loading ? "Saving..." : isEditMode ? "Save" : "Create"}
             </Button>
           </Box>

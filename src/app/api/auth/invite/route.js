@@ -1,5 +1,6 @@
 import { myHometownTransporter } from "@/util/email/nodemailer-transporter";
 import { createClient } from "@supabase/supabase-js";
+import { v4 as uuidv4 } from "uuid"; // Make sure to install: npm install uuid
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -71,7 +72,7 @@ const formattedInviteHtml = (email, firstName, lastName, inviteLink) => {
           <p style="text-align: center;">
             <a href="${inviteLink}" class="button" style="color: #ffffff">Set Up Your Account</a>
           </p>
-          <p>This invitation link will expire in 24 hours for security reasons. If you need a new invitation after that, please contact your administrator.</p>
+          <p>This invitation link will remain active until you use it to set up your account.</p>
           <p>If you didn't expect this invitation, you can safely ignore this email.</p>
         </div>
         <div class="footer">
@@ -85,103 +86,183 @@ const formattedInviteHtml = (email, firstName, lastName, inviteLink) => {
 };
 
 export async function POST(request) {
-  try {
-    const { email, firstName, lastName } = await request.json();
+  console.log("🚀 Invite API called");
 
-    // First, check if user exists in our database
-    const { data: existingUser, error: lookupError } = await supabase
-      .from("users")
-      .select("id")
+  try {
+    // Step 1: Parse request body
+    console.log("📥 Parsing request body...");
+    const { email, firstName, lastName } = await request.json();
+    console.log("📧 Request data:", { email, firstName, lastName });
+
+    // Step 2: Validate input
+    if (!email || !firstName || !lastName) {
+      console.error("❌ Missing required fields");
+      return new Response(
+        JSON.stringify({
+          message: "Missing required fields: email, firstName, lastName",
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Step 3: Check environment variables
+    console.log("🔧 Checking environment variables...");
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      console.error("❌ Missing NEXT_PUBLIC_SUPABASE_URL");
+      throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL environment variable");
+    }
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("❌ Missing SUPABASE_SERVICE_ROLE_KEY");
+      throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY environment variable");
+    }
+    if (!process.env.NEXT_PUBLIC_DOMAIN) {
+      console.error("❌ Missing NEXT_PUBLIC_DOMAIN");
+      throw new Error("Missing NEXT_PUBLIC_DOMAIN environment variable");
+    }
+    console.log("✅ Environment variables OK");
+
+    // Step 4: Test Supabase connection
+    console.log("🗄️ Testing Supabase connection...");
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("count")
+        .single();
+      if (error && error.code !== "PGRST116") {
+        // PGRST116 is "not found" which is OK
+        console.error("❌ Supabase connection test failed:", error);
+        throw new Error(`Supabase connection failed: ${error.message}`);
+      }
+      console.log("✅ Supabase connection OK");
+    } catch (connError) {
+      console.error("❌ Supabase connection error:", connError);
+      throw new Error(`Database connection failed: ${connError.message}`);
+    }
+
+    // Step 5: Check if user_invitations table exists
+    console.log("📋 Checking user_invitations table...");
+    try {
+      const { error: tableError } = await supabase
+        .from("user_invitations")
+        .select("count")
+        .limit(1);
+
+      if (tableError) {
+        console.error("❌ user_invitations table error:", tableError);
+        if (
+          tableError.message.includes("relation") &&
+          tableError.message.includes("does not exist")
+        ) {
+          throw new Error(
+            "user_invitations table does not exist. Please run the SQL schema first."
+          );
+        }
+        throw new Error(`Database table error: ${tableError.message}`);
+      }
+      console.log("✅ user_invitations table exists");
+    } catch (tableErr) {
+      console.error("❌ Table check failed:", tableErr);
+      throw tableErr;
+    }
+
+    // Step 6: Generate invitation token
+    console.log("🎫 Generating invitation token...");
+    let invitationToken;
+    try {
+      invitationToken = uuidv4();
+      console.log(
+        "✅ Token generated:",
+        invitationToken.substring(0, 8) + "..."
+      );
+    } catch (uuidError) {
+      console.error("❌ UUID generation failed:", uuidError);
+      throw new Error(
+        "Failed to generate invitation token. Make sure 'uuid' package is installed."
+      );
+    }
+
+    // Step 7: Check for existing invitation
+    console.log("🔍 Checking for existing invitation...");
+    const { data: existingInvitation, error: lookupError } = await supabase
+      .from("user_invitations")
+      .select("*")
       .eq("email", email)
+      .eq("used", false)
       .single();
 
     if (lookupError && lookupError.code !== "PGRST116") {
-      // PGRST116 is "not found"
-      throw lookupError;
+      console.error("❌ Lookup error:", lookupError);
+      throw new Error(`Database lookup failed: ${lookupError.message}`);
     }
 
-    let userData;
+    let token = invitationToken;
 
-    if (!existingUser) {
-      try {
-        // Try to create user in auth system
-        const { data: newUser, error: createError } =
-          await supabase.auth.admin.createUser({
-            email,
-            email_confirm: true,
-            user_metadata: {
-              first_name: firstName,
-              last_name: lastName,
-            },
-          });
+    if (existingInvitation) {
+      console.log("♻️ Reusing existing invitation token");
+      token = existingInvitation.token;
 
-        if (createError) throw createError;
-        userData = newUser;
-      } catch (error) {
-        // If user exists in auth but not in our database
-        if (
-          error.message ===
-          "A user with this email address has already been registered"
-        ) {
-          // List users to find the existing one
-          const { data: users, error: listError } =
-            await supabase.auth.admin.listUsers({
-              search_by: "email",
-              search_value: email,
-            });
+      // Update the invitation with new details
+      console.log("📝 Updating existing invitation...");
+      const { error: updateError } = await supabase
+        .from("user_invitations")
+        .update({
+          first_name: firstName,
+          last_name: lastName,
+          created_at: new Date().toISOString(),
+        })
+        .eq("id", existingInvitation.id);
 
-          if (listError) throw listError;
-
-          const existingAuthUser = users.users.find((u) => u.email === email);
-          if (!existingAuthUser)
-            throw new Error("Could not find existing user");
-
-          userData = { user: existingAuthUser };
-        } else {
-          throw error;
-        }
+      if (updateError) {
+        console.error("❌ Update error:", updateError);
+        throw new Error(`Failed to update invitation: ${updateError.message}`);
       }
-    }
-
-    // Generate a password reset link
-    const { data: linkData, error: linkError } =
-      await supabase.auth.admin.generateLink({
-        type: "recovery",
-        email,
-        options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_DOMAIN}/auth/setup-password`,
-          data: {
+      console.log("✅ Invitation updated");
+    } else {
+      // Create new invitation record
+      console.log("➕ Creating new invitation...");
+      const { error: insertError } = await supabase
+        .from("user_invitations")
+        .insert([
+          {
+            email,
+            token,
             first_name: firstName,
             last_name: lastName,
           },
-        },
-      });
+        ]);
 
-    if (linkError) {
-      throw linkError;
+      if (insertError) {
+        console.error("❌ Insert error:", insertError);
+        throw new Error(`Failed to create invitation: ${insertError.message}`);
+      }
+      console.log("✅ New invitation created");
     }
 
-    // Send our custom formatted invitation email
-    const info = await myHometownTransporter.sendMail({
-      to: email,
-      subject: "Welcome to myHometown - Set Up Your Account",
-      html: formattedInviteHtml(
-        email,
-        firstName,
-        lastName,
-        linkData.properties.action_link
-      ),
-    });
+    // Step 8: Create invitation link
+    const inviteLink = `${process.env.NEXT_PUBLIC_DOMAIN}/auth/setup-password?token=${token}`;
+    console.log("🔗 Invitation link created:", inviteLink);
 
-    console.log("Invitation email sent: %s", info.messageId);
+    // Step 9: Send email
+    console.log("📬 Sending invitation email...");
+    try {
+      const info = await myHometownTransporter.sendMail({
+        to: email,
+        subject: "Welcome to myHometown - Set Up Your Account",
+        html: formattedInviteHtml(email, firstName, lastName, inviteLink),
+      });
+
+      console.log("✅ Invitation email sent:", info.messageId);
+    } catch (emailError) {
+      console.error("❌ Email error:", emailError);
+      throw new Error(`Failed to send email: ${emailError.message}`);
+    }
+
+    console.log("🎉 Invitation process completed successfully");
 
     return new Response(
       JSON.stringify({
         message: "Invitation sent successfully",
-        messageId: info.messageId,
-        data: {
-          user: userData?.user || existingUser,
-        },
+        token, // Remove this in production
       }),
       {
         status: 200,
@@ -189,11 +270,15 @@ export async function POST(request) {
       }
     );
   } catch (error) {
-    console.error("Invitation email error:", error);
+    console.error("💥 Invitation API error:", error);
+    console.error("Error stack:", error.stack);
+
     return new Response(
       JSON.stringify({
         message: "Error sending invitation",
         error: error.message,
+        details:
+          process.env.NODE_ENV === "development" ? error.stack : undefined,
       }),
       {
         status: 500,
