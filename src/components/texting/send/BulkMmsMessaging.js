@@ -25,7 +25,7 @@ import GroupInfoPopover from "./GroupInfoPopover";
 import ClassRecipientsLoader from "@/components/texting/send/ClassRecipientsLoader";
 import { expandGroups, formatGroupsForSelect } from "@/util/texting/utils";
 import { useClasses } from "@/hooks/use-classes";
-
+import { RecipientImporter } from "./RecipientImporter";
 export default function BulkMMSMessaging() {
   const searchParams = useSearchParams();
   const { user } = useUser();
@@ -457,6 +457,26 @@ export default function BulkMMSMessaging() {
     });
   };
 
+  const handleImportRecipients = (newRecipients) => {
+    if (!newRecipients || newRecipients.length === 0) return;
+
+    setSelectedRecipients((prevRecipients) => {
+      // Add new recipients while avoiding duplicates by phone number
+      const phoneSet = new Set(prevRecipients.map((r) => r.value));
+      const filteredNewRecipients = newRecipients.filter(
+        (r) => !phoneSet.has(r.value)
+      );
+
+      if (filteredNewRecipients.length === 0) {
+        toast.info("All imported recipients are already in your list");
+        return prevRecipients;
+      }
+
+      toast.success(`Imported ${filteredNewRecipients.length} recipients`);
+      return [...prevRecipients, ...filteredNewRecipients];
+    });
+  };
+
   if (!redisHealth.isConnected && !redisHealth.isLoading) {
     return (
       <Alert
@@ -540,6 +560,14 @@ export default function BulkMMSMessaging() {
                     <Typography variant="h6" sx={{ mb: 2 }}>
                       Class: {className}
                     </Typography>
+                  )}
+
+                  {(user.email === "marshall.morrise@gmail.com" ||
+                    user.email === "jado66@gmail.com") && (
+                    <RecipientImporter
+                      onImportRecipients={handleImportRecipients}
+                      existingRecipients={selectedRecipients}
+                    />
                   )}
 
                   <RecipientSelector

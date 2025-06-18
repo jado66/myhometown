@@ -61,11 +61,12 @@ export default function TextLogViewer() {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { user } = useUser();
 
-  // Get text logs using our custom hook
+  // Get text logs using our custom hook - now passing isAdmin flag
   const { logs, loading, error, fetchTextLogs } = useTextLogs(
     user?.id,
     user?.communities_details?.map((c) => c.id) || [],
-    user?.cities_details?.map((c) => c.id) || []
+    user?.cities_details?.map((c) => c.id) || [],
+    user?.permissions?.administrator || false // Pass admin status here
   );
 
   // State for filters and pagination
@@ -586,6 +587,54 @@ const DetailView = ({ log, onClose }) => {
   const metadata = parseMetadata(log.metadata);
   const groups = metadata?.selectedGroups || [];
 
+  const downloadMetadata = (metadata) => {
+    // Function to convert metadata to CSV format with just recipients
+    const convertToCSV = (metadata) => {
+      // Start with headers
+      let csvContent = "Name,Phone Number\n";
+
+      // Add recipient information
+      if (metadata.allRecipients && metadata.allRecipients.length > 0) {
+        metadata.allRecipients.forEach((recipient) => {
+          let name = "";
+          let phone = "";
+
+          // Extract name and phone from recipient object
+          if (typeof recipient === "string") {
+            // If recipient is just a string, assume it's the phone number
+            phone = recipient;
+            name = "N/A";
+          } else if (typeof recipient === "object") {
+            // Extract name and phone using the exact property names
+            name = recipient.name || "N/A";
+            phone = recipient.phone || "";
+          }
+
+          // Escape quotes in CSV values
+          name = name.replace(/"/g, '""');
+          phone = phone.replace(/"/g, '""');
+
+          // Add row to CSV
+          csvContent += `"${name}","${phone}"\n`;
+        });
+      }
+
+      return csvContent;
+    };
+
+    const csvData = convertToCSV(metadata);
+    const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `recipients_${log.message_id || new Date().getTime()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Box
       sx={{
@@ -604,6 +653,8 @@ const DetailView = ({ log, onClose }) => {
       ></Box>
 
       <Divider sx={{ mb: 2 }} />
+
+      <JsonViewer data={log} />
 
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
@@ -740,6 +791,18 @@ const DetailView = ({ log, onClose }) => {
             <Typography variant="subtitle2" color="text.secondary">
               Additional Information
             </Typography>
+
+            <JsonViewer data={metadata} />
+
+            {/* Button to download metadata */}
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => downloadMetadata(metadata)}
+            >
+              Download Metadata
+            </Button>
+
             <Paper
               elevation={1}
               sx={{

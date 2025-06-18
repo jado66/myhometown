@@ -2,7 +2,12 @@ import { supabase } from "@/util/supabase";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
 
-export function useTextLogs(userId, userCommunities = [], userCities = []) {
+export function useTextLogs(
+  userId,
+  userCommunities = [],
+  userCities = [],
+  isAdmin = false
+) {
   const [logs, setLogs] = useState({
     userLogs: [],
     communityLogs: {},
@@ -37,6 +42,7 @@ export function useTextLogs(userId, userCommunities = [], userCities = []) {
           userId,
           userCommunities,
           userCities,
+          isAdmin,
           {
             limit,
             page,
@@ -59,7 +65,7 @@ export function useTextLogs(userId, userCommunities = [], userCities = []) {
         setLoading(false);
       }
     },
-    [userId, userCommunities, userCities]
+    [userId, userCommunities, userCities, isAdmin]
   );
 
   // Initial fetch
@@ -219,7 +225,13 @@ export function useTextLogs(userId, userCommunities = [], userCities = []) {
   };
 }
 
-async function fetchAllTextLogs(userId, userCommunities, userCities, options) {
+async function fetchAllTextLogs(
+  userId,
+  userCommunities,
+  userCities,
+  isAdmin,
+  options
+) {
   const {
     limit = 100,
     page = 1,
@@ -275,57 +287,111 @@ async function fetchAllTextLogs(userId, userCommunities, userCities, options) {
     return query;
   };
 
-  // Fetch user's own text logs
-  const { data: userLogData, error: userLogError } = await buildQuery(
-    supabase
-      .from("text_logs")
-      .select("*")
-      .eq("owner_id", userId)
-      .eq("owner_type", "user")
-  );
-
-  if (userLogError) {
-    console.error("Error fetching user text logs:", userLogError);
-  } else {
-    result.userLogs = userLogData || [];
-  }
-
-  // Fetch community text logs
-  for (const communityId of userCommunities) {
-    const { data, error } = await buildQuery(
-      supabase
-        .from("text_logs")
-        .select("*")
-        .eq("owner_id", communityId)
-        .eq("owner_type", "community")
+  // If admin, fetch ALL text logs regardless of ownership
+  if (isAdmin) {
+    // Fetch all user-owned logs
+    const { data: allUserLogs, error: userLogError } = await buildQuery(
+      supabase.from("text_logs").select("*").eq("owner_type", "user")
     );
 
-    if (error) {
-      console.error(
-        `Error fetching text logs for community ${communityId}:`,
-        error
-      );
-      result.communityLogs[communityId] = [];
+    if (userLogError) {
+      console.error("Error fetching all user text logs:", userLogError);
     } else {
-      result.communityLogs[communityId] = data || [];
+      result.userLogs = allUserLogs || [];
     }
-  }
 
-  // Fetch city text logs
-  for (const cityId of userCities) {
-    const { data, error } = await buildQuery(
+    // Fetch all community-owned logs and group them
+    const { data: allCommunityLogs, error: communityLogError } =
+      await buildQuery(
+        supabase.from("text_logs").select("*").eq("owner_type", "community")
+      );
+
+    if (communityLogError) {
+      console.error(
+        "Error fetching all community text logs:",
+        communityLogError
+      );
+    } else if (allCommunityLogs) {
+      // Group community logs by owner_id
+      allCommunityLogs.forEach((log) => {
+        if (!result.communityLogs[log.owner_id]) {
+          result.communityLogs[log.owner_id] = [];
+        }
+        result.communityLogs[log.owner_id].push(log);
+      });
+    }
+
+    // Fetch all city-owned logs and group them
+    const { data: allCityLogs, error: cityLogError } = await buildQuery(
+      supabase.from("text_logs").select("*").eq("owner_type", "city")
+    );
+
+    if (cityLogError) {
+      console.error("Error fetching all city text logs:", cityLogError);
+    } else if (allCityLogs) {
+      // Group city logs by owner_id
+      allCityLogs.forEach((log) => {
+        if (!result.cityLogs[log.owner_id]) {
+          result.cityLogs[log.owner_id] = [];
+        }
+        result.cityLogs[log.owner_id].push(log);
+      });
+    }
+  } else {
+    // Non-admin: Use the original logic to fetch only associated logs
+
+    // Fetch user's own text logs
+    const { data: userLogData, error: userLogError } = await buildQuery(
       supabase
         .from("text_logs")
         .select("*")
-        .eq("owner_id", cityId)
-        .eq("owner_type", "city")
+        .eq("owner_id", userId)
+        .eq("owner_type", "user")
     );
 
-    if (error) {
-      console.error(`Error fetching text logs for city ${cityId}:`, error);
-      result.cityLogs[cityId] = [];
+    if (userLogError) {
+      console.error("Error fetching user text logs:", userLogError);
     } else {
-      result.cityLogs[cityId] = data || [];
+      result.userLogs = userLogData || [];
+    }
+
+    // Fetch community text logs for associated communities only
+    for (const communityId of userCommunities) {
+      const { data, error } = await buildQuery(
+        supabase
+          .from("text_logs")
+          .select("*")
+          .eq("owner_id", communityId)
+          .eq("owner_type", "community")
+      );
+
+      if (error) {
+        console.error(
+          `Error fetching text logs for community ${communityId}:`,
+          error
+        );
+        result.communityLogs[communityId] = [];
+      } else {
+        result.communityLogs[communityId] = data || [];
+      }
+    }
+
+    // Fetch city text logs for associated cities only
+    for (const cityId of userCities) {
+      const { data, error } = await buildQuery(
+        supabase
+          .from("text_logs")
+          .select("*")
+          .eq("owner_id", cityId)
+          .eq("owner_type", "city")
+      );
+
+      if (error) {
+        console.error(`Error fetching text logs for city ${cityId}:`, error);
+        result.cityLogs[cityId] = [];
+      } else {
+        result.cityLogs[cityId] = data || [];
+      }
     }
   }
 

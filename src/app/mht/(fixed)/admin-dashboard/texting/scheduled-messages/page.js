@@ -534,6 +534,7 @@ export default function ScheduledTextsPage() {
                       <Typography variant="subtitle1" gutterBottom>
                         Message Details
                       </Typography>
+                      Detailed Log <JsonViewer data={metadata} />
                       <Paper variant="outlined" sx={{ p: 2 }}>
                         <Typography variant="body2" gutterBottom>
                           <strong>Type:</strong>{" "}
