@@ -55,6 +55,7 @@ import MediaPreviews from "./MediaPreviews";
 // Utility functions
 import { formatDateTime, getStatusSummary } from "./textLogUtils";
 import JsonViewer from "@/components/util/debug/DebugOutput";
+import { DeliveryAnalysis } from "./DeliveryAnalysis";
 
 export default function TextLogViewer() {
   const theme = useTheme();
@@ -307,7 +308,7 @@ export default function TextLogViewer() {
         }}
       />
 
-      <JsonViewer
+      {/* <JsonViewer
         data={{
           logs,
           currentLogs,
@@ -323,7 +324,7 @@ export default function TextLogViewer() {
           sortDirection,
         }}
         title="Text Log Viewer State"
-      />
+      /> */}
 
       <Card
         sx={{
@@ -654,8 +655,6 @@ const DetailView = ({ log, onClose }) => {
 
       <Divider sx={{ mb: 2 }} />
 
-      <JsonViewer data={log} />
-
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
           <Typography variant="subtitle2" color="text.secondary">
@@ -753,36 +752,18 @@ const DetailView = ({ log, onClose }) => {
         )}
 
         <Grid item xs={12}>
-          <Typography variant="subtitle2" color="text.secondary">
-            Recipients ({log.recipientCount})
-          </Typography>
-          <Paper
-            elevation={1}
-            sx={{
-              p: 1,
-              backgroundColor: "grey.50",
-              mt: 1,
-              maxHeight: "300px",
-              overflow: "auto",
-              borderRadius: 1,
-            }}
-          >
-            {/* Pass metadata to the RecipientsList component */}
-            <RecipientsList
-              recipients={log.recipients || [log.recipient_phone]}
-              statuses={log.statuses || [log.status]}
-              metadata={log.metadata}
-            />
-          </Paper>
-        </Grid>
-
-        <Grid item xs={12}>
           <ResendTextButton
             logData={log}
             variant="contained"
             color="secondary"
             text="Resend Message"
           />
+        </Grid>
+
+        <Grid item xs={12}>
+          <Divider sx={{ my: 2 }} />
+          {/* Pass metadata to the RecipientsList component */}
+          <DeliveryAnalysis logData={log} metadata={metadata} />
         </Grid>
 
         {/* Display additional metadata information if available */}
@@ -792,16 +773,14 @@ const DetailView = ({ log, onClose }) => {
               Additional Information
             </Typography>
 
-            <JsonViewer data={metadata} />
-
             {/* Button to download metadata */}
-            <Button
+            {/* <Button
               variant="outlined"
               color="primary"
               onClick={() => downloadMetadata(metadata)}
             >
               Download Metadata
-            </Button>
+            </Button> */}
 
             <Paper
               elevation={1}
