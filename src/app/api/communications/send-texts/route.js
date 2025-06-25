@@ -1,91 +1,196 @@
-// src\app\api\communications\send-texts\route.js
-import { sendTextWithStream } from "@/util/communication/sendTexts";
-import { completeStream, sendMessageToStream } from "./stream/route";
+// util/communication/sendTexts.js
+import { createClient } from "@supabase/supabase-js";
 
-export const maxDuration = 60;
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
-export async function POST(req) {
-  const url = new URL(req.url);
-  const messageId = url.searchParams.get("messageId");
+// Get communication preference for a phone number
+async function getCommunicationPreference(phoneNumber) {
+  try {
+    // Normalize phone number (remove non-digits, ensure consistent format)
+    const normalizedPhone = phoneNumber.replace(/\D/g, "");
 
-  if (!messageId) {
-    return new Response(JSON.stringify({ error: "No messageId provided" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+    const { data, error } = await supabase
+      .from("user_communication_preferences")
+      .select("preferred_channel")
+      .eq("phone_number", normalizedPhone)
+      .single();
+
+    if (error || !data) {
+      // Default to SMS if no preference found
+      return "sms";
+    }
+
+    return data.preferred_channel;
+  } catch (error) {
+    console.error("Error fetching communication preference:", error);
+    // Default to SMS on error
+    return "sms";
+  }
+}
+
+// Send via SMS (existing implementation)
+async function sendViaSMS({ message, recipient, mediaUrls }) {
+  // Your existing Twilio SMS implementation
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+
+  const client = require("twilio")(accountSid, authToken);
+
+  const messageData = {
+    body: message,
+    from: twilioPhoneNumber,
+    to: recipient.phone,
+  };
+
+  if (mediaUrls && mediaUrls.length > 0) {
+    messageData.mediaUrl = mediaUrls;
   }
 
-  const { message, recipients, mediaUrls } = await req.json();
-
   try {
-    // Process messages sequentially
-    for (const recipient of recipients) {
-      try {
-        const result = await sendTextWithStream({
-          message,
-          recipient: {
-            phone: recipient.label, // Changed from label to value
-            name: recipient.label || recipient.value,
-          },
-          mediaUrls,
-          messageId,
-        });
+    const twilioMessage = await client.messages.create(messageData);
+    return {
+      success: true,
+      messageId: twilioMessage.sid,
+      channel: "sms",
+    };
+  } catch (error) {
+    throw error;
+  }
+}
 
-        // Send status update to stream
-        await sendMessageToStream(messageId, {
-          type: "status",
-          status: "success",
-          recipient: recipient.value,
-          messageId,
-          timestamp: new Date().toISOString(),
-        });
-      } catch (error) {
-        console.error(`Error sending to ${recipient.label}:`, error);
+// Send via WhatsApp (placeholder - implement when WhatsApp Business API is ready)
+async function sendViaWhatsApp({ message, recipient, mediaUrls }) {
+  // TODO: Implement WhatsApp Business API integration
+  // For now, fallback to SMS
+  console.log("WhatsApp sending not yet implemented, falling back to SMS");
+  return sendViaSMS({ message, recipient, mediaUrls });
+}
 
-        // Send failure status to stream
-        await sendMessageToStream(messageId, {
-          type: "status",
-          status: "failed",
-          recipient: recipient.value,
-          error: error.message,
-          messageId,
-          timestamp: new Date().toISOString(),
-        });
+// Enhanced sendTextWithStream function with preference checking
+export async function sendTextWithStream({
+  message,
+  recipient,
+  mediaUrls,
+  messageId,
+}) {
+  try {
+    // Normalize phone number
+    const normalizedPhone = recipient.phone.replace(/\D/g, "");
+
+    // Get user's communication preference
+    const preferredChannel = await getCommunicationPreference(normalizedPhone);
+
+    let result;
+    let actualChannel = preferredChannel;
+
+    // Try preferred channel first
+    try {
+      if (preferredChannel === "whatsapp") {
+        result = await sendViaWhatsApp({ message, recipient, mediaUrls });
+      } else {
+        result = await sendViaSMS({ message, recipient, mediaUrls });
+      }
+    } catch (channelError) {
+      // If preferred channel fails and it was WhatsApp, fallback to SMS
+      if (preferredChannel === "whatsapp") {
+        console.log(
+          `WhatsApp delivery failed, falling back to SMS: ${channelError.message}`
+        );
+        result = await sendViaSMS({ message, recipient, mediaUrls });
+        actualChannel = "sms";
+      } else {
+        throw channelError;
       }
     }
 
-    // Mark stream as complete
-    await completeStream(messageId);
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        messageId,
+    // Update stream with channel information
+    if (messageId && typeof sendMessageToStream === "function") {
+      await sendMessageToStream(messageId, {
+        type: "delivery",
+        status: "sent",
+        recipient: recipient.phone,
+        channel: actualChannel,
+        preferredChannel: preferredChannel,
         timestamp: new Date().toISOString(),
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+      });
+    }
+
+    return {
+      ...result,
+      channel: actualChannel,
+      preferredChannel: preferredChannel,
+    };
   } catch (error) {
-    console.error("Error in send-texts API:", error);
+    console.error("Error in sendTextWithStream:", error);
+    throw error;
+  }
+}
 
-    // Ensure stream completion even on error
-    await completeStream(messageId);
+// Utility function to set user preference (for future use)
+export async function setUserPreference(phoneNumber, channel) {
+  try {
+    const normalizedPhone = phoneNumber.replace(/\D/g, "");
 
-    return new Response(
-      JSON.stringify({
-        error: error.message,
-        messageId,
-        timestamp: new Date().toISOString(),
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    const { data, error } = await supabase
+      .from("user_communication_preferences")
+      .upsert(
+        {
+          phone_number: normalizedPhone,
+          preferred_channel: channel,
+        },
+        {
+          onConflict: "phone_number",
+        }
+      );
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error setting user preference:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Utility function to get user preference
+export async function getUserPreference(phoneNumber) {
+  try {
+    const normalizedPhone = phoneNumber.replace(/\D/g, "");
+
+    const { data, error } = await supabase
+      .from("user_communication_preferences")
+      .select("preferred_channel")
+      .eq("phone_number", normalizedPhone)
+      .single();
+
+    if (error || !data) {
+      return { success: true, channel: "sms" }; // Default to SMS
+    }
+
+    return { success: true, channel: data.preferred_channel };
+  } catch (error) {
+    console.error("Error getting user preference:", error);
+    return { success: false, error: error.message, channel: "sms" };
+  }
+}
+
+// Utility function to delete user preference
+export async function deleteUserPreference(phoneNumber) {
+  try {
+    const normalizedPhone = phoneNumber.replace(/\D/g, "");
+
+    const { error } = await supabase
+      .from("user_communication_preferences")
+      .delete()
+      .eq("phone_number", normalizedPhone);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting user preference:", error);
+    return { success: false, error: error.message };
   }
 }

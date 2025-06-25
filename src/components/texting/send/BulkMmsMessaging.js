@@ -562,13 +562,10 @@ export default function BulkMMSMessaging() {
                     </Typography>
                   )}
 
-                  {(user.email === "marshall.morrise@gmail.com" ||
-                    user.email === "jado66@gmail.com") && (
-                    <RecipientImporter
-                      onImportRecipients={handleImportRecipients}
-                      existingRecipients={selectedRecipients}
-                    />
-                  )}
+                  <RecipientImporter
+                    onImportRecipients={handleImportRecipients}
+                    existingRecipients={selectedRecipients}
+                  />
 
                   <RecipientSelector
                     selectedRecipients={selectedRecipients}
