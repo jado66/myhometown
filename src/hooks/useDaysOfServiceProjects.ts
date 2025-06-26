@@ -1135,6 +1135,38 @@ export const useDaysOfServiceProjects = () => {
     community: any,
     daysOfService: any
   ) => {
+    // Helper function to get project description
+    const getProjectDescription = (project: any) => {
+      // Try to get from project_name first
+      if (project.project_name) {
+        return (
+          project.project_name.substring(0, 50) +
+          (project.project_name.length > 50 ? "..." : "")
+        );
+      }
+
+      // If no project name, try to get from first task
+      if (project.tasks?.tasks?.length > 0) {
+        const firstTask = project.tasks.tasks[0];
+        if (firstTask.todos?.length > 0) {
+          const description = firstTask.todos[0];
+          return (
+            description.substring(0, 50) +
+            (description.length > 50 ? "..." : "")
+          );
+        }
+      }
+
+      return "No description provided";
+    };
+
+    // Helper function to format boolean values
+    const formatBoolean = (value: any) => {
+      if (value === true) return "Yes";
+      if (value === false) return "No";
+      return "N/A";
+    };
+
     // Create CSV content
     let csvContent = "";
 
@@ -1146,8 +1178,8 @@ export const useDaysOfServiceProjects = () => {
       ).format("ddd, MM/DD/yy")}`;
       csvContent += `"${dayHeader}"\n`;
 
-      // Column headers for projects
-      csvContent += `"Organization","Group","Owner","Address","Status","# of Volunteers","# of Hours"\n`;
+      // UPDATED: Column headers for projects (new format)
+      csvContent += `"Organization","Group","Home Owner","Address","Status","Needed # of Volunteers","Resource Couple","Project Short Description","Dumpster","Waiver","Prep Day","Actual # of Volunteers","Actual # of Hours"\n`;
 
       // Process each stake sequentially
       for (const stake of day.partner_stakes) {
@@ -1157,8 +1189,8 @@ export const useDaysOfServiceProjects = () => {
         )) as any[];
 
         if (projects.length === 0) {
-          // Add a row for stakes with no projects
-          csvContent += `"${stake.name}","No projects found for this stake.","","","","",""\n`;
+          // UPDATED: Add a row for stakes with no projects (with new column count)
+          csvContent += `"${stake.name}","No projects found for this stake.","","","","","","","","","","",""\n`;
         } else {
           projects.forEach((project) => {
             // Format address
@@ -1169,9 +1201,16 @@ export const useDaysOfServiceProjects = () => {
             }`;
             const status =
               project.status?.toUpperCase() || "In Progress".toUpperCase();
-            const volunteers = project.actual_volunteers || "";
-            const hours =
-              project.actual_project_duration * project.actual_volunteers || "";
+
+            // UPDATED: Get all the new field values
+            const neededVolunteers = project.volunteers_needed || "";
+            const actualVolunteers = project.actual_volunteers || "";
+            const actualHours = project.actual_project_duration || "";
+            const resourceCouple = project.project_development_couple || "";
+            const projectDescription = getProjectDescription(project);
+            const dumpster = formatBoolean(project.is_dumpster_needed);
+            const waiver = formatBoolean(project.is_waiver_signed);
+            const prepDay = formatBoolean(project.has_prep_day);
 
             // Escape any double quotes in text fields by doubling them
             const escapedStakeName = stake.name.replace(/"/g, '""');
@@ -1185,9 +1224,14 @@ export const useDaysOfServiceProjects = () => {
             );
             const escapedAddress = address.replace(/"/g, '""');
             const escapedStatus = status.replace(/"/g, '""');
+            const escapedResourceCouple = resourceCouple.replace(/"/g, '""');
+            const escapedProjectDescription = projectDescription.replace(
+              /"/g,
+              '""'
+            );
 
-            // Add the row to CSV content
-            csvContent += `"${escapedStakeName}","${escapedGroup}","${escapedOwner}","${escapedAddress}","${escapedStatus}","${volunteers}","${hours}"\n`;
+            // UPDATED: Add the row to CSV content with all new columns
+            csvContent += `"${escapedStakeName}","${escapedGroup}","${escapedOwner}","${escapedAddress}","${escapedStatus}","${neededVolunteers}","${escapedResourceCouple}","${escapedProjectDescription}","${dumpster}","${waiver}","${prepDay}","${actualVolunteers}","${actualHours}"\n`;
           });
         }
       }
