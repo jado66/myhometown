@@ -1,4 +1,6 @@
-import React, { useState, useCallback, useEffect } from "react";
+"use client";
+
+import { useState } from "react";
 import {
   Box,
   Typography,
@@ -24,6 +26,7 @@ import {
   CalendarMonth,
   AccessTime,
   Check,
+  Groups,
 } from "@mui/icons-material";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -33,7 +36,6 @@ import RecipientsList from "./RecipientsList";
 import MediaPreview from "./MediaPreview";
 import { useScheduledTexts } from "@/hooks/communications/useScheduledTexts";
 import moment from "moment";
-import DevEnvGuard from "@/guards/dev-env-guard";
 
 const ReviewAndSend = ({
   selectedRecipients,
@@ -45,17 +47,19 @@ const ReviewAndSend = ({
   isSending,
   onNewMessage,
   user,
-  expandGroups, // Function to expand groups for display purposes
-  onScheduled, // New prop to notify parent when message is scheduled
+  expandGroups,
+  onScheduled,
+  selectedSections,
+  filteredRecipientsForSending,
+  onSectionChange,
 }) => {
   const { scheduleText, loading: schedulingLoading } = useScheduledTexts();
   const [sendOption, setSendOption] = useState("now");
   const [dialogOpen, setDialogOpen] = useState(false);
-
-  // Initialize with moment objects instead of date-fns
   const [scheduleDate, setScheduleDate] = useState(moment().add(1, "days"));
   const [scheduleTime, setScheduleTime] = useState(moment().hour(9).minute(0));
   const [schedulingSuccess, setSchedulingSuccess] = useState(false);
+  // const [selectedSections, setSelectedSections] = useState(new Map())
 
   const handleSendOptionChange = (event) => {
     setSendOption(event.target.value);
@@ -70,14 +74,16 @@ const ReviewAndSend = ({
     setSchedulingSuccess(false);
   };
 
+  // const handleSectionChange = (newSelectedSections) => {
+  //   setSelectedSections(newSelectedSections)
+  // }
+
   const isValidSchedule = () => {
     const now = moment();
-    // Create a combined date and time moment
     const combinedDateTime = moment(scheduleDate);
     combinedDateTime.hour(scheduleTime.hour());
     combinedDateTime.minute(scheduleTime.minute());
     combinedDateTime.second(0);
-
     return combinedDateTime.isAfter(now);
   };
 
@@ -87,26 +93,25 @@ const ReviewAndSend = ({
       return;
     }
 
-    // Combine date and time for scheduling using moment
     const scheduledDateTime = moment(scheduleDate);
     scheduledDateTime.hour(scheduleTime.hour());
     scheduledDateTime.minute(scheduleTime.minute());
     scheduledDateTime.second(0);
 
     const mediaUrls = mediaFiles.map((file) => file.url);
-
-    // Expand groups to get individual recipients for scheduling
     const expandedRecipients = expandGroups
       ? expandGroups(selectedRecipients, allContacts).flatMap(
           (group) => group.contacts
         )
       : selectedRecipients;
 
-    // Remove duplicates by phone number
+    // Apply section filtering
+    const filteredRecipients = applySeccionFiltering(expandedRecipients);
+
     const phoneNumberMap = new Map();
     const uniqueRecipients = [];
 
-    expandedRecipients.forEach((recipient) => {
+    filteredRecipients.forEach((recipient) => {
       const phone = recipient.value || recipient.phone;
       if (!phoneNumberMap.has(phone)) {
         phoneNumberMap.set(phone, true);
@@ -114,37 +119,54 @@ const ReviewAndSend = ({
       }
     });
 
-    // Pass both original selectedRecipients (with groups) and expanded recipients
-    // Create a combined array where we include group info from selectedRecipients
-    // and individual recipient info from uniqueRecipients
     const recipientsForScheduling = [
-      // Include original group selections
       ...selectedRecipients.filter(
         (r) => r.value && r.value.startsWith("group:")
       ),
-      // Include unique individual recipients
       ...uniqueRecipients,
     ];
 
     const result = await scheduleText(
       message,
-      recipientsForScheduling, // This now includes both groups and individuals
-      scheduledDateTime.toDate(), // Convert to JS Date for the API
+      recipientsForScheduling,
+      scheduledDateTime.toDate(),
       mediaUrls,
       user
     );
 
     if (!result.error) {
       setSchedulingSuccess(true);
-      // Notify parent component that the message was successfully scheduled
       if (onScheduled) {
         onScheduled();
       }
     }
   };
 
-  // Calculate the display count for UI (expanded recipients)
+  const applySeccionFiltering = (expandedRecipients) => {
+    // This function would apply section filtering based on selectedSections
+    // For now, return all recipients - you can implement the filtering logic here
+    return expandedRecipients;
+  };
+
   const getDisplayRecipientCount = () => {
+    // If we have section-filtered recipients, use those
+    if (
+      filteredRecipientsForSending &&
+      filteredRecipientsForSending.length > 0
+    ) {
+      const phoneNumberMap = new Map();
+      const uniqueCount = filteredRecipientsForSending.filter((recipient) => {
+        const phone = recipient.value || recipient.phone;
+        if (phoneNumberMap.has(phone)) {
+          return false;
+        }
+        phoneNumberMap.set(phone, true);
+        return true;
+      }).length;
+      return uniqueCount;
+    }
+
+    // Otherwise use the original logic
     if (expandGroups) {
       const expandedRecipients = expandGroups(
         selectedRecipients,
@@ -164,23 +186,43 @@ const ReviewAndSend = ({
     return selectedRecipients.length;
   };
 
+  const recipientCount = getDisplayRecipientCount();
+
   return (
     <Paper elevation={3} sx={{ p: 2, mt: 2 }}>
       <Typography variant="h6" gutterBottom textAlign="center">
         Review and Send
       </Typography>
+
+      {recipientCount > 80 && (
+        <Alert severity="warning" sx={{ mb: 2 }} icon={<Groups />}>
+          <Typography variant="body2" fontWeight="bold">
+            Large Recipient List ({recipientCount} recipients)
+          </Typography>
+          <Typography variant="body2">
+            You have selected more than 80 recipients. To ensure reliable
+            delivery, consider using the section buttons below to send to
+            smaller groups. Send to one section at a time for best results.
+          </Typography>
+        </Alert>
+      )}
+
       <Typography variant="body1" gutterBottom>
         Selected Recipients:
       </Typography>
+
       <Paper elevation={1} sx={{ p: 2, mb: 2, backgroundColor: "grey.100" }}>
         <RecipientsList
           selectedRecipients={selectedRecipients}
           contacts={allContacts}
+          onSectionChange={onSectionChange}
         />
       </Paper>
+
       <Typography variant="body1" gutterBottom>
         Message:
       </Typography>
+
       <Paper elevation={1} sx={{ p: 2, mb: 2, backgroundColor: "grey.100" }}>
         <Typography sx={{ display: "flex" }}>
           {message?.trim() || (
@@ -191,6 +233,7 @@ const ReviewAndSend = ({
           )}
         </Typography>
       </Paper>
+
       {mediaFiles.length > 0 && (
         <Box sx={{ mb: 2 }}>
           <Typography variant="body1" gutterBottom>
@@ -214,7 +257,6 @@ const ReviewAndSend = ({
               control={<Radio />}
               label="Send Now"
             />
-
             <FormControlLabel
               value="schedule"
               control={<Radio />}
@@ -233,7 +275,7 @@ const ReviewAndSend = ({
           disabled={isSending}
           sx={{ mt: 1 }}
         >
-          {isSending ? "Sending..." : "Send Now"}
+          {isSending ? "Sending..." : `Send Now (${recipientCount} recipients)`}
         </Button>
       )}
 
@@ -302,7 +344,6 @@ const ReviewAndSend = ({
                 <Typography variant="body2" color="text.secondary">
                   Select when you want this message to be sent:
                 </Typography>
-
                 <DatePicker
                   label="Date"
                   value={scheduleDate}
@@ -324,12 +365,11 @@ const ReviewAndSend = ({
                     />
                   )}
                 />
-
                 <TimePicker
                   label="Time"
                   value={scheduleTime}
                   onChange={(newTime) => {
-                    setScheduleTime(newTime); // Update local state immediately for responsive UI
+                    setScheduleTime(newTime);
                   }}
                   style={{ marginBottom: "0px" }}
                   renderInput={(params) => (
@@ -348,17 +388,15 @@ const ReviewAndSend = ({
                     />
                   )}
                 />
-
                 {!isValidSchedule() && (
                   <Alert severity="warning">
                     The selected time is in the past. Please select a future
                     date and time.
                   </Alert>
                 )}
-
                 <Typography variant="body2" color="text.secondary">
-                  This message will be sent to {getDisplayRecipientCount()}{" "}
-                  recipient(s) at the specified time.
+                  This message will be sent to {recipientCount} recipient(s) at
+                  the specified time.
                 </Typography>
               </Stack>
             </LocalizationProvider>

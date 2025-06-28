@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import {
   Box,
   Card,
-  CssBaseline,
   CircularProgress,
   Alert,
   AlertTitle,
   Typography,
   Button,
 } from "@mui/material";
-import { Send, Info } from "@mui/icons-material";
+import { Send } from "@mui/icons-material";
 import BackButton from "@/components/BackButton";
 import { useSendSMS } from "@/hooks/communications/useSendSMS";
 import { useRedisHealth } from "@/hooks/health/useRedisHealth";
@@ -21,11 +22,10 @@ import RecipientSelector from "./RecipientSelector";
 import MessageComposer from "./MessageComposer";
 import ReviewAndSend from "./ReviewAndSend";
 import ProgressTracker from "./ProgressTracker";
-import GroupInfoPopover from "./GroupInfoPopover";
-import ClassRecipientsLoader from "@/components/texting/send/ClassRecipientsLoader";
-import { expandGroups, formatGroupsForSelect } from "@/util/texting/utils";
+import { expandGroups } from "@/util/texting/utils";
 import { useClasses } from "@/hooks/use-classes";
 import { RecipientImporter } from "./RecipientImporter";
+
 export default function BulkMMSMessaging() {
   const searchParams = useSearchParams();
   const { user } = useUser();
@@ -39,6 +39,7 @@ export default function BulkMMSMessaging() {
     user?.communities_details?.map((c) => c.id) || [],
     user?.cities_details?.map((c) => c.id) || []
   );
+
   const [message, setMessage] = useState("");
   const [allContacts, setAllContacts] = useState([]);
   const [groups, setGroups] = useState([]);
@@ -54,14 +55,16 @@ export default function BulkMMSMessaging() {
   const [totalFileSize, setTotalFileSize] = useState(0);
   const [className, setClassName] = useState("");
   const redisHealth = useRedisHealth(60000);
-
   const { getClass } = useClasses();
+
+  // New state for section management
+  const [selectedSections, setSelectedSections] = useState(new Map());
+  const [filteredRecipientsForSending, setFilteredRecipientsForSending] =
+    useState([]);
 
   // Helper function to determine file type from URL
   const getFileTypeFromUrl = (url) => {
     const extension = url.split(".").pop().toLowerCase();
-
-    // Map common extensions to MIME types
     const mimeTypes = {
       jpg: "image/jpeg",
       jpeg: "image/jpeg",
@@ -73,12 +76,12 @@ export default function BulkMMSMessaging() {
       mov: "video/quicktime",
       mp3: "audio/mpeg",
     };
-
-    return mimeTypes[extension] || "image/jpeg"; // Default to image/jpeg if unknown
+    return mimeTypes[extension] || "image/jpeg";
   };
 
   useEffect(() => {
     if (!contacts) return;
+
     let contactsList = [];
 
     // Only include user contacts if the user is an admin
@@ -89,7 +92,6 @@ export default function BulkMMSMessaging() {
     ) {
       contactsList = [...contacts.userContacts];
     } else if (contacts.userContacts && Array.isArray(contacts.userContacts)) {
-      // For non-admin users, include contacts but will handle groups differently
       contactsList = [...contacts.userContacts];
     }
 
@@ -134,8 +136,8 @@ export default function BulkMMSMessaging() {
         phone: contact.phone,
         email: contact.email,
         groups: Array.isArray(contactGroups) ? contactGroups : [],
-        ownerType: contact.owner_type, // Add owner type to track the contact source
-        ownerId: contact.owner_id, // Add owner ID to track the contact source
+        ownerType: contact.owner_type,
+        ownerId: contact.owner_id,
       };
     });
 
@@ -143,16 +145,13 @@ export default function BulkMMSMessaging() {
 
     // Extract unique groups based on admin status and ownership
     const uniqueGroups = new Set();
-
     formattedContacts.forEach((contact) => {
       if (contact.groups && Array.isArray(contact.groups)) {
-        // For user contacts, only include groups if user is admin
         if (contact.ownerType === "user") {
           if (user?.isAdmin) {
             contact.groups.forEach((group) => uniqueGroups.add(group));
           }
         } else {
-          // For community and city contacts, include all groups
           contact.groups.forEach((group) => uniqueGroups.add(group));
         }
       }
@@ -170,15 +169,6 @@ export default function BulkMMSMessaging() {
           }}
         >
           <span>{`Group: ${groupValue}`}</span>
-          {/* <Info
-            style={{ cursor: "pointer", marginLeft: "8px" }}
-            onClick={(e) =>
-              handleGroupInfoClick(e, {
-                value: `group:${groupValue}`,
-                label: groupValue,
-              })
-            }
-          /> */}
         </div>
       ),
       originalValue: groupValue,
@@ -187,17 +177,16 @@ export default function BulkMMSMessaging() {
     setGroups(groupsArray);
   }, [contacts, user?.isAdmin]);
 
-  // Updated URL parameter handling to support multiple recipients and media URLs
+  // Updated URL parameter handling
   useEffect(() => {
     const phone = searchParams.get("phone");
     const urlMessage = searchParams.get("message");
     const urlMediaUrls = searchParams.get("mediaUrls");
-    const classId = searchParams.get("classId"); // New: Check for class ID in URL.
-    const classNameFromUrl = searchParams.get("classTitle"); // New: Check for class name in URL.
+    const classId = searchParams.get("classId");
+    const classNameFromUrl = searchParams.get("classTitle");
 
     if (urlMessage) setMessage(decodeURIComponent(urlMessage));
 
-    // Handle multiple phone numbers separated by commas
     if (phone) {
       const phoneNumbers = phone.split(",").map((number) => {
         return { value: number.trim(), label: `${number.trim()}` };
@@ -205,36 +194,26 @@ export default function BulkMMSMessaging() {
       setSelectedRecipients(phoneNumbers);
     }
 
-    // Handle class ID from URL - we'll implement this function next
     if (classId) {
       handleLoadClassFromUrl(classId);
     }
 
-    // Set class name if provided in the URL
     if (classNameFromUrl) {
       setClassName(decodeURIComponent(classNameFromUrl));
     }
 
-    // Handle media URLs passed in the URL
     if (urlMediaUrls) {
       try {
-        // First decode the URL parameter
         const decodedUrlMediaUrls = decodeURIComponent(urlMediaUrls);
-
-        // Check if it starts with '[' to determine if it's already a JSON string
         let mediaUrlsArray = [];
 
         if (decodedUrlMediaUrls.startsWith("[")) {
-          // It's a JSON array string, parse it
           mediaUrlsArray = JSON.parse(decodedUrlMediaUrls);
         } else {
-          // It's a single URL or comma-separated URLs
           mediaUrlsArray = decodedUrlMediaUrls.split(",");
         }
 
-        // Convert URLs to media file format expected by the component
         const newMediaFiles = mediaUrlsArray.map((url, index) => {
-          // Remove any surrounding quotes if present
           const cleanUrl = url.replace(/^["'](.*)["']$/, "$1");
           const filename = cleanUrl.substring(cleanUrl.lastIndexOf("/") + 1);
 
@@ -242,20 +221,14 @@ export default function BulkMMSMessaging() {
             id: `url-media-${index}`,
             name: filename,
             url: cleanUrl,
-            // Add preview property for MediaPreview component
             preview: cleanUrl,
-            // Set type based on file extension or default to image/jpeg
             type: getFileTypeFromUrl(cleanUrl),
-            // We don't know the size from just the URL
             size: 0,
           };
         });
 
         setMediaFiles(newMediaFiles);
-
-        // Calculate total file size (we'll set to 0 since we don't know the actual size)
         setTotalFileSize(0);
-
         console.log("Media files set from URL:", newMediaFiles);
       } catch (error) {
         console.error(
@@ -267,13 +240,9 @@ export default function BulkMMSMessaging() {
     }
   }, [searchParams]);
 
-  // Function to load class members from URL parameter
   const handleLoadClassFromUrl = async (classId) => {
     try {
-      // Import useClasses hook dynamically to avoid circular dependencies
-
       const classData = await getClass(classId);
-
       if (
         !classData ||
         !classData.signups ||
@@ -283,7 +252,6 @@ export default function BulkMMSMessaging() {
         return;
       }
 
-      // Filter and format class signups with phone numbers
       const classRecipients = classData.signups
         .filter((signup) => signup.phone)
         .map((signup) => ({
@@ -303,14 +271,12 @@ export default function BulkMMSMessaging() {
 
       if (classRecipients.length > 0) {
         setSelectedRecipients((prevRecipients) => {
-          // Merge with existing recipients, avoiding duplicates by phone number
           const phoneSet = new Set(prevRecipients.map((r) => r.value));
           const newRecipients = classRecipients.filter(
             (r) => !phoneSet.has(r.value)
           );
           return [...prevRecipients, ...newRecipients];
         });
-
         toast.success(`Loaded ${classRecipients.length} recipients from class`);
       } else {
         toast.warning("No valid recipients found in class signups");
@@ -321,11 +287,9 @@ export default function BulkMMSMessaging() {
     }
   };
 
-  // New function to handle adding recipients from ClassRecipientsLoader
   const handleAddClassRecipients = (newRecipients) => {
     if (!newRecipients || newRecipients.length === 0) return;
 
-    // Add new recipients while avoiding duplicates by phone number
     setSelectedRecipients((prevRecipients) => {
       const phoneSet = new Set(prevRecipients.map((r) => r.value));
       const filteredNewRecipients = newRecipients.filter(
@@ -353,42 +317,50 @@ export default function BulkMMSMessaging() {
 
   // Helper function to expand groups but filter out user groups for non-admin users
   const expandGroupsWithAdminFilter = (selectedRecipients, allContacts) => {
-    // Use the existing expandGroups function from utils
     const expanded = expandGroups(selectedRecipients, allContacts);
 
-    // If user is not admin, filter out contacts from user groups in the expanded result
     if (!user?.isAdmin) {
       return expanded.map((group) => {
-        // For group entries, filter the contacts
         if (group.isGroup) {
           return {
             ...group,
             contacts: group.contacts.filter(
-              (contact) =>
-                // Keep contacts that aren't from user groups
-                contact.ownerType !== "user"
+              (contact) => contact.ownerType !== "user"
             ),
           };
         }
-        // For individual contacts, keep them all (they were selected directly)
         return group;
       });
     }
-
     return expanded;
   };
 
+  // New function to handle section changes from RecipientsList
+  const handleSectionChange = (newSelectedSections, filteredRecipients) => {
+    setSelectedSections(newSelectedSections);
+    setFilteredRecipientsForSending(filteredRecipients || []);
+  };
+
+  // Modified handleSend to use filtered recipients based on sections
   const handleSend = async () => {
     const phoneNumberMap = new Map();
     const uniqueRecipients = [];
 
-    // Use the filtered expansion function
-    const expandedRecipients = expandGroupsWithAdminFilter(
-      selectedRecipients,
-      allContacts
-    ).flatMap((group) => group.contacts);
+    // Use filtered recipients if sections are selected, otherwise use normal expansion
+    let recipientsToProcess = [];
 
-    expandedRecipients.forEach((recipient) => {
+    if (filteredRecipientsForSending.length > 0) {
+      // Use the section-filtered recipients
+      recipientsToProcess = filteredRecipientsForSending;
+    } else {
+      // Use normal expansion if no sections are selected
+      recipientsToProcess = expandGroupsWithAdminFilter(
+        selectedRecipients,
+        allContacts
+      ).flatMap((group) => group.contacts);
+    }
+
+    recipientsToProcess.forEach((recipient) => {
       if (!phoneNumberMap.has(recipient.value)) {
         phoneNumberMap.set(recipient.value, true);
         uniqueRecipients.push(recipient);
@@ -398,7 +370,7 @@ export default function BulkMMSMessaging() {
     try {
       const mediaUrls = mediaFiles.map((file) => file.url);
       setIsSending(true);
-      // Pass selectedRecipients as the 5th parameter to track groups
+
       await sendMessages(
         message,
         uniqueRecipients,
@@ -433,22 +405,21 @@ export default function BulkMMSMessaging() {
     setHasSent(false);
     setTotalFileSize(0);
     setIsSending(false);
+    setSelectedSections(new Map());
+    setFilteredRecipientsForSending([]);
     reset();
     setActiveTab(0);
   };
 
-  // Updated GroupInfoPopover to respect admin permissions
   const getFilteredContactsForGroup = (group, allContacts) => {
     if (!group || !group.originalValue) return [];
 
     return allContacts.filter((contact) => {
-      // Check if contact has this group
       const hasGroup =
         contact.groups &&
         Array.isArray(contact.groups) &&
         contact.groups.includes(group.originalValue);
 
-      // If not admin, hide user contacts in group info
       if (!user?.isAdmin && contact.ownerType === "user") {
         return false;
       }
@@ -461,7 +432,6 @@ export default function BulkMMSMessaging() {
     if (!newRecipients || newRecipients.length === 0) return;
 
     setSelectedRecipients((prevRecipients) => {
-      // Add new recipients while avoiding duplicates by phone number
       const phoneSet = new Set(prevRecipients.map((r) => r.value));
       const filteredNewRecipients = newRecipients.filter(
         (r) => !phoneSet.has(r.value)
@@ -502,6 +472,7 @@ export default function BulkMMSMessaging() {
         text={activeTab === 0 ? "Back" : "Edit Message"}
         onClick={activeTab === 0 ? undefined : () => setActiveTab(0)}
       />
+
       <Card
         sx={{
           width: "100%",
@@ -536,10 +507,6 @@ export default function BulkMMSMessaging() {
               )}
               {activeTab === 0 && (
                 <>
-                  {/* Add the Class Recipients Loader above the Recipient Selector */}
-                  {/* <ClassRecipientsLoader
-                    onAddRecipients={handleAddClassRecipients}
-                  /> */}
                   <Box
                     sx={{
                       display: "flex",
@@ -576,6 +543,7 @@ export default function BulkMMSMessaging() {
                     contacts={contacts}
                     onRefreshContacts={refreshContacts}
                   />
+
                   <MessageComposer
                     message={message}
                     onMessageChange={setMessage}
@@ -586,6 +554,7 @@ export default function BulkMMSMessaging() {
                     isUploading={isUploading}
                     setIsUploading={setIsUploading}
                   />
+
                   <Button
                     sx={{ mt: 2 }}
                     variant="contained"
@@ -598,6 +567,7 @@ export default function BulkMMSMessaging() {
                   </Button>
                 </>
               )}
+
               {activeTab === 2 && (
                 <ReviewAndSend
                   selectedRecipients={selectedRecipients}
@@ -609,8 +579,12 @@ export default function BulkMMSMessaging() {
                   isSending={isSending}
                   onNewMessage={handleNewMessage}
                   user={user}
-                  expandGroups={expandGroupsWithAdminFilter} // Use custom expand function that respects admin status
+                  expandGroups={expandGroupsWithAdminFilter}
                   onScheduled={() => setHasSent(true)}
+                  // Pass section-related props
+                  selectedSections={selectedSections}
+                  filteredRecipientsForSending={filteredRecipientsForSending}
+                  onSectionChange={handleSectionChange}
                 />
               )}
             </>
@@ -624,25 +598,13 @@ export default function BulkMMSMessaging() {
         onReset={reset}
       />
 
-      <Box
-        sx={{
-          padding: 2,
-          ml: 3,
-        }}
-      >
+      <Box sx={{ padding: 2, ml: 3 }}>
         <Typography variant="body2" color="text.secondary" align="center">
           <strong>Note:</strong> Text messages sent through this system are
           stored in the database. Please do not use this service for your own
           personal use. Please do not include sensitive information.
         </Typography>
       </Box>
-
-      {/* <GroupInfoPopover
-        anchorEl={anchorEl}
-        onClose={handleClosePopover}
-        selectedGroup={selectedGroup}
-        allContacts={getFilteredContactsForGroup(selectedGroup, allContacts)} // Filter contacts based on admin status
-      /> */}
     </>
   );
 }
