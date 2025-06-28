@@ -12,12 +12,17 @@ export function useTextLogs(
     userLogs: [],
     communityLogs: {},
     cityLogs: {},
+    totalCounts: {
+      userLogs: 0,
+      communityLogs: {},
+      cityLogs: {},
+    },
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [hasInitialized, setHasInitialized] = useState(false);
 
-  // Fetch text logs
+  // Rest of the hook remains the same, but update setLogs calls to include totalCounts
   const fetchTextLogs = useCallback(
     async (options = {}) => {
       if (!userId) {
@@ -26,7 +31,7 @@ export function useTextLogs(
       }
 
       const {
-        limit = 100,
+        limit = 25, // Reduced default since we're now getting grouped results
         page = 1,
         startDate = null,
         endDate = null,
@@ -250,149 +255,192 @@ async function fetchAllTextLogs(
     userLogs: [],
     communityLogs: {},
     cityLogs: {},
+    totalCounts: {
+      userLogs: 0,
+      communityLogs: {},
+      cityLogs: {},
+    },
   };
 
-  // Helper function to build queries with filters
-  const buildQuery = (query) => {
-    // Apply date filters if provided
+  // Helper function to build grouped query
+  const buildGroupedQuery = async (baseConditions) => {
+    let query = supabase.from("text_logs").select(`
+        message_id,
+        created_at,
+        message_content,
+        media_urls,
+        metadata,
+        status,
+        delivered_at,
+        error_message,
+        owner_type,
+        owner_id,
+        sender_id
+      `);
+
+    // Apply base conditions (owner_type, owner_id, etc.)
+    Object.entries(baseConditions).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        query = query.in(key, value);
+      } else {
+        query = query.eq(key, value);
+      }
+    });
+
+    // Apply filters
     if (startDate) {
       query = query.gte("created_at", startDate);
     }
-
     if (endDate) {
       query = query.lte("created_at", endDate);
     }
-
-    // Apply status filter if provided
     if (status) {
       query = query.eq("status", status);
     }
-
-    // Apply recipient phone filter if provided
     if (recipientPhone) {
       query = query.eq("recipient_phone", recipientPhone);
     }
-
-    // Apply search term if provided (searches in message_content)
     if (searchTerm) {
       query = query.ilike("message_content", `%${searchTerm}%`);
     }
 
-    // Apply sorting
-    query = query.order(sortBy, { ascending: sortDirection === "asc" });
+    // Execute query to get all matching records
+    const { data: allRecords, error } = await query;
 
-    // Apply pagination
-    query = query.range(offset, offset + limit - 1);
+    if (error) {
+      throw error;
+    }
 
-    return query;
+    // Group by message_id on the client side (but only for the filtered results)
+    const groupedData = {};
+
+    allRecords?.forEach((record) => {
+      if (!record.message_id) return;
+
+      if (!groupedData[record.message_id]) {
+        // Parse metadata to get groups and recipient info
+        let metadata = null;
+        try {
+          metadata = JSON.parse(record.metadata || "{}");
+        } catch (e) {
+          metadata = {};
+        }
+
+        groupedData[record.message_id] = {
+          ...record,
+          recipients: [record.recipient_phone],
+          recipientCount: 1,
+          statuses: [record.status],
+          groups: metadata.selectedGroups || [],
+          individualLogIds: [record.id],
+        };
+      } else {
+        const group = groupedData[record.message_id];
+        if (!group.recipients.includes(record.recipient_phone)) {
+          group.recipients.push(record.recipient_phone);
+          group.recipientCount += 1;
+        }
+        group.statuses.push(record.status);
+        group.individualLogIds.push(record.id);
+      }
+    });
+
+    // Convert to array and sort
+    const groupedArray = Object.values(groupedData);
+
+    // Sort the grouped results
+    groupedArray.sort((a, b) => {
+      let aValue = a[sortBy];
+      let bValue = b[sortBy];
+
+      if (sortBy === "created_at") {
+        aValue = new Date(aValue);
+        bValue = new Date(bValue);
+      }
+
+      if (sortDirection === "asc") {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+
+    // Apply pagination to grouped results
+    const paginatedResults = groupedArray.slice(offset, offset + limit);
+
+    return {
+      data: paginatedResults,
+      totalCount: groupedArray.length,
+    };
   };
 
-  // If admin, fetch ALL text logs regardless of ownership
-  if (isAdmin) {
-    // Fetch all user-owned logs
-    const { data: allUserLogs, error: userLogError } = await buildQuery(
-      supabase.from("text_logs").select("*").eq("owner_type", "user")
-    );
+  try {
+    if (isAdmin) {
+      // Fetch all user-owned logs (grouped)
+      const userLogsResult = await buildGroupedQuery({ owner_type: "user" });
+      result.userLogs = userLogsResult.data;
+      result.totalCounts.userLogs = userLogsResult.totalCount;
 
-    if (userLogError) {
-      console.error("Error fetching all user text logs:", userLogError);
-    } else {
-      result.userLogs = allUserLogs || [];
-    }
-
-    // Fetch all community-owned logs and group them
-    const { data: allCommunityLogs, error: communityLogError } =
-      await buildQuery(
-        supabase.from("text_logs").select("*").eq("owner_type", "community")
-      );
-
-    if (communityLogError) {
-      console.error(
-        "Error fetching all community text logs:",
-        communityLogError
-      );
-    } else if (allCommunityLogs) {
-      // Group community logs by owner_id
-      allCommunityLogs.forEach((log) => {
+      // Fetch all community-owned logs (grouped)
+      const communityLogsResult = await buildGroupedQuery({
+        owner_type: "community",
+      });
+      // Group by owner_id
+      communityLogsResult.data.forEach((log) => {
         if (!result.communityLogs[log.owner_id]) {
           result.communityLogs[log.owner_id] = [];
+          result.totalCounts.communityLogs[log.owner_id] = 0;
         }
         result.communityLogs[log.owner_id].push(log);
+        result.totalCounts.communityLogs[log.owner_id]++;
       });
-    }
 
-    // Fetch all city-owned logs and group them
-    const { data: allCityLogs, error: cityLogError } = await buildQuery(
-      supabase.from("text_logs").select("*").eq("owner_type", "city")
-    );
-
-    if (cityLogError) {
-      console.error("Error fetching all city text logs:", cityLogError);
-    } else if (allCityLogs) {
-      // Group city logs by owner_id
-      allCityLogs.forEach((log) => {
+      // Fetch all city-owned logs (grouped)
+      const cityLogsResult = await buildGroupedQuery({ owner_type: "city" });
+      // Group by owner_id
+      cityLogsResult.data.forEach((log) => {
         if (!result.cityLogs[log.owner_id]) {
           result.cityLogs[log.owner_id] = [];
+          result.totalCounts.cityLogs[log.owner_id] = 0;
         }
         result.cityLogs[log.owner_id].push(log);
+        result.totalCounts.cityLogs[log.owner_id]++;
       });
-    }
-  } else {
-    // Non-admin: Use the original logic to fetch only associated logs
-
-    // Fetch user's own text logs
-    const { data: userLogData, error: userLogError } = await buildQuery(
-      supabase
-        .from("text_logs")
-        .select("*")
-        .eq("owner_id", userId)
-        .eq("owner_type", "user")
-    );
-
-    if (userLogError) {
-      console.error("Error fetching user text logs:", userLogError);
     } else {
-      result.userLogs = userLogData || [];
-    }
+      // Non-admin: fetch only associated logs
 
-    // Fetch community text logs for associated communities only
-    for (const communityId of userCommunities) {
-      const { data, error } = await buildQuery(
-        supabase
-          .from("text_logs")
-          .select("*")
-          .eq("owner_id", communityId)
-          .eq("owner_type", "community")
-      );
+      // User's own logs
+      const userLogsResult = await buildGroupedQuery({
+        owner_id: userId,
+        owner_type: "user",
+      });
+      result.userLogs = userLogsResult.data;
+      result.totalCounts.userLogs = userLogsResult.totalCount;
 
-      if (error) {
-        console.error(
-          `Error fetching text logs for community ${communityId}:`,
-          error
-        );
-        result.communityLogs[communityId] = [];
-      } else {
-        result.communityLogs[communityId] = data || [];
+      // Community logs
+      for (const communityId of userCommunities) {
+        const communityLogsResult = await buildGroupedQuery({
+          owner_id: communityId,
+          owner_type: "community",
+        });
+        result.communityLogs[communityId] = communityLogsResult.data;
+        result.totalCounts.communityLogs[communityId] =
+          communityLogsResult.totalCount;
+      }
+
+      // City logs
+      for (const cityId of userCities) {
+        const cityLogsResult = await buildGroupedQuery({
+          owner_id: cityId,
+          owner_type: "city",
+        });
+        result.cityLogs[cityId] = cityLogsResult.data;
+        result.totalCounts.cityLogs[cityId] = cityLogsResult.totalCount;
       }
     }
-
-    // Fetch city text logs for associated cities only
-    for (const cityId of userCities) {
-      const { data, error } = await buildQuery(
-        supabase
-          .from("text_logs")
-          .select("*")
-          .eq("owner_id", cityId)
-          .eq("owner_type", "city")
-      );
-
-      if (error) {
-        console.error(`Error fetching text logs for city ${cityId}:`, error);
-        result.cityLogs[cityId] = [];
-      } else {
-        result.cityLogs[cityId] = data || [];
-      }
-    }
+  } catch (error) {
+    console.error("Error in fetchAllTextLogs:", error);
+    throw error;
   }
 
   return result;

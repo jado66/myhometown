@@ -71,6 +71,8 @@ export default function TextLogViewer() {
   );
 
   // State for filters and pagination
+  const [useClientSidePagination, setUseClientSidePagination] = useState(true);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [phoneFilter, setPhoneFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -143,34 +145,40 @@ export default function TextLogViewer() {
   // Handle pagination
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
-    fetchTextLogs({
-      page: newPage + 1,
-      limit: rowsPerPage,
-      startDate: startDate ? new Date(startDate).toISOString() : null,
-      endDate: endDate ? new Date(endDate).toISOString() : null,
-      status: statusFilter || null,
-      searchTerm: searchTerm || null,
-      recipientPhone: phoneFilter || null,
-      sortBy,
-      sortDirection,
-    });
+
+    if (!useClientSidePagination) {
+      fetchTextLogs({
+        page: newPage + 1,
+        limit: rowsPerPage,
+        startDate: startDate ? new Date(startDate).toISOString() : null,
+        endDate: endDate ? new Date(endDate).toISOString() : null,
+        status: statusFilter || null,
+        searchTerm: searchTerm || null,
+        recipientPhone: phoneFilter || null,
+        sortBy,
+        sortDirection,
+      });
+    }
   };
 
   const handleChangeRowsPerPage = (event) => {
     const newRowsPerPage = Number.parseInt(event.target.value, 10);
     setRowsPerPage(newRowsPerPage);
     setPage(0);
-    fetchTextLogs({
-      page: 1,
-      limit: newRowsPerPage,
-      startDate: startDate ? new Date(startDate).toISOString() : null,
-      endDate: endDate ? new Date(endDate).toISOString() : null,
-      status: statusFilter || null,
-      searchTerm: searchTerm || null,
-      recipientPhone: phoneFilter || null,
-      sortBy,
-      sortDirection,
-    });
+
+    if (!useClientSidePagination) {
+      fetchTextLogs({
+        page: 1,
+        limit: newRowsPerPage,
+        startDate: startDate ? new Date(startDate).toISOString() : null,
+        endDate: endDate ? new Date(endDate).toISOString() : null,
+        status: statusFilter || null,
+        searchTerm: searchTerm || null,
+        recipientPhone: phoneFilter || null,
+        sortBy,
+        sortDirection,
+      });
+    }
   };
 
   // Handle sorting
@@ -209,73 +217,37 @@ export default function TextLogViewer() {
     setFiltersExpanded(!filtersExpanded);
   };
 
-  // Group logs by message_id
   const currentLogs = useMemo(() => {
-    // First, gather all logs based on the active tab
     let allLogs = [];
 
     if (activeTab === 0) {
-      // All logs
+      // All logs - combine all types
       allLogs = [...logs.userLogs];
 
-      // Add community logs
       Object.values(logs.communityLogs).forEach((communityLogList) => {
         allLogs = [...allLogs, ...communityLogList];
       });
 
-      // Add city logs
       Object.values(logs.cityLogs).forEach((cityLogList) => {
         allLogs = [...allLogs, ...cityLogList];
       });
     } else if (activeTab === 1) {
-      // User logs only
       allLogs = logs.userLogs;
     } else if (activeTab === 2) {
-      // Community logs
       Object.values(logs.communityLogs).forEach((communityLogList) => {
         allLogs = [...allLogs, ...communityLogList];
       });
     } else if (activeTab === 3) {
-      // City logs
       Object.values(logs.cityLogs).forEach((cityLogList) => {
         allLogs = [...allLogs, ...cityLogList];
       });
     }
 
-    // Now group the logs by message_id
-    const groupedLogs = {};
-    allLogs.forEach((log) => {
-      if (!log.message_id) return; // Skip logs without message_id
-
-      if (!groupedLogs[log.message_id]) {
-        // Parse metadata for the first log to get groups
-        const metadata = parseMetadata(log.metadata);
-        const groups = getGroupsFromMetadata(metadata);
-
-        // First occurrence of this message_id
-        groupedLogs[log.message_id] = {
-          ...log,
-          recipients: [log.recipient_phone],
-          recipientCount: 1,
-          statuses: [log.status],
-          groups: groups, // Store the groups from metadata
-          // Keep track of all individual log IDs for reference
-          individualLogIds: [log.id],
-        };
-      } else {
-        // Add this recipient to the existing group
-        const group = groupedLogs[log.message_id];
-        group.recipients.push(log.recipient_phone);
-        group.recipientCount += 1;
-        group.statuses.push(log.status);
-        group.individualLogIds.push(log.id);
-      }
-    });
-
-    // Set the summary status for each group and convert to array
-    return Object.values(groupedLogs).map((group) => ({
-      ...group,
-      status: getStatusSummary(group.statuses),
+    // No need to group here anymore - it's done server-side
+    // Just add the status summary for mixed statuses
+    return allLogs.map((log) => ({
+      ...log,
+      status: getStatusSummary(log.statuses || [log.status]),
     }));
   }, [logs, activeTab]);
 
@@ -287,6 +259,39 @@ export default function TextLogViewer() {
         "City Messages",
       ]
     : ["All Messages", "Personal Messages", "City Messages"];
+
+  const getTotalCount = useMemo(() => {
+    if (!logs.totalCounts) return 0;
+
+    if (activeTab === 0) {
+      // All logs
+      let total = logs.totalCounts.userLogs || 0;
+
+      Object.values(logs.totalCounts.communityLogs || {}).forEach((count) => {
+        total += count;
+      });
+
+      Object.values(logs.totalCounts.cityLogs || {}).forEach((count) => {
+        total += count;
+      });
+
+      return total;
+    } else if (activeTab === 1) {
+      return logs.totalCounts.userLogs || 0;
+    } else if (activeTab === 2) {
+      return Object.values(logs.totalCounts.communityLogs || {}).reduce(
+        (sum, count) => sum + count,
+        0
+      );
+    } else if (activeTab === 3) {
+      return Object.values(logs.totalCounts.cityLogs || {}).reduce(
+        (sum, count) => sum + count,
+        0
+      );
+    }
+
+    return 0;
+  }, [logs.totalCounts, activeTab]);
 
   return (
     <>
@@ -562,6 +567,7 @@ export default function TextLogViewer() {
                   page={page}
                   onChangePage={handleChangePage}
                   onChangeRowsPerPage={handleChangeRowsPerPage}
+                  totalCount={getTotalCount}
                 />
               </>
             )}
@@ -834,6 +840,7 @@ const LogsTable = ({
   rowsPerPage,
   onChangePage,
   onChangeRowsPerPage,
+  totalCount,
 }) => {
   return (
     <Paper
@@ -878,7 +885,6 @@ const LogsTable = ({
               </TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Groups</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Recipients</TableCell>
-
               <TableCell sx={{ fontWeight: "bold", minWidth: 200 }}>
                 Message
               </TableCell>
@@ -965,7 +971,6 @@ const LogsTable = ({
                     log.recipient_phone
                   )}
                 </TableCell>
-
                 <TableCell>
                   <Tooltip title={log.message_content}>
                     <Typography noWrap sx={{ maxWidth: 300 }}>
@@ -1023,12 +1028,14 @@ const LogsTable = ({
       <TablePagination
         rowsPerPageOptions={[5, 10, 25, 50, 100]}
         component="div"
-        count={-1} // We don't know the total count, so we use -1 to hide the count display
+        count={totalCount} // Now using the actual total count
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={onChangePage}
         onRowsPerPageChange={onChangeRowsPerPage}
-        labelDisplayedRows={({ from, to }) => `${from}-${to}`}
+        labelDisplayedRows={({ from, to, count }) =>
+          `${from}-${to} of ${count !== -1 ? count : "many"} grouped messages`
+        }
         sx={{
           borderTop: 1,
           borderColor: "divider",
