@@ -1207,7 +1207,7 @@ export const useDaysOfServiceProjects = () => {
             const actualVolunteers = project.actual_volunteers || "";
             const actualHours = project.actual_project_duration || "";
             const resourceCouple = project.project_development_couple || "";
-            const projectDescription = getProjectDescription(project);
+            const projectDescription = project.project_id;
             const dumpster = formatBoolean(project.is_dumpster_needed);
             const waiver = formatBoolean(project.is_waiver_signed);
             const prepDay = formatBoolean(project.has_prep_day);

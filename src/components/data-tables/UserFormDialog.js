@@ -123,7 +123,7 @@ export const UserFormDialog = ({
                 Password Reset
               </Button> */}
 
-              {/* {onResendInvitation && (
+              {onResendInvitation && (
                 <Button
                   onClick={handleResendInvitation}
                   color="info"
@@ -132,7 +132,7 @@ export const UserFormDialog = ({
                 >
                   {resendingInvite ? "Sending..." : "Resend Invitation"}
                 </Button>
-              )} */}
+              )}
             </Box>
           )}
           <Box>
