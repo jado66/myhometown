@@ -219,37 +219,63 @@ export default function TextLogViewer() {
 
   const currentLogs = useMemo(() => {
     let allLogs = [];
+    const isAdmin = user?.permissions?.administrator || false;
 
     if (activeTab === 0) {
-      // All logs - combine all types
-      allLogs = [...logs.userLogs];
+      // All logs
+      if (isAdmin) {
+        // For admins, use allUserLogs which contains ALL logs from ALL users
+        allLogs = [...(logs.allUserLogs || [])];
 
-      Object.values(logs.communityLogs).forEach((communityLogList) => {
-        allLogs = [...allLogs, ...communityLogList];
-      });
+        // Also add community and city logs
+        Object.values(logs.communityLogs).forEach((communityLogList) => {
+          allLogs = [...allLogs, ...communityLogList];
+        });
 
-      Object.values(logs.cityLogs).forEach((cityLogList) => {
-        allLogs = [...allLogs, ...cityLogList];
-      });
+        Object.values(logs.cityLogs).forEach((cityLogList) => {
+          allLogs = [...allLogs, ...cityLogList];
+        });
+      } else {
+        // For non-admins, show their own logs plus their associated community/city logs
+        allLogs = [...logs.userLogs];
+
+        Object.values(logs.communityLogs).forEach((communityLogList) => {
+          allLogs = [...allLogs, ...communityLogList];
+        });
+
+        Object.values(logs.cityLogs).forEach((cityLogList) => {
+          allLogs = [...allLogs, ...cityLogList];
+        });
+      }
     } else if (activeTab === 1) {
+      // Personal Messages - only user's own logs
       allLogs = logs.userLogs;
     } else if (activeTab === 2) {
-      Object.values(logs.communityLogs).forEach((communityLogList) => {
-        allLogs = [...allLogs, ...communityLogList];
-      });
+      // For admin: Community Messages, For non-admin: City Messages
+      if (isAdmin) {
+        Object.values(logs.communityLogs).forEach((communityLogList) => {
+          allLogs = [...allLogs, ...communityLogList];
+        });
+      } else {
+        Object.values(logs.cityLogs).forEach((cityLogList) => {
+          allLogs = [...allLogs, ...cityLogList];
+        });
+      }
     } else if (activeTab === 3) {
-      Object.values(logs.cityLogs).forEach((cityLogList) => {
-        allLogs = [...allLogs, ...cityLogList];
-      });
+      // City Messages (only for admin)
+      if (isAdmin) {
+        Object.values(logs.cityLogs).forEach((cityLogList) => {
+          allLogs = [...allLogs, ...cityLogList];
+        });
+      }
     }
 
-    // No need to group here anymore - it's done server-side
-    // Just add the status summary for mixed statuses
+    // Add the status summary for mixed statuses
     return allLogs.map((log) => ({
       ...log,
       status: getStatusSummary(log.statuses || [log.status]),
     }));
-  }, [logs, activeTab]);
+  }, [logs, activeTab, user?.permissions?.administrator]);
 
   const tabs = user?.permissions?.administrator
     ? [
@@ -262,37 +288,65 @@ export default function TextLogViewer() {
 
   const getTotalCount = useMemo(() => {
     if (!logs.totalCounts) return 0;
+    const isAdmin = user?.permissions?.administrator || false;
 
     if (activeTab === 0) {
       // All logs
-      let total = logs.totalCounts.userLogs || 0;
+      if (isAdmin) {
+        // For admins, start with allUserLogs count
+        let total = logs.totalCounts.allUserLogs || 0;
 
-      Object.values(logs.totalCounts.communityLogs || {}).forEach((count) => {
-        total += count;
-      });
+        Object.values(logs.totalCounts.communityLogs || {}).forEach((count) => {
+          total += count;
+        });
 
-      Object.values(logs.totalCounts.cityLogs || {}).forEach((count) => {
-        total += count;
-      });
+        Object.values(logs.totalCounts.cityLogs || {}).forEach((count) => {
+          total += count;
+        });
 
-      return total;
+        return total;
+      } else {
+        // For non-admins, count their own logs plus associated community/city logs
+        let total = logs.totalCounts.userLogs || 0;
+
+        Object.values(logs.totalCounts.communityLogs || {}).forEach((count) => {
+          total += count;
+        });
+
+        Object.values(logs.totalCounts.cityLogs || {}).forEach((count) => {
+          total += count;
+        });
+
+        return total;
+      }
     } else if (activeTab === 1) {
+      // Personal messages
       return logs.totalCounts.userLogs || 0;
     } else if (activeTab === 2) {
-      return Object.values(logs.totalCounts.communityLogs || {}).reduce(
-        (sum, count) => sum + count,
-        0
-      );
+      // For admin: Community Messages, For non-admin: City Messages
+      if (isAdmin) {
+        return Object.values(logs.totalCounts.communityLogs || {}).reduce(
+          (sum, count) => sum + count,
+          0
+        );
+      } else {
+        return Object.values(logs.totalCounts.cityLogs || {}).reduce(
+          (sum, count) => sum + count,
+          0
+        );
+      }
     } else if (activeTab === 3) {
-      return Object.values(logs.totalCounts.cityLogs || {}).reduce(
-        (sum, count) => sum + count,
-        0
-      );
+      // City Messages (only for admin)
+      if (isAdmin) {
+        return Object.values(logs.totalCounts.cityLogs || {}).reduce(
+          (sum, count) => sum + count,
+          0
+        );
+      }
     }
 
     return 0;
-  }, [logs.totalCounts, activeTab]);
-
+  }, [logs.totalCounts, activeTab, user?.permissions?.administrator]);
   return (
     <>
       <BackButton

@@ -12,10 +12,12 @@ export function useTextLogs(
     userLogs: [],
     communityLogs: {},
     cityLogs: {},
+    allUserLogs: [], // Add this
     totalCounts: {
       userLogs: 0,
       communityLogs: {},
       cityLogs: {},
+      allUserLogs: 0, // Add this
     },
   });
   const [loading, setLoading] = useState(true);
@@ -255,10 +257,12 @@ async function fetchAllTextLogs(
     userLogs: [],
     communityLogs: {},
     cityLogs: {},
+    allUserLogs: [], // Add this for admin's "All Messages" view
     totalCounts: {
       userLogs: 0,
       communityLogs: {},
       cityLogs: {},
+      allUserLogs: 0, // Add this for counting all user logs
     },
   };
 
@@ -376,10 +380,19 @@ async function fetchAllTextLogs(
 
   try {
     if (isAdmin) {
-      // Fetch all user-owned logs (grouped)
-      const userLogsResult = await buildGroupedQuery({ owner_type: "user" });
-      result.userLogs = userLogsResult.data;
-      result.totalCounts.userLogs = userLogsResult.totalCount;
+      // For admins, fetch ALL logs in the system
+
+      // Fetch ALL user-type logs (sent by any user)
+      const allUserLogsResult = await buildGroupedQuery({ owner_type: "user" });
+
+      // Also fetch logs that don't have owner_type='user' but were sent by users
+      // This catches personal messages that might not have owner_type set
+      const personalLogsResult = await buildGroupedQuery({});
+
+      // For "Personal Messages" tab, we still want to filter by sender_id
+      const userOwnLogsResult = await buildGroupedQuery({ sender_id: userId });
+      result.userLogs = userOwnLogsResult.data;
+      result.totalCounts.userLogs = userOwnLogsResult.totalCount;
 
       // Fetch all community-owned logs (grouped)
       const communityLogsResult = await buildGroupedQuery({
@@ -406,36 +419,44 @@ async function fetchAllTextLogs(
         result.cityLogs[log.owner_id].push(log);
         result.totalCounts.cityLogs[log.owner_id]++;
       });
+
+      // For "All Messages" tab, we need to include all user logs from all users
+      // Store them in a special property
+      result.allUserLogs = personalLogsResult.data;
+      result.totalCounts.allUserLogs = personalLogsResult.totalCount;
     } else {
       // Non-admin: fetch only associated logs
 
-      // User's own logs
+      // FIXED: User's own logs should be based on sender_id
       const userLogsResult = await buildGroupedQuery({
-        owner_id: userId,
-        owner_type: "user",
+        sender_id: userId,
       });
       result.userLogs = userLogsResult.data;
       result.totalCounts.userLogs = userLogsResult.totalCount;
 
-      // Community logs
-      for (const communityId of userCommunities) {
-        const communityLogsResult = await buildGroupedQuery({
-          owner_id: communityId,
-          owner_type: "community",
-        });
-        result.communityLogs[communityId] = communityLogsResult.data;
-        result.totalCounts.communityLogs[communityId] =
-          communityLogsResult.totalCount;
+      // Community logs - only fetch if user has communities
+      if (userCommunities && userCommunities.length > 0) {
+        for (const communityId of userCommunities) {
+          const communityLogsResult = await buildGroupedQuery({
+            owner_id: communityId,
+            owner_type: "community",
+          });
+          result.communityLogs[communityId] = communityLogsResult.data;
+          result.totalCounts.communityLogs[communityId] =
+            communityLogsResult.totalCount;
+        }
       }
 
-      // City logs
-      for (const cityId of userCities) {
-        const cityLogsResult = await buildGroupedQuery({
-          owner_id: cityId,
-          owner_type: "city",
-        });
-        result.cityLogs[cityId] = cityLogsResult.data;
-        result.totalCounts.cityLogs[cityId] = cityLogsResult.totalCount;
+      // City logs - only fetch if user has cities
+      if (userCities && userCities.length > 0) {
+        for (const cityId of userCities) {
+          const cityLogsResult = await buildGroupedQuery({
+            owner_id: cityId,
+            owner_type: "city",
+          });
+          result.cityLogs[cityId] = cityLogsResult.data;
+          result.totalCounts.cityLogs[cityId] = cityLogsResult.totalCount;
+        }
       }
     }
   } catch (error) {
