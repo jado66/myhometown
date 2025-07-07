@@ -137,7 +137,7 @@ const AdminDashboardPages = () => {
                     "Manage your missionaries. Add, remove, or edit missionary information. Log their service hours and track their progress.",
                   media: "/admin-icons/Text SMS Communications.svg",
                   href: rootUrl + "/admin-dashboard/missionaries",
-                  requiredPermission: "missionary",
+                  requiredPermission: "administrator",
                 },
                 {
                   title: "Missionary Logs",
@@ -145,6 +145,7 @@ const AdminDashboardPages = () => {
                     "View and manage missionary logs. Track their service hours and progress.",
                   media: "/admin-icons/Text SMS Communications.svg",
                   href: rootUrl + "/admin-dashboard/missionary-hours",
+                  requiredPermission: "administrator",
                 },
               ].map((item, i) => (
                 <PermissionGuard

@@ -42,7 +42,6 @@ interface MissionaryHour {
   activity_description: string;
   category: string;
   location: string;
-  approval_status: "pending" | "approved" | "rejected";
   created_at: string;
 }
 
@@ -99,7 +98,6 @@ export default function MissionaryDashboard({
     totalHours: 0,
     thisWeekHours: 0,
     thisMonthHours: 0,
-    pendingHours: 0,
   });
 
   useEffect(() => {
@@ -110,7 +108,7 @@ export default function MissionaryDashboard({
 
   const fetchDashboardData = async () => {
     try {
-      const hoursResponse = await fetch("/api/missionary/hours");
+      const hoursResponse = await fetch(`/api/missionary/${email}/hours`);
       if (hoursResponse.ok) {
         const { hours: hoursData } = await hoursResponse.json();
         setHours(hoursData);
@@ -135,11 +133,8 @@ export default function MissionaryDashboard({
     const thisMonthHours = hoursData
       .filter((h) => new Date(h.date) >= monthStart)
       .reduce((sum, h) => sum + h.hours, 0);
-    const pendingHours = hoursData
-      .filter((h) => h.approval_status === "pending")
-      .reduce((sum, h) => sum + h.hours, 0);
 
-    setStats({ totalHours, thisWeekHours, thisMonthHours, pendingHours });
+    setStats({ totalHours, thisWeekHours, thisMonthHours });
   };
 
   const handleLogout = async () => {
@@ -220,7 +215,7 @@ export default function MissionaryDashboard({
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Stats Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={4}>
             <Card elevation={2}>
               <CardContent sx={{ p: 3 }}>
                 <Box
@@ -253,7 +248,7 @@ export default function MissionaryDashboard({
             </Card>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={4}>
             <Card elevation={2}>
               <CardContent sx={{ p: 3 }}>
                 <Box
@@ -286,7 +281,7 @@ export default function MissionaryDashboard({
             </Card>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={4}>
             <Card elevation={2}>
               <CardContent sx={{ p: 3 }}>
                 <Box
@@ -314,39 +309,6 @@ export default function MissionaryDashboard({
                     </Typography>
                   </Box>
                   <TrendingUp sx={{ fontSize: 48, color: "secondary.main" }} />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Card elevation={2}>
-              <CardContent sx={{ p: 3 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Box>
-                    <Typography
-                      variant="body1"
-                      color="text.secondary"
-                      gutterBottom
-                      fontWeight="medium"
-                    >
-                      Pending
-                    </Typography>
-                    <Typography
-                      variant="h3"
-                      fontWeight="bold"
-                      color="warning.main"
-                    >
-                      {stats.pendingHours}
-                    </Typography>
-                  </Box>
-                  <Schedule sx={{ fontSize: 48, color: "warning.main" }} />
                 </Box>
               </CardContent>
             </Card>
@@ -422,13 +384,6 @@ export default function MissionaryDashboard({
                               <Chip
                                 label={hour.category.replace("_", " ")}
                                 color={getCategoryColor(hour.category) as any}
-                                size="medium"
-                              />
-                              <Chip
-                                label={hour.approval_status}
-                                color={
-                                  getStatusColor(hour.approval_status) as any
-                                }
                                 size="medium"
                               />
                             </Box>

@@ -1,6 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { MissionaryAuth } from "@/util/missionaries/missionary-auth";
-import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 
 // Initialize Supabase client
@@ -11,19 +9,36 @@ const supabase = createClient(
 
 export async function GET(request: NextRequest) {
   try {
-    const missionary = await MissionaryAuth.getCurrentMissionary(sessionToken);
-    if (!missionary) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
+    const missionaryEmail = searchParams.get("email");
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
+
+    if (!missionaryEmail) {
+      return NextResponse.json(
+        { error: "Missionary email is required" },
+        { status: 400 }
+      );
+    }
+
+    // Verify the missionary exists
+    const { data: missionary, error: missionaryError } = await supabase
+      .from("missionaries") // Adjust table name as needed
+      .select("email")
+      .eq("email", missionaryEmail)
+      .single();
+
+    if (missionaryError || !missionary) {
+      return NextResponse.json(
+        { error: "Missionary not found" },
+        { status: 404 }
+      );
+    }
 
     let query = supabase
       .from("missionary_hours")
       .select("*")
-      .eq("missionary_id", missionary.id)
+      .eq("missionary_email", missionaryEmail)
       .order("date", { ascending: false });
 
     if (startDate) {
@@ -55,39 +70,49 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = cookies();
-    const sessionToken = cookieStore.get("missionary_session")?.value;
-
-    if (!sessionToken) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const missionary = await MissionaryAuth.getCurrentMissionary(sessionToken);
-    if (!missionary) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { date, hours, activity_description, category, location } =
+    const { email, date, hours, activity_description, category, location } =
       await request.json();
 
-    if (!date || !hours || !activity_description) {
+    if (!email || !date || !hours || !activity_description) {
+      // Figure out which fields are missing
+      const missingFields = [];
+      if (!email) missingFields.push("email");
+      if (!date) missingFields.push("date");
+      if (!hours) missingFields.push("hours");
+      if (!activity_description) missingFields.push("activity_description");
+
       return NextResponse.json(
-        { error: "Date, hours, and activity description are required" },
+        {
+          error: "Missing required fields: " + missingFields.join(", "),
+        },
         { status: 400 }
+      );
+    }
+
+    // Verify the missionary exists
+    const { data: missionary, error: missionaryError } = await supabase
+      .from("missionaries") // Adjust table name as needed
+      .select("email, id")
+      .eq("email", email)
+      .single();
+
+    if (missionaryError || !missionary) {
+      return NextResponse.json(
+        { error: `Missionary not found: ${email}` },
+        { status: 404 }
       );
     }
 
     const { data, error } = await supabase
       .from("missionary_hours")
       .insert({
-        missionary_id: missionary.id,
+        missionary_email: email,
         date,
         hours: Number.parseFloat(hours),
         activity_description,
         category: category || "general",
         location: location || "",
         created_by: missionary.id,
-        approval_status: "pending",
       })
       .select()
       .single();
