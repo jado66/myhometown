@@ -131,6 +131,21 @@ const AdminDashboardPages = () => {
                   href: rootUrl + "/admin-dashboard/texting",
                   requiredPermission: "texting",
                 },
+                {
+                  title: "Missionary Management",
+                  subtitle:
+                    "Manage your missionaries. Add, remove, or edit missionary information. Log their service hours and track their progress.",
+                  media: "/admin-icons/Text SMS Communications.svg",
+                  href: rootUrl + "/admin-dashboard/missionaries",
+                  requiredPermission: "missionary",
+                },
+                {
+                  title: "Missionary Logs",
+                  subtitle:
+                    "View and manage missionary logs. Track their service hours and progress.",
+                  media: "/admin-icons/Text SMS Communications.svg",
+                  href: rootUrl + "/admin-dashboard/missionary-hours",
+                },
               ].map((item, i) => (
                 <PermissionGuard
                   requiredPermission={item.requiredPermission}
