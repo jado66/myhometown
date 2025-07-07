@@ -178,7 +178,6 @@ const Step1 = ({ date }) => {
         owner. They will hand off the project to the Resource Couple/Project
         Manager(s) for detailed planning.
       </Typography>
-      Once you enter this budget information and
       <ProjectTextField
         label="Project Developer(s)"
         value={formData.project_developer}
