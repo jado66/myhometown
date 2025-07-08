@@ -144,7 +144,7 @@ const AdminDashboardPages = () => {
                   subtitle:
                     "View and manage missionary logs. Track their service hours and progress.",
                   media: "/admin-icons/Text SMS Communications.svg",
-                  href: rootUrl + "/admin-dashboard/missionary-hours",
+                  href: rootUrl + "/admin-dashboard/missionary-portal",
                   requiredPermission: "administrator",
                 },
               ].map((item, i) => (
