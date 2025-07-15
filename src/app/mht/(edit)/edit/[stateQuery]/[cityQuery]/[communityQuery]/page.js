@@ -559,8 +559,7 @@ const Page = ({ params }) => {
     });
   };
 
-  const handleVolunteerSignUpHeaderChange = (e, name) => {
-    const { value } = e.target;
+  const handleVolunteerSignUpHeaderChange = (value) => {
     setCommunityData({
       ...communityData,
       volunteerHeaderText: value,

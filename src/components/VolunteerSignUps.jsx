@@ -79,9 +79,53 @@ export const VolunteerSignUps = ({
       sx={{ position: "relative" }}
       mb={2}
     >
-      <Typography variant="h4" component="h2" color="primary">
-        {volunteerHeaderText ? volunteerHeaderText : "Sign Up as a Volunteer"}
-      </Typography>
+      {isEdit ? (
+        <TextField
+          variant="standard"
+          value={volunteerHeaderText || "Sign Up as a Volunteer"}
+          onChange={(event) => setVolunteerHeaderText(event.target.value)}
+          fullWidth
+          InputProps={{
+            disableUnderline: true,
+            sx: {
+              fontSize: "2rem",
+              textAlign: "center",
+              color: (theme) => theme.palette.primary.main,
+              textTransform: "capitalize",
+              display: "flex",
+              justifyContent: "center",
+              "& .Mui-focused": {
+                backgroundColor: "#f0f0f0",
+                borderRadius: "4px",
+              },
+            },
+          }}
+          sx={{
+            fontFamily: "inherit",
+            fontSize: "2rem",
+            border: "none",
+            margin: 0,
+            padding: "10px 16px",
+            textAlign: "center",
+            "& .MuiInputBase-input": {
+              textAlign: "center",
+            },
+            "& .MuiInput-underline:before": {
+              borderBottom: "none",
+            },
+            "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+              borderBottom: "none",
+            },
+            "& .MuiInput-underline:after": {
+              borderBottom: "none",
+            },
+          }}
+        />
+      ) : (
+        <Typography variant="h4" component="h2" color="primary">
+          {volunteerHeaderText ? volunteerHeaderText : "Sign Up as a Volunteer"}
+        </Typography>
+      )}
       {!isEdit ? (
         <Button
           variant="outlined"
@@ -124,18 +168,60 @@ export const VolunteerSignUps = ({
           handleClose={hideIframeHelpDialog}
         />
         <Grid item xs={12} display="flex" flexDirection="column">
-          <Typography
-            variant="h4"
-            component="h2"
-            color="primary"
-            textAlign="center"
-            gutterBottom
-          >
-            {volunteerHeaderText
-              ? volunteerHeaderText
-              : "Sign Up as a Volunteer"}
-          </Typography>
-
+          isEdit: {JSON.stringify(isEdit)}
+          {isEdit ? (
+            <TextField
+              variant="standard"
+              value={volunteerHeaderText || "Sign Up as a Volunteer"}
+              onChange={(event) => setVolunteerHeaderText(event.target.value)}
+              fullWidth
+              InputProps={{
+                disableUnderline: true,
+                sx: {
+                  fontSize: "2rem",
+                  textAlign: "center",
+                  color: (theme) => theme.palette.primary.main,
+                  textTransform: "capitalize",
+                  display: "flex",
+                  justifyContent: "center", // Add this line
+                  "& .Mui-focused": {
+                    backgroundColor: "#f0f0f0",
+                    borderRadius: "4px",
+                  },
+                },
+              }}
+              sx={{
+                fontFamily: "inherit",
+                fontSize: "2rem",
+                border: "none",
+                margin: 0,
+                padding: "10px 16px",
+                textAlign: "center",
+                "& .MuiInputBase-input": {
+                  textAlign: "center", // Add this line
+                },
+                "& .MuiInput-underline:before": {
+                  borderBottom: "none",
+                },
+                "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+                  borderBottom: "none",
+                },
+                "& .MuiInput-underline:after": {
+                  borderBottom: "none",
+                },
+              }}
+            />
+          ) : (
+            <Typography
+              variant="h4"
+              component="h2"
+              color="primary"
+              textAlign="center"
+              gutterBottom
+            >
+              {volunteerHeaderText || "Sign Up as a Volunteer"}
+            </Typography>
+          )}
           <Box
             display="flex"
             justifyContent="center"
@@ -169,7 +255,6 @@ export const VolunteerSignUps = ({
               </Typography>
             )}
           </Box>
-
           <Grid
             item
             xs={12}
