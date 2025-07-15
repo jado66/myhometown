@@ -20,10 +20,10 @@ export function DesktopRollTable({
       width: 300,
       pinned: "left",
       renderCell: (params) => (
-        <Box sx={{ display: "flex", flexDirection: "column", py: 1 }}>
+        <Box sx={{ display: "flex", flexDirection: "row", py: 1 }}>
           {nameFields.map((field) => (
-            <Typography key={field.key} variant="body2" sx={{ mb: 0.5 }}>
-              <strong>{field.label}:</strong> {params.row[field.key] || ""}
+            <Typography key={field.key} variant="body2" sx={{ mb: 0.5, mr: 1 }}>
+              {params.row[field.key] || ""}
             </Typography>
           ))}
         </Box>

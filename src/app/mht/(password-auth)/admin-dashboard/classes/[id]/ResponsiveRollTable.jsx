@@ -31,6 +31,7 @@ import { Download, Today } from "@mui/icons-material";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { ExportButton } from "./ExportButton";
 import { DesktopRollTable } from "./DesktopRollTable";
+import { MobileRollTable } from "./MobileRollTable";
 
 export default function ResponsiveRollTable({ classData, show, onClose }) {
   const theme = useTheme();
@@ -296,15 +297,7 @@ export default function ResponsiveRollTable({ classData, show, onClose }) {
               />
 
               {isMobile ? (
-                <RenderMobileView
-                  classData={classData}
-                  dates={dates}
-                  nameFields={nameFields}
-                  localAttendance={localAttendance}
-                  handleAttendanceChange={handleAttendanceChange}
-                />
-              ) : isTablet ? (
-                <RenderTabletView
+                <MobileRollTable
                   classData={classData}
                   dates={dates}
                   nameFields={nameFields}
