@@ -1,7 +1,4 @@
 "use client";
-
-import type React from "react";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -11,8 +8,6 @@ import {
   Typography,
   Button,
   Chip,
-  Tabs,
-  Tab,
   Grid,
   AppBar,
   Toolbar,
@@ -20,176 +15,150 @@ import {
   Paper,
   List,
   ListItem,
-  ListItemText,
   Divider,
   Alert,
   CircularProgress,
+  IconButton,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
-import {
-  AccessTime,
-  Add,
-  CalendarToday,
-  TrendingUp,
-  Person,
-  ExitToApp,
-  Schedule,
-} from "@mui/icons-material";
+import { Add, Person, Edit, Delete, ExpandMore } from "@mui/icons-material";
+import moment from "moment";
 
-interface MissionaryHour {
-  id: string;
-  date: string;
-  hours: number;
-  activity_description: string;
+interface DetailedActivity {
   category: string;
-  location: string;
+  description: string;
+  hours: number;
+}
+
+interface MissionaryHourEntry {
+  id: string;
+  period_start_date: string;
+  entry_method: "weekly" | "monthly";
+  total_hours: number;
+  location: string | null;
+  activities: DetailedActivity[];
   created_at: string;
 }
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
+const categoryDisplay: { [key: string]: { label: string; color: any } } = {
+  outreach: { label: "Community Outreach", color: "primary" },
+  community_service: { label: "Community Service", color: "warning" },
+  administrative: { label: "Administrative Work", color: "secondary" },
+};
 
 export default function MissionaryDashboard({
   params,
 }: {
-  params: Promise<{ email: string }>;
+  params: { email: string };
 }) {
-  const [email, setEmail] = useState<string>("");
-  const [paramsLoaded, setParamsLoaded] = useState(false);
-
-  // Resolve params asynchronously
-  useEffect(() => {
-    const resolveParams = async () => {
-      try {
-        const resolvedParams = await params;
-        setEmail(resolvedParams.email.replace(/%40/g, "@")); // Decode email
-        setParamsLoaded(true);
-      } catch (error) {
-        console.error("Error resolving params:", error);
-        setParamsLoaded(true);
-      }
-    };
-
-    resolveParams();
-  }, [params]);
   const router = useRouter();
-  const [hours, setHours] = useState<MissionaryHour[]>([]);
+  const email = decodeURIComponent(params.email);
+
+  const [hours, setHours] = useState<MissionaryHourEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tabValue, setTabValue] = useState(0);
   const [stats, setStats] = useState({
     totalHours: 0,
     thisWeekHours: 0,
     thisMonthHours: 0,
   });
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (paramsLoaded && email) {
-      fetchDashboardData();
-    }
-  }, [paramsLoaded, email]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
 
   const fetchDashboardData = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const hoursResponse = await fetch(`/api/missionary/${email}/hours`);
-      if (hoursResponse.ok) {
-        const { hours: hoursData } = await hoursResponse.json();
-        setHours(hoursData);
-        calculateStats(hoursData);
+      if (!hoursResponse.ok) {
+        throw new Error("Failed to fetch data.");
       }
-    } catch (error) {
-      console.error("Failed to fetch dashboard data:", error);
+      const { hours: hoursData } = await hoursResponse.json();
+      setHours(hoursData);
+      calculateStats(hoursData);
+    } catch (err: any) {
+      setError(err.message);
+      console.error("Failed to fetch dashboard data:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const calculateStats = (hoursData: MissionaryHour[]) => {
-    const now = new Date();
-    const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  useEffect(() => {
+    if (email) {
+      fetchDashboardData();
+    }
+  }, [email]);
 
-    const totalHours = hoursData.reduce((sum, h) => sum + h.hours, 0);
+  const calculateStats = (hoursData: MissionaryHourEntry[]) => {
+    const now = moment();
+    const totalHours = hoursData.reduce(
+      (sum, h) => sum + Number(h.total_hours),
+      0
+    );
+
     const thisWeekHours = hoursData
-      .filter((h) => new Date(h.date) >= weekStart)
-      .reduce((sum, h) => sum + h.hours, 0);
+      .filter((h) => moment(h.period_start_date).isSame(now, "week"))
+      .reduce((sum, h) => sum + Number(h.total_hours), 0);
+
     const thisMonthHours = hoursData
-      .filter((h) => new Date(h.date) >= monthStart)
-      .reduce((sum, h) => sum + h.hours, 0);
+      .filter((h) => moment(h.period_start_date).isSame(now, "month"))
+      .reduce((sum, h) => sum + Number(h.total_hours), 0);
 
     setStats({ totalHours, thisWeekHours, thisMonthHours });
   };
 
-  const handleLogout = async () => {
+  const handleOpenDeleteDialog = (id: string) => {
+    setEntryToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setEntryToDelete(null);
+    setDeleteDialogOpen(false);
+  };
+
+  const handleDeleteEntry = async () => {
+    if (!entryToDelete) return;
     try {
-      await fetch("/api/missionary/auth/logout", { method: "POST" });
-      router.push("/missionary/login");
-    } catch (error) {
-      console.error("Logout error:", error);
+      const response = await fetch(`/api/missionary/hours/${entryToDelete}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Failed to delete entry.");
+      // Refresh data after delete
+      fetchDashboardData();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      handleCloseDeleteDialog();
     }
   };
 
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      general: "default",
-      outreach: "primary",
-      administration: "secondary",
-      training: "success",
-      community_service: "warning",
-      other: "info",
-    };
-    return colors[category as keyof typeof colors] || "default";
-  };
-
-  const getStatusColor = (status: string) => {
-    const colors = {
-      pending: "warning",
-      approved: "success",
-      rejected: "error",
-    };
-    return colors[status as keyof typeof colors] || "default";
-  };
-
-  if (loading || !paramsLoaded) {
+  if (loading) {
     return (
       <Box
         sx={{
-          minHeight: "100vh",
           display: "flex",
-          alignItems: "center",
           justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
         }}
       >
-        <Box sx={{ textAlign: "center" }}>
-          <CircularProgress size={60} sx={{ mb: 2 }} />
-          <Typography variant="h6" color="text.secondary">
-            Loading...
-          </Typography>
-        </Box>
+        <CircularProgress />
       </Box>
     );
   }
 
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: "#f5f5f5" }}>
-      {/* Header */}
       <AppBar position="static" color="default" elevation={1}>
         <Toolbar>
           <Person sx={{ mr: 2, color: "primary.main" }} />
@@ -198,249 +167,219 @@ export default function MissionaryDashboard({
               Missionary Portal
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Welcome back {email}!
+              Welcome back, {email}!
             </Typography>
           </Box>
           <Button
-            variant="outlined"
-            startIcon={<ExitToApp />}
-            onClick={handleLogout}
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => router.push(`./${email}/hours`)}
             size="large"
           >
-            Logout
+            Log New Hours
           </Button>
         </Toolbar>
       </AppBar>
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
         {/* Stats Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={4}>
+          {/* Total Hours */}
+          <Grid item xs={12} sm={4}>
             <Card elevation={2}>
-              <CardContent sx={{ p: 3 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
+              <CardContent>
+                <Typography color="text.secondary" gutterBottom>
+                  Total Hours
+                </Typography>
+                <Typography
+                  variant="h3"
+                  component="div"
+                  fontWeight="bold"
+                  color="primary.main"
                 >
-                  <Box>
-                    <Typography
-                      variant="body1"
-                      color="text.secondary"
-                      gutterBottom
-                      fontWeight="medium"
-                    >
-                      Total Hours
-                    </Typography>
-                    <Typography
-                      variant="h3"
-                      fontWeight="bold"
-                      color="primary.main"
-                    >
-                      {stats.totalHours}
-                    </Typography>
-                  </Box>
-                  <AccessTime sx={{ fontSize: 48, color: "primary.main" }} />
-                </Box>
+                  {stats.totalHours}
+                </Typography>
               </CardContent>
             </Card>
           </Grid>
-
-          <Grid item xs={12} sm={6} md={4}>
+          {/* This Week */}
+          <Grid item xs={12} sm={4}>
             <Card elevation={2}>
-              <CardContent sx={{ p: 3 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
+              <CardContent>
+                <Typography color="text.secondary" gutterBottom>
+                  This Week
+                </Typography>
+                <Typography
+                  variant="h3"
+                  component="div"
+                  fontWeight="bold"
+                  color="success.main"
                 >
-                  <Box>
-                    <Typography
-                      variant="body1"
-                      color="text.secondary"
-                      gutterBottom
-                      fontWeight="medium"
-                    >
-                      This Week
-                    </Typography>
-                    <Typography
-                      variant="h3"
-                      fontWeight="bold"
-                      color="success.main"
-                    >
-                      {stats.thisWeekHours}
-                    </Typography>
-                  </Box>
-                  <CalendarToday sx={{ fontSize: 48, color: "success.main" }} />
-                </Box>
+                  {stats.thisWeekHours}
+                </Typography>
               </CardContent>
             </Card>
           </Grid>
-
-          <Grid item xs={12} sm={6} md={4}>
+          {/* This Month */}
+          <Grid item xs={12} sm={4}>
             <Card elevation={2}>
-              <CardContent sx={{ p: 3 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
+              <CardContent>
+                <Typography color="text.secondary" gutterBottom>
+                  This Month
+                </Typography>
+                <Typography
+                  variant="h3"
+                  component="div"
+                  fontWeight="bold"
+                  color="secondary.main"
                 >
-                  <Box>
-                    <Typography
-                      variant="body1"
-                      color="text.secondary"
-                      gutterBottom
-                      fontWeight="medium"
-                    >
-                      This Month
-                    </Typography>
-                    <Typography
-                      variant="h3"
-                      fontWeight="bold"
-                      color="secondary.main"
-                    >
-                      {stats.thisMonthHours}
-                    </Typography>
-                  </Box>
-                  <TrendingUp sx={{ fontSize: 48, color: "secondary.main" }} />
-                </Box>
+                  {stats.thisMonthHours}
+                </Typography>
               </CardContent>
             </Card>
           </Grid>
         </Grid>
 
         {/* Main Content */}
-        <Paper elevation={2} sx={{ mb: 3 }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              p: 2,
-              borderBottom: 1,
-              borderColor: "divider",
-            }}
-          >
-            <Tabs
-              value={tabValue}
-              onChange={(e, newValue) => setTabValue(newValue)}
-            >
-              <Tab
-                label="Recent Hours"
-                sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
-              />
-              <Tab
-                label="Quick Log"
-                sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
-              />
-            </Tabs>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => router.push(`./${email}/hours`)}
-              size="large"
-            >
-              Log New Hours
-            </Button>
+        <Paper elevation={2}>
+          <Box sx={{ p: 2, borderBottom: 1, borderColor: "divider" }}>
+            <Typography variant="h5" fontWeight="bold">
+              Recent Hour Logs
+            </Typography>
           </Box>
-
-          <TabPanel value={tabValue} index={0}>
-            <Box>
-              <Typography variant="h5" gutterBottom fontWeight="bold">
-                Recent Hour Logs
-              </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                Your recent volunteer hour submissions
-              </Typography>
-
-              {hours.length === 0 ? (
-                <Alert
-                  severity="info"
-                  sx={{ textAlign: "center", fontSize: "1.1rem" }}
-                >
-                  No hours logged yet. Start by logging your first entry!
-                </Alert>
-              ) : (
-                <List>
-                  {hours.slice(0, 10).map((hour, index) => (
-                    <Box key={hour.id}>
-                      <ListItem sx={{ px: 0, py: 2 }}>
-                        <ListItemText
-                          primary={
+          <Box sx={{ p: 2 }}>
+            {hours.length === 0 ? (
+              <Alert severity="info" sx={{ m: 2 }}>
+                No hours logged yet.
+              </Alert>
+            ) : (
+              <List sx={{ p: 0 }}>
+                {hours.map((entry) => (
+                  <ListItem
+                    key={entry.id}
+                    sx={{
+                      flexDirection: "column",
+                      alignItems: "stretch",
+                      p: 0,
+                    }}
+                  >
+                    <Accordion
+                      sx={{
+                        width: "100%",
+                        boxShadow: "none",
+                        "&:before": { display: "none" },
+                      }}
+                    >
+                      <AccordionSummary expandIcon={<ExpandMore />}>
+                        <Grid container alignItems="center" spacing={2}>
+                          <Grid item xs={12} sm={5}>
+                            <Typography variant="h6">
+                              {entry.entry_method === "weekly"
+                                ? "Week of "
+                                : "Month of "}
+                              {moment(entry.period_start_date).format(
+                                "MMMM D, YYYY"
+                              )}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={6} sm={3}>
+                            <Chip
+                              label={`${entry.total_hours} hours`}
+                              color="primary"
+                            />
+                          </Grid>
+                          <Grid item xs={6} sm={4} sx={{ textAlign: "right" }}>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(
+                                  `./${email}/hours?edit=${entry.id}`
+                                );
+                              }}
+                            >
+                              <Edit />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenDeleteDialog(entry.id);
+                              }}
+                            >
+                              <Delete />
+                            </IconButton>
+                          </Grid>
+                        </Grid>
+                      </AccordionSummary>
+                      <AccordionDetails sx={{ bgcolor: "grey.50" }}>
+                        <Typography variant="subtitle2" gutterBottom>
+                          Activity Breakdown:
+                        </Typography>
+                        {entry.activities.map((act, index) => (
+                          <Paper
+                            key={index}
+                            variant="outlined"
+                            sx={{ p: 1.5, mb: 1 }}
+                          >
                             <Box
                               sx={{
                                 display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                                mb: 1,
+                                justifyContent: "space-between",
                               }}
                             >
                               <Chip
-                                label={hour.category.replace("_", " ")}
-                                color={getCategoryColor(hour.category) as any}
-                                size="medium"
+                                label={
+                                  categoryDisplay[act.category]?.label ||
+                                  act.category
+                                }
+                                color={
+                                  categoryDisplay[act.category]?.color ||
+                                  "default"
+                                }
+                                size="small"
                               />
-                            </Box>
-                          }
-                          secondary={
-                            <Box>
-                              <Typography
-                                variant="h6"
-                                sx={{ mb: 0.5, fontWeight: "medium" }}
-                              >
-                                {hour.activity_description}
-                              </Typography>
-                              <Typography
-                                variant="body1"
-                                color="text.secondary"
-                              >
-                                {new Date(hour.date).toLocaleDateString()} •{" "}
-                                {hour.location || "No location specified"}
+                              <Typography fontWeight="bold">
+                                {act.hours}h
                               </Typography>
                             </Box>
-                          }
-                        />
-                        <Box sx={{ textAlign: "right" }}>
-                          <Typography
-                            variant="h4"
-                            fontWeight="bold"
-                            color="primary.main"
-                          >
-                            {hour.hours}h
-                          </Typography>
-                        </Box>
-                      </ListItem>
-                      {index < hours.slice(0, 10).length - 1 && <Divider />}
-                    </Box>
-                  ))}
-                </List>
-              )}
-            </Box>
-          </TabPanel>
-
-          <TabPanel value={tabValue} index={1}>
-            <Box sx={{ textAlign: "center", py: 6 }}>
-              <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
-                Use the dedicated hour logging page for the best experience
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={() => router.push("/missionary/hours/log")}
-                size="large"
-              >
-                Go to Hour Logging
-              </Button>
-            </Box>
-          </TabPanel>
+                            <Typography variant="body2" sx={{ mt: 1 }}>
+                              {act.description}
+                            </Typography>
+                          </Paper>
+                        ))}
+                      </AccordionDetails>
+                    </Accordion>
+                    <Divider />
+                  </ListItem>
+                ))}
+              </List>
+            )}
+          </Box>
         </Paper>
       </Container>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
+        <DialogTitle>Delete Hour Log?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to permanently delete this hour log? This
+            action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog}>Cancel</Button>
+          <Button onClick={handleDeleteEntry} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

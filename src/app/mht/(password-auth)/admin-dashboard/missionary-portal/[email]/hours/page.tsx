@@ -1,6 +1,6 @@
 "use client";
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Box,
   Card,
@@ -19,905 +19,727 @@ import {
   Grid,
   Paper,
   Divider,
+  CircularProgress,
+  IconButton,
+  Container,
 } from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import {
   ArrowForward,
   ArrowBack,
   Check,
-  Schedule,
-  CalendarToday,
-  DateRange,
+  Add,
+  Delete,
   CheckCircle,
+  CalendarMonth,
+  CalendarViewWeek,
 } from "@mui/icons-material";
+import BackButton from "@/components/BackButton";
 import moment, { type Moment } from "moment";
 
-interface TimeEntry {
-  date: Moment;
-  hours: number;
-  missionary_email?: string; // Optional, can be set later
-  activity_description: string;
-  category: string;
-  location: string;
-}
-
 const categories = [
-  { value: "general", label: "General Activities" },
   { value: "outreach", label: "Community Outreach" },
-  { value: "administration", label: "Office Work" },
-  { value: "training", label: "Training & Learning" },
   { value: "community_service", label: "Community Service" },
-  { value: "other", label: "Other Activities" },
+  { value: "administrative", label: "Administrative Work" },
 ];
 
 const steps = [
   "Choose Method",
-  "Select Date",
+  "Select Period",
   "Enter Hours",
   "Activity Details",
   "Review & Submit",
 ];
 
-export default function SimpleTimeEntry({
-  params,
-}: {
-  params: Promise<{ email: string }>;
-}) {
-  const [email, setEmail] = useState<string>("");
-  const [paramsLoaded, setParamsLoaded] = useState(false);
+interface DetailedActivity {
+  id: string;
+  category: string;
+  description: string;
+  hours: string;
+}
 
-  // Resolve params asynchronously
-  useEffect(() => {
-    const resolveParams = async () => {
-      try {
-        const resolvedParams = await params;
-        setEmail(resolvedParams.email.replace(/%40/g, "@")); // Decode email
-        setParamsLoaded(true);
-      } catch (error) {
-        console.error("Error resolving params:", error);
-        setParamsLoaded(true);
-      }
-    };
-
-    resolveParams();
-  }, [params]);
+function TimeEntryFormComponent({ params }: { params: { email: string } }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
+  const email = decodeURIComponent(params.email);
 
   const [currentStep, setCurrentStep] = useState(0);
-  const [entryMethod, setEntryMethod] = useState<
-    "single" | "week" | "month" | ""
-  >("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [success, setSuccess] = useState(false);
+  const [entryMethod, setEntryMethod] = useState<"weekly" | "monthly" | "">("");
+  const [shouldUpdatePreference, setShouldUpdatePreference] = useState(false);
 
-  // Form data
   const [selectedDate, setSelectedDate] = useState<Moment>(moment());
-  const [selectedWeek, setSelectedWeek] = useState<Moment>(moment());
-  const [selectedMonth, setSelectedMonth] = useState<Moment>(moment());
-  const [hours, setHours] = useState("");
-  const [activity, setActivity] = useState("");
-  const [category, setCategory] = useState("");
+  const [totalHours, setTotalHours] = useState("");
+  const [detailedActivities, setDetailedActivities] = useState<
+    DetailedActivity[]
+  >([{ id: crypto.randomUUID(), category: "", description: "", hours: "" }]);
   const [location, setLocation] = useState("");
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  useEffect(() => {
+    const initializeForm = async () => {
+      setLoading(true);
+      if (editId) {
+        try {
+          const response = await fetch(`/api/missionary/hours/${editId}`);
+          if (!response.ok)
+            throw new Error("Failed to fetch entry for editing.");
+          const entryData = await response.json();
+          setEntryMethod(entryData.entry_method);
+          setSelectedDate(moment(entryData.period_start_date));
+          setTotalHours(String(entryData.total_hours));
+          setLocation(entryData.location || "");
+          setDetailedActivities(
+            entryData.activities.map((act: any) => ({
+              ...act,
+              id: crypto.randomUUID(),
+              hours: String(act.hours),
+            }))
+          );
+          setCurrentStep(1); // Start at step 2 for editing
+        } catch (err: any) {
+          setError(err.message);
+        }
+      } else {
+        // Fetch preference for new entries
+        try {
+          const response = await fetch(`/api/missionary/${email}/preference`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.preference) {
+              setEntryMethod(data.preference);
+              setCurrentStep(1);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch preference", err);
+        }
+      }
+      setLoading(false);
+    };
+    initializeForm();
+  }, [editId, email]);
+
+  const handleNext = () => setCurrentStep((prev) => prev + 1);
+  const handleBack = () => setCurrentStep((prev) => prev - 1);
+
   const resetForm = () => {
-    setCurrentStep(0);
-    setEntryMethod("");
-    setSelectedDate(moment());
-    setSelectedWeek(moment());
-    setSelectedMonth(moment());
-    setHours("");
-    setActivity("");
-    setCategory("");
-    setLocation("");
-    setMessage("");
-    setSuccess(false);
+    router.push(`${rootUrl}/admin-dashboard/missionary-portal/${email}`);
   };
 
-  const handleNext = () => {
-    setCurrentStep(currentStep + 1);
+  const addActivity = () => {
+    setDetailedActivities([
+      ...detailedActivities,
+      { id: crypto.randomUUID(), category: "", description: "", hours: "" },
+    ]);
   };
 
-  const handleBack = () => {
-    setCurrentStep(currentStep - 1);
+  const removeActivity = (id: string) => {
+    setDetailedActivities(detailedActivities.filter((act) => act.id !== id));
   };
 
-  const generateDaysInRange = (
-    startDate: Moment,
-    endDate: Moment
-  ): Moment[] => {
-    const days: Moment[] = [];
-    const current = startDate.clone();
-
-    while (current.isSameOrBefore(endDate, "day")) {
-      days.push(current.clone());
-      current.add(1, "day");
-    }
-
-    return days;
+  const updateActivity = (
+    id: string,
+    field: keyof Omit<DetailedActivity, "id">,
+    value: string
+  ) => {
+    setDetailedActivities(
+      detailedActivities.map((act) =>
+        act.id === id ? { ...act, [field]: value } : act
+      )
+    );
   };
+
+  const assignedHours = useMemo(
+    () =>
+      detailedActivities.reduce(
+        (sum, act) => sum + (Number.parseFloat(act.hours) || 0),
+        0
+      ),
+    [detailedActivities]
+  );
+
+  const remainingHours = useMemo(
+    () => (Number.parseFloat(totalHours) || 0) - assignedHours,
+    [totalHours, assignedHours]
+  );
 
   const handleSubmit = async () => {
     setLoading(true);
-    setMessage(""); // Clear any previous messages
-    setSuccess(false); // Reset success state
+    setError(null);
 
     try {
-      let entries: TimeEntry[] = [];
-
-      if (entryMethod === "single") {
-        entries = [
+      // Overlap check only for new entries
+      if (!editId) {
+        const overlapCheck = await fetch(
+          `/api/missionary/hours/check-overlap`,
           {
-            date: selectedDate,
-            hours: Number.parseFloat(hours),
-            activity_description: activity,
-            category,
-            location,
-          },
-        ];
-      } else if (entryMethod === "week") {
-        const weekStart = selectedWeek.clone().startOf("week");
-        const weekEnd = selectedWeek.clone().endOf("week");
-        const weekDays = generateDaysInRange(weekStart, weekEnd);
-        const weekdays = weekDays.filter(
-          (day) => day.day() !== 0 && day.day() !== 6
-        ); // 0 = Sunday, 6 = Saturday
-        const hoursPerDay = Number.parseFloat(hours) / weekdays.length;
-
-        entries = weekdays.map((date) => ({
-          date,
-          hours: Math.round(hoursPerDay * 100) / 100,
-          activity_description: activity,
-          category,
-          location,
-        }));
-      } else if (entryMethod === "month") {
-        const monthStart = selectedMonth.clone().startOf("month");
-        const monthEnd = selectedMonth.clone().endOf("month");
-        const monthDays = generateDaysInRange(monthStart, monthEnd);
-        const weekdays = monthDays.filter(
-          (day) => day.day() !== 0 && day.day() !== 6
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email,
+              entryMethod,
+              date: selectedDate.toISOString(),
+            }),
+          }
         );
-        const hoursPerDay = Number.parseFloat(hours) / weekdays.length;
-
-        entries = weekdays.map((date) => ({
-          date,
-          hours: Math.round(hoursPerDay * 100) / 100,
-          activity_description: activity,
-          category,
-          location,
-        }));
-      }
-
-      // Submit entries
-      const promises = entries.map(async (entry) => {
-        const response = await fetch("/api/missionary/hours", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: email,
-            date: entry.date.format("YYYY-MM-DD"),
-            hours: entry.hours,
-            activity_description: entry.activity_description,
-            category: entry.category,
-            location: entry.location,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
+        const overlapResult = await overlapCheck.json();
+        if (!overlapCheck.ok)
           throw new Error(
-            `Failed to save entry for ${entry.date.format("YYYY-MM-DD")}: ${
-              response.status
-            } ${response.statusText}${errorText ? ` - ${errorText}` : ""}`
+            overlapResult.error || "Failed to check for overlap."
+          );
+        if (overlapResult.overlap) {
+          throw new Error(
+            `You have already logged hours for this ${entryMethod}. Please select a different period.`
           );
         }
+      }
 
-        return response;
+      const payload = {
+        entryMethod,
+        period_start_date: selectedDate
+          .clone()
+          .startOf(entryMethod as "week" | "month")
+          .toISOString(),
+        total_hours: Number(totalHours),
+        activities: detailedActivities.map(({ id, ...rest }) => ({
+          ...rest,
+          hours: Number(rest.hours),
+        })),
+        location,
+      };
+
+      const url = editId
+        ? `/api/missionary/hours/${editId}`
+        : "/api/missionary/hours";
+      const method = editId ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          editId
+            ? payload
+            : {
+                ...payload,
+                email: email,
+                date: selectedDate.toISOString(),
+                updatePreference: shouldUpdatePreference,
+              }
+        ),
       });
 
-      await Promise.all(promises);
+      const result = await response.json();
+      if (!response.ok)
+        throw new Error(result.error || "Failed to submit hours.");
 
-      setSuccess(true);
-      setMessage(
-        `Successfully logged ${entries.length} day(s) of volunteer hours!`
-      );
-      setCurrentStep(5); // Go to success step
-    } catch (error) {
-      setSuccess(false);
-      console.error("Error submitting hours:", error);
-
-      if (error instanceof Error) {
-        setMessage(error.message);
-      } else {
-        setMessage("There was a problem saving your hours. Please try again.");
-      }
+      setIsSuccess(true);
+      setCurrentStep(5);
+    } catch (e: any) {
+      setError(e.message);
     } finally {
       setLoading(false);
     }
   };
 
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  const periodStart = selectedDate
+    .clone()
+    .startOf(entryMethod === "weekly" ? "week" : "month");
+  const periodEnd = selectedDate
+    .clone()
+    .endOf(entryMethod === "weekly" ? "week" : "month");
+
   return (
-    <LocalizationProvider dateAdapter={AdapterMoment}>
-      <Box sx={{ maxWidth: 800, mx: "auto", p: 3 }}>
-        {/* Header */}
-        <Box sx={{ textAlign: "center", mb: 4 }}>
-          <Typography
-            variant="h3"
-            component="h1"
-            fontWeight="bold"
-            gutterBottom
-          >
-            Log Your Volunteer Hours
-          </Typography>
-          <Typography variant="h5" color="text.secondary">
-            We'll help you step by step
-          </Typography>
-        </Box>
-
-        {/* Progress Stepper */}
-        <Box sx={{ mb: 4 }}>
-          <Stepper activeStep={currentStep} alternativeLabel>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>
-                  <Typography variant="body1" fontWeight="medium">
-                    {label}
-                  </Typography>
-                </StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-        </Box>
-
-        <Card elevation={3} sx={{ minHeight: 500 }}>
-          <CardContent sx={{ p: 4 }}>
-            {/* Step 1: Choose how to enter time */}
-            {currentStep === 0 && (
-              <Box sx={{ textAlign: "center" }}>
-                <Typography
-                  variant="h4"
-                  component="h2"
-                  fontWeight="bold"
-                  gutterBottom
-                >
-                  How would you like to enter your time?
-                </Typography>
-                <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-                  Choose the option that works best for you
-                </Typography>
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 2,
-                    maxWidth: 600,
-                    mx: "auto",
-                  }}
-                >
-                  <Button
-                    variant={
-                      entryMethod === "single" ? "contained" : "outlined"
-                    }
-                    onClick={() => setEntryMethod("single")}
-                    sx={{
-                      height: 80,
-                      fontSize: "1.2rem",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 1,
-                    }}
-                    startIcon={<Schedule sx={{ fontSize: "2rem" }} />}
-                  >
-                    <Box>One Day at a Time</Box>
-                    <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                      Enter hours for a single day
-                    </Typography>
-                  </Button>
-
-                  <Button
-                    variant={entryMethod === "week" ? "contained" : "outlined"}
-                    onClick={() => setEntryMethod("week")}
-                    sx={{
-                      height: 80,
-                      fontSize: "1.2rem",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 1,
-                    }}
-                    startIcon={<CalendarToday sx={{ fontSize: "2rem" }} />}
-                  >
-                    <Box>Whole Week</Box>
-                    <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                      Enter total hours for a week
-                    </Typography>
-                  </Button>
-
-                  <Button
-                    variant={entryMethod === "month" ? "contained" : "outlined"}
-                    onClick={() => setEntryMethod("month")}
-                    sx={{
-                      height: 80,
-                      fontSize: "1.2rem",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 1,
-                    }}
-                    startIcon={<DateRange sx={{ fontSize: "2rem" }} />}
-                  >
-                    <Box>Whole Month</Box>
-                    <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                      Enter total hours for a month
-                    </Typography>
-                  </Button>
-                </Box>
-
-                <Box sx={{ mt: 4 }}>
-                  <Button
-                    onClick={handleNext}
-                    disabled={!entryMethod}
-                    variant="contained"
-                    size="large"
-                    endIcon={<ArrowForward />}
-                    sx={{ fontSize: "1.2rem", px: 4, py: 2 }}
-                  >
-                    Continue
-                  </Button>
-                </Box>
-              </Box>
-            )}
-
-            {/* Step 2: Choose date/period */}
-            {currentStep === 1 && (
-              <Box>
-                <Box sx={{ textAlign: "center", mb: 4 }}>
-                  <Typography
-                    variant="h4"
-                    component="h2"
-                    fontWeight="bold"
-                    gutterBottom
-                  >
-                    {entryMethod === "single" && "Which day?"}
-                    {entryMethod === "week" && "Which week?"}
-                    {entryMethod === "month" && "Which month?"}
-                  </Typography>
-                  <Typography variant="h6" color="text.secondary">
-                    {entryMethod === "single" &&
-                      "Select the day you want to log hours for"}
-                    {entryMethod === "week" &&
-                      "Select any day in the week you want to log hours for"}
-                    {entryMethod === "month" &&
-                      "Select any day in the month you want to log hours for"}
-                  </Typography>
-                </Box>
-
-                <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
-                  <DatePicker
-                    value={
-                      entryMethod === "single"
-                        ? selectedDate
-                        : entryMethod === "week"
-                        ? selectedWeek
-                        : selectedMonth
-                    }
-                    onChange={(date) => {
-                      if (date) {
-                        if (entryMethod === "single") setSelectedDate(date);
-                        else if (entryMethod === "week") setSelectedWeek(date);
-                        else if (entryMethod === "month")
-                          setSelectedMonth(date);
-                      }
-                    }}
-                    slotProps={{
-                      textField: {
-                        size: "medium",
-                        sx: { fontSize: "1.2rem" },
-                      },
-                    }}
-                  />
-                </Box>
-
-                {entryMethod === "week" && (
-                  <Paper
-                    sx={{
-                      p: 3,
-                      mb: 4,
-                      bgcolor: "primary.50",
-                      textAlign: "center",
-                    }}
-                  >
-                    <Typography variant="h6">
-                      Week of{" "}
-                      {selectedWeek.clone().startOf("week").format("MMMM D")} -{" "}
-                      {selectedWeek
-                        .clone()
-                        .endOf("week")
-                        .format("MMMM D, YYYY")}
+    <Box sx={{ position: "relative" }}>
+      <LocalizationProvider dateAdapter={AdapterMoment}>
+        <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+          <Box>
+            <Box sx={{ p: 3, textAlign: "center" }}>
+              <BackButton
+                href={`${rootUrl}/admin-dashboard/missionary-portal/${email}`}
+                sx={{ mb: 2, position: "absolute", left: 2, top: 2 }}
+              />
+              <Typography
+                variant="h3"
+                component="h1"
+                fontWeight="bold"
+                gutterBottom
+              >
+                {editId ? "Edit" : "Log"} Your Volunteer Hours
+              </Typography>
+              <Typography variant="h5" color="text.secondary">
+                We'll help you step by step
+              </Typography>
+            </Box>
+            <Box sx={{ mb: 4 }}>
+              <Stepper activeStep={currentStep} alternativeLabel>
+                {steps.map((label) => (
+                  <Step key={label}>
+                    <StepLabel>{label}</StepLabel>
+                  </Step>
+                ))}
+              </Stepper>
+            </Box>
+            <Card
+              elevation={3}
+              sx={{ minHeight: 500, display: "flex", flexDirection: "column" }}
+            >
+              <CardContent sx={{ p: 4, flexGrow: 1 }}>
+                {currentStep === 0 && (
+                  <Box sx={{ textAlign: "center" }}>
+                    <Typography
+                      variant="h4"
+                      component="h2"
+                      fontWeight="bold"
+                      gutterBottom
+                    >
+                      How would you like to enter your time?
                     </Typography>
                     <Typography
-                      variant="body1"
+                      variant="h6"
                       color="text.secondary"
-                      sx={{ mt: 1 }}
+                      sx={{ mb: 4 }}
                     >
-                      Hours will be spread across weekdays (Monday-Friday)
+                      Choose your preferred method. We'll remember it for next
+                      time.
                     </Typography>
-                  </Paper>
-                )}
-
-                {entryMethod === "month" && (
-                  <Paper
-                    sx={{
-                      p: 3,
-                      mb: 4,
-                      bgcolor: "primary.50",
-                      textAlign: "center",
-                    }}
-                  >
-                    <Typography variant="h6">
-                      {selectedMonth.format("MMMM YYYY")}
-                    </Typography>
-                    <Typography
-                      variant="body1"
-                      color="text.secondary"
-                      sx={{ mt: 1 }}
-                    >
-                      Hours will be spread across weekdays in this month
-                    </Typography>
-                  </Paper>
-                )}
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    mt: 4,
-                  }}
-                >
-                  <Button
-                    onClick={handleBack}
-                    variant="outlined"
-                    size="large"
-                    startIcon={<ArrowBack />}
-                    sx={{ fontSize: "1.2rem", px: 4, py: 2 }}
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    onClick={handleNext}
-                    variant="contained"
-                    size="large"
-                    endIcon={<ArrowForward />}
-                    sx={{ fontSize: "1.2rem", px: 4, py: 2 }}
-                  >
-                    Continue
-                  </Button>
-                </Box>
-              </Box>
-            )}
-
-            {/* Step 3: Enter hours */}
-            {currentStep === 2 && (
-              <Box>
-                <Box sx={{ textAlign: "center", mb: 4 }}>
-                  <Typography
-                    variant="h4"
-                    component="h2"
-                    fontWeight="bold"
-                    gutterBottom
-                  >
-                    How many hours?
-                  </Typography>
-                  <Typography variant="h6" color="text.secondary">
-                    {entryMethod === "single" &&
-                      "Enter the number of hours you volunteered on this day"}
-                    {entryMethod === "week" &&
-                      "Enter the total number of hours you volunteered this week"}
-                    {entryMethod === "month" &&
-                      "Enter the total number of hours you volunteered this month"}
-                  </Typography>
-                </Box>
-
-                <Box sx={{ maxWidth: 400, mx: "auto", mb: 4 }}>
-                  <TextField
-                    fullWidth
-                    type="number"
-                    label={
-                      entryMethod === "single"
-                        ? "Hours for this day"
-                        : entryMethod === "week"
-                        ? "Total hours for the week"
-                        : "Total hours for the month"
-                    }
-                    value={hours}
-                    onChange={(e) => setHours(e.target.value)}
-                    inputProps={{
-                      step: "0.25",
-                      min: "0",
-                      max:
-                        entryMethod === "single"
-                          ? "24"
-                          : entryMethod === "week"
-                          ? "168"
-                          : "744",
-                      style: { fontSize: "2rem", textAlign: "center" },
-                    }}
-                    InputLabelProps={{
-                      style: { fontSize: "1.2rem" },
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        height: "80px",
-                      },
-                    }}
-                    placeholder="0"
-                  />
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mt: 1, textAlign: "center" }}
-                  >
-                    You can use decimals like 2.5 for 2 hours and 30 minutes
-                  </Typography>
-                </Box>
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    mt: 4,
-                  }}
-                >
-                  <Button
-                    onClick={handleBack}
-                    variant="outlined"
-                    size="large"
-                    startIcon={<ArrowBack />}
-                    sx={{ fontSize: "1.2rem", px: 4, py: 2 }}
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    onClick={handleNext}
-                    disabled={!hours || Number.parseFloat(hours) <= 0}
-                    variant="contained"
-                    size="large"
-                    endIcon={<ArrowForward />}
-                    sx={{ fontSize: "1.2rem", px: 4, py: 2 }}
-                  >
-                    Continue
-                  </Button>
-                </Box>
-              </Box>
-            )}
-
-            {/* Step 4: Activity details */}
-            {currentStep === 3 && (
-              <Box>
-                <Box sx={{ textAlign: "center", mb: 4 }}>
-                  <Typography
-                    variant="h4"
-                    component="h2"
-                    fontWeight="bold"
-                    gutterBottom
-                  >
-                    What did you do?
-                  </Typography>
-                  <Typography variant="h6" color="text.secondary">
-                    Tell us about your volunteer activities
-                  </Typography>
-                </Box>
-
-                <Box sx={{ maxWidth: 600, mx: "auto" }}>
-                  <Grid container spacing={3}>
-                    <Grid item xs={12}>
-                      <FormControl fullWidth>
-                        <InputLabel sx={{ fontSize: "1.2rem" }}>
-                          Type of Activity
-                        </InputLabel>
-                        <Select
-                          value={category}
-                          onChange={(e) => setCategory(e.target.value)}
-                          label="Type of Activity"
+                    <Grid container spacing={2} justifyContent="center">
+                      <Grid item xs={12} sm={5}>
+                        <Button
+                          variant={
+                            entryMethod === "weekly" ? "contained" : "outlined"
+                          }
+                          onClick={() => {
+                            setEntryMethod("weekly");
+                            setShouldUpdatePreference(true);
+                          }}
                           sx={{
-                            fontSize: "1.1rem",
-                            height: "60px",
+                            height: 100,
+                            width: "100%",
+                            flexDirection: "column",
                           }}
                         >
-                          {categories.map((cat) => (
-                            <MenuItem
-                              key={cat.value}
-                              value={cat.value}
-                              sx={{ fontSize: "1.1rem", py: 2 }}
-                            >
-                              {cat.label}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                          <CalendarViewWeek sx={{ mb: 1 }} />
+                          Weekly
+                        </Button>
+                      </Grid>
+                      <Grid item xs={12} sm={5}>
+                        <Button
+                          variant={
+                            entryMethod === "monthly" ? "contained" : "outlined"
+                          }
+                          onClick={() => {
+                            setEntryMethod("monthly");
+                            setShouldUpdatePreference(true);
+                          }}
+                          sx={{
+                            height: 100,
+                            width: "100%",
+                            flexDirection: "column",
+                          }}
+                        >
+                          <CalendarMonth sx={{ mb: 1 }} />
+                          Monthly
+                        </Button>
+                      </Grid>
                     </Grid>
-
-                    <Grid item xs={12}>
-                      <TextField
-                        fullWidth
-                        multiline
-                        rows={4}
-                        label="Describe Your Activities"
-                        value={activity}
-                        onChange={(e) => setActivity(e.target.value)}
-                        placeholder="Tell us what you did during your volunteer time..."
-                        InputLabelProps={{
-                          style: { fontSize: "1.2rem" },
-                        }}
-                        inputProps={{
-                          style: { fontSize: "1.1rem" },
-                        }}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12}>
-                      <TextField
-                        fullWidth
-                        label="Where? (Optional)"
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        placeholder="Where did you volunteer?"
-                        InputLabelProps={{
-                          style: { fontSize: "1.2rem" },
-                        }}
-                        inputProps={{
-                          style: { fontSize: "1.1rem" },
-                        }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            height: "60px",
-                          },
-                        }}
-                      />
-                    </Grid>
-                  </Grid>
-                </Box>
-
+                  </Box>
+                )}
+                {currentStep === 1 && (
+                  <Box sx={{ textAlign: "center" }}>
+                    <Typography
+                      variant="h4"
+                      component="h2"
+                      fontWeight="bold"
+                      gutterBottom
+                    >
+                      Which {entryMethod === "weekly" ? "Week" : "Month"}?
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      color="text.secondary"
+                      sx={{ mb: 4 }}
+                    >
+                      Select any day within the desired period.
+                    </Typography>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "center", mb: 3 }}
+                    >
+                      {entryMethod === "monthly" ? (
+                        <DatePicker
+                          label="Select Month"
+                          value={selectedDate}
+                          onChange={(date) => date && setSelectedDate(date)}
+                          views={["year", "month"]}
+                        />
+                      ) : (
+                        <DatePicker
+                          label="Select Day in Week"
+                          value={selectedDate}
+                          onChange={(date) => date && setSelectedDate(date)}
+                        />
+                      )}
+                    </Box>
+                    <Paper sx={{ p: 2, bgcolor: "grey.100" }}>
+                      <Typography variant="h6">
+                        Selected Period: {periodStart.format("MMM D")} -{" "}
+                        {periodEnd.format("MMM D, YYYY")}
+                      </Typography>
+                    </Paper>
+                  </Box>
+                )}
+                {currentStep === 2 && (
+                  <Box sx={{ textAlign: "center" }}>
+                    <Typography
+                      variant="h4"
+                      component="h2"
+                      fontWeight="bold"
+                      gutterBottom
+                    >
+                      How many hours in total?
+                    </Typography>
+                    <TextField
+                      type="number"
+                      label={`Total hours for the ${entryMethod}`}
+                      value={totalHours}
+                      onChange={(e) => setTotalHours(e.target.value)}
+                      inputProps={{ step: "0.25", min: "0" }}
+                      sx={{ maxWidth: 300, mx: "auto" }}
+                    />
+                  </Box>
+                )}
+                {currentStep === 3 && (
+                  <Box>
+                    <Typography
+                      variant="h4"
+                      component="h2"
+                      fontWeight="bold"
+                      gutterBottom
+                      align="center"
+                    >
+                      What did you do?
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      color="text.secondary"
+                      align="center"
+                      sx={{ mb: 2 }}
+                    >
+                      Allocate your {totalHours} hours across your activities.
+                    </Typography>
+                    <Alert
+                      severity={
+                        // success warning error
+                        remainingHours === 0
+                          ? "success"
+                          : remainingHours < 0
+                          ? "error"
+                          : "warning"
+                      }
+                      sx={{ mb: 2 }}
+                    >
+                      Total: {totalHours || 0}h
+                      {remainingHours > 0 && (
+                        <> - Remaining: {remainingHours.toFixed(2)}h</>
+                      )}
+                      {remainingHours < 0 && (
+                        <>
+                          - Over-allocated:{" "}
+                          {Math.abs(remainingHours).toFixed(2)}h
+                        </>
+                      )}
+                    </Alert>
+                    {detailedActivities.map((activity, idx) => {
+                      // Get all selected categories except for this activity
+                      const selectedCategories = detailedActivities
+                        .filter((a, i) => i !== idx)
+                        .map((a) => a.category)
+                        .filter(Boolean);
+                      return (
+                        <Paper
+                          key={activity.id}
+                          sx={{ p: 2, mb: 2, border: "1px solid #ddd" }}
+                        >
+                          <Grid container spacing={2} alignItems="center">
+                            <Grid item xs={12} sm={5}>
+                              <FormControl fullWidth>
+                                <InputLabel>Category</InputLabel>
+                                <Select
+                                  value={activity.category}
+                                  label="Category"
+                                  onChange={(e) =>
+                                    updateActivity(
+                                      activity.id,
+                                      "category",
+                                      e.target.value
+                                    )
+                                  }
+                                >
+                                  {categories.map((cat) => (
+                                    <MenuItem
+                                      key={cat.value}
+                                      value={cat.value}
+                                      disabled={selectedCategories.includes(
+                                        cat.value
+                                      )}
+                                    >
+                                      {cat.label}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid item xs={6} sm={3}>
+                              <TextField
+                                fullWidth
+                                type="number"
+                                label="Hours"
+                                value={activity.hours}
+                                onChange={(e) =>
+                                  updateActivity(
+                                    activity.id,
+                                    "hours",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </Grid>
+                            <Grid item xs={6} sm={4}>
+                              {detailedActivities.length > 1 && (
+                                <IconButton
+                                  onClick={() => removeActivity(activity.id)}
+                                  color="error"
+                                >
+                                  <Delete />
+                                </IconButton>
+                              )}
+                            </Grid>
+                            <Grid item xs={12}>
+                              <TextField
+                                fullWidth
+                                multiline
+                                rows={2}
+                                label="Description"
+                                value={activity.description}
+                                onChange={(e) =>
+                                  updateActivity(
+                                    activity.id,
+                                    "description",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </Grid>
+                          </Grid>
+                        </Paper>
+                      );
+                    })}
+                    {
+                      // less than three activites
+                      detailedActivities.length < 3 && (
+                        <Button startIcon={<Add />} onClick={addActivity}>
+                          Add Activity
+                        </Button>
+                      )
+                    }
+                  </Box>
+                )}
+                {currentStep === 4 && (
+                  <Box>
+                    <Typography
+                      variant="h4"
+                      component="h2"
+                      fontWeight="bold"
+                      gutterBottom
+                      align="center"
+                    >
+                      Review & Submit
+                    </Typography>
+                    <Paper sx={{ p: 3, bgcolor: "grey.50" }}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={6}>
+                          <Typography fontWeight="bold">Period:</Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography>
+                            {periodStart.format("MMM D")} -{" "}
+                            {periodEnd.format("MMM D, YYYY")}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography fontWeight="bold">
+                            Total Hours:
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography>{totalHours} hours</Typography>
+                        </Grid>
+                      </Grid>
+                      <Divider sx={{ my: 2 }} />
+                      <Typography variant="h6" fontWeight="bold">
+                        Activity Breakdown:
+                      </Typography>
+                      {detailedActivities.map((act) => (
+                        <Box
+                          key={act.id}
+                          sx={{
+                            my: 1,
+                            p: 1,
+                            border: "1px solid #eee",
+                            borderRadius: 1,
+                          }}
+                        >
+                          <Typography fontWeight="medium">
+                            {
+                              categories.find((c) => c.value === act.category)
+                                ?.label
+                            }{" "}
+                            ({act.hours}h)
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {act.description}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Paper>
+                    {error && (
+                      <Alert severity="error" sx={{ mt: 2 }}>
+                        {error}
+                      </Alert>
+                    )}
+                  </Box>
+                )}
+                {currentStep === 5 && (
+                  <Box sx={{ textAlign: "center" }}>
+                    <CheckCircle
+                      sx={{ fontSize: 80, color: "success.main", mb: 2 }}
+                    />
+                    <Typography
+                      variant="h3"
+                      component="h2"
+                      fontWeight="bold"
+                      color="success.main"
+                    >
+                      Success!
+                    </Typography>
+                    <Typography
+                      variant="h5"
+                      color="text.secondary"
+                      sx={{ mb: 4 }}
+                    >
+                      Your volunteer hours have been{" "}
+                      {editId ? "updated" : "recorded"}.
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      size="large"
+                      onClick={resetForm}
+                    >
+                      Back to Portal
+                    </Button>
+                  </Box>
+                )}
+              </CardContent>
+              {currentStep < 5 && (
                 <Box
                   sx={{
+                    p: 2,
                     display: "flex",
                     justifyContent: "space-between",
-                    mt: 4,
+                    borderTop: "1px solid #ddd",
                   }}
                 >
                   <Button
-                    onClick={handleBack}
-                    variant="outlined"
-                    size="large"
                     startIcon={<ArrowBack />}
-                    sx={{ fontSize: "1.2rem", px: 4, py: 2 }}
+                    onClick={handleBack}
+                    disabled={
+                      currentStep === 0 ||
+                      (currentStep === 1 && !shouldUpdatePreference && !editId)
+                    }
                   >
                     Back
                   </Button>
-                  <Button
-                    onClick={handleNext}
-                    disabled={!category || !activity.trim()}
-                    variant="contained"
-                    size="large"
-                    endIcon={<ArrowForward />}
-                    sx={{ fontSize: "1.2rem", px: 4, py: 2 }}
-                  >
-                    Continue
-                  </Button>
-                </Box>
-              </Box>
-            )}
-
-            {/* Step 5: Review and submit */}
-            {currentStep === 4 && (
-              <Box>
-                <Box sx={{ textAlign: "center", mb: 4 }}>
-                  <Typography
-                    variant="h4"
-                    component="h2"
-                    fontWeight="bold"
-                    gutterBottom
-                  >
-                    Review Your Information
-                  </Typography>
-                  <Typography variant="h6" color="text.secondary">
-                    Please check that everything looks correct
-                  </Typography>
-                </Box>
-
-                <Paper sx={{ p: 4, mb: 4, bgcolor: "grey.50" }}>
-                  <Grid container spacing={3}>
-                    <Grid item xs={6}>
-                      <Typography variant="h6" fontWeight="bold">
-                        Time Period:
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="h6">
-                        {entryMethod === "single" &&
-                          selectedDate.format("MMMM D, YYYY")}
-                        {entryMethod === "week" &&
-                          `Week of ${selectedWeek
-                            .clone()
-                            .startOf("week")
-                            .format("MMM D")} - ${selectedWeek
-                            .clone()
-                            .endOf("week")
-                            .format("MMM D, YYYY")}`}
-                        {entryMethod === "month" &&
-                          selectedMonth.format("MMMM YYYY")}
-                      </Typography>
-                    </Grid>
-
-                    <Grid item xs={6}>
-                      <Typography variant="h6" fontWeight="bold">
-                        Hours:
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="h6">{hours} hours</Typography>
-                    </Grid>
-
-                    <Grid item xs={6}>
-                      <Typography variant="h6" fontWeight="bold">
-                        Activity Type:
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="h6">
-                        {categories.find((c) => c.value === category)?.label}
-                      </Typography>
-                    </Grid>
-
-                    <Grid item xs={6}>
-                      <Typography variant="h6" fontWeight="bold">
-                        Location:
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="h6">
-                        {location || "Not specified"}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-
-                  <Divider sx={{ my: 3 }} />
-
-                  <Box>
-                    <Typography variant="h6" fontWeight="bold" gutterBottom>
-                      What You Did:
-                    </Typography>
-                    <Typography variant="h6">{activity}</Typography>
-                  </Box>
-
-                  {(entryMethod === "week" || entryMethod === "month") && (
-                    <>
-                      <Divider sx={{ my: 3 }} />
-                      <Paper sx={{ p: 3, bgcolor: "primary.50" }}>
-                        <Typography variant="h6" fontWeight="bold" gutterBottom>
-                          How Your Hours Will Be Recorded:
-                        </Typography>
-                        <Typography variant="body1">
-                          Your {hours} hours will be automatically divided
-                          across the weekdays in this {entryMethod}. Each
-                          weekday will show the same activity description and
-                          details.
-                        </Typography>
-                      </Paper>
-                    </>
+                  {currentStep < 4 ? (
+                    <Button
+                      variant="contained"
+                      endIcon={<ArrowForward />}
+                      onClick={handleNext}
+                    >
+                      Continue
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      color="success"
+                      endIcon={
+                        loading ? (
+                          <CircularProgress size={20} color="inherit" />
+                        ) : (
+                          <Check />
+                        )
+                      }
+                      onClick={handleSubmit}
+                      disabled={loading}
+                    >
+                      {loading
+                        ? "Submitting..."
+                        : editId
+                        ? "Update Hours"
+                        : "Submit Hours"}
+                    </Button>
                   )}
-                </Paper>
-
-                {message && (
-                  <Alert
-                    severity={success ? "success" : "error"}
-                    sx={{ mb: 3, fontSize: "1.1rem" }}
-                  >
-                    {message}
-                  </Alert>
-                )}
-
-                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Button
-                    onClick={handleBack}
-                    variant="outlined"
-                    size="large"
-                    startIcon={<ArrowBack />}
-                    sx={{ fontSize: "1.2rem", px: 4, py: 2 }}
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={loading}
-                    variant="contained"
-                    size="large"
-                    endIcon={<Check />}
-                    sx={{
-                      fontSize: "1.2rem",
-                      px: 4,
-                      py: 2,
-                      bgcolor: "success.main",
-                      "&:hover": { bgcolor: "success.dark" },
-                    }}
-                  >
-                    {loading ? "Saving..." : "Submit Hours"}
-                  </Button>
                 </Box>
-              </Box>
-            )}
+              )}
+            </Card>
+          </Box>
+        </Container>
+      </LocalizationProvider>
+    </Box>
+  );
+}
 
-            {/* Step 6: Success */}
-            {currentStep === 5 && (
-              <Box sx={{ textAlign: "center" }}>
-                <Box
-                  sx={{
-                    width: 100,
-                    height: 100,
-                    bgcolor: "success.main",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    mx: "auto",
-                    mb: 4,
-                  }}
-                >
-                  <CheckCircle sx={{ fontSize: "4rem", color: "white" }} />
-                </Box>
-
-                <Typography
-                  variant="h3"
-                  component="h2"
-                  fontWeight="bold"
-                  color="success.main"
-                  gutterBottom
-                >
-                  Success!
-                </Typography>
-                <Typography variant="h5" color="text.secondary" sx={{ mb: 4 }}>
-                  Your volunteer hours have been recorded
-                </Typography>
-
-                {message && (
-                  <Alert severity="success" sx={{ mb: 4, fontSize: "1.1rem" }}>
-                    {message}
-                  </Alert>
-                )}
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 2,
-                    maxWidth: 400,
-                    mx: "auto",
-                  }}
-                >
-                  <Button
-                    onClick={resetForm}
-                    variant="contained"
-                    size="large"
-                    sx={{ fontSize: "1.2rem", py: 2 }}
-                  >
-                    Log More Hours
-                  </Button>
-
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    onClick={() => (window.location.href = "/dashboard")}
-                    sx={{ fontSize: "1.2rem", py: 2 }}
-                  >
-                    Go to Dashboard
-                  </Button>
-                </Box>
-              </Box>
-            )}
-          </CardContent>
-        </Card>
-      </Box>
-    </LocalizationProvider>
+export default function LogHoursPage({
+  params,
+}: {
+  params: { email: string };
+}) {
+  return (
+    <Suspense
+      fallback={
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      }
+    >
+      <TimeEntryFormComponent params={params} />
+    </Suspense>
   );
 }

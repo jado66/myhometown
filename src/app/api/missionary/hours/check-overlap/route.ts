@@ -2,56 +2,60 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 // Initialize Supabase client
+import moment from "moment";
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { email: string } }
-) {
+export async function POST(request: NextRequest) {
   try {
-    const email = params.email;
-    if (!email) {
+    const { email, entryMethod, date } = await request.json();
+
+    if (!email || !entryMethod || !date) {
       return NextResponse.json(
-        { error: "Missionary email is required" },
+        { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // First, get the missionary's ID from their email
-    const { data: missionary, error: missionaryError } = await supabase
+    const { data: missionary } = await supabase
       .from("missionaries")
       .select("id")
       .eq("email", email)
       .single();
 
-    if (missionaryError || !missionary) {
+    if (!missionary) {
       return NextResponse.json(
         { error: "Missionary not found" },
         { status: 404 }
       );
     }
 
-    // Then, fetch all hour entries for that missionary ID
-    const { data: hours, error: hoursError } = await supabase
-      .from("missionary_hours")
-      .select("*")
-      .eq("missionary_id", missionary.id)
-      .order("period_start_date", { ascending: false });
+    const periodStartDate = moment(date)
+      .startOf(entryMethod)
+      .format("YYYY-MM-DD");
 
-    if (hoursError) {
-      console.error("Fetch hours error:", hoursError);
+    const { data: existingEntry, error } = await supabase
+      .from("missionary_hours")
+      .select("id")
+      .eq("missionary_id", missionary.id)
+      .eq("period_start_date", periodStartDate)
+      .eq("entry_method", entryMethod)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Overlap check error:", error);
       return NextResponse.json(
-        { error: "Failed to fetch hours" },
+        { error: "Failed to check for overlap" },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ hours });
+    return NextResponse.json({ overlap: !!existingEntry });
   } catch (error) {
-    console.error("Hours API error:", error);
+    console.error("Overlap check API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
