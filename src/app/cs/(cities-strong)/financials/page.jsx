@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import {
   Box,
@@ -47,7 +48,7 @@ const Financials = () => {
       pages: 29,
       type: "Tax Return",
       pdfUrl: "/documents/2024-tax-return.pdf", // Replace with actual URL
-      color: "secondary",
+      color: "success",
     },
     {
       id: 3,
@@ -71,11 +72,11 @@ const Financials = () => {
     setSelectedDocument(null);
   };
 
-  const handleDownload = (document) => {
+  const handleDownload = (doc) => {
     // Create a temporary link element and trigger download
     const link = document.createElement("a");
-    link.href = document.pdfUrl;
-    link.download = `${document.title.replace(/\s+/g, "-").toLowerCase()}.pdf`;
+    link.href = doc.pdfUrl;
+    link.download = `${doc.title.replace(/\s+/g, "-").toLowerCase()}.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -249,14 +250,6 @@ const Financials = () => {
         </DialogContent>
 
         <DialogActions sx={{ p: 2 }}>
-          <Button
-            variant="contained"
-            startIcon={<Download />}
-            onClick={() => handleDownload(selectedDocument)}
-            color="primary"
-          >
-            Download PDF
-          </Button>
           <Button onClick={handleCloseDialog} variant="outlined">
             Close
           </Button>
