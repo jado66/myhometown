@@ -1,98 +1,77 @@
+// Main Component: MissionaryManagement.tsx
 "use client";
 
-import type React from "react";
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Box,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  TextField,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Chip,
-  IconButton,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Grid,
+  Container,
   AppBar,
   Toolbar,
-  Container,
-  Avatar,
-  Menu,
-  ListItemIcon,
-  ListItemText,
+  Typography,
+  Button,
+  Grid,
+  Paper,
   Tabs,
   Tab,
-  Alert,
+  Card,
+  CardContent,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  FormControl,
+  FormLabel,
+  Select,
+  MenuItem,
+  InputLabel,
+  Chip,
 } from "@mui/material";
 import {
   Add,
-  Edit,
-  Delete,
-  MoreVert,
-  Person,
-  Search,
   Schedule,
-  Assessment,
-  AccessTime,
-  TrendingUp,
-  CalendarToday,
+  Person,
+  Download,
+  Business,
+  LocationCity,
+  Group,
 } from "@mui/icons-material";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
-import moment from "moment";
+import { MissionaryDialog } from "./MissionaryDialog";
+import { MissionaryCard } from "./MissionaryCard";
+import { HoursOverview } from "./HoursOverview";
+import { SearchAndFilter } from "./SearchAndFilter";
+import { AggregateStats } from "./AggregateStats";
+import type { Missionary, City, Community, AssignmentLevel } from "./types";
+import { POSITIONS_BY_LEVEL } from "./positions";
 
-interface Missionary {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  profile_picture_url?: string;
-  city_id?: string;
-  community_id?: string;
-  assignment_status: "active" | "inactive" | "unassigned";
-  contact_number?: string;
-  notes?: string;
-  created_at: string;
-  updated_at: string;
-}
+// Mock data for demonstration
+const mockCities: City[] = [
+  { id: "1", name: "Salt Lake City", state: "Utah", country: "USA" },
+  { id: "2", name: "Provo", state: "Utah", country: "USA" },
+  { id: "3", name: "Ogden", state: "Utah", country: "USA" },
+];
 
-interface City {
-  id: string;
-  name: string;
-  state: string;
-  country: string;
-}
-
-interface Community {
-  id: string;
-  name: string;
-  city_id: string;
-  state: string;
-  country: string;
-}
-
-interface MissionaryHours {
-  missionary_email: string;
-  total_hours: number;
-  this_month_hours: number;
-  this_week_hours: number;
-  last_entry_date: string;
-}
+const mockCommunities: Community[] = [
+  {
+    id: "1",
+    name: "Downtown Community",
+    city_id: "1",
+    state: "Utah",
+    country: "USA",
+  },
+  {
+    id: "2",
+    name: "East Bench Community",
+    city_id: "1",
+    state: "Utah",
+    country: "USA",
+  },
+  {
+    id: "3",
+    name: "Provo Central",
+    city_id: "2",
+    state: "Utah",
+    country: "USA",
+  },
+];
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -112,117 +91,38 @@ function TabPanel(props: TabPanelProps) {
 export default function MissionaryManagement() {
   const [tabValue, setTabValue] = useState(0);
   const [missionaries, setMissionaries] = useState<Missionary[]>([]);
-  const [cities, setCities] = useState<City[]>([]);
-  const [communities, setCommunities] = useState<Community[]>([]);
-  const [missionaryHours, setMissionaryHours] = useState<MissionaryHours[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [cities] = useState<City[]>(mockCities);
+  const [communities] = useState<Community[]>(mockCommunities);
+
+  // Assignment level selection
+  const [assignmentLevel, setAssignmentLevel] =
+    useState<AssignmentLevel>("state");
+  const [selectedCityId, setSelectedCityId] = useState<string>("");
+  const [selectedCommunityId, setSelectedCommunityId] = useState<string>("");
+
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [bulkHoursDialogOpen, setBulkHoursDialogOpen] = useState(false);
   const [editingMissionary, setEditingMissionary] = useState<Missionary | null>(
     null
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedMissionary, setSelectedMissionary] =
-    useState<Missionary | null>(null);
 
-  // Bulk hours form data
-  const [bulkHoursData, setBulkHoursData] = useState({
-    missionary_emails: [] as string[],
-    date: moment(),
-    hours: "",
-    activity_description: "",
-    category: "general",
-    location: "",
-  });
+  // Get available positions based on assignment level
+  const getAvailablePositions = () => {
+    return POSITIONS_BY_LEVEL[assignmentLevel] || {};
+  };
 
-  const [formData, setFormData] = useState({
-    email: "",
-    first_name: "",
-    last_name: "",
-    city_id: "",
-    community_id: "",
-    assignment_status: "active" as "active" | "inactive" | "unassigned",
-    contact_number: "",
-    notes: "",
-  });
-
-  const categories = [
-    { value: "general", label: "General Activities" },
-    { value: "outreach", label: "Community Outreach" },
-    { value: "administration", label: "Office Work" },
-    { value: "training", label: "Training & Learning" },
-    { value: "community_service", label: "Community Service" },
-    { value: "other", label: "Other Activities" },
-  ];
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      // Fetch missionaries, cities, communities, and hours data
-      const [missionariesRes, citiesRes, communitiesRes, hoursRes] =
-        await Promise.all([
-          fetch("/api/database/missionaries"),
-          fetch("/api/database/cities"),
-          fetch("/api/database/communities"),
-          fetch("/api/missionary/hours/aggregate"),
-        ]);
-
-      if (missionariesRes.ok) {
-        const { missionaries: missionariesData } = await missionariesRes.json();
-        setMissionaries(missionariesData || []);
-      }
-
-      if (citiesRes.ok) {
-        const { cities: citiesData } = await citiesRes.json();
-        setCities(citiesData || []);
-      }
-
-      if (communitiesRes.ok) {
-        const { communities: communitiesData } = await communitiesRes.json();
-        setCommunities(communitiesData || []);
-      }
-
-      if (hoursRes.ok) {
-        const { hours: hoursData } = await hoursRes.json();
-        setMissionaryHours(hoursData || []);
-      }
-    } catch (error) {
-      console.error("Failed to fetch data:", error);
-    } finally {
-      setLoading(false);
-    }
+  // Filter communities based on selected city
+  const getFilteredCommunities = () => {
+    if (!selectedCityId) return [];
+    return communities.filter((c) => c.city_id === selectedCityId);
   };
 
   const handleOpenDialog = (missionary?: Missionary) => {
     if (missionary) {
       setEditingMissionary(missionary);
-      setFormData({
-        email: missionary.email,
-        first_name: missionary.first_name,
-        last_name: missionary.last_name,
-        city_id: missionary.city_id || "",
-        community_id: missionary.community_id || "",
-        assignment_status: missionary.assignment_status,
-        contact_number: missionary.contact_number || "",
-        notes: missionary.notes || "",
-      });
     } else {
       setEditingMissionary(null);
-      setFormData({
-        email: "",
-        first_name: "",
-        last_name: "",
-        city_id: "",
-        community_id: "",
-        assignment_status: "active",
-        contact_number: "",
-        notes: "",
-      });
     }
     setDialogOpen(true);
   };
@@ -232,879 +132,415 @@ export default function MissionaryManagement() {
     setEditingMissionary(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      const url = editingMissionary
-        ? `/api/database/missionaries/${editingMissionary.id}`
-        : "/api/database/missionaries";
-
-      const method = editingMissionary ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        await fetchData();
-        handleCloseDialog();
-      }
-    } catch (error) {
-      console.error("Failed to save missionary:", error);
+  const handleSaveMissionary = (formData: any) => {
+    if (editingMissionary) {
+      setMissionaries((prev) =>
+        prev.map((m) =>
+          m.id === editingMissionary.id
+            ? { ...m, ...formData, updated_at: new Date().toISOString() }
+            : m
+        )
+      );
+    } else {
+      const newMissionary: Missionary = {
+        ...formData,
+        id: Math.random().toString(36).substr(2, 9),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      setMissionaries((prev) => [...prev, newMissionary]);
     }
+    handleCloseDialog();
   };
 
-  const handleDelete = async (missionary: Missionary) => {
+  const handleDeleteMissionary = (missionary: Missionary) => {
     if (
       confirm(
         `Are you sure you want to delete ${missionary.first_name} ${missionary.last_name}?`
       )
     ) {
-      try {
-        const response = await fetch(
-          `/api/database/missionaries/${missionary.id}`,
-          {
-            method: "DELETE",
-          }
-        );
-
-        if (response.ok) {
-          await fetchData();
-        }
-      } catch (error) {
-        console.error("Failed to delete missionary:", error);
-      }
+      setMissionaries((prev) => prev.filter((m) => m.id !== missionary.id));
     }
-    setAnchorEl(null);
   };
 
-  const handleBulkHoursSubmit = async () => {
-    if (bulkHoursData.missionary_emails.length === 0) {
-      alert("Please select at least one missionary");
-      return;
-    }
+  const handleExportCSV = () => {
+    const data = missionaries.map((m) => ({
+      "First Name": m.first_name,
+      "Last Name": m.last_name,
+      Email: m.email,
+      Phone: m.contact_number || "",
+      Status: m.assignment_status,
+      "Assignment Level": m.assignment_level || "",
+      City: cities.find((c) => c.id === m.city_id)?.name || "",
+      Community: communities.find((c) => c.id === m.community_id)?.name || "",
+      Group: m.group || "",
+      Title: m.title || "",
+      "Start Date": m.start_date || "",
+      Notes: m.notes || "",
+    }));
 
-    try {
-      const promises = bulkHoursData.missionary_emails.map((email) =>
-        fetch("/api/missionary/hours", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email,
-            date: bulkHoursData.date.format("YYYY-MM-DD"),
-            hours: Number.parseFloat(bulkHoursData.hours),
-            activity_description: bulkHoursData.activity_description,
-            category: bulkHoursData.category,
-            location: bulkHoursData.location,
-          }),
-        })
-      );
-
-      await Promise.all(promises);
-      setBulkHoursDialogOpen(false);
-      setBulkHoursData({
-        missionary_emails: [],
-        date: moment(),
-        hours: "",
-        activity_description: "",
-        category: "general",
-        location: "",
-      });
-      await fetchData(); // Refresh hours data
-      alert(
-        `Successfully logged hours for ${bulkHoursData.missionary_emails.length} missionaries`
-      );
-    } catch (error) {
-      console.error("Failed to submit bulk hours:", error);
-      alert("Failed to submit bulk hours");
-    }
+    exportToCSV(
+      data,
+      `missionaries_report_${new Date().toISOString().split("T")[0]}`
+    );
   };
 
   const filteredMissionaries = missionaries.filter((missionary) => {
     const matchesSearch =
       missionary.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       missionary.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      missionary.email.toLowerCase().includes(searchTerm.toLowerCase());
+      missionary.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (missionary.title || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      (missionary.group || "").toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
       statusFilter === "all" || missionary.assignment_status === statusFilter;
 
-    return matchesSearch && matchesStatus;
+    const matchesLevel =
+      !assignmentLevel || missionary.assignment_level === assignmentLevel;
+
+    return matchesSearch && matchesStatus && matchesLevel;
   });
 
-  const getStatusColor = (status: string) => {
-    const colors = {
-      active: "success",
-      inactive: "error",
-      unassigned: "warning",
-    };
-    return colors[status as keyof typeof colors] || "default";
-  };
-
-  const getCityName = (cityId?: string) => {
-    const city = cities.find((c) => c.id === cityId);
-    return city ? `${city.name}, ${city.state}` : "Unassigned";
-  };
-
-  const getCommunityName = (communityId?: string) => {
-    const community = communities.find((c) => c.id === communityId);
-    return community ? community.name : "Unassigned";
-  };
-
-  const getMissionaryHours = (email: string) => {
-    return missionaryHours.find((h) => h.missionary_email === email);
-  };
-
-  // Calculate aggregate statistics
-  const totalHoursAllMissionaries = missionaryHours.reduce(
-    (sum, h) => sum + h.total_hours,
-    0
-  );
-  const totalThisMonth = missionaryHours.reduce(
-    (sum, h) => sum + h.this_month_hours,
-    0
-  );
-  const totalThisWeek = missionaryHours.reduce(
-    (sum, h) => sum + h.this_week_hours,
-    0
-  );
-
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Typography>Loading...</Typography>
-      </Box>
-    );
-  }
-
   return (
-    <LocalizationProvider dateAdapter={AdapterMoment}>
-      <Box sx={{ minHeight: "100vh", backgroundColor: "#f5f5f5" }}>
-        {/* Header */}
-        <AppBar position="static" color="default" elevation={1}>
-          <Toolbar>
-            <Person sx={{ mr: 2, color: "primary.main" }} />
-            <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="h6" component="h1" fontWeight="bold">
-                Missionary Management
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Manage missionaries, view hours, and log bulk entries
-              </Typography>
-            </Box>
-            <Box sx={{ display: "flex", gap: 2 }}>
-              <Button
-                variant="outlined"
-                startIcon={<Schedule />}
-                onClick={() => setBulkHoursDialogOpen(true)}
-                sx={{ mr: 1 }}
-              >
-                Bulk Hours
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={() => handleOpenDialog()}
-              >
-                Add Missionary
-              </Button>
-            </Box>
-          </Toolbar>
-        </AppBar>
-
-        <Container maxWidth="xl" sx={{ py: 4 }}>
-          {/* Aggregate Hours Summary */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} sm={6} md={4}>
-              <Card elevation={2}>
-                <CardContent sx={{ textAlign: "center", p: 3 }}>
-                  <AccessTime
-                    sx={{ fontSize: 40, color: "primary.main", mb: 1 }}
-                  />
-                  <Typography
-                    variant="h4"
-                    fontWeight="bold"
-                    color="primary.main"
-                  >
-                    {totalHoursAllMissionaries.toLocaleString()}
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary">
-                    Total Hours Logged
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Card elevation={2}>
-                <CardContent sx={{ textAlign: "center", p: 3 }}>
-                  <CalendarToday
-                    sx={{ fontSize: 40, color: "success.main", mb: 1 }}
-                  />
-                  <Typography
-                    variant="h4"
-                    fontWeight="bold"
-                    color="success.main"
-                  >
-                    {totalThisMonth.toLocaleString()}
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary">
-                    This Month
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Card elevation={2}>
-                <CardContent sx={{ textAlign: "center", p: 3 }}>
-                  <TrendingUp
-                    sx={{ fontSize: 40, color: "secondary.main", mb: 1 }}
-                  />
-                  <Typography
-                    variant="h4"
-                    fontWeight="bold"
-                    color="secondary.main"
-                  >
-                    {totalThisWeek.toLocaleString()}
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary">
-                    This Week
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-
-          {/* Tabs */}
-          <Paper elevation={2} sx={{ mb: 3 }}>
-            <Tabs
-              value={tabValue}
-              onChange={(e, newValue) => setTabValue(newValue)}
+    <Box sx={{ minHeight: "100vh", backgroundColor: "#f5f5f5" }}>
+      {/* Header */}
+      <AppBar position="static" color="default" elevation={1}>
+        <Toolbar>
+          <Person sx={{ mr: 2, color: "primary.main" }} />
+          <Box sx={{ flexGrow: 1 }}>
+            <Typography variant="h6" component="h1" fontWeight="bold">
+              Missionary Management System
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Manage contacts, assignments, and service records
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              variant="outlined"
+              startIcon={<Download />}
+              onClick={handleExportCSV}
             >
-              <Tab
-                label="Missionaries"
-                sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
-              />
-              <Tab
-                label="Hours Overview"
-                sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
-              />
-            </Tabs>
-
-            <TabPanel value={tabValue} index={0}>
-              {/* Filters */}
-              <Card sx={{ mb: 3 }}>
-                <CardContent>
-                  <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={12} md={6}>
-                      <TextField
-                        fullWidth
-                        placeholder="Search missionaries..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        InputProps={{
-                          startAdornment: (
-                            <Search sx={{ mr: 1, color: "text.secondary" }} />
-                          ),
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                      <FormControl fullWidth>
-                        <InputLabel>Status Filter</InputLabel>
-                        <Select
-                          value={statusFilter}
-                          label="Status Filter"
-                          onChange={(e) => setStatusFilter(e.target.value)}
-                        >
-                          <MenuItem value="all">All Statuses</MenuItem>
-                          <MenuItem value="active">Active</MenuItem>
-                          <MenuItem value="inactive">Inactive</MenuItem>
-                          <MenuItem value="unassigned">Unassigned</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                      <Typography variant="body2" color="text.secondary">
-                        {filteredMissionaries.length} missionaries found
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-
-              {/* Missionaries Table */}
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Missionary</TableCell>
-                      <TableCell>Email</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>City</TableCell>
-                      <TableCell>Community</TableCell>
-                      <TableCell>Contact</TableCell>
-                      <TableCell>Total Hours</TableCell>
-                      <TableCell align="right">Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {filteredMissionaries.map((missionary) => {
-                      const hours = getMissionaryHours(missionary.email);
-                      return (
-                        <TableRow key={missionary.id} hover>
-                          <TableCell>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 2,
-                              }}
-                            >
-                              <Avatar
-                                src={missionary.profile_picture_url}
-                                sx={{ width: 40, height: 40 }}
-                              >
-                                {missionary.first_name[0]}
-                                {missionary.last_name[0]}
-                              </Avatar>
-                              <Box>
-                                <Typography variant="body1" fontWeight="medium">
-                                  {missionary.first_name} {missionary.last_name}
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  ID: {missionary.id.slice(0, 8)}...
-                                </Typography>
-                              </Box>
-                            </Box>
-                          </TableCell>
-                          <TableCell>{missionary.email}</TableCell>
-                          <TableCell>
-                            <Chip
-                              label={missionary.assignment_status}
-                              color={
-                                getStatusColor(
-                                  missionary.assignment_status
-                                ) as any
-                              }
-                              size="small"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            {getCityName(missionary.city_id)}
-                          </TableCell>
-                          <TableCell>
-                            {getCommunityName(missionary.community_id)}
-                          </TableCell>
-                          <TableCell>
-                            {missionary.contact_number || "N/A"}
-                          </TableCell>
-                          <TableCell>
-                            <Typography
-                              variant="body1"
-                              fontWeight="bold"
-                              color="primary.main"
-                            >
-                              {hours?.total_hours || 0}h
-                            </Typography>
-                            {hours && (
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                {hours.this_month_hours}h this month
-                              </Typography>
-                            )}
-                          </TableCell>
-                          <TableCell align="right">
-                            <IconButton
-                              onClick={(e) => {
-                                setAnchorEl(e.currentTarget);
-                                setSelectedMissionary(missionary);
-                              }}
-                            >
-                              <MoreVert />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </TabPanel>
-
-            <TabPanel value={tabValue} index={1}>
-              {/* Hours Overview Table */}
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Missionary</TableCell>
-                      <TableCell>Total Hours</TableCell>
-                      <TableCell>This Month</TableCell>
-                      <TableCell>This Week</TableCell>
-                      <TableCell>Last Entry</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {missionaryHours
-                      .sort((a, b) => b.total_hours - a.total_hours)
-                      .map((hours) => {
-                        const missionary = missionaries.find(
-                          (m) => m.email === hours.missionary_email
-                        );
-                        return (
-                          <TableRow key={hours.missionary_email} hover>
-                            <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 2,
-                                }}
-                              >
-                                <Avatar sx={{ width: 40, height: 40 }}>
-                                  {missionary?.first_name?.[0]}
-                                  {missionary?.last_name?.[0]}
-                                </Avatar>
-                                <Box>
-                                  <Typography
-                                    variant="body1"
-                                    fontWeight="medium"
-                                  >
-                                    {missionary?.first_name}{" "}
-                                    {missionary?.last_name}
-                                  </Typography>
-                                  <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                  >
-                                    {hours.missionary_email}
-                                  </Typography>
-                                </Box>
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              <Typography
-                                variant="h6"
-                                fontWeight="bold"
-                                color="primary.main"
-                              >
-                                {hours.total_hours}h
-                              </Typography>
-                            </TableCell>
-                            <TableCell>
-                              <Typography variant="body1" color="success.main">
-                                {hours.this_month_hours}h
-                              </Typography>
-                            </TableCell>
-                            <TableCell>
-                              <Typography
-                                variant="body1"
-                                color="secondary.main"
-                              >
-                                {hours.this_week_hours}h
-                              </Typography>
-                            </TableCell>
-
-                            <TableCell>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                {hours.last_entry_date
-                                  ? moment(hours.last_entry_date).format(
-                                      "MMM D, YYYY"
-                                    )
-                                  : "Never"}
-                              </Typography>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </TabPanel>
-          </Paper>
-        </Container>
-
-        {/* Action Menu */}
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={() => setAnchorEl(null)}
-        >
-          <MenuItem
-            onClick={() => {
-              if (selectedMissionary) handleOpenDialog(selectedMissionary);
-              setAnchorEl(null);
-            }}
-          >
-            <ListItemIcon>
-              <Edit fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Edit</ListItemText>
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              if (selectedMissionary) handleDelete(selectedMissionary);
-            }}
-          >
-            <ListItemIcon>
-              <Delete fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Delete</ListItemText>
-          </MenuItem>
-        </Menu>
-
-        {/* Add/Edit Missionary Dialog */}
-        <Dialog
-          open={dialogOpen}
-          onClose={handleCloseDialog}
-          maxWidth="md"
-          fullWidth
-        >
-          <DialogTitle>
-            {editingMissionary ? "Edit Missionary" : "Add New Missionary"}
-          </DialogTitle>
-          <DialogContent>
-            <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="First Name"
-                    value={formData.first_name}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        first_name: e.target.value,
-                      }))
-                    }
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Last Name"
-                    value={formData.last_name}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        last_name: e.target.value,
-                      }))
-                    }
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    type="email"
-                    label="Email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        email: e.target.value,
-                      }))
-                    }
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <FormControl fullWidth>
-                    <InputLabel>Status</InputLabel>
-                    <Select
-                      value={formData.assignment_status}
-                      label="Status"
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          assignment_status: e.target.value as any,
-                        }))
-                      }
-                    >
-                      <MenuItem value="active">Active</MenuItem>
-                      <MenuItem value="inactive">Inactive</MenuItem>
-                      <MenuItem value="unassigned">Unassigned</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <FormControl fullWidth>
-                    <InputLabel>City</InputLabel>
-                    <Select
-                      value={formData.city_id}
-                      label="City"
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          city_id: e.target.value,
-                        }))
-                      }
-                    >
-                      <MenuItem value="">Unassigned</MenuItem>
-                      {cities.map((city) => (
-                        <MenuItem key={city.id} value={city.id}>
-                          {city.name}, {city.state}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <FormControl fullWidth>
-                    <InputLabel>Community</InputLabel>
-                    <Select
-                      value={formData.community_id}
-                      label="Community"
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          community_id: e.target.value,
-                        }))
-                      }
-                    >
-                      <MenuItem value="">Unassigned</MenuItem>
-                      {communities
-                        .filter(
-                          (community) =>
-                            !formData.city_id ||
-                            community.city_id === formData.city_id
-                        )
-                        .map((community) => (
-                          <MenuItem key={community.id} value={community.id}>
-                            {community.name}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Contact Number"
-                    value={formData.contact_number}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        contact_number: e.target.value,
-                      }))
-                    }
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={3}
-                    label="Notes"
-                    value={formData.notes}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        notes: e.target.value,
-                      }))
-                    }
-                  />
-                </Grid>
-              </Grid>
-            </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog}>Cancel</Button>
-            <Button onClick={handleSubmit} variant="contained">
-              {editingMissionary ? "Update" : "Create"}
+              Export CSV
             </Button>
-          </DialogActions>
-        </Dialog>
+            <Button variant="outlined" startIcon={<Schedule />}>
+              Bulk Hours
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => handleOpenDialog()}
+            >
+              Add Missionary
+            </Button>
+          </Box>
+        </Toolbar>
+      </AppBar>
 
-        {/* Bulk Hours Dialog */}
-        <Dialog
-          open={bulkHoursDialogOpen}
-          onClose={() => setBulkHoursDialogOpen(false)}
-          maxWidth="md"
-          fullWidth
-        >
-          <DialogTitle>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Schedule />
-              Log Hours for Multiple Missionaries
-            </Box>
-          </DialogTitle>
-          <DialogContent>
-            <Alert severity="info" sx={{ mb: 3 }}>
-              This will log the same hours and activity for all selected
-              missionaries on the chosen date.
-            </Alert>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        {/* Assignment Level Selection */}
+        <Card sx={{ mb: 4, p: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Select Assignment Level
+          </Typography>
 
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <FormControl fullWidth>
-                  <InputLabel>Select Missionaries</InputLabel>
-                  <Select
-                    multiple
-                    value={bulkHoursData.missionary_emails}
-                    onChange={(e) =>
-                      setBulkHoursData((prev) => ({
-                        ...prev,
-                        missionary_emails: e.target.value as string[],
-                      }))
-                    }
-                    renderValue={(selected) => (
-                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                        {selected.map((email) => {
-                          const missionary = missionaries.find(
-                            (m) => m.email === email
-                          );
-                          return (
-                            <Chip
-                              key={email}
-                              label={`${missionary?.first_name} ${missionary?.last_name}`}
-                              size="small"
-                            />
-                          );
-                        })}
-                      </Box>
-                    )}
-                  >
-                    {missionaries
-                      .filter((m) => m.assignment_status === "active")
-                      .map((missionary) => (
-                        <MenuItem
-                          key={missionary.email}
-                          value={missionary.email}
-                        >
-                          {missionary.first_name} {missionary.last_name} (
-                          {missionary.email})
-                        </MenuItem>
-                      ))}
-                  </Select>
-                </FormControl>
-              </Grid>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <RadioGroup
+                value={assignmentLevel}
+                onChange={(e) => {
+                  setAssignmentLevel(e.target.value as AssignmentLevel);
+                  setSelectedCityId("");
+                  setSelectedCommunityId("");
+                }}
+                row
+              >
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={4}>
+                    <Card
+                      sx={{
+                        p: 2,
+                        cursor: "pointer",
+                        border: 2,
+                        borderColor:
+                          assignmentLevel === "state"
+                            ? "primary.main"
+                            : "grey.300",
+                        "&:hover": { borderColor: "primary.main" },
+                      }}
+                      onClick={() => setAssignmentLevel("state")}
+                    >
+                      <FormControlLabel
+                        value="state"
+                        control={<Radio />}
+                        label={
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
+                            <Business />
+                            <Box>
+                              <Typography variant="subtitle1" fontWeight="bold">
+                                State Level
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                Utah state-wide assignments
+                              </Typography>
+                            </Box>
+                          </Box>
+                        }
+                      />
+                    </Card>
+                  </Grid>
 
+                  <Grid item xs={12} md={4}>
+                    <Card
+                      sx={{
+                        p: 2,
+                        cursor: "pointer",
+                        border: 2,
+                        borderColor:
+                          assignmentLevel === "city"
+                            ? "primary.main"
+                            : "grey.300",
+                        "&:hover": { borderColor: "primary.main" },
+                      }}
+                      onClick={() => setAssignmentLevel("city")}
+                    >
+                      <FormControlLabel
+                        value="city"
+                        control={<Radio />}
+                        label={
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
+                            <LocationCity />
+                            <Box>
+                              <Typography variant="subtitle1" fontWeight="bold">
+                                City Level
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                City-specific assignments
+                              </Typography>
+                            </Box>
+                          </Box>
+                        }
+                      />
+                    </Card>
+                  </Grid>
+
+                  <Grid item xs={12} md={4}>
+                    <Card
+                      sx={{
+                        p: 2,
+                        cursor: "pointer",
+                        border: 2,
+                        borderColor:
+                          assignmentLevel === "community"
+                            ? "primary.main"
+                            : "grey.300",
+                        "&:hover": { borderColor: "primary.main" },
+                      }}
+                      onClick={() => setAssignmentLevel("community")}
+                    >
+                      <FormControlLabel
+                        value="community"
+                        control={<Radio />}
+                        label={
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
+                            <Group />
+                            <Box>
+                              <Typography variant="subtitle1" fontWeight="bold">
+                                Community Level
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                Community assignments
+                              </Typography>
+                            </Box>
+                          </Box>
+                        }
+                      />
+                    </Card>
+                  </Grid>
+                </Grid>
+              </RadioGroup>
+            </Grid>
+
+            {/* City Selection (for city and community levels) */}
+            {(assignmentLevel === "city" ||
+              assignmentLevel === "community") && (
               <Grid item xs={12} md={6}>
-                <DatePicker
-                  label="Date"
-                  value={bulkHoursData.date}
-                  onChange={(date) =>
-                    date &&
-                    setBulkHoursData((prev) => ({
-                      ...prev,
-                      date,
-                    }))
-                  }
-                  slotProps={{
-                    textField: { fullWidth: true },
-                  }}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="Hours"
-                  value={bulkHoursData.hours}
-                  onChange={(e) =>
-                    setBulkHoursData((prev) => ({
-                      ...prev,
-                      hours: e.target.value,
-                    }))
-                  }
-                  inputProps={{ step: "0.25", min: "0", max: "24" }}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
                 <FormControl fullWidth>
-                  <InputLabel>Category</InputLabel>
+                  <InputLabel>Select City</InputLabel>
                   <Select
-                    value={bulkHoursData.category}
-                    onChange={(e) =>
-                      setBulkHoursData((prev) => ({
-                        ...prev,
-                        category: e.target.value,
-                      }))
-                    }
+                    value={selectedCityId}
+                    label="Select City"
+                    onChange={(e) => {
+                      setSelectedCityId(e.target.value);
+                      setSelectedCommunityId("");
+                    }}
                   >
-                    {categories.map((cat) => (
-                      <MenuItem key={cat.value} value={cat.value}>
-                        {cat.label}
+                    <MenuItem value="">All Cities</MenuItem>
+                    {cities.map((city) => (
+                      <MenuItem key={city.id} value={city.id}>
+                        {city.name}, {city.state}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
               </Grid>
+            )}
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={3}
-                  label="Activity Description"
-                  value={bulkHoursData.activity_description}
-                  onChange={(e) =>
-                    setBulkHoursData((prev) => ({
-                      ...prev,
-                      activity_description: e.target.value,
-                    }))
-                  }
-                  placeholder="Describe the activities performed..."
-                />
+            {/* Community Selection (for community level only) */}
+            {assignmentLevel === "community" && selectedCityId && (
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Select Community</InputLabel>
+                  <Select
+                    value={selectedCommunityId}
+                    label="Select Community"
+                    onChange={(e) => setSelectedCommunityId(e.target.value)}
+                  >
+                    <MenuItem value="">All Communities</MenuItem>
+                    {getFilteredCommunities().map((community) => (
+                      <MenuItem key={community.id} value={community.id}>
+                        {community.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
+            )}
+          </Grid>
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Location (Optional)"
-                  value={bulkHoursData.location}
-                  onChange={(e) =>
-                    setBulkHoursData((prev) => ({
-                      ...prev,
-                      location: e.target.value,
-                    }))
-                  }
-                  placeholder="Where did this take place?"
-                />
-              </Grid>
+          {/* Display available positions for selected level */}
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              Available Groups & Titles:
+            </Typography>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+              {Object.entries(getAvailablePositions()).map(
+                ([group, titles]) => (
+                  <Chip
+                    key={group}
+                    label={`${group} (${titles.length})`}
+                    variant="outlined"
+                    size="small"
+                  />
+                )
+              )}
+            </Box>
+          </Box>
+        </Card>
+
+        {/* Aggregate Stats */}
+        <AggregateStats missionaries={missionaries} />
+
+        {/* Tabs */}
+        <Paper elevation={2} sx={{ mb: 3 }}>
+          <Tabs
+            value={tabValue}
+            onChange={(e, newValue) => setTabValue(newValue)}
+          >
+            <Tab label="Contact Management" />
+            <Tab label="Hours Overview" />
+          </Tabs>
+
+          <TabPanel value={tabValue} index={0}>
+            {/* Search and Filter */}
+            <SearchAndFilter
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              resultCount={filteredMissionaries.length}
+            />
+
+            {/* Missionary Cards */}
+            <Grid container spacing={3}>
+              {filteredMissionaries.map((missionary) => (
+                <Grid item xs={12} lg={6} key={missionary.id}>
+                  <MissionaryCard
+                    missionary={missionary}
+                    cities={cities}
+                    communities={communities}
+                    onEdit={handleOpenDialog}
+                    onDelete={handleDeleteMissionary}
+                  />
+                </Grid>
+              ))}
             </Grid>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setBulkHoursDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleBulkHoursSubmit}
-              variant="contained"
-              disabled={
-                bulkHoursData.missionary_emails.length === 0 ||
-                !bulkHoursData.hours ||
-                !bulkHoursData.activity_description.trim()
-              }
-            >
-              Log Hours for {bulkHoursData.missionary_emails.length}{" "}
-              Missionaries
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
-    </LocalizationProvider>
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={1}>
+            <HoursOverview missionaries={missionaries} />
+          </TabPanel>
+        </Paper>
+      </Container>
+
+      {/* Add/Edit Dialog */}
+      <MissionaryDialog
+        open={dialogOpen}
+        onClose={handleCloseDialog}
+        onSave={handleSaveMissionary}
+        missionary={editingMissionary}
+        cities={cities}
+        communities={communities}
+        assignmentLevel={assignmentLevel}
+        positions={getAvailablePositions()}
+      />
+    </Box>
   );
 }
+
+const exportToCSV = (data, filename) => {
+  const headers = Object.keys(data[0]);
+  const csvContent = [
+    headers.join(","),
+    ...data.map((row) =>
+      headers
+        .map((header) => {
+          const value = row[header];
+          return typeof value === "string" && value.includes(",")
+            ? `"${value}"`
+            : value;
+        })
+        .join(",")
+    ),
+  ].join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute("download", `${filename}.csv`);
+  link.style.visibility = "hidden";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};

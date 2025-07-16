@@ -89,7 +89,7 @@ const Topbar = ({ onSidebarOpen, theme }) => {
           sx={{ display: { xs: "none", md: "none", lg: "flex" } }}
           alignItems={"center"}
         >
-          {/* Links remain unchanged */}
+          {/* Navigation Links */}
           <Box marginX={2}>
             <Link
               underline="none"
@@ -108,6 +108,17 @@ const Topbar = ({ onSidebarOpen, theme }) => {
               color={theme.palette.primary.contrastText}
             >
               Testimonials
+            </Link>
+          </Box>
+          {/* NEW FINANCIALS LINK */}
+          <Box marginX={2}>
+            <Link
+              underline="none"
+              component="a"
+              href={rootUrl + "/financials"}
+              color={theme.palette.primary.contrastText}
+            >
+              Financials
             </Link>
           </Box>
           <Box marginX={2}>

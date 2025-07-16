@@ -126,7 +126,7 @@ const DaysOfServicePage = ({ params }) => {
         initialContent={community?.daysOfService || {}}
       />
 
-      {community?.signUpFormVisibility && (
+      {community?.isDaysOfServiceVisibilityFormVisible && (
         <>
           <Divider sx={{ my: 4 }} />
 

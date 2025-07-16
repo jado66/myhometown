@@ -396,45 +396,50 @@ const Page = ({ params }) => {
           />
         </LoadedClassesProvider>
         <Divider sx={{ my: 5 }} />
-        {!showSignUp ? (
-          <Grid
-            item
-            xs={6}
-            mt={4}
-            sx={{ mx: "auto" }}
-            display="flex"
-            flexDirection="column"
-            id="volunteer"
-          >
-            <Button
-              variant="contained"
-              onClick={() => setShowSignup(true)}
-              sx={{ mx: "auto", mb: 2, borderRadius: "8px" }}
-              size="large"
-              fullWidth
-            >
-              <Typography variant="h5">Become a Volunteer</Typography>
-            </Button>
-            <Typography
-              variant="body"
-              sx={{ fontSize: "larger", textAlign: "center" }}
-            >
-              Want to volunteer? Click here. We would love to have you as part
-              of the family.
-            </Typography>
-          </Grid>
-        ) : (
-          <>
-            <VolunteerSignUps
-              volunteerHeaderText={community.volunteerHeaderText}
-              volunteerHeaderImage={community.volunteerHeaderImage}
-              setVolunteerHeaderText={alertNotEdit}
-              signUpFormId={community.signUpFormId}
-              setSignUpFormId={alertNotEdit}
-              onClose={() => setShowSignup(false)}
-              sx={{ backgroundColor: "#1b75bc !important;" }}
-            />
-          </>
+
+        {signUpFormId && (
+          <div>
+            {!showSignUp ? (
+              <Grid
+                item
+                xs={6}
+                mt={4}
+                sx={{ mx: "auto" }}
+                display="flex"
+                flexDirection="column"
+                id="volunteer"
+              >
+                <Button
+                  variant="contained"
+                  onClick={() => setShowSignup(true)}
+                  sx={{ mx: "auto", mb: 2, borderRadius: "8px" }}
+                  size="large"
+                  fullWidth
+                >
+                  <Typography variant="h5">Become A Volunteer</Typography>
+                </Button>
+                <Typography
+                  variant="body"
+                  sx={{ fontSize: "larger", textAlign: "center" }}
+                >
+                  Want to volunteer? Click here. We would love to have you as
+                  part of the family.
+                </Typography>
+              </Grid>
+            ) : (
+              <>
+                <VolunteerSignUps
+                  volunteerHeaderText={community.volunteerHeaderText}
+                  volunteerHeaderImage={community.volunteerHeaderImage}
+                  setVolunteerHeaderText={alertNotEdit}
+                  signUpFormId={community.signUpFormId}
+                  setSignUpFormId={alertNotEdit}
+                  onClose={() => setShowSignup(false)}
+                  sx={{ backgroundColor: "#1b75bc !important;" }}
+                />
+              </>
+            )}
+          </div>
         )}
         <Divider sx={{ my: 5 }} />
       </Container>
