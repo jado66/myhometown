@@ -80,6 +80,19 @@ const DaysOfServicePage = ({ params }) => {
     }
   };
 
+  const toggleDaysOfServiceVisibility = () => {
+    updateCommunity({
+      isDaysOfServiceVisibilityFormVisible:
+        !community.isDaysOfServiceVisibilityFormVisible,
+    });
+
+    toast.success(
+      community.isDaysOfServiceVisibilityFormVisible
+        ? "Days of Service form is now hidden"
+        : "Days of Service form is now visible"
+    );
+  };
+
   const handleSubmit = async (data) => {
     // Handle form submission for volunteers
     if (!formId) {
@@ -190,6 +203,8 @@ const DaysOfServicePage = ({ params }) => {
           onClose={handleSaveForm}
           isSubmitting={submitting}
           initialValues={response?.response_data || {}}
+          toggleDaysOfServiceVisibility={toggleDaysOfServiceVisibility}
+          isFormVisible={community?.isDaysOfServiceVisibilityFormVisible}
         />
       </Container>
     </>

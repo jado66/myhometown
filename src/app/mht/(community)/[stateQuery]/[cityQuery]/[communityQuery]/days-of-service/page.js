@@ -153,6 +153,9 @@ const DaysOfServicePage = ({ params }) => {
                     signUpFormId={community?.volunteerSignUpId}
                     handleSubmit={handleSubmit}
                     defaultConfgig={{}}
+                    isFormVisible={
+                      community?.isDaysOfServiceVisibilityFormVisible
+                    }
                   />
                 )}
               </>

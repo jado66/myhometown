@@ -33,6 +33,7 @@ export const VolunteerSignUps = ({
   setVolunteerHeaderText,
   signUpFormId,
   setSignUpFormId,
+  toggleDaysOfServiceVisibiltity,
   onClose,
 }) => {
   const [isEditingValues, setEditingValues] = useState(false);
@@ -142,20 +143,22 @@ export const VolunteerSignUps = ({
           Close Form
         </Button>
       ) : (
-        <Button
-          variant="outlined"
-          onClick={toggleEditing}
-          startIcon={<Edit />}
-          sx={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            mr: 3,
-            mb: { xs: 4, md: 0 },
-          }}
-        >
-          Edit Volunteer Form
-        </Button>
+        <>
+          <Button
+            variant="outlined"
+            onClick={toggleEditing}
+            startIcon={<Edit />}
+            sx={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              mr: 3,
+              mb: { xs: 4, md: 0 },
+            }}
+          >
+            Edit
+          </Button>
+        </>
       )}
     </Box>
   );

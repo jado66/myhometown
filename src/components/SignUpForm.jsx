@@ -14,7 +14,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import { IframeHelpDialog } from "./events/IframeHelpDialog";
-import { Edit } from "@mui/icons-material";
+import { Edit, Visibility, VisibilityOff } from "@mui/icons-material";
 import UploadImage from "./util/UploadImage";
 import { ClassSignupProvider } from "./class-signups/ClassSignupContext";
 import ClassCreationStepper from "./class-signups/ClassCreationStepper";
@@ -190,6 +190,8 @@ export const SignUpForm = ({
   onClose,
   form,
   handleSubmit,
+  isFormVisible,
+  toggleDaysOfServiceVisibility,
 }) => {
   const [signupForm, setSignupForm] = useState(null);
   const [isEditingValues, setEditingValues] = useState(false);
@@ -219,26 +221,45 @@ export const SignUpForm = ({
           : "Sign Up as a Days Of Service Volunteer"}
       </Typography>
       {isEdit && (
-        <Button
-          variant="outlined"
-          onClick={toggleEditing}
-          startIcon={<Edit />}
+        <Box
           sx={{
             position: "absolute",
-            display: { xs: "none", md: "block" },
             top: 0,
             right: 0,
-            mr: 3,
-            mb: { xs: 4, md: 0 },
+            display: { xs: "none", md: "flex" },
           }}
         >
-          Edit Volunteer Form
-        </Button>
+          <Button
+            variant="outlined"
+            onClick={toggleEditing}
+            startIcon={<Edit />}
+            sx={{
+              mr: 3,
+              mb: { xs: 4, md: 0 },
+            }}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={toggleDaysOfServiceVisibility}
+            startIcon={isFormVisible ? <VisibilityOff /> : <Visibility />}
+            sx={{
+              mb: { xs: 4, md: 0 },
+            }}
+          >
+            {isFormVisible ? "Hide Form" : "Make Visible"}
+          </Button>
+        </Box>
       )}
     </Box>
   );
 
   if (!signUpFormId && !isEdit) {
+    return null;
+  }
+
+  if (!isEdit && !isFormVisible) {
     return null;
   }
 

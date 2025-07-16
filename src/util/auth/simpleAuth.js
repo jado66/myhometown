@@ -48,6 +48,7 @@ export const CityIdToPasswordHash = {
   Ogden: "837588",
   "Salt Lake City": "434347",
   "West Valley City": "385957",
+  Santaquin: "689943",
 };
 
 export const CommunityIdToPasswordHash = {
@@ -114,6 +115,10 @@ export const CommunityIdToPasswordHash = {
   "66df581af05bd41ef9493f40": {
     name: "West Valley City - Central Valley View",
     password: "1037",
+  },
+  "6876c09a2a087f662c17feed": {
+    name: "Santaquin - Santaquin",
+    password: "9433",
   },
 };
 
