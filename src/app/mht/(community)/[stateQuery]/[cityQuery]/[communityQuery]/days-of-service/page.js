@@ -145,7 +145,6 @@ const DaysOfServicePage = ({ params }) => {
                     {submitError}
                   </Alert>
                 )}
-
                 {form && (
                   <SignUpForm
                     isEdit={false}
