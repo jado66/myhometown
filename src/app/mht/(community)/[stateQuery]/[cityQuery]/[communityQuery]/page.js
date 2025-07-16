@@ -397,7 +397,7 @@ const Page = ({ params }) => {
         </LoadedClassesProvider>
         <Divider sx={{ my: 5 }} />
 
-        {signUpFormId && (
+        {community?.signUpFormId && (
           <div>
             {!showSignUp ? (
               <Grid
