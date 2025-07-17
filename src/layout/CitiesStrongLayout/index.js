@@ -99,7 +99,10 @@ const CitiesStrongLayout = ({ children }) => {
             }}
             elevation={1}
           >
-            <Container paddingY={{ xs: 1 / 2, sm: 1 }}>
+            <Container
+              paddingY={{ xs: 1 / 2, sm: 1 }}
+              maxWidth={{ xs: "sm", sm: "xl" }}
+            >
               <Topbar theme={theme} onSidebarOpen={handleSidebarOpen} />
             </Container>
           </AppBar>

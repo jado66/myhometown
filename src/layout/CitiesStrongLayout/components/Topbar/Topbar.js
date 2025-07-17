@@ -72,7 +72,7 @@ const Topbar = ({ onSidebarOpen, theme }) => {
 
         <Box
           marginRight={{ xs: 1, sm: 2 }}
-          sx={{ display: { md: "flex", lg: "none" } }}
+          sx={{ display: { lg: "flex", xl: "none" } }}
         >
           <IconButton
             aria-label="Menu"
@@ -86,7 +86,7 @@ const Topbar = ({ onSidebarOpen, theme }) => {
 
       <Box display="flex" alignItems={"center"}>
         <Box
-          sx={{ display: { xs: "none", md: "none", lg: "flex" } }}
+          sx={{ display: { xs: "none", md: "none", xl: "flex" } }}
           alignItems={"center"}
         >
           {/* Navigation Links */}
@@ -110,7 +110,6 @@ const Topbar = ({ onSidebarOpen, theme }) => {
               Testimonials
             </Link>
           </Box>
-          {/* NEW FINANCIALS LINK */}
           <Box marginX={2}>
             <Link
               underline="none"

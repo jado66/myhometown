@@ -6,7 +6,8 @@ import { useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { usePathname, useRouter } from "next/navigation";
-import { Divider } from "@mui/material";
+import { Divider, IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 const SidebarNav = ({ onClose }) => {
   const theme = useTheme();
@@ -25,6 +26,21 @@ const SidebarNav = ({ onClose }) => {
 
   return (
     <Box sx={{ position: "relative", textAlign: "center" }}>
+      {/* X button at top right */}
+      <Box sx={{ position: "absolute", top: 4, right: 32, zIndex: 1 }}>
+        <IconButton
+          onClick={onClose}
+          sx={{
+            color: "white",
+            "&:hover": {
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
+            },
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </Box>
+
       <Box paddingX={2} paddingBottom={1}>
         <Box>
           <Box marginBottom={2}>
@@ -75,6 +91,22 @@ const SidebarNav = ({ onClose }) => {
               }}
             >
               Testimonials
+            </Typography>
+          </Box>
+
+          <Box marginBottom={2}>
+            <Typography
+              onClick={() => handleLinkClick(rootUrl + "/financials")}
+              variant="h5"
+              sx={{
+                fontWeight: 700,
+                display: "block",
+                textDecoration: "none",
+                color: "white",
+                cursor: "pointer",
+              }}
+            >
+              Financials
             </Typography>
           </Box>
           <Box marginBottom={2}>
