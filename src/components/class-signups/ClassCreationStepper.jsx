@@ -205,9 +205,7 @@ export default function ClassCreationStepper({
               </Step>
             ))}
           </Stepper>
-
           <Box sx={{ mt: 4, mb: 4 }}>{renderStepContent(activeStep)}</Box>
-
           <Box sx={{ display: "flex", justifyContent: "space-between", pt: 2 }}>
             <Button
               variant="outlined"

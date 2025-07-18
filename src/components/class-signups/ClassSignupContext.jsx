@@ -85,7 +85,8 @@ export function ClassSignupProvider({
     classObj?.id && !dontUseLoadedClasses ? true : false
   );
   const [loadError, setLoadError] = useState(null);
-  const hasLoadedRef = useRef(false);
+  // Changed from boolean ref to tracking the loaded class ID
+  const loadedClassIdRef = useRef(null);
 
   const [resetKey, setResetKey] = useState(0);
 
@@ -175,6 +176,14 @@ export function ClassSignupProvider({
   // Load existing class data
   useEffect(() => {
     async function loadClassData() {
+      console.log("loadClassData called with:", {
+        classObjId: classObj?.id,
+        isNew,
+        loadedClassIdRef: loadedClassIdRef.current,
+        dontUseLoadedClasses,
+        hasContext: !!loadedClassesContext,
+      });
+
       if (dontUseLoadedClasses) {
         const newFieldOrder = classObj.field_order || fieldOrder;
         const newFormConfig = classObj.form_config || formConfig;
@@ -187,16 +196,21 @@ export function ClassSignupProvider({
       if (
         !classObj?.id ||
         isNew ||
-        hasLoadedRef.current ||
+        loadedClassIdRef.current === classObj.id || // Check if this specific class was already loaded
         !loadedClassesContext
-      )
+      ) {
+        console.log("Skipping load due to:", {
+          noId: !classObj?.id,
+          isNew,
+          alreadyLoaded: loadedClassIdRef.current === classObj.id,
+          noContext: !loadedClassesContext,
+        });
         return;
+      }
 
       try {
         setIsLoading(true);
         setLoadError(null);
-
-        // alert("Trying to load class data");
 
         const loadedClass = await loadedClassesContext.loadClass(classObj.id);
 
@@ -210,11 +224,37 @@ export function ClassSignupProvider({
           throw new Error(`Could not find class with ID ${classObj.id}`);
         }
 
-        // Update form configuration
-        if (loadedClass.signupForm) {
+        // Reset all states with fresh data
+        loadedClassIdRef.current = classObj.id;
+
+        // Update form configuration - with better error handling
+        if (loadedClass.signupForm && loadedClass.signupForm.formConfig) {
+          console.log("Setting formConfig:", loadedClass.signupForm.formConfig);
           setFormConfig(loadedClass.signupForm.formConfig);
-          initialFormConfigRef.current = loadedClass.signupForm;
-          setFieldOrder(loadedClass.signupForm.fieldOrder);
+          initialFormConfigRef.current = loadedClass.signupForm.formConfig;
+
+          if (loadedClass.signupForm.fieldOrder) {
+            console.log(
+              "Setting fieldOrder:",
+              loadedClass.signupForm.fieldOrder
+            );
+            setFieldOrder(loadedClass.signupForm.fieldOrder);
+          }
+        } else {
+          console.warn("No signupForm found in loaded class, using defaults");
+          // Use defaults if no signup form is found
+          const defaultFormConfig = DEFAULT_VISIBLE_FIELDS.reduce(
+            (acc, key) => {
+              acc[key] = {
+                ...AVAILABLE_FIELDS[key],
+                visible: true,
+              };
+              return acc;
+            },
+            {}
+          );
+          setFormConfig(defaultFormConfig);
+          setFieldOrder(DEFAULT_VISIBLE_FIELDS);
         }
 
         // Update class configuration
@@ -243,7 +283,8 @@ export function ClassSignupProvider({
         setClassConfig(newClassConfig);
         initialClassConfigRef.current = newClassConfig;
 
-        hasLoadedRef.current = true;
+        // Track that this specific class ID has been loaded
+        loadedClassIdRef.current = classObj.id;
       } catch (error) {
         console.error("Error loading class:", error);
         setLoadError(error.message);
@@ -253,7 +294,62 @@ export function ClassSignupProvider({
     }
 
     loadClassData();
-  }, [classObj?.id, isNew]);
+  }, [
+    classObj?.id,
+    isNew,
+    dontUseLoadedClasses,
+    loadedClassesContext,
+    category?.id,
+  ]);
+
+  // Reset states when classObj changes
+  useEffect(() => {
+    if (!classObj?.id || isNew) return;
+
+    console.log("Class changed, resetting states for:", classObj.id);
+
+    // Reset the loaded ref
+    loadedClassIdRef.current = null;
+
+    // Reset to default states to prepare for new class data
+    setFormConfig(
+      DEFAULT_VISIBLE_FIELDS.reduce((acc, key) => {
+        if (!DEFAULT_STRUCTURAL_FIELDS[key]) {
+          acc[key] = {
+            ...AVAILABLE_FIELDS[key],
+            visible: true,
+          };
+        }
+        return acc;
+      }, {})
+    );
+
+    setFieldOrder(DEFAULT_VISIBLE_FIELDS);
+
+    setClassConfig({
+      ...DEFAULT_CLASS_CONFIG,
+      ...classObj,
+      id: classObj.id,
+      categoryId: category?.id,
+    });
+
+    // Reset other states
+    setFormData({});
+    setErrors({});
+    setSubmitStatus(null);
+    setIsConfigDirty(false);
+
+    // Set loading state since we'll need to load the full data
+    setIsLoading(true);
+  }, [classObj?.id, isNew, category?.id]);
+
+  // Reset the loaded class ID when classObj changes
+  useEffect(() => {
+    // Reset the ref when we get a new class ID
+    if (classObj?.id && classObj.id !== loadedClassIdRef.current) {
+      loadedClassIdRef.current = null;
+    }
+  }, [classObj?.id]);
 
   const handleClassConfigChange = useCallback((field, value) => {
     setClassConfig((prev) => ({
@@ -355,37 +451,20 @@ export function ClassSignupProvider({
       }
 
       if (classConfig.id && !isNew) {
-        // alert("Trying to updated class");
         await onEditSubclass(classConfig, {
           formConfig,
           fieldOrder,
         });
-        // toast.success("Class updated successfully!");
       } else {
-        // alert("Trying to create new class");
         await onCreateSubclass(classConfig, {
           formConfig,
           fieldOrder,
         });
-        // toast.success("New class created successfully!");
       }
 
       return true;
     } catch (error) {
       console.error("Failed to save class", error);
-
-      // const classData = {
-      //   ...classConfig,
-      //   signupForm: {
-      //     formConfig,
-      //     fieldOrder,
-      //   },
-      // };
-
-      // console.log(
-      //   "Error saving class with data:",
-      //   JSON.stringify(classData, null, 4)
-      // ); // Debug log
 
       setErrors((prev) => ({
         ...prev,

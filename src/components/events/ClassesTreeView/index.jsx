@@ -11,6 +11,7 @@ import Link from "next/link";
 import { Link as LinkIcon } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import { CreateCategoryHeader } from "./CreateCategoryHeader";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 export const ClassesTreeView = ({
   classes,
