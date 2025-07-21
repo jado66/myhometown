@@ -1,3 +1,3 @@
 export const cityStrings = [
-  "Ogden, Orem, Provo, Salt Lake City, West Valley City",
+  "Ogden, Orem, Provo, Salt Lake City, Santaquin, West Valley City",
 ];

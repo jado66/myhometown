@@ -38,6 +38,7 @@ const CityIdToPasswordHash = {
   Provo: "Provo6940!",
   Orem: "Orem1723!",
   Ogden: "Ogden8324!",
+  Santaquin: "Santaquin8271!",
   "Salt Lake City": "SLC4676!",
   "West Valley City": "WVC6961!",
 };
