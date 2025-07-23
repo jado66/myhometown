@@ -26,6 +26,7 @@ import { isDuplicateContact } from "@/util/formatting/is-duplicate-contact";
 import { formatPhoneNumber } from "@/util/formatting/format-phone-number";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { toast } from "react-toastify";
+import ImportCsvHelpDialog from "./ImportCsvHelpDialog";
 
 const ContactsManagement = ({ user, userCommunities, userCities }) => {
   const userId = user?.id || null;
@@ -43,6 +44,8 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
     (userCommunities || []).map((c) => c.id),
     (userCities || []).map((c) => c.id)
   );
+
+  const [csvHelpOpen, setCsvHelpOpen] = useState(false);
 
   // Local state
   const [editingId, setEditingId] = useState(null);
@@ -498,25 +501,18 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
         <Typography variant="h5">Directory</Typography>
 
         <Box sx={{ display: "flex", gap: 2 }}>
-          <input
-            accept=".csv"
-            style={{ display: "none" }}
-            id="import-file"
-            type="file"
-            onChange={handleImportContact}
-          />
-          <label htmlFor="import-file">
-            <Button
-              variant="contained"
-              component="span"
-              startIcon={<FileUploadIcon />}
-              size="small"
-            >
-              Import CSV
-            </Button>
-          </label>
           <Button
-            variant="contained"
+            variant="outlined"
+            component="span"
+            startIcon={<FileUploadIcon />}
+            size="small"
+            onClick={() => setCsvHelpOpen(true)}
+          >
+            Import CSV
+          </Button>
+
+          <Button
+            variant="outlined"
             startIcon={<FileDownloadIcon />}
             onClick={() => exportContacts(filteredContacts)}
             size="small"
@@ -631,6 +627,12 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
         user={user}
         title={editingContact ? "Edit Contact" : "Add Contact"}
         formError={formError}
+      />
+
+      <ImportCsvHelpDialog
+        open={csvHelpOpen}
+        onClose={() => setCsvHelpOpen(false)}
+        handleImportContact={handleImportContact}
       />
 
       {/* Bulk Delete Confirmation Dialog */}

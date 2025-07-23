@@ -111,6 +111,22 @@ const SidebarNav = ({ onClose }) => {
               <div style={{ marginLeft: "2em" }}>
                 <>
                   <NextLink
+                    href={rootUrl + `/utah/layton`}
+                    style={{ textDecoration: "none", color: "#686868" }}
+                  >
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 700,
+                        marginBottom: 1,
+                        display: "block",
+                        color: "black",
+                      }}
+                    >
+                      Layton
+                    </Typography>
+                  </NextLink>
+                  <NextLink
                     href={rootUrl + `/utah/ogden`}
                     style={{ textDecoration: "none", color: "#686868" }}
                   >
@@ -193,6 +209,7 @@ const SidebarNav = ({ onClose }) => {
                       Santaquin
                     </Typography>
                   </NextLink>
+
                   <NextLink
                     href={rootUrl + `/utah/west-valley-city`}
                     style={{ textDecoration: "none", color: "#686868" }}

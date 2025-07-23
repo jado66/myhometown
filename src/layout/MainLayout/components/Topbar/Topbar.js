@@ -151,6 +151,20 @@ const Topbar = ({ onSidebarOpen }) => {
                     color: "#3A3B3C",
                   },
                 }}
+                href={rootUrl + `/utah/layton`}
+              >
+                Layton
+              </MenuItem>
+              <MenuItem
+                onClick={handleCitiesClose}
+                component="a"
+                sx={{
+                  color: "black",
+                  fontWeight: "bold",
+                  "&:hover": {
+                    color: "#3A3B3C",
+                  },
+                }}
                 href={rootUrl + `/utah/ogden`}
               >
                 Ogden
