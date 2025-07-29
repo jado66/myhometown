@@ -41,6 +41,8 @@ import SpanishIcon from "@/assets/svg/icons/SpanishIcon";
 import JuniorLeadersIcon from "@/assets/svg/icons/JuniorLeadersIcon";
 import Finance2Icon from "@/assets/svg/icons/Finance2Icon";
 import AslIcon from "@/assets/svg/icons/AslIcon";
+import ChoirIcon from "@/assets/svg/icons/ChoirIcon";
+import MusicNotesIcon from "@/assets/svg/icons/MusicNotesIcon";
 import LoveAndLogicIcon from "@/assets/svg/icons/LoveandLogicIcon";
 import LearningTreeIcon from "@/assets/svg/icons/LearningTreeIcon";
 import EverydayStrongIcon from "@/assets/svg/icons/EverydayStrongIcon";
@@ -85,6 +87,8 @@ export const ExampleIcons = {
   BikeIcon: <BikeIcon />,
   WheelsIcon: <WheelsIcon />,
   KnitIcon: <KnitIcon />,
+  ChoirIcon: <ChoirIcon />,
+  MusicNotesIcon: <MusicNotesIcon />,
   // Tutoring: <TutoringIcon />,
   // Music: <MusicIcon />,
 

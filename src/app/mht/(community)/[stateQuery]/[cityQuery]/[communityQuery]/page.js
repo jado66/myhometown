@@ -369,6 +369,13 @@ const Page = ({ params }) => {
               />
             )}
           </Grid>
+
+          {/* Helper text for marketing images */}
+          <Box sx={{ width: "100%", textAlign: "center", mt: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              Click any image for a larger view
+            </Typography>
+          </Box>
         </Grid>
         <Grid item xs={12}>
           <Divider sx={{ my: 5 }} />
