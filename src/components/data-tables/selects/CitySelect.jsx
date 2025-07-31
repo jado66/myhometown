@@ -2,33 +2,31 @@
 
 import MultiSelect from "./MultiSelect";
 import Loading from "@/components/util/Loading";
-import { useEffect, useState } from "react";
-import { supabase } from "@/util/supabase";
+import { useUser } from "@/hooks/use-user";
+import useManageCities from "@/hooks/use-manage-cities";
 
 const CitySelect = ({ value, onChange, defaultValue, isMulti = true }) => {
-  const [citySelectOptions, setCitySelectOptions] = useState([]);
+  const { user } = useUser();
+  const { cities, loading } = useManageCities(user);
 
-  const [loading, setLoading] = useState(true);
-  const fetchCities = async () => {
-    const { data, error } = await supabase.from("cities").select("*");
-
-    if (error) {
-      setError("Error fetching cities");
-    } else {
-      setCitySelectOptions(
-        data.map((city) => ({
-          value: city.id,
-          label: city.name,
-        }))
-      );
-    }
-  };
-
-  useEffect(() => {
-    fetchCities().then(() => {
-      setLoading(false);
+  // Group cities by state for grouped select
+  const citySelectOptions = (() => {
+    const grouped = {};
+    (cities || []).forEach((city) => {
+      const state = city.state || "Unknown";
+      if (!grouped[state]) grouped[state] = [];
+      grouped[state].push({
+        value: city.id,
+        label: city.name,
+        city: city.name,
+        state: city.state,
+      });
     });
-  }, []);
+    return Object.entries(grouped).map(([state, cities]) => ({
+      label: state,
+      options: cities,
+    }));
+  })();
 
   if (loading) {
     return <Loading />;
@@ -45,6 +43,7 @@ const CitySelect = ({ value, onChange, defaultValue, isMulti = true }) => {
         defaultValue={defaultValue}
         direction="up"
         isMulti={isMulti}
+        isGrouped={true}
       />
     </>
   );

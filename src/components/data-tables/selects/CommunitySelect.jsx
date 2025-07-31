@@ -2,33 +2,34 @@
 
 import MultiSelect from "./MultiSelect";
 import Loading from "@/components/util/Loading";
-import { supabase } from "@/util/supabase";
 import { useEffect, useState } from "react";
+import { useCommunities } from "@/hooks/use-communities";
+import { useUser } from "@/hooks/use-user";
 
 const CommunitySelect = ({ value, onChange, defaultValue, isMulti = true }) => {
-  const [communitySelectOptions, setCommunitySelectOptions] = useState([]);
+  const { user } = useUser();
+  const { communities, loading } = useCommunities(user);
 
-  const [loading, setLoading] = useState(true);
-  const fetchCommunities = async () => {
-    const { data, error } = await supabase.from("communities").select("*");
-
-    if (error) {
-      setError("Error fetching communities");
-    } else {
-      setCommunitySelectOptions(
-        data.map((community) => ({
-          value: community.id,
-          label: community.name,
-        }))
-      );
-    }
-  };
-
-  useEffect(() => {
-    fetchCommunities().then(() => {
-      setLoading(false);
+  // Group communities by city and state for grouped select
+  const communitySelectOptions = (() => {
+    const grouped = {};
+    communities.forEach((comm) => {
+      const city = comm.city || "Unknown";
+      const state = comm.state || "Unknown";
+      const groupLabel = `${city}, ${state}`;
+      if (!grouped[groupLabel]) grouped[groupLabel] = [];
+      grouped[groupLabel].push({
+        value: comm.id,
+        label: comm.name,
+        city: comm.city,
+        state: comm.state,
+      });
     });
-  }, []);
+    return Object.entries(grouped).map(([label, communities]) => ({
+      label,
+      options: communities,
+    }));
+  })();
 
   if (loading) {
     return <Loading />;
@@ -45,6 +46,7 @@ const CommunitySelect = ({ value, onChange, defaultValue, isMulti = true }) => {
         defaultValue={defaultValue}
         direction="up"
         isMulti={isMulti}
+        isGrouped={true}
       />
     </>
   );
