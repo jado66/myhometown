@@ -113,7 +113,19 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
         accessorKey: "name",
         header: "Name",
         size: columnSizing.name,
-        // Optional: Add a custom cell renderer if you want to style the name
+        // Custom sort: sort by last name, then first name
+        sortingFn: (rowA, rowB) => {
+          const aLast = (rowA.original.last_name || "").toLowerCase();
+          const bLast = (rowB.original.last_name || "").toLowerCase();
+          if (aLast < bLast) return -1;
+          if (aLast > bLast) return 1;
+          // If last names are equal, sort by first name
+          const aFirst = (rowA.original.first_name || "").toLowerCase();
+          const bFirst = (rowB.original.first_name || "").toLowerCase();
+          if (aFirst < bFirst) return -1;
+          if (aFirst > bFirst) return 1;
+          return 0;
+        },
         Cell: ({ row }) => (
           <Typography variant="body2">{row.original.name}</Typography>
         ),

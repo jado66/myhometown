@@ -5,7 +5,7 @@ import Loading from "@/components/util/Loading";
 import { useUser } from "@/hooks/use-user";
 import useManageCities from "@/hooks/use-manage-cities";
 
-const CitySelect = ({ value, onChange, defaultValue, isMulti = true }) => {
+const CitySelect = ({ value, onChange, defaultValue, isMulti = false }) => {
   const { user } = useUser();
   const { cities, loading } = useManageCities(user);
 

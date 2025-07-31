@@ -5,6 +5,7 @@ import Loading from "@/components/util/Loading";
 import { useEffect, useState } from "react";
 import { useCommunities } from "@/hooks/use-communities";
 import { useUser } from "@/hooks/use-user";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const CommunitySelect = ({ value, onChange, defaultValue, isMulti = true }) => {
   const { user } = useUser();
@@ -13,13 +14,14 @@ const CommunitySelect = ({ value, onChange, defaultValue, isMulti = true }) => {
   // Group communities by city and state for grouped select
   const communitySelectOptions = (() => {
     const grouped = {};
-    communities.forEach((comm) => {
+    communities.forEach((comm, index) => {
       const city = comm.city || "Unknown";
       const state = comm.state || "Unknown";
       const groupLabel = `${city}, ${state}`;
       if (!grouped[groupLabel]) grouped[groupLabel] = [];
       grouped[groupLabel].push({
-        value: comm.id,
+        // Use a fallback for id - either comm.id, comm._id, or generate one
+        value: comm.id || comm._id || `community-${index}`,
         label: comm.name,
         city: comm.city,
         state: comm.state,
@@ -31,18 +33,65 @@ const CommunitySelect = ({ value, onChange, defaultValue, isMulti = true }) => {
     }));
   })();
 
+  // Helper to flatten grouped options
+  const flattenOptions = (groups) => groups.flatMap((group) => group.options);
+
+  // Ensure value matches the actual option objects
+  const selectedValues = (() => {
+    if (!value) return isMulti ? [] : null;
+
+    const flatOptions = flattenOptions(communitySelectOptions);
+
+    if (isMulti) {
+      // Handle multi-select
+      if (!Array.isArray(value)) return [];
+
+      // value could be an array of strings/numbers or objects
+      return value
+        .map((v) => {
+          // If v is a string/number, use it directly
+          const searchValue = typeof v === "object" ? v.value : v;
+          return flatOptions.find((opt) => opt.value === searchValue);
+        })
+        .filter(Boolean);
+    } else {
+      // Handle single select
+      const searchValue = typeof value === "object" ? value.value : value;
+      return flatOptions.find((opt) => opt.value === searchValue) || null;
+    }
+  })();
+
+  // Handle change to return just the values (not the full objects) if needed
+  const handleChange = (selected) => {
+    if (isMulti) {
+      // For multi-select, return array of values or full objects based on your needs
+      onChange(selected || []);
+    } else {
+      // For single select
+      onChange(selected);
+    }
+  };
+
   if (loading) {
     return <Loading />;
   }
 
   return (
     <>
+      <JsonViewer
+        data={{
+          value,
+          selectedValues,
+          communitySelectOptions,
+        }}
+      />
+
       <MultiSelect
         options={communitySelectOptions}
         placeholder="Select a Community"
         isLoading={loading}
-        value={value}
-        onChange={onChange}
+        value={selectedValues}
+        onChange={handleChange}
         defaultValue={defaultValue}
         direction="up"
         isMulti={isMulti}

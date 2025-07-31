@@ -11,13 +11,11 @@ const MultiSelect = ({
   defaultValue,
   direction,
   isMulti = true,
+  isGrouped = false,
 }) => {
   return (
     <Select
-      direction
       options={options}
-      // z-index: 9999
-
       value={value}
       onChange={onChange}
       placeholder={placeholder}
@@ -25,9 +23,10 @@ const MultiSelect = ({
       isLoading={isLoading}
       className="basic-multi-select"
       classNamePrefix="select"
-      isClearable
+      isClearable={isMulti}
       isMulti={isMulti}
       isSearchable
+      isGrouped={isGrouped}
       styles={{
         menu: (provided) => ({
           ...provided,
