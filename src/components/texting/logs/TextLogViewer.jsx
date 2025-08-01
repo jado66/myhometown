@@ -55,7 +55,7 @@ import MediaPreviews from "./MediaPreviews";
 // Utility functions
 import { formatDateTime, getStatusSummary } from "./textLogUtils";
 import JsonViewer from "@/components/util/debug/DebugOutput";
-import { DeliveryAnalysis } from "./DeliveryAnalysis";
+import DeliveryAnalysis from "./DeliveryAnalysis";
 
 export default function TextLogViewer() {
   const theme = useTheme();
@@ -367,7 +367,7 @@ export default function TextLogViewer() {
         }}
       />
 
-      {/* <JsonViewer
+      <JsonViewer
         data={{
           logs,
           currentLogs,
@@ -383,7 +383,7 @@ export default function TextLogViewer() {
           sortDirection,
         }}
         title="Text Log Viewer State"
-      /> */}
+      />
 
       <Card
         sx={{
@@ -823,6 +823,14 @@ const DetailView = ({ log, onClose }) => {
         <Grid item xs={12}>
           <Divider sx={{ my: 2 }} />
           {/* Pass metadata to the RecipientsList component */}
+
+          <JsonViewer
+            data={{
+              log,
+              metadata,
+            }}
+          />
+
           <DeliveryAnalysis logData={log} metadata={metadata} />
         </Grid>
 

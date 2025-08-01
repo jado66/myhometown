@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import {
   Paper,
   TextField,
@@ -8,6 +10,10 @@ import {
   Alert,
   InputAdornment,
   CircularProgress,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Badge,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -15,16 +21,15 @@ import {
   FileDownload as FileDownloadIcon,
   Search as SearchIcon,
   Refresh as RefreshIcon,
+  ErrorOutline as ErrorOutlineIcon,
+  ExpandMore as ExpandMoreIcon,
 } from "@mui/icons-material";
-
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import { useUserContacts } from "@/hooks/useUserContacts";
-
 import { ContactsTable } from "./ContactsTable";
 import ContactDialog from "./ContactDialog";
 import { isDuplicateContact } from "@/util/formatting/is-duplicate-contact";
 import { formatPhoneNumber } from "@/util/formatting/format-phone-number";
-import JsonViewer from "@/components/util/debug/DebugOutput";
 import { toast } from "react-toastify";
 import ImportCsvHelpDialog from "./ImportCsvHelpDialog";
 
@@ -46,7 +51,6 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
   );
 
   const [csvHelpOpen, setCsvHelpOpen] = useState(false);
-
   // Local state
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({
@@ -85,10 +89,16 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
   const [filteredContacts, setFilteredContacts] = useState([]);
   const [isLoading, setLoading] = useState(false);
 
+  // Add state for accordion expansion
+  const [expandedAccordions, setExpandedAccordions] = useState({
+    user: true, // Start with user contacts expanded
+    communities: {},
+    cities: {},
+  });
+
   // Extract unique groups from contacts, organized by owner
   useEffect(() => {
     if (!contacts) return;
-
     const userGroups = new Set();
     const communityGroups = {};
     const cityGroups = {};
@@ -111,7 +121,6 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
     if (contacts.userContacts) {
       contacts.userContacts.forEach((contact) => {
         if (!contact) return;
-
         const parsedGroups = parseGroups(contact.groups);
         parsedGroups.forEach((group) => {
           if (typeof group === "string") {
@@ -128,10 +137,8 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
       Object.entries(contacts.communityContacts).forEach(
         ([communityId, communityContacts]) => {
           if (!Array.isArray(communityContacts)) return;
-
           communityContacts.forEach((contact) => {
             if (!contact) return;
-
             const parsedGroups = parseGroups(contact.groups);
             parsedGroups.forEach((group) => {
               if (typeof group === "string") {
@@ -154,10 +161,8 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
       Object.entries(contacts.cityContacts).forEach(
         ([cityId, cityContacts]) => {
           if (!Array.isArray(cityContacts)) return;
-
           cityContacts.forEach((contact) => {
             if (!contact) return;
-
             const parsedGroups = parseGroups(contact.groups);
             parsedGroups.forEach((group) => {
               if (typeof group === "string") {
@@ -267,17 +272,14 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
       setFormError("First name is required");
       return false;
     }
-
     if (!contact.last_name.trim()) {
       setFormError("Last name is required");
       return false;
     }
-
     if (!contact.phone.trim()) {
       setFormError("Phone number is required");
       return false;
     }
-
     return true;
   };
 
@@ -355,7 +357,6 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
   const handleDialogSave = async (contactData) => {
     try {
       setLoading(true);
-
       if (editingContact) {
         // Update existing contact
         const { error } = await updateContact(editingContact.id, contactData);
@@ -399,7 +400,6 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
   const handleBulkDeleteConfirm = async () => {
     try {
       const contactIds = bulkDeleteDialog.contactIds;
-
       // Show loading indicator
       setLoading(true);
 
@@ -430,6 +430,34 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
       count: 0,
     });
   };
+
+  // Handle accordion expansion
+  const handleAccordionChange =
+    (section, id = null) =>
+    (event, isExpanded) => {
+      if (section === "user") {
+        setExpandedAccordions((prev) => ({
+          ...prev,
+          user: isExpanded,
+        }));
+      } else if (section === "communities") {
+        setExpandedAccordions((prev) => ({
+          ...prev,
+          communities: {
+            ...prev.communities,
+            [id]: isExpanded,
+          },
+        }));
+      } else if (section === "cities") {
+        setExpandedAccordions((prev) => ({
+          ...prev,
+          cities: {
+            ...prev.cities,
+            [id]: isExpanded,
+          },
+        }));
+      }
+    };
 
   // Display a message if the user doesn't have the necessary permissions
   if (!userId) {
@@ -482,10 +510,14 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
     handleSort,
     formError,
     userId,
-
     isNewContact,
     handleBulkDeleteClick,
     user,
+  };
+
+  // Helper function to get contact count
+  const getContactCount = (contactList) => {
+    return Array.isArray(contactList) ? contactList.length : 0;
   };
 
   return (
@@ -499,7 +531,6 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
         }}
       >
         <Typography variant="h5">Directory</Typography>
-
         <Box sx={{ display: "flex", gap: 2 }}>
           <Button
             variant="outlined"
@@ -510,7 +541,6 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
           >
             Import CSV
           </Button>
-
           <Button
             variant="outlined"
             startIcon={<FileDownloadIcon />}
@@ -556,8 +586,6 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
         />
       </Box>
 
-      {/* <JsonViewer data={groupsByOwner} /> */}
-
       {/* Loading state */}
       {loading && (
         <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
@@ -565,54 +593,171 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
         </Box>
       )}
 
-      {/* Form Error */}
+      {/* User Contacts Accordion */}
+      {contacts.userContacts && getContactCount(contacts.userContacts) > 0 && (
+        <Accordion
+          expanded={expandedAccordions.user}
+          onChange={handleAccordionChange("user")}
+          sx={{ mb: 2 }}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Typography variant="h6">
+                {user.isAdmin ? "Personal Contacts" : "Unassigned Contacts"}
+              </Typography>
+              <Badge
+                badgeContent={getContactCount(contacts.userContacts)}
+                color="primary"
+                sx={{
+                  "& .MuiBadge-badge": {
+                    position: "static",
+                    transform: "none",
+                  },
+                }}
+              />
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails>
+            {!user?.isAdmin && (
+              <Box sx={{ mt: 1, mb: 2 }}>
+                <Typography variant="body2" color="error">
+                  <ErrorOutlineIcon sx={{ verticalAlign: "middle", mr: 1 }} />
+                  You cannot send texts to unassigned contacts. Please select
+                  the contact and assign them to a city or community to enable
+                  texting.
+                </Typography>
+              </Box>
+            )}
+            <ContactsTable
+              {...ContactsTableProps}
+              filteredContacts={contacts.userContacts}
+              tableName="Unassigned Contacts"
+              canAddNew
+              groups={getGroupsForOwner("user")}
+              ownerType="user"
+              ownerId={userId}
+            />
+          </AccordionDetails>
+        </Accordion>
+      )}
 
-      {/* User Contacts */}
-      <Typography variant="h6">
-        {user.isAdmin ? "Personal Contacts" : "Unassigned Contacts"}
-      </Typography>
-
-      <ContactsTable
-        {...ContactsTableProps}
-        filteredContacts={contacts.userContacts}
-        tableName="Unassigned Contacts"
-        canAddNew
-        groups={getGroupsForOwner("user")}
-        ownerType="user"
-        ownerId={userId}
-      />
-
-      {/* Community Contacts */}
+      {/* Community Contacts Accordions */}
       {userCommunities &&
-        userCommunities.map((community) => (
-          <Box key={community.id} sx={{ mt: 4 }}>
-            <Typography variant="h6">{community.name} Contacts</Typography>
-            <ContactsTable
-              filteredContacts={contacts.communityContacts[community.id] || []}
-              {...ContactsTableProps}
-              tableName={community.name}
-              ownerType="community"
-              groups={getGroupsForOwner("community", community.id)}
-              ownerId={community.id}
-            />
-          </Box>
-        ))}
+        userCommunities.map((community) => {
+          const communityContacts =
+            contacts.communityContacts?.[community.id] || [];
+          const contactCount = getContactCount(communityContacts);
 
-      {/* City Contacts */}
+          // Only render if there are contacts
+          if (contactCount === 0) return null;
+
+          return (
+            <Accordion
+              key={community.id}
+              expanded={expandedAccordions.communities[community.id] || false}
+              onChange={handleAccordionChange("communities", community.id)}
+              sx={{ mb: 2 }}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Typography variant="h6">
+                    {community.name} Contacts
+                  </Typography>
+                  <Badge
+                    badgeContent={contactCount}
+                    color="primary"
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        position: "static",
+                        transform: "none",
+                      },
+                    }}
+                  />
+                </Box>
+              </AccordionSummary>
+              <AccordionDetails>
+                <ContactsTable
+                  filteredContacts={communityContacts}
+                  {...ContactsTableProps}
+                  tableName={community.name}
+                  ownerType="community"
+                  groups={getGroupsForOwner("community", community.id)}
+                  ownerId={community.id}
+                />
+              </AccordionDetails>
+            </Accordion>
+          );
+        })}
+
+      {/* City Contacts Accordions */}
       {userCities &&
-        userCities.map((city) => (
-          <Box key={city.id} sx={{ mt: 4 }}>
-            <Typography variant="h6">{city.name} Contacts</Typography>
-            <ContactsTable
-              filteredContacts={contacts.cityContacts[city.id] || []}
-              {...ContactsTableProps}
-              tableName={city.name}
-              groups={getGroupsForOwner("city", city.id)}
-              ownerType="city"
-              ownerId={city.id}
-            />
+        userCities.map((city) => {
+          const cityContacts = contacts.cityContacts?.[city.id] || [];
+          const contactCount = getContactCount(cityContacts);
+
+          // Only render if there are contacts
+          if (contactCount === 0) return null;
+
+          return (
+            <Accordion
+              key={city.id}
+              expanded={expandedAccordions.cities[city.id] || false}
+              onChange={handleAccordionChange("cities", city.id)}
+              sx={{ mb: 2 }}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Typography variant="h6">{city.name} Contacts</Typography>
+                  <Badge
+                    badgeContent={contactCount}
+                    color="primary"
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        position: "static",
+                        transform: "none",
+                      },
+                    }}
+                  />
+                </Box>
+              </AccordionSummary>
+              <AccordionDetails>
+                <ContactsTable
+                  filteredContacts={cityContacts}
+                  {...ContactsTableProps}
+                  tableName={city.name}
+                  groups={getGroupsForOwner("city", city.id)}
+                  ownerType="city"
+                  ownerId={city.id}
+                />
+              </AccordionDetails>
+            </Accordion>
+          );
+        })}
+
+      {/* Show message when no contacts exist */}
+      {(!contacts.userContacts ||
+        getContactCount(contacts.userContacts) === 0) &&
+        (!userCommunities ||
+          userCommunities.every(
+            (community) =>
+              getContactCount(
+                contacts.communityContacts?.[community.id] || []
+              ) === 0
+          )) &&
+        (!userCities ||
+          userCities.every(
+            (city) =>
+              getContactCount(contacts.cityContacts?.[city.id] || []) === 0
+          )) && (
+          <Box sx={{ textAlign: "center", py: 4 }}>
+            <Typography variant="h6" color="text.secondary">
+              No contacts found
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Get started by adding your first contact or importing from CSV
+            </Typography>
           </Box>
-        ))}
+        )}
 
       {/* Contact Add/Edit Dialog */}
       <ContactDialog
@@ -682,15 +827,6 @@ const exportContacts = (contacts) => {
 };
 
 // Function to import contacts from CSV
-/**
- * Imports contacts from a CSV file
- * @param {Event} event - The file input change event
- * @param {Function} addContact - Function to add a contact to the database
- * @param {Function} setFormError - Function to set error messages
- * @param {Function} refreshContacts - Function to refresh contacts after import
- * @param {string} userId - The current user's ID
- * @param {Object} currentContacts - The current contacts object for duplicate detection
- */
 export const importContacts = async (
   event,
   addContact,
@@ -709,12 +845,10 @@ export const importContacts = async (
   toast.info("Starting CSV import...");
 
   const reader = new FileReader();
-
   reader.onload = async (e) => {
     try {
       const content = e.target.result;
       console.log("File content length:", content.length);
-
       const lines = content.split("\n").filter((line) => line.trim());
       console.log("Total lines after filtering:", lines.length);
 
@@ -741,7 +875,6 @@ export const importContacts = async (
         "groups",
         "middle_name",
       ];
-
       const rawHeaders = lines[0].split(",").map((header) => header.trim());
       const headerMapping = [];
       const headers = [];
@@ -767,6 +900,7 @@ export const importContacts = async (
       const missingHeaders = requiredHeaders.filter(
         (header) => !headers.includes(header)
       );
+
       if (missingHeaders.length > 0) {
         const errorMsg = `Missing required columns: ${missingHeaders.join(
           ", "
@@ -786,7 +920,6 @@ export const importContacts = async (
         if (!line.trim()) continue; // Skip empty lines
 
         console.log(`Processing line ${i + 1}:`, line);
-
         const allValues = line.split(",").map((val) => val.trim());
 
         // Extract only the values for columns we care about
@@ -938,11 +1071,6 @@ export const importContacts = async (
   reader.readAsText(file);
 };
 
-/**
- * Helper function for normalizing CSV header names
- * @param {string} header - The header name to normalize
- * @returns {string} - The normalized header name
- */
 const normalizeHeader = (header) => {
   // Remove special characters and spaces, convert to lowercase
   const normalized = header.toLowerCase().trim();
