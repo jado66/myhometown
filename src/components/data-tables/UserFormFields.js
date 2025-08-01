@@ -15,6 +15,7 @@ import CommunitySelect from "./selects/CommunitySelect";
 import CitySelect from "./selects/CitySelect";
 import JsonViewer from "../util/debug/DebugOutput";
 import { Info } from "@mui/icons-material";
+import { toast } from "react-toastify";
 
 const UserFormFields = ({
   userData,
@@ -23,32 +24,50 @@ const UserFormFields = ({
   isNewUser = false,
 }) => {
   const handlePermissionChange = (permission) => (event) => {
+    const checked = event.target.checked;
+    if (permission === "administrator" && checked) {
+      toast.info(
+        "This user will have full access to everything on the site as a Global Administrator.",
+        { autoClose: 7000 }
+      );
+    }
     onChange({
       ...userData,
       permissions: {
         ...userData?.permissions,
-        [permission]: event.target.checked,
+        [permission]: checked,
       },
     });
   };
 
-  const handleCityChange = (selectedCities) => {
+  const handleCityChange = (selectedCity) => {
+    let citiesArr = [];
+    if (Array.isArray(selectedCity)) {
+      citiesArr = selectedCity.map((city) => ({
+        id: city.value,
+        name: city.label,
+        state: "Utah",
+      }));
+    } else if (selectedCity) {
+      citiesArr = [
+        {
+          id: selectedCity.value,
+          name: selectedCity.label,
+          state: "Utah",
+        },
+      ];
+    }
     onChange({
       ...userData,
-      cities:
-        selectedCities.map((city) => {
-          return { id: city.value, name: city.label, state: "Utah" };
-        }) || [],
+      cities: citiesArr,
     });
   };
 
+  // Store the full selected option objects for communities
   const handleCommunityChange = (selectedCommunities) => {
     onChange({
       ...userData,
-      communities:
-        selectedCommunities.map((community) => {
-          return { id: community.value, name: community.label };
-        }) || [],
+      communities: selectedCommunities || [],
     });
   };
 
@@ -119,18 +138,6 @@ const UserFormFields = ({
             <FormControlLabel
               control={
                 <Switch
-                  checked={userData?.permissions?.administrator || false}
-                  onChange={handlePermissionChange("administrator")}
-                />
-              }
-              label="Administrator"
-            />
-          </Grid>
-
-          <Grid item xs={12} sm={4}>
-            <FormControlLabel
-              control={
-                <Switch
                   checked={userData?.permissions?.texting || false}
                   onChange={handlePermissionChange("texting")}
                 />
@@ -155,6 +162,18 @@ const UserFormFields = ({
               </Tooltip>
             </IconButton>
           </Grid>
+
+          <Grid item xs={12} sm={4}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={userData?.permissions?.administrator || false}
+                  onChange={handlePermissionChange("administrator")}
+                />
+              }
+              label="Global Administrator"
+            />
+          </Grid>
         </Grid>
       </Box>
 
@@ -165,13 +184,14 @@ const UserFormFields = ({
 
         <CitySelect
           value={
-            userData?.cities?.map((city) => ({
-              value: city.id,
-              label: city.name,
-            })) || []
+            userData?.cities && userData.cities.length > 0
+              ? {
+                  value: userData.cities[0].id,
+                  label: userData.cities[0].name,
+                }
+              : null
           }
           onChange={handleCityChange}
-          isMulti={true}
         />
         {errors.cities && (
           <FormHelperText error>{errors.cities}</FormHelperText>
@@ -183,12 +203,7 @@ const UserFormFields = ({
           Communities
         </Typography>
         <CommunitySelect
-          value={
-            userData?.communities?.map((community) => ({
-              value: community.id,
-              label: community.name,
-            })) || []
-          }
+          value={userData?.communities || []}
           onChange={handleCommunityChange}
           isMulti={true}
         />

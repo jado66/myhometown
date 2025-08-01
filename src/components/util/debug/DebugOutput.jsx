@@ -2,7 +2,7 @@
 
 import ReactJson from "react-json-view";
 
-const JsonViewer = ({ data, title }) => {
+const JsonViewer = ({ data, title = "" }) => {
   if (process.env.NEXT_PUBLIC_ENVIRONMENT !== "dev") {
     return null;
   }

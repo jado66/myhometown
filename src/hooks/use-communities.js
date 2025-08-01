@@ -12,6 +12,10 @@ export function useCommunities(userfilter, forDropDownCommunityMenu = false) {
 
   // Update select options whenever communities change
   useEffect(() => {
+    if (!communities || communities.length === 0) {
+      return;
+    }
+
     const selectOptions = communities
       .map((community) => ({
         value: community._id,
