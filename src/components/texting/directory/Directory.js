@@ -593,64 +593,118 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
         </Box>
       )}
 
-      {/* User Contacts Accordion */}
-      {contacts.userContacts && getContactCount(contacts.userContacts) > 0 && (
-        <Accordion
-          expanded={expandedAccordions.user}
-          onChange={handleAccordionChange("user")}
-          sx={{ mb: 2 }}
-        >
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Typography variant="h6">
-                {user.isAdmin ? "Personal Contacts" : "Unassigned Contacts"}
-              </Typography>
-              <Badge
-                badgeContent={getContactCount(contacts.userContacts)}
-                color="primary"
-                sx={{
-                  "& .MuiBadge-badge": {
-                    position: "static",
-                    transform: "none",
-                  },
-                }}
-              />
-            </Box>
-          </AccordionSummary>
-          <AccordionDetails>
-            {!user?.isAdmin && (
-              <Box sx={{ mt: 1, mb: 2 }}>
-                <Typography variant="body2" color="error">
-                  <ErrorOutlineIcon sx={{ verticalAlign: "middle", mr: 1 }} />
-                  You cannot send texts to unassigned contacts. Please select
-                  the contact and assign them to a city or community to enable
-                  texting.
-                </Typography>
-              </Box>
-            )}
-            <ContactsTable
-              {...ContactsTableProps}
-              filteredContacts={contacts.userContacts}
-              tableName="Unassigned Contacts"
-              canAddNew
-              groups={getGroupsForOwner("user")}
-              ownerType="user"
-              ownerId={userId}
-            />
-          </AccordionDetails>
-        </Accordion>
-      )}
+      {/* User Contacts Accordion (filtered by search) */}
+      {contacts.userContacts &&
+        (() => {
+          // Filter user contacts by searchQuery
+          const filteredUserContacts = searchQuery
+            ? contacts.userContacts.filter((contact) => {
+                const query = searchQuery.toLowerCase();
+                return (
+                  (contact.first_name &&
+                    contact.first_name.toLowerCase().includes(query)) ||
+                  (contact.last_name &&
+                    contact.last_name.toLowerCase().includes(query)) ||
+                  (contact.middle_name &&
+                    contact.middle_name.toLowerCase().includes(query)) ||
+                  (contact.email &&
+                    contact.email.toLowerCase().includes(query)) ||
+                  (contact.phone && contact.phone.includes(query)) ||
+                  (() => {
+                    const parsedGroups = parseGroups(contact.groups);
+                    return parsedGroups.some(
+                      (g) =>
+                        (typeof g === "string" &&
+                          g.toLowerCase().includes(query)) ||
+                        (g?.label && g.label.toLowerCase().includes(query))
+                    );
+                  })()
+                );
+              })
+            : contacts.userContacts;
+          if (filteredUserContacts.length === 0) return null;
+          return (
+            <Accordion
+              expanded={expandedAccordions.user}
+              onChange={handleAccordionChange("user")}
+              sx={{ mb: 2 }}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Typography variant="h6">
+                    {user.isAdmin ? "Personal Contacts" : "Unassigned Contacts"}
+                  </Typography>
+                  <Badge
+                    badgeContent={filteredUserContacts.length}
+                    color="primary"
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        position: "static",
+                        transform: "none",
+                      },
+                    }}
+                  />
+                </Box>
+              </AccordionSummary>
+              <AccordionDetails>
+                {!user?.isAdmin && (
+                  <Box sx={{ mt: 1, mb: 2 }}>
+                    <Typography variant="body2" color="error">
+                      <ErrorOutlineIcon
+                        sx={{ verticalAlign: "middle", mr: 1 }}
+                      />
+                      You cannot send texts to unassigned contacts. Please
+                      select the contact and assign them to a city or community
+                      to enable texting.
+                    </Typography>
+                  </Box>
+                )}
+                <ContactsTable
+                  {...ContactsTableProps}
+                  filteredContacts={filteredUserContacts}
+                  tableName="Unassigned Contacts"
+                  canAddNew
+                  groups={getGroupsForOwner("user")}
+                  ownerType="user"
+                  ownerId={userId}
+                />
+              </AccordionDetails>
+            </Accordion>
+          );
+        })()}
 
-      {/* Community Contacts Accordions */}
+      {/* Community Contacts Accordions (filtered by search) */}
       {userCommunities &&
         userCommunities.map((community) => {
           const communityContacts =
             contacts.communityContacts?.[community.id] || [];
-          const contactCount = getContactCount(communityContacts);
-
-          // Only render if there are contacts
-          if (contactCount === 0) return null;
-
+          // Filter community contacts by searchQuery
+          const filteredCommunityContacts = searchQuery
+            ? communityContacts.filter((contact) => {
+                const query = searchQuery.toLowerCase();
+                return (
+                  (contact.first_name &&
+                    contact.first_name.toLowerCase().includes(query)) ||
+                  (contact.last_name &&
+                    contact.last_name.toLowerCase().includes(query)) ||
+                  (contact.middle_name &&
+                    contact.middle_name.toLowerCase().includes(query)) ||
+                  (contact.email &&
+                    contact.email.toLowerCase().includes(query)) ||
+                  (contact.phone && contact.phone.includes(query)) ||
+                  (() => {
+                    const parsedGroups = parseGroups(contact.groups);
+                    return parsedGroups.some(
+                      (g) =>
+                        (typeof g === "string" &&
+                          g.toLowerCase().includes(query)) ||
+                        (g?.label && g.label.toLowerCase().includes(query))
+                    );
+                  })()
+                );
+              })
+            : communityContacts;
+          if (filteredCommunityContacts.length === 0) return null;
           return (
             <Accordion
               key={community.id}
@@ -664,7 +718,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
                     {community.name} Contacts
                   </Typography>
                   <Badge
-                    badgeContent={contactCount}
+                    badgeContent={filteredCommunityContacts.length}
                     color="primary"
                     sx={{
                       "& .MuiBadge-badge": {
@@ -677,7 +731,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
               </AccordionSummary>
               <AccordionDetails>
                 <ContactsTable
-                  filteredContacts={communityContacts}
+                  filteredContacts={filteredCommunityContacts}
                   {...ContactsTableProps}
                   tableName={community.name}
                   ownerType="community"
@@ -689,15 +743,37 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
           );
         })}
 
-      {/* City Contacts Accordions */}
+      {/* City Contacts Accordions (filtered by search) */}
       {userCities &&
         userCities.map((city) => {
           const cityContacts = contacts.cityContacts?.[city.id] || [];
-          const contactCount = getContactCount(cityContacts);
-
-          // Only render if there are contacts
-          if (contactCount === 0) return null;
-
+          // Filter city contacts by searchQuery
+          const filteredCityContacts = searchQuery
+            ? cityContacts.filter((contact) => {
+                const query = searchQuery.toLowerCase();
+                return (
+                  (contact.first_name &&
+                    contact.first_name.toLowerCase().includes(query)) ||
+                  (contact.last_name &&
+                    contact.last_name.toLowerCase().includes(query)) ||
+                  (contact.middle_name &&
+                    contact.middle_name.toLowerCase().includes(query)) ||
+                  (contact.email &&
+                    contact.email.toLowerCase().includes(query)) ||
+                  (contact.phone && contact.phone.includes(query)) ||
+                  (() => {
+                    const parsedGroups = parseGroups(contact.groups);
+                    return parsedGroups.some(
+                      (g) =>
+                        (typeof g === "string" &&
+                          g.toLowerCase().includes(query)) ||
+                        (g?.label && g.label.toLowerCase().includes(query))
+                    );
+                  })()
+                );
+              })
+            : cityContacts;
+          if (filteredCityContacts.length === 0) return null;
           return (
             <Accordion
               key={city.id}
@@ -709,7 +785,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                   <Typography variant="h6">{city.name} Contacts</Typography>
                   <Badge
-                    badgeContent={contactCount}
+                    badgeContent={filteredCityContacts.length}
                     color="primary"
                     sx={{
                       "& .MuiBadge-badge": {
@@ -722,7 +798,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
               </AccordionSummary>
               <AccordionDetails>
                 <ContactsTable
-                  filteredContacts={cityContacts}
+                  filteredContacts={filteredCityContacts}
                   {...ContactsTableProps}
                   tableName={city.name}
                   groups={getGroupsForOwner("city", city.id)}
