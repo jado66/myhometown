@@ -31,7 +31,7 @@ import GroupIcon from "@mui/icons-material/Group";
 import PersonIcon from "@mui/icons-material/Person";
 import Close from "@mui/icons-material/Close";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Assignment, Phone, School } from "@mui/icons-material";
+import { Assignment, Phone, School, Visibility } from "@mui/icons-material";
 import { ExampleIcons } from "@/components/events/ClassesTreeView/IconSelect";
 import ClassDetailTable from "./ClassDetailTable";
 import ResponsiveRollTable from "./ResponsiveRollTable";
@@ -274,7 +274,7 @@ const ClassGridView = ({ classItem, onTakeAttendance, onViewClass }) => {
   );
 };
 
-// Section Component that handles both views
+// Section Component that handles both views, with hidden toggle and icon
 const ClassSection = ({
   title,
   classes,
@@ -282,9 +282,11 @@ const ClassSection = ({
   onTakeAttendance,
   onViewClass,
   viewType,
+  showHidden,
 }) => {
   if (!classes || !classes.length) return null;
 
+  // Filter by search term only, not by visibility
   const filteredClasses = classes.filter((classItem) =>
     classItem.title?.toLowerCase().includes((searchTerm || "").toLowerCase())
   );
@@ -333,7 +335,7 @@ const ClassSection = ({
   );
 };
 
-// Semester Accordion Component
+// Semester Accordion Component with visibility toggle
 const SemesterAccordion = ({
   semester,
   searchTerm,
@@ -344,25 +346,14 @@ const SemesterAccordion = ({
   onChange,
   index,
   setSemester,
+  showHidden,
 }) => {
-  // Check if there are any visible classes after filtering
-  const hasVisibleSections = semester.sections.some((section) => {
-    // Check if the section itself is visible
-    if (!section.visibility) return false;
-
-    const filteredClasses = section.classes.filter((classItem) => {
-      // Check if the class is visible and matches the search term
-      const matchesSearch = classItem.title
-        ?.toLowerCase()
-        .includes((searchTerm || "").toLowerCase());
-      return classItem.visibility !== false && matchesSearch;
-    });
-
-    return filteredClasses.length > 0;
-  });
-
-  // Don't render if the semester has no visible sections or is marked as not visible
-  if (!hasVisibleSections || semester.visibility === false) return null;
+  // Show all sections if showHidden is true, otherwise filter by visibility
+  const filteredSections = semester.sections.filter(
+    (section) => showHidden || section.visibility !== false
+  );
+  // If no sections after filtering, don't render
+  if (filteredSections.length === 0) return null;
 
   return (
     <Accordion
@@ -373,6 +364,7 @@ const SemesterAccordion = ({
         "&.Mui-expanded": {
           mb: 3,
         },
+        opacity: semester.visibility === false ? 0.75 : 1,
       }}
     >
       <AccordionSummary
@@ -390,8 +382,14 @@ const SemesterAccordion = ({
             width: "100%",
           }}
         >
-          <School />
-          <Typography variant="h5">{semester.title}</Typography>
+          {semester.visibility ? <School /> : <VisibilityOff color="action" />}
+
+          <Typography
+            variant="h5"
+            sx={{ display: "flex", alignItems: "center", gap: 1 }}
+          >
+            {semester.title}
+          </Typography>
           <Box sx={{ flexGrow: 1 }} />
 
           <Button
@@ -399,8 +397,8 @@ const SemesterAccordion = ({
             size="small"
             startIcon={<Assignment />}
             onClick={(e) => {
-              e.stopPropagation(); // Prevent accordion from toggling
-              e.preventDefault(); // Prevent default action
+              e.stopPropagation();
+              e.preventDefault();
               setSemester(semester);
             }}
           >
@@ -409,22 +407,25 @@ const SemesterAccordion = ({
         </Box>
       </AccordionSummary>
       <AccordionDetails>
-        {semester.sections.map((section, index) => {
-          // Skip rendering sections that are marked as not visible
-          if (section.visibility === false) return null;
-
+        {filteredSections.map((section, index) => {
+          // Show all classes if showHidden is true, otherwise filter by visibility
+          const filteredClasses = showHidden
+            ? section.classes
+            : section.classes.filter((c) => c.visibility !== false);
+          if (filteredClasses.length === 0) return null;
           return (
             <>
               <ClassSection
                 key={section.id}
                 title={section.title}
-                classes={section.classes.filter((c) => c.visibility !== false)}
+                classes={filteredClasses}
                 searchTerm={searchTerm}
                 onTakeAttendance={onTakeAttendance}
                 onViewClass={onViewClass}
                 viewType={viewType}
+                showHidden={showHidden}
               />
-              {index < semester.sections.length - 1 && (
+              {index < filteredSections.length - 1 && (
                 <Divider sx={{ my: 2 }} />
               )}
             </>
@@ -436,6 +437,8 @@ const SemesterAccordion = ({
 };
 
 export default function ClassList({ community, searchTerm, viewType }) {
+  // Hidden toggle state
+  const [showHidden, setShowHidden] = useState(false);
   const {
     updateClass,
     signupLoading,
@@ -692,6 +695,24 @@ export default function ClassList({ community, searchTerm, viewType }) {
 
   return (
     <>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "end",
+          width: "100%",
+          gap: 2,
+          mb: 2,
+        }}
+      >
+        <Button
+          variant={showHidden ? "contained" : "outlined"}
+          color={showHidden ? "primary" : "inherit"}
+          startIcon={showHidden ? <VisibilityOff /> : <Visibility />}
+          onClick={() => setShowHidden((v) => !v)}
+        >
+          Toggle Hidden Classes
+        </Button>
+      </Box>
       {/* Semesters organized in accordions */}
       {semesters && semesters.length > 0 ? (
         semesters.map((semester, index) => (
@@ -712,6 +733,7 @@ export default function ClassList({ community, searchTerm, viewType }) {
             onChange={handleAccordionChange}
             setSemester={setSemester}
             index={index}
+            showHidden={showHidden}
           />
         ))
       ) : (
