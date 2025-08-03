@@ -63,11 +63,18 @@ const UserFormFields = ({
     });
   };
 
-  // Store the full selected option objects for communities
+  // Store only the selected community IDs for communities
   const handleCommunityChange = (selectedCommunities) => {
+    // selectedCommunities is an array of option objects or IDs
+    let ids = [];
+    if (Array.isArray(selectedCommunities)) {
+      ids = selectedCommunities.map((c) =>
+        typeof c === "object" ? c.value : c
+      );
+    }
     onChange({
       ...userData,
-      communities: selectedCommunities || [],
+      communities: ids,
     });
   };
 

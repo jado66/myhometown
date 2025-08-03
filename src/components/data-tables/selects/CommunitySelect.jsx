@@ -36,39 +36,29 @@ const CommunitySelect = ({ value, onChange, defaultValue, isMulti = true }) => {
   // Helper to flatten grouped options
   const flattenOptions = (groups) => groups.flatMap((group) => group.options);
 
-  // Ensure value matches the actual option objects
+  // Ensure value matches the actual option objects for display
   const selectedValues = (() => {
     if (!value) return isMulti ? [] : null;
-
     const flatOptions = flattenOptions(communitySelectOptions);
-
     if (isMulti) {
-      // Handle multi-select
       if (!Array.isArray(value)) return [];
-
-      // value could be an array of strings/numbers or objects
+      // value is array of IDs (strings)
       return value
-        .map((v) => {
-          // If v is a string/number, use it directly
-          const searchValue = typeof v === "object" ? v.value : v;
-          return flatOptions.find((opt) => opt.value === searchValue);
-        })
+        .map((id) => flatOptions.find((opt) => opt.value === id))
         .filter(Boolean);
     } else {
-      // Handle single select
-      const searchValue = typeof value === "object" ? value.value : value;
-      return flatOptions.find((opt) => opt.value === searchValue) || null;
+      return flatOptions.find((opt) => opt.value === value) || null;
     }
   })();
 
-  // Handle change to return just the values (not the full objects) if needed
+  // Handle change to return just the IDs (not the full objects)
   const handleChange = (selected) => {
     if (isMulti) {
-      // For multi-select, return array of values or full objects based on your needs
-      onChange(selected || []);
+      // For multi-select, return array of IDs
+      onChange((selected || []).map((opt) => opt.value));
     } else {
       // For single select
-      onChange(selected);
+      onChange(selected ? selected.value : null);
     }
   };
 

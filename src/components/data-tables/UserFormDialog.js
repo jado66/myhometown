@@ -39,6 +39,17 @@ export const UserFormDialog = ({
     if (open && initialData) {
       let newFormData = { ...initialData };
 
+      // Prepopulate communities as array of IDs
+      if (Array.isArray(newFormData.communities_details)) {
+        newFormData.communities = newFormData.communities_details.map(
+          (comm) => comm.id
+        );
+      } else if (Array.isArray(newFormData.communities)) {
+        // Already array of IDs
+      } else {
+        newFormData.communities = [];
+      }
+
       // Fetch city details and populate cities_details
       if (newFormData.cities) {
         const fetchCityDetails = async () => {
@@ -59,6 +70,8 @@ export const UserFormDialog = ({
         };
 
         fetchCityDetails();
+      } else {
+        setFormData(newFormData);
       }
     }
   }, [open, initialData]);

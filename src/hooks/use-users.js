@@ -256,7 +256,7 @@ const useUsers = () => {
           contact_number: userData.contact_number,
           permissions: formattedPermissions, // Use formatted permissions
           cities: userData.cities.map((c) => c.id), // Use the provided cities
-          communities: userData.communities.map((c) => c.id), // Use the provided communities
+          communities: userData.communities, // Now an array of IDs
         })
         .eq("id", userData.id) // Ensure this matches the database `id`
         .select() // Select the updated row
@@ -271,20 +271,31 @@ const useUsers = () => {
 
       // Update the local state with the updated user data
       setUsers((prevUsers) =>
-        prevUsers.map((u) =>
-          u.id === userData.id
-            ? {
-                ...data,
-                id: data.id,
-                cities: userData.cities,
-                communities: userData.communities,
-                cities_details: userData.cities.map((c) => {
-                  return { ...c, state: "Utah" };
-                }), // Use the provided cities
-                communities_details: userData.communities,
-              }
-            : u
-        )
+        prevUsers.map((u) => {
+          if (u.id !== userData.id) return u;
+          // Find the full community objects for the selected IDs
+          let allCommunityDetails = u.communities_details || [];
+          // If the user had no previous details, fallback to array of IDs
+          let newCommunitiesDetails = Array.isArray(allCommunityDetails)
+            ? allCommunityDetails.filter((comm) => userData.communities.includes(comm.id))
+            : [];
+          // If we have fewer than selected, fallback to IDs as objects
+          if (newCommunitiesDetails.length !== userData.communities.length) {
+            // Add any missing as {id: id}
+            const missing = userData.communities.filter(
+              (id) => !newCommunitiesDetails.some((c) => c.id === id)
+            ).map((id) => ({ id }));
+            newCommunitiesDetails = [...newCommunitiesDetails, ...missing];
+          }
+          return {
+            ...data,
+            id: data.id,
+            cities: userData.cities,
+            communities: userData.communities,
+            cities_details: userData.cities.map((c) => ({ ...c, state: "Utah" })),
+            communities_details: newCommunitiesDetails,
+          };
+        })
       );
 
       toast.success("User updated successfully");
