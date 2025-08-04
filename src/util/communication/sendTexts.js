@@ -12,21 +12,26 @@ const getStreamKey = (messageId) => `stream:${messageId}`;
 const getControllerKey = (messageId) => `controller:${messageId}`;
 
 // Send message and track status via Redis stream
-async function sendTextWithStream({ message, recipient, mediaUrls = [] }) {
-  const messageId = uuidv4();
+async function sendTextWithStream({
+  message,
+  recipient,
+  mediaUrls = [],
+  messageId,
+}) {
+  // Don't create a new messageId - use the one from the route
   const streamKey = getStreamKey(messageId);
   const controllerKey = getControllerKey(messageId);
 
   try {
-    // Initialize stream
-    await redis.set(streamKey, "active", { ex: 300 });
-
-    // Send status update
+    // Don't initialize a new stream - the stream route already did this
+    // Just send the status update that we're processing this recipient
     await redis.rpush(
       controllerKey,
       JSON.stringify({
-        type: "status",
-        message: "Processing message...",
+        type: "processing",
+        recipient: recipient.phone,
+        message: `Processing message for ${recipient.name}...`,
+        timestamp: new Date().toISOString(),
       })
     );
 
@@ -59,70 +64,24 @@ async function sendTextWithStream({ message, recipient, mediaUrls = [] }) {
     // Send message through Twilio
     const messageResponse = await client.messages.create(messageOptions);
 
-    // Send success status
-    await redis.rpush(
-      controllerKey,
-      JSON.stringify({
-        recipient: recipient.name,
-        status: "success",
-        messageId: messageResponse.sid,
-        timestamp: new Date().toISOString(),
-        mediaCount: messageOptions.mediaUrl?.length || 0,
-      })
-    );
-
-    // Send completion message
-    await redis.rpush(
-      controllerKey,
-      JSON.stringify({
-        type: "complete",
-        timestamp: new Date().toISOString(),
-      })
-    );
-
-    // Clean up Redis keys after a short delay
-    setTimeout(async () => {
-      await Promise.all([redis.del(streamKey), redis.del(controllerKey)]);
-    }, 100);
-
+    // Don't send the success status here - let the route handle it
+    // Just return the result
     return {
       success: true,
       messageId: messageResponse.sid,
-      streamId: messageId,
+      // Don't include streamId since we're using the shared messageId
     };
   } catch (error) {
     console.error("Error sending text message:", error);
 
-    // Send error status if stream is still active
-    try {
-      const isActive = await redis.get(streamKey);
-      if (isActive) {
-        await redis.rpush(
-          controllerKey,
-          JSON.stringify({
-            type: "error",
-            error: error.message,
-            timestamp: new Date().toISOString(),
-          })
-        );
-      }
-    } catch (streamError) {
-      console.error("Error sending error status:", streamError);
-    }
-
-    // Clean up Redis keys
-    try {
-      await Promise.all([redis.del(streamKey), redis.del(controllerKey)]);
-    } catch (cleanupError) {
-      console.error("Error cleaning up Redis keys:", cleanupError);
-    }
-
+    // Don't send error status here either - let the route handle it
     return {
       success: false,
       error: error.message,
-      streamId: messageId,
     };
   }
+
+  // Remove all the Redis cleanup code - let the stream route handle it
 }
 
 // Simplified function for single text message without streaming
