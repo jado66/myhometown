@@ -1,7 +1,7 @@
 // scripts/cleanupRedisStreams.js
 // This script can be run manually or via cron to clean up orphaned Redis keys
 
-import redis from "../src/util/redis/redis.js";
+import redis from "../src/util/redis/redis-script.js";
 
 async function cleanupRedisStreams() {
   console.log("Starting Redis stream cleanup...");
@@ -142,8 +142,7 @@ async function cleanupRedisStreams() {
     console.error("Error during cleanup:", error);
     throw error;
   } finally {
-    // Ensure Redis connection is closed
-    await redis.quit();
+    // No redis.quit() needed for Upstash Redis (stateless HTTP client)
   }
 }
 

@@ -8,7 +8,8 @@
     "build": "node prebuild.js && next build",
     "start": "next start",
     "lint": "next lint",
-    "update-password": "node updatePassword.js"
+    "update-password": "node updatePassword.js",
+    "cleanup-redis-streams": "node scripts/cleanupRedisStream.js"
   },
   "dependencies": {
     "@auth0/auth0-spa-js": "^2.1.3",

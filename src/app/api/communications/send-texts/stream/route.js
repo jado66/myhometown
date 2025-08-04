@@ -153,6 +153,13 @@ export async function GET(req) {
           pollInterval = setInterval(async () => {
             if (!isActive) return;
 
+            // Refresh TTL to prevent premature expiration
+            try {
+              await redis.expire(streamKey, REDIS_KEY_TTL);
+            } catch (err) {
+              console.error(`Failed to refresh TTL for stream ${messageId}:`, err);
+            }
+
             pollCount++;
 
             // Check stream timeout

@@ -61,23 +61,7 @@ export async function GET(req) {
       })
       .filter(Boolean);
 
-    // Get Redis info for command stats
-    const info = await redis.info("stats");
-    const commandStats = {};
-
-    // Parse command stats from INFO output
-    if (typeof info === "string") {
-      const lines = info.split("\n");
-      const cmdstatLine = lines.find((line) =>
-        line.includes("total_commands_processed")
-      );
-      if (cmdstatLine) {
-        const match = cmdstatLine.match(/total_commands_processed:(\d+)/);
-        if (match) {
-          commandStats.totalCommands = parseInt(match[1]);
-        }
-      }
-    }
+    // Upstash Redis does not support the INFO command, so commandStats are omitted.
 
     return new Response(
       JSON.stringify(
@@ -97,7 +81,7 @@ export async function GET(req) {
             keys: controllerKeys,
           },
           dailyStreamCounter: parseInt(dailyCounter),
-          commandStats,
+          // commandStats omitted due to Upstash limitations
           health: {
             orphanedControllers: controllerKeys.length > streamKeys.length,
             longRunningStreams: streamAges.filter((s) => s.age > 300).length, // > 5 minutes
