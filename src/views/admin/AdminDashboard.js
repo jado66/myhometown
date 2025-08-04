@@ -164,7 +164,7 @@ const AdminDashboardPages = () => {
                   item={{
                     title: "App Health",
                     subtitle: "Manage your application health and performance.",
-                    media: "/admin-icons/App Health.svg",
+                    media: "/admin-icons/health.png",
                     href: rootUrl + "/admin-dashboard/health",
                   }}
                   i={-1}
