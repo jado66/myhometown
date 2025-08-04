@@ -13,6 +13,8 @@ import Loading from "@/components/util/Loading";
 import NextLink from "next/link";
 import PermissionGuard from "@/guards/permission-guard";
 import { useRouter } from "next/navigation";
+import DevEnvGuard from "@/guards/dev-env-guard";
+import UserGuard from "@/guards/user-guard";
 
 const AdminDashboardPages = () => {
   const theme = useTheme();
@@ -156,6 +158,18 @@ const AdminDashboardPages = () => {
                   <AdminDashboardCard item={item} i={i} />
                 </PermissionGuard>
               ))}
+
+              <UserGuard allowedEmails={["jado66@gmail.com"]} user={user}>
+                <AdminDashboardCard
+                  item={{
+                    title: "App Health",
+                    subtitle: "Manage your application health and performance.",
+                    media: "/admin-icons/App Health.svg",
+                    href: rootUrl + "/admin-dashboard/app-health",
+                  }}
+                  i={-1}
+                />
+              </UserGuard>
             </Grid>
           </Box>
         </Container>
