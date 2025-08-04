@@ -159,7 +159,10 @@ const AdminDashboardPages = () => {
                 </PermissionGuard>
               ))}
 
-              <UserGuard allowedEmails={["jado66@gmail.com"]} user={user}>
+              <UserGuard
+                allowedEmails={["jado66@gmail.com", "kcraven10@gmail.com"]}
+                user={user}
+              >
                 <AdminDashboardCard
                   item={{
                     title: "App Health",
