@@ -134,7 +134,7 @@ export const VolunteerSignUps = ({
           startIcon={<CloseIcon />}
           sx={{
             position: { md: "absolute", xs: "relative" },
-            top: 0,
+            top: 25,
             right: 0,
             mr: 3,
             mt: { md: 0, xs: 2 },
@@ -150,7 +150,7 @@ export const VolunteerSignUps = ({
             startIcon={<Edit />}
             sx={{
               position: "absolute",
-              top: 0,
+              top: 25,
               right: 0,
               mr: 3,
               mb: { xs: 4, md: 0 },
@@ -171,7 +171,7 @@ export const VolunteerSignUps = ({
           handleClose={hideIframeHelpDialog}
         />
         <Grid item xs={12} display="flex" flexDirection="column">
-          isEdit: {JSON.stringify(isEdit)}
+          {/* isEdit: {JSON.stringify(isEdit)} */}
           {isEdit ? (
             <TextField
               variant="standard"
@@ -186,7 +186,7 @@ export const VolunteerSignUps = ({
                   color: (theme) => theme.palette.primary.main,
                   textTransform: "capitalize",
                   display: "flex",
-                  justifyContent: "center", // Add this line
+                  justifyContent: "center",
                   "& .Mui-focused": {
                     backgroundColor: "#f0f0f0",
                     borderRadius: "4px",
@@ -201,7 +201,7 @@ export const VolunteerSignUps = ({
                 padding: "10px 16px",
                 textAlign: "center",
                 "& .MuiInputBase-input": {
-                  textAlign: "center", // Add this line
+                  textAlign: "center",
                 },
                 "& .MuiInput-underline:before": {
                   borderBottom: "none",
@@ -258,6 +258,7 @@ export const VolunteerSignUps = ({
               </Typography>
             )}
           </Box>
+          {/* Always show the helper and button, even in edit mode */}
           <Grid
             item
             xs={12}

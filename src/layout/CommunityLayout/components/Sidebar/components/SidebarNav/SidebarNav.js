@@ -263,6 +263,23 @@ const SidebarNav = ({ onClose }) => {
                   Service Login
                 </Typography>
               </NextLink>
+              <NextLink
+                href={rootUrl + "/admin-dashboard/missionary-login"}
+                style={{ textDecoration: "none", color: "#686868" }}
+              >
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontWeight: 700,
+                    marginBottom: 1,
+                    mt: 1,
+                    display: "block",
+                    color: "black",
+                  }}
+                >
+                  Missionary Login
+                </Typography>
+              </NextLink>
             </div>
           )}
         </Box>

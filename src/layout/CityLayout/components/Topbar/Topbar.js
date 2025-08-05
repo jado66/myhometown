@@ -317,6 +317,21 @@ const Topbar = ({ onSidebarOpen }) => {
               >
                 Service Login
               </MenuItem>
+              {/* missionary login */}
+              <MenuItem
+                onClick={handleResourcesClose}
+                component="a"
+                sx={{
+                  color: "black",
+                  fontWeight: "bold",
+                  "&:hover": {
+                    color: "#3A3B3C",
+                  },
+                }}
+                href={rootUrl + `/admin-dashboard/missionary-login`}
+              >
+                Missionary Login
+              </MenuItem>
             </Menu>
           </Box>
         </Box>
