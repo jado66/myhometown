@@ -288,7 +288,7 @@ const Topbar = ({ onSidebarOpen }) => {
                     color: "#3A3B3C",
                   },
                 }}
-                href={rootUrl + `/admin-dashboard/missionary-login`}
+                href={rootUrl + `/admin-dashboard/missionary-portal`}
               >
                 Missionary Login
               </MenuItem>
