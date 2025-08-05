@@ -113,20 +113,15 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
                 <Chip
                   label={missionary.assignment_status}
                   size="small"
+                  sx={{ textTransform: "capitalize" }}
                   color={getStatusColor()}
                 />
                 <Chip
                   label={missionary.assignment_level}
                   size="small"
                   variant="outlined"
+                  sx={{ textTransform: "capitalize" }}
                 />
-                {missionary.gender && (
-                  <Chip
-                    label={missionary.gender === "male" ? "M" : "F"}
-                    size="small"
-                    variant="outlined"
-                  />
-                )}
               </Box>
             </Box>
           </Box>

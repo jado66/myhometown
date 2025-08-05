@@ -23,6 +23,11 @@ export const pages = () => {
           href: rootUrl + "/admin-dashboard/communities",
           requiredPermission: "communityManagement",
         },
+        {
+          title: "Missionary Management",
+          href: rootUrl + "/admin-dashboard/missionaries",
+          requiredPermission: "missionaryManagement",
+        },
       ],
     },
     {

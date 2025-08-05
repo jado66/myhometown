@@ -25,6 +25,8 @@ const SidebarNav = ({ pages, onClose }) => {
     setActiveLink(window && window.location ? window.location.pathname : "");
   }, []);
 
+  const rootUrl = process.env.NEXT_PUBLIC_DOMAIN;
+
   const handleLogOut = async () => {
     const { error } = await supabase.auth.signOut();
 
@@ -59,7 +61,7 @@ const SidebarNav = ({ pages, onClose }) => {
         <Box marginBottom={1 / 2}>
           <Button
             component={"a"}
-            href="/admin-dashboard"
+            href={rootUrl + `/admin-dashboard`}
             fullWidth
             sx={{
               justifyContent: "flex-start",

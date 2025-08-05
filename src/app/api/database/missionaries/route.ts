@@ -62,6 +62,8 @@ export async function POST(request: NextRequest) {
       last_login,
     } = body;
 
+    console.log(JSON.stringify(body, null, 2));
+
     if (!email || !first_name || !last_name) {
       return NextResponse.json(
         { error: "Email, first name, and last name are required" },
@@ -91,11 +93,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (assignment_level === "community" && (!city_id || !community_id)) {
+    if (assignment_level === "community" && !community_id) {
       return NextResponse.json(
         {
-          error:
-            "Community level assignments must have both city and community",
+          error: "Community level assignments must have a community",
         },
         { status: 400 }
       );
@@ -194,11 +195,10 @@ export async function PATCH(request: NextRequest) {
         );
       }
 
-      if (assignment_level === "community" && (!city_id || !community_id)) {
+      if (assignment_level === "community" && !community_id) {
         return NextResponse.json(
           {
-            error:
-              "Community level assignments must have both city and community",
+            error: "Community level assignments must have a community",
           },
           { status: 400 }
         );
@@ -270,10 +270,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const { error } = await supabase
-      .from("missionaries")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("missionaries").delete().eq("id", id);
 
     if (error) {
       console.error("Delete missionary error:", error);

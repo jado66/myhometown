@@ -11,15 +11,21 @@ export async function POST(request: NextRequest) {
       email,
       entryMethod,
       date,
-      totalHours,
+      total_hours,
       activities,
       location,
       updatePreference,
     } = await request.json();
 
-    if (!email || !entryMethod || !date || !totalHours || !activities) {
+    if (!email || !entryMethod || !date || !total_hours || !activities) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        {
+          error: `Missing required fields: ${!email ? "email " : ""}${
+            !entryMethod ? "entryMethod " : ""
+          }${!date ? "date " : ""}${!total_hours ? "total_hours " : ""}${
+            !activities ? "activities" : ""
+          }`,
+        },
         { status: 400 }
       );
     }
@@ -48,7 +54,7 @@ export async function POST(request: NextRequest) {
         missionary_id: missionary.id,
         period_start_date: periodStartDate,
         entry_method: entryMethod,
-        total_hours: Number(totalHours),
+        total_hours: Number(total_hours),
         activities: activities, // This is the JSONB field
         location: location || null,
       })
