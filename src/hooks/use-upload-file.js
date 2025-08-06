@@ -4,7 +4,12 @@ export function useUploadFile() {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const uploadToS3 = async (file) => {
+  /**
+   * Uploads a file to S3, optionally into a folder (prefix).
+   * @param {File} file - The file to upload
+   * @param {string} [folder] - Optional folder/prefix for S3 key
+   */
+  const uploadToS3 = async (file, folder = "") => {
     if (!file) {
       console.error("No file selected");
       return null;
@@ -23,6 +28,13 @@ export function useUploadFile() {
     setUploading(true);
     setProgress(0);
 
+    // Prepend folder to filename if provided
+    let s3Filename = file.name;
+    if (folder) {
+      // Ensure folder ends with /
+      s3Filename = `${folder.replace(/\/$/, "")}/${file.name}`;
+    }
+
     try {
       console.log("Fetching presigned URL...");
       const response = await fetch("/api/database/media/s3/getPresignedUrl", {
@@ -31,7 +43,7 @@ export function useUploadFile() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          filename: file.name,
+          filename: s3Filename,
           contentType: file.type,
           originalFilename: file.name,
         }),

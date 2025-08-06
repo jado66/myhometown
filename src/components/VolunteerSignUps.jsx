@@ -36,7 +36,7 @@ export const VolunteerSignUps = ({
   toggleDaysOfServiceVisibiltity,
   onClose,
 }) => {
-  const [isEditingValues, setEditingValues] = useState(false);
+  const [isEditingValues, setEditingValues] = useState(isEdit);
   const [rawIframeCode, setRawIframeCode] = useState("");
   const [error, setError] = useState("");
   const toggleEditing = () => setEditingValues((p) => !p);

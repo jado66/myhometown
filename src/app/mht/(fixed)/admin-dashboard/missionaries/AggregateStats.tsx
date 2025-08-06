@@ -1,19 +1,32 @@
+"use client";
+
 import React, { useMemo } from "react";
 import {
   Grid,
   Card,
   CardContent,
   Typography,
-  Box,
   Avatar,
+  Box,
 } from "@mui/material";
 import {
   Group as GroupIcon,
+  CheckCircle as CheckCircleIcon,
   Business as BusinessIcon,
   LocationCity as LocationCityIcon,
 } from "@mui/icons-material";
 
-const AggregateStats = ({ missionaries }) => {
+interface Missionary {
+  id: string;
+  assignment_status: "active" | "inactive" | "pending";
+  assignment_level?: "state" | "city" | "community";
+}
+
+interface AggregateStatsProps {
+  missionaries: Missionary[];
+}
+
+export function AggregateStats({ missionaries }: AggregateStatsProps) {
   const stats = useMemo(() => {
     const active = missionaries.filter(
       (m) => m.assignment_status === "active"
@@ -22,9 +35,13 @@ const AggregateStats = ({ missionaries }) => {
       const level = m.assignment_level || "unassigned";
       acc[level] = (acc[level] || 0) + 1;
       return acc;
-    }, {});
+    }, {} as Record<string, number>);
 
-    return { total: missionaries.length, active, byLevel };
+    return {
+      total: missionaries.length,
+      active,
+      byLevel,
+    };
   }, [missionaries]);
 
   return (
@@ -65,14 +82,7 @@ const AggregateStats = ({ missionaries }) => {
                 bgcolor: "success.main",
               }}
             >
-              <Box
-                sx={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: "50%",
-                  bgcolor: "success.light",
-                }}
-              />
+              <CheckCircleIcon />
             </Avatar>
             <Typography variant="h4" color="success.main" fontWeight="bold">
               {stats.active}
@@ -133,6 +143,4 @@ const AggregateStats = ({ missionaries }) => {
       </Grid>
     </Grid>
   );
-};
-
-export { AggregateStats };
+}

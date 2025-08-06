@@ -132,6 +132,8 @@ const Page = ({ params }) => {
     setSelectedImage(null);
   };
 
+  const isShowVolunteerSection = community.isVolunteerSectionVisible === true;
+
   const BreadcrumbSection = () => {
     return (
       <Breadcrumbs
@@ -402,111 +404,59 @@ const Page = ({ params }) => {
             shiftDownSubclass={alertNotEdit}
           />
         </LoadedClassesProvider>
-        <Divider sx={{ my: 5 }} />
 
-        {community?.signUpFormId && (
-          <div>
-            {!showSignUp ? (
-              <Grid
-                item
-                xs={6}
-                mt={4}
-                sx={{ mx: "auto" }}
-                display="flex"
-                flexDirection="column"
-                id="volunteer"
-              >
-                <Button
-                  variant="contained"
-                  onClick={() => setShowSignup(true)}
-                  sx={{ mx: "auto", mb: 2, borderRadius: "8px" }}
-                  size="large"
-                  fullWidth
-                >
-                  <Typography variant="h5">Become A Volunteer</Typography>
-                </Button>
-                <Typography
-                  variant="body"
-                  sx={{ fontSize: "larger", textAlign: "center" }}
-                >
-                  Want to volunteer? Click here. We would love to have you as
-                  part of the family.
-                </Typography>
-              </Grid>
-            ) : (
-              <>
-                <VolunteerSignUps
-                  volunteerHeaderText={community.volunteerHeaderText}
-                  volunteerHeaderImage={community.volunteerHeaderImage}
-                  setVolunteerHeaderText={alertNotEdit}
-                  signUpFormId={community.signUpFormId}
-                  setSignUpFormId={alertNotEdit}
-                  onClose={() => setShowSignup(false)}
-                  sx={{ backgroundColor: "#1b75bc !important;" }}
-                />
-              </>
+        {isShowVolunteerSection && (
+          <>
+            <Divider sx={{ my: 5 }} />
+
+            {community?.signUpFormId && (
+              <div>
+                {!showSignUp ? (
+                  <Grid
+                    item
+                    xs={6}
+                    mt={4}
+                    sx={{ mx: "auto" }}
+                    display="flex"
+                    flexDirection="column"
+                    id="volunteer"
+                  >
+                    <Button
+                      variant="contained"
+                      onClick={() => setShowSignup(true)}
+                      sx={{ mx: "auto", mb: 2, borderRadius: "8px" }}
+                      size="large"
+                      fullWidth
+                    >
+                      <Typography variant="h5">Become A Volunteer</Typography>
+                    </Button>
+                    <Typography
+                      variant="body"
+                      sx={{ fontSize: "larger", textAlign: "center" }}
+                    >
+                      Want to volunteer? Click here. We would love to have you
+                      as part of the family.
+                    </Typography>
+                  </Grid>
+                ) : (
+                  <>
+                    <VolunteerSignUps
+                      volunteerHeaderText={community.volunteerHeaderText}
+                      volunteerHeaderImage={community.volunteerHeaderImage}
+                      setVolunteerHeaderText={alertNotEdit}
+                      signUpFormId={community.signUpFormId}
+                      setSignUpFormId={alertNotEdit}
+                      onClose={() => setShowSignup(false)}
+                      sx={{ backgroundColor: "#1b75bc !important;" }}
+                    />
+                  </>
+                )}
+              </div>
             )}
-          </div>
+          </>
         )}
         <Divider sx={{ my: 5 }} />
       </Container>
-    </>
-  );
-};
-
-const ImageDescriptionBlock = () => {
-  return (
-    <>
-      <Grid
-        item
-        xs={12}
-        sm={6}
-        sx={{ padding: 4, display: "flex", flexDirection: "column" }}
-      >
-        <Typography variant="body1" sx={{ color: "black", fontSize: "larger" }}>
-          At myHometown, we revitalize aging neighborhoods by refurbishing homes
-          and buildings, renewing landscapes, and adding new educational
-          opportunities through Community Resource Centers.
-        </Typography>
-        <Divider sx={{ my: 3 }} />
-        <Typography variant="body1" sx={{ color: "black", fontSize: "larger" }}>
-          We lift the lives of residents and attract individuals and families
-          who want to move in, stay and contribute to the long-term viability of
-          the community.
-        </Typography>
-      </Grid>
-
-      <Grid item xs={12} sm={6} sx={{ padding: 4, pt: { xs: 0, sm: 4 } }}>
-        <Grid
-          item
-          xs={12}
-          sx={{
-            backgroundColor: "grey",
-            height: "350px",
-            overflow: "hidden",
-            position: "relative",
-            boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
-            borderRadius: 3,
-          }}
-        >
-          <Box
-            component="img"
-            src="https://myhometown-bucket.s3.us-west-1.amazonaws.com/MHT+landing+page+photos/Photos+1/IMG_0246.jpeg"
-            alt="Mental Health"
-            // Lazy load the image
-            sx={{
-              borderRadius: 3,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover", // Ensures the image covers the entire area
-              position: "absolute",
-              objectPosition: "center", // Centers the image horizontally
-              top: "0",
-              left: "0px",
-            }}
-          />
-        </Grid>
-      </Grid>
     </>
   );
 };

@@ -27,7 +27,7 @@ import { useHandleEvents } from "@/hooks/use-handle-events";
 import { communityTemplate } from "@/constants/templates/communityTemplate";
 import PhotoGallery from "@/components/PhotoGallery";
 import { useUser } from "@/hooks/use-user";
-import { Edit, Info, VisibilityOff } from "@mui/icons-material";
+import { Edit, Close, VisibilityOff, Visibility } from "@mui/icons-material";
 import UploadImage from "@/components/util/UploadImage";
 import { StatsCounter } from "@/components/StatsCounter";
 import { v4 as uuidv4 } from "uuid";
@@ -819,6 +819,13 @@ const Page = ({ params }) => {
     toast.success("Marketing item deleted successfully.");
   };
 
+  const toggleVolunteerSectionVisibility = (newState) => {
+    setCommunityData((prevState) => ({
+      ...prevState,
+      isVolunteerSectionVisible: newState,
+    }));
+  };
+
   const CategorySelectOptions = communityData?.classes?.map((category) => ({
     value: category.id,
     label: category.title,
@@ -856,6 +863,10 @@ const Page = ({ params }) => {
       </div>
     );
   }
+
+  const isHideVolunteerSection =
+    typeof communityData?.isVolunteerSectionVisible !== "undefined" &&
+    communityData?.isVolunteerSectionVisible === true;
 
   return (
     <>
@@ -1209,166 +1220,184 @@ const Page = ({ params }) => {
           />
         </LoadedClassesProvider>
         <Divider sx={{ my: 5 }} />
-
-        <div style={{ position: "relative" }}>
-          <Box
-            sx={{
-              position: { md: "absolute" },
-              top: 0,
-              right: 3,
-              mr: 3,
-              mt: { md: 0, xs: 2 },
-              gap: 2,
-            }}
-          >
+        {!isHideVolunteerSection ? (
+          <Grid item md={12} sx={{ justifyContent: "center", display: "flex" }}>
             <Button
               variant="outlined"
-              onClick={() => setIsEditVolunteerForm(!isEditVolunteerForm)}
-              startIcon={<Edit />}
-              sx={{ mr: 1 }}
+              onClick={() => toggleVolunteerSectionVisibility(true)}
+              startIcon={<Visibility />}
             >
-              Edit Form
+              Show Volunteer Section
             </Button>
-
-            <Button
-              variant="outlined"
-              onClick={() => setIsEditVolunteerForm(!isEditVolunteerForm)}
-              startIcon={<VisibilityOff />}
-            >
-              Hide Section
-            </Button>
-          </Box>
-
-          {isEditVolunteerForm ? (
-            <Grid
-              item
-              xs={6}
-              mt={4}
-              sx={{ mx: "auto" }}
-              display="flex"
-              flexDirection="column"
-              id="volunteer"
-            >
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ mx: "auto", mb: 2, borderRadius: "8px", mt: 2, p: 0 }}
-                size="large"
-                fullWidth
-              >
-                <TextField
-                  variant="standard"
-                  value={
-                    communityData.becomeVolunteerButtonText !== undefined
-                      ? communityData.becomeVolunteerButtonText
-                      : "Become A Volunteer"
-                  }
-                  onChange={(e) =>
-                    setCommunityData({
-                      ...communityData,
-                      becomeVolunteerButtonText: e.target.value,
-                    })
-                  }
-                  placeholder="Volunteer Button Text"
-                  fullWidth
-                  InputProps={{
-                    disableUnderline: true,
-                    sx: {
-                      fontSize: "2rem",
-                      textAlign: "center",
-                      color: (theme) => theme.palette.primary.contrastText,
-                      textTransform: "capitalize",
-                      display: "flex",
-                      justifyContent: "center",
-                      background: "transparent",
-                      "& .Mui-focused": {
-                        backgroundColor: "#f0f0f0",
-                        borderRadius: "4px",
-                      },
-                    },
-                  }}
-                  sx={{
-                    fontFamily: "inherit",
-                    fontSize: "2rem",
-                    border: "none",
-                    margin: 0,
-                    padding: 0,
-                    textAlign: "center",
-                    background: "transparent",
-                    "& .MuiInputBase-input": {
-                      textAlign: "center",
-                      background: "transparent",
-                      color: (theme) => theme.palette.primary.contrastText,
-                    },
-                    "& .MuiInput-underline:before": {
-                      borderBottom: "none",
-                    },
-                    "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-                      borderBottom: "none",
-                    },
-                    "& .MuiInput-underline:after": {
-                      borderBottom: "none",
-                    },
-                  }}
-                  inputProps={{ style: { textAlign: "center" } }}
-                />
-              </Button>
-              <TextField
-                variant="standard"
-                value={
-                  communityData.volunteerHelperText ||
-                  "Want to volunteer? Click here. We would love to have you as part of the myHometown family."
-                }
-                onChange={(e) =>
-                  setCommunityData({
-                    ...communityData,
-                    volunteerHelperText: e.target.value,
-                  })
-                }
-                fullWidth
-                InputProps={{
-                  disableUnderline: true,
-                  sx: {
-                    fontSize: "larger",
-                    textAlign: "center",
-                  },
-                }}
+          </Grid>
+        ) : (
+          <>
+            <div style={{ position: "relative" }}>
+              <Box
                 sx={{
-                  fontFamily: "inherit",
-                  fontSize: "larger",
-                  border: "none",
-                  margin: 0,
-                  padding: "10px 16px",
-                  textAlign: "center",
-                  "& .MuiInputBase-input": {
-                    textAlign: "center",
-                  },
-                  "& .MuiInput-underline:before": {
-                    borderBottom: "none",
-                  },
-                  "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-                    borderBottom: "none",
-                  },
-                  "& .MuiInput-underline:after": {
-                    borderBottom: "none",
-                  },
+                  position: { md: "absolute" },
+                  top: 0,
+                  right: 0,
+                  zIndex: 9999,
+                  mr: 0,
+                  mt: { md: 0, xs: 2 },
+                  gap: 2,
                 }}
-                inputProps={{ style: { textAlign: "center" } }}
-              />
-            </Grid>
-          ) : (
-            <VolunteerSignUps
-              isEdit
-              volunteerHeaderText={communityData.volunteerHeaderText}
-              volunteerHeaderImage={communityData.volunteerHeaderImage}
-              setVolunteerHeaderText={handleVolunteerSignUpHeaderChange}
-              setVolunteerHeaderImage={handleVolunteerSignUpHeaderImageChange}
-              signUpFormId={communityData.signUpFormId}
-              setSignUpFormId={handleSignUpFormIdChange}
-              onClose={() => {}}
-            />
-          )}
-        </div>
+              >
+                <Button
+                  variant="outlined"
+                  onClick={() => setIsEditVolunteerForm(!isEditVolunteerForm)}
+                  startIcon={!isEditVolunteerForm ? <Close /> : <Edit />}
+                  sx={{ mr: 1 }}
+                >
+                  {!isEditVolunteerForm ? "Close" : "Edit"}
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  onClick={() => toggleVolunteerSectionVisibility(false)}
+                  startIcon={<VisibilityOff />}
+                >
+                  Hide Section
+                </Button>
+              </Box>
+
+              {isEditVolunteerForm ? (
+                <Grid
+                  item
+                  xs={8}
+                  mt={4}
+                  sx={{ mx: "auto" }}
+                  display="flex"
+                  flexDirection="column"
+                  id="volunteer"
+                >
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ mx: "auto", mb: 2, borderRadius: "8px", mt: 2, p: 0 }}
+                    size="large"
+                    fullWidth
+                  >
+                    <TextField
+                      variant="standard"
+                      value={
+                        communityData.becomeVolunteerButtonText !== undefined
+                          ? communityData.becomeVolunteerButtonText
+                          : "Become A Volunteer"
+                      }
+                      onChange={(e) =>
+                        setCommunityData({
+                          ...communityData,
+                          becomeVolunteerButtonText: e.target.value,
+                        })
+                      }
+                      placeholder="Volunteer Button Text"
+                      fullWidth
+                      InputProps={{
+                        disableUnderline: true,
+                        sx: {
+                          fontSize: "2rem",
+                          textAlign: "center",
+                          color: (theme) => theme.palette.primary.contrastText,
+                          textTransform: "capitalize",
+                          display: "flex",
+                          justifyContent: "center",
+                          background: "transparent",
+                          "& .Mui-focused": {
+                            backgroundColor: "#f0f0f0",
+                            borderRadius: "4px",
+                          },
+                        },
+                      }}
+                      sx={{
+                        fontFamily: "inherit",
+                        fontSize: "2rem",
+                        border: "none",
+                        margin: 0,
+                        padding: 0,
+                        textAlign: "center",
+                        background: "transparent",
+                        "& .MuiInputBase-input": {
+                          textAlign: "center",
+                          background: "transparent",
+                          color: (theme) => theme.palette.primary.contrastText,
+                        },
+                        "& .MuiInput-underline:before": {
+                          borderBottom: "none",
+                        },
+                        "& .MuiInput-underline:hover:not(.Mui-disabled):before":
+                          {
+                            borderBottom: "none",
+                          },
+                        "& .MuiInput-underline:after": {
+                          borderBottom: "none",
+                        },
+                      }}
+                      inputProps={{ style: { textAlign: "center" } }}
+                    />
+                  </Button>
+                  <TextField
+                    variant="standard"
+                    value={
+                      communityData.volunteerHelperText ||
+                      "Want to volunteer? Click here. We would love to have you as part of the myHometown family."
+                    }
+                    onChange={(e) =>
+                      setCommunityData({
+                        ...communityData,
+                        volunteerHelperText: e.target.value,
+                      })
+                    }
+                    multiline
+                    fullWidth
+                    InputProps={{
+                      disableUnderline: true,
+                      sx: {
+                        fontSize: "larger",
+                        textAlign: "center",
+                      },
+                    }}
+                    sx={{
+                      fontFamily: "inherit",
+                      fontSize: "larger",
+                      border: "none",
+                      margin: 0,
+                      padding: "10px 16px",
+                      textAlign: "center",
+                      "& .MuiInputBase-input": {
+                        textAlign: "center",
+                      },
+                      "& .MuiInput-underline:before": {
+                        borderBottom: "none",
+                      },
+                      "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+                        borderBottom: "none",
+                      },
+                      "& .MuiInput-underline:after": {
+                        borderBottom: "none",
+                      },
+                    }}
+                    inputProps={{ style: { textAlign: "center" } }}
+                  />
+                </Grid>
+              ) : (
+                <VolunteerSignUps
+                  isEdit
+                  volunteerHeaderText={communityData.volunteerHeaderText}
+                  volunteerHeaderImage={communityData.volunteerHeaderImage}
+                  setVolunteerHeaderText={handleVolunteerSignUpHeaderChange}
+                  setVolunteerHeaderImage={
+                    handleVolunteerSignUpHeaderImageChange
+                  }
+                  signUpFormId={communityData.signUpFormId}
+                  setSignUpFormId={handleSignUpFormIdChange}
+                  onClose={() => {}}
+                />
+              )}
+            </div>
+          </>
+        )}
       </Container>
     </>
   );
