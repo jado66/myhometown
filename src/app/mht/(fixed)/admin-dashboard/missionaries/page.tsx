@@ -12,8 +12,13 @@ import {
   Paper,
   Tabs,
   Tab,
+  Alert,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 import { Add, Schedule, Person, Download, Upload } from "@mui/icons-material";
+import ImportMissionaryCsvHelpDialog from "@/components/missionaries/ImportMissionaryCsvHelpDialog";
 import { SearchAndFilter } from "./SearchAndFilter";
 import { MissionaryCard } from "./MissionaryCard";
 import { HoursOverview } from "./HoursOverview";
@@ -22,6 +27,7 @@ import { AggregateStats } from "./AggregateStats";
 import { useUser } from "@/contexts/UserProvider";
 import useManageCities from "@/hooks/use-manage-cities";
 import { useCommunities } from "@/hooks/use-communities";
+import { MissionaryDialog } from "./MissionaryDialog";
 
 // Mock data types
 interface Missionary {
@@ -30,8 +36,8 @@ interface Missionary {
   last_name: string;
   email: string;
   contact_number?: string;
-  assignment_status: "active" | "inactive" | "pending";
-  assignment_level?: "state" | "city" | "community";
+  assignment_status: "Active";
+  assignment_level?: "State" | "City" | "Community";
   city_id?: string;
   community_id?: string;
   group?: string;
@@ -84,6 +90,193 @@ export default function MissionaryManagement() {
   const { cities } = useManageCities(user);
   const { communities } = useCommunities(user);
   const [tabValue, setTabValue] = useState(0);
+
+  // Dialog state
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedMissionary, setSelectedMissionary] = useState<
+    Missionary | undefined
+  >(undefined);
+  // Bulk import dialog state
+  const [bulkImportOpen, setBulkImportOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importResults, setImportResults] = useState<{
+    valid: any[];
+    errors: string[];
+  }>({ valid: [], errors: [] });
+  // CSV parsing and validation logic
+  function parseCsv(text: string) {
+    // Simple CSV parser (no quoted fields)
+    const lines = text.split(/\r?\n/).filter(Boolean);
+    if (lines.length < 2) return { header: [], rows: [] };
+    const header = lines[0].split(",").map((h) => h.trim());
+    const rows = lines.slice(1).map((line) => {
+      const values = line.split(",");
+      const obj: any = {};
+      header.forEach((h, i) => {
+        obj[h] = values[i] ? values[i].trim() : "";
+      });
+      return obj;
+    });
+    return { header, rows };
+  }
+
+  function validateAndMapRows(
+    rows: any[],
+    cities: City[],
+    communities: Community[]
+  ) {
+    const errors: string[] = [];
+    const valid: any[] = [];
+    const emailSet = new Set<string>();
+    rows.forEach((row, idx) => {
+      const rowNum = idx + 2; // 1-based, +1 for header
+      // Required fields
+      const first_name = row["First Name"] || "";
+      const last_name = row["Last Name"] || "";
+      const email = row["Email"] || "";
+      const assignment_status = (row["Status"] || "").toLowerCase();
+      const assignment_level = (row["Assignment Level"] || "").toLowerCase();
+      const cityName = row["City"] || "";
+      const communityName = row["Community"] || "";
+      // Validate required fields
+      if (!first_name) errors.push(`Row ${rowNum}: First Name is required.`);
+      if (!last_name) errors.push(`Row ${rowNum}: Last Name is required.`);
+      if (!email) errors.push(`Row ${rowNum}: Email is required.`);
+      if (email && emailSet.has(email))
+        errors.push(`Row ${rowNum}: Duplicate email '${email}'.`);
+      if (email) emailSet.add(email);
+      if (
+        !assignment_status ||
+        !["active", "inactive", "pending"].includes(assignment_status)
+      ) {
+        errors.push(
+          `Row ${rowNum}: Status must be one of active, inactive, pending.`
+        );
+      }
+      if (
+        !assignment_level ||
+        !["state", "city", "community"].includes(assignment_level)
+      ) {
+        errors.push(
+          `Row ${rowNum}: Assignment Level must be one of state, city, community.`
+        );
+      }
+      // Assignment logic
+      let city_id = null,
+        community_id = null;
+      if (assignment_level === "city") {
+        if (!cityName)
+          errors.push(
+            `Row ${rowNum}: City is required for Assignment Level 'city'.`
+          );
+        const city = cities.find(
+          (c) => c.name.toLowerCase() === cityName.toLowerCase()
+        );
+        if (!city) errors.push(`Row ${rowNum}: City '${cityName}' not found.`);
+        else city_id = city.id;
+        if (communityName)
+          errors.push(
+            `Row ${rowNum}: Community must be blank for Assignment Level 'city'.`
+          );
+      } else if (assignment_level === "community") {
+        if (!communityName)
+          errors.push(
+            `Row ${rowNum}: Community is required for Assignment Level 'community'.`
+          );
+        const community = communities.find(
+          (c) => c.name.toLowerCase() === communityName.toLowerCase()
+        );
+        if (!community)
+          errors.push(`Row ${rowNum}: Community '${communityName}' not found.`);
+        else community_id = community.id;
+        if (cityName)
+          errors.push(
+            `Row ${rowNum}: City must be blank for Assignment Level 'community'.`
+          );
+      } else if (assignment_level === "state") {
+        if (cityName)
+          errors.push(
+            `Row ${rowNum}: City must be blank for Assignment Level 'state'.`
+          );
+        if (communityName)
+          errors.push(
+            `Row ${rowNum}: Community must be blank for Assignment Level 'state'.`
+          );
+      }
+      // If no errors for this row, map to DB fields
+      if (
+        errors.length === 0 ||
+        errors.filter((e) => e.startsWith(`Row ${rowNum}:`)).length === 0
+      ) {
+        valid.push({
+          first_name,
+          last_name,
+          email,
+          contact_number: row["Phone"] || "",
+          assignment_status,
+          assignment_level,
+          city_id,
+          community_id,
+          group: row["Group"] || "",
+          title: row["Title"] || "",
+          start_date: row["Start Date"] || "",
+          notes: row["Notes"] || "",
+        });
+      }
+    });
+    return { valid, errors };
+  }
+
+  // Handler for missionary CSV import
+  const handleImportMissionaryCsv = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0] || null;
+    setImportFile(file);
+    setImportError(null);
+    setImportResults({ valid: [], errors: [] });
+    if (!file) return;
+    const text = await file.text();
+    const { header, rows } = parseCsv(text);
+    if (!header.length || !rows.length) {
+      setImportError("CSV file is empty or invalid.");
+      return;
+    }
+    const results = validateAndMapRows(rows, cities, communities);
+    setImportResults(results);
+    if (results.errors.length > 0) {
+      setImportError("Some rows have errors. Please fix them and re-upload.");
+    } else {
+      setImportError(null);
+    }
+  };
+  // Handler to actually submit valid missionaries to the API
+  const handleBulkImportSubmit = async () => {
+    if (!importResults.valid.length) return;
+    setImporting(true);
+    try {
+      // You may want to POST to your API endpoint in bulk, or one by one
+      // Here, we'll do one by one for simplicity
+      for (const missionary of importResults.valid) {
+        await fetch("/api/database/missionaries", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(missionary),
+        });
+      }
+      await fetchMissionaries();
+      setBulkImportOpen(false);
+      setImportFile(null);
+      setImportResults({ valid: [], errors: [] });
+      setImportError(null);
+    } catch (err) {
+      setImportError("Error importing missionaries. Please try again.");
+    } finally {
+      setImporting(false);
+    }
+  };
 
   // Single source of truth for filters
   const [filters, setFilters] = useState<FilterState>({
@@ -177,8 +370,36 @@ export default function MissionaryManagement() {
     console.log("Exporting CSV with data:", data);
   };
 
+  // Open dialog for add or edit
   const handleOpenDialog = (missionary?: Missionary) => {
-    console.log("Opening dialog for missionary:", missionary);
+    setSelectedMissionary(missionary);
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setSelectedMissionary(undefined);
+  };
+
+  // Save handler for dialog
+  const handleSaveMissionary = async (formData: any) => {
+    // If editing, update; if adding, create
+    try {
+      const method = selectedMissionary ? "PUT" : "POST";
+      const url = selectedMissionary
+        ? `/api/database/missionaries/${selectedMissionary.id}`
+        : "/api/database/missionaries";
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (!response.ok) throw new Error("Failed to save missionary");
+      await fetchMissionaries();
+      handleCloseDialog();
+    } catch (err) {
+      alert("Error saving missionary");
+    }
   };
 
   const handleDeleteMissionary = (missionary: Missionary) => {
@@ -204,7 +425,7 @@ export default function MissionaryManagement() {
               <Button
                 variant="outlined"
                 startIcon={<Upload />}
-                onClick={() => console.log("Bulk import")}
+                onClick={() => setBulkImportOpen(true)}
               >
                 Bulk Import
               </Button>
@@ -215,9 +436,20 @@ export default function MissionaryManagement() {
               >
                 Export CSV
               </Button>
-              <Button variant="outlined" startIcon={<Schedule />}>
-                Bulk Hours
-              </Button>
+              {/* Removed Bulk Hours button */}
+              {/* Bulk Import Dialog */}
+              <ImportMissionaryCsvHelpDialog
+                open={bulkImportOpen}
+                onClose={() => {
+                  setBulkImportOpen(false);
+                  setImportFile(null);
+                  setImportError(null);
+                  setImportResults({ valid: [], errors: [] });
+                }}
+                handleImport={handleImportMissionaryCsv}
+              />
+              {/* Show import results/errors below dialog */}
+
               <Button
                 variant="contained"
                 startIcon={<Add />}
@@ -225,6 +457,16 @@ export default function MissionaryManagement() {
               >
                 Add Missionary
               </Button>
+              {/* Missionary Dialog */}
+              <MissionaryDialog
+                open={dialogOpen}
+                onClose={handleCloseDialog}
+                onSave={handleSaveMissionary}
+                missionary={selectedMissionary}
+                cities={cities}
+                communities={communities}
+                user={user}
+              />
             </Box>
           </Toolbar>
         </AppBar>
