@@ -1,4 +1,3 @@
-// components/missionary-dialog.tsx
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -6,38 +5,18 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  TextField,
-  Grid,
-  Typography,
-  FormControl,
-  InputLabel,
-  FormLabel,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  Select,
-  MenuItem,
   IconButton,
+  Typography,
   Box,
-  Card,
-  Tooltip,
-  Avatar,
-  CircularProgress,
+  Grid,
 } from "@mui/material";
-import {
-  Close as CloseIcon,
-  Save as SaveIcon,
-  Business as BusinessIcon,
-  LocationCity as LocationCityIcon,
-  Group as GroupIcon,
-  CloudUpload as CloudUploadIcon,
-  Person as PersonIcon,
-} from "@mui/icons-material";
-import ReactSelect from "react-select";
-// import JsonViewer from "@/components/util/debug/DebugOutput"; // Commented out as it's not provided
-import InfoIcon from "@mui/icons-material/Info";
+import CloseIcon from "@mui/icons-material/Close";
+import SaveIcon from "@mui/icons-material/Save";
 import ImageCropperDialog from "./ImageCropperDialog";
 import { useImageUpload } from "@/hooks/use-upload-webp";
+import MissionaryAssignmentSection from "./MissionaryAssignmentSection";
+import MissionaryPersonalInfoSection from "./MissionaryPersonalInfoSection";
+import MissionaryNotesSection from "./MissionaryNotesSection";
 
 // Title positions organized by level and group
 const POSITIONS_BY_LEVEL = {
@@ -105,6 +84,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
   user = {},
 }) => {
   const [formData, setFormData] = useState({
+    person_type: "missionary",
     email: "",
     first_name: "",
     last_name: "",
@@ -118,10 +98,15 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
     group: "",
     title: "",
     start_date: "",
-    call_date: "",
+    start_date: "",
     duration: "",
     stake_name: "",
     gender: "female",
+    // Address fields
+    street_address: "",
+    address_city: "",
+    address_state: "",
+    zip_code: "",
   });
 
   const isAdmin = user?.permissions?.administrator || false;
@@ -139,6 +124,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
   useEffect(() => {
     if (missionary) {
       setFormData({
+        person_type: missionary.person_type || "missionary",
         email: missionary.email || "",
         first_name: missionary.first_name || "",
         last_name: missionary.last_name || "",
@@ -152,16 +138,18 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
         group: missionary.group || "",
         title: missionary.title || "",
         start_date: missionary.start_date || "",
-        call_date: missionary.call_date || "",
         duration: missionary.duration || "",
         stake_name: missionary.stake_name || "",
         gender: missionary.gender || "female",
+        street_address: missionary.street_address || "",
+        address_city: missionary.address_city || "",
+        address_state: missionary.address_state || "",
+        zip_code: missionary.zip_code || "",
       });
     }
   }, [missionary]);
 
   // Get available cities based on permissions
-  // Use _id for MongoDB style, fallback to id if needed
   const getAvailableCities = () => {
     if (isAdmin) return cities;
     if (!user?.cities || user.cities.length === 0) return [];
@@ -171,7 +159,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
   // Get available communities based on permissions and selected city
   const getAvailableCommunities = () => {
     let availableCommunities = communities;
-    // Filter by selected city (match by city name if city_id is Mongo style)
+
     if (formData.city_id) {
       const selectedCity = cities.find(
         (city) => (city._id || city.id) === formData.city_id
@@ -182,12 +170,13 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
         );
       }
     }
-    // Filter by permissions
+
     if (!isAdmin && user?.communities && user.communities.length > 0) {
       availableCommunities = availableCommunities.filter((comm) =>
         user.communities!.includes(comm._id || comm.id)
       );
     }
+
     return availableCommunities;
   };
 
@@ -225,6 +214,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
         state: city.state,
       });
     });
+
     return Object.entries(grouped).map(([state, cities]) => ({
       label: state,
       options: cities,
@@ -245,10 +235,19 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
         state: comm.state,
       });
     });
+
     return Object.entries(grouped).map(([city, communities]) => ({
       label: city,
       options: communities,
     }));
+  };
+
+  const handlePersonTypeChange = (type: string) => {
+    setFormData({
+      ...formData,
+      person_type: type,
+      stake_name: type === "volunteer" ? "" : formData.stake_name,
+    });
   };
 
   const handleAssignmentLevelChange = (level: string) => {
@@ -280,7 +279,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Clear location fields based on assignment level
+
     const submitData = { ...formData };
     if (submitData.assignment_level === "state") {
       submitData.city_id = "";
@@ -288,10 +287,16 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
     } else if (submitData.assignment_level === "city") {
       submitData.community_id = "";
     }
+
+    // For volunteers, clear stake_name
+    if (submitData.person_type === "volunteer") {
+      submitData.stake_name = "";
+    }
+
     onSave(submitData);
   };
 
-  const calculateReleaseDate = (startDate: string, duration: string) => {
+  const calculateEndDate = (startDate: string, duration: string) => {
     if (!startDate || !duration) return "";
     const start = new Date(startDate);
     const monthsToAddMatch = duration.match(/\d+/);
@@ -302,27 +307,6 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
     }
     return "";
   };
-
-  const levelCards = [
-    {
-      value: "state",
-      icon: BusinessIcon,
-      title: "State Assignment",
-      desc: "Utah state-wide assignments",
-    },
-    {
-      value: "city",
-      icon: LocationCityIcon,
-      title: "City Assignment",
-      desc: "City-specific assignments",
-    },
-    {
-      value: "community",
-      icon: GroupIcon,
-      title: "Community Assignment",
-      desc: "Community assignments",
-    },
-  ];
 
   // Handle file selection for cropping
   const handleFileSelectForCrop = (
@@ -346,8 +330,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
     setImageToCrop(null);
   };
 
-  if (!open) return null;
-
+  // Handle file selection for cropping
   return (
     <>
       <Dialog
@@ -355,541 +338,58 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
         onClose={onClose}
         maxWidth="xl"
         fullWidth
-        PaperProps={{
-          sx: { maxHeight: "90vh" },
-        }}
+        PaperProps={{ sx: { maxHeight: "90vh" } }}
       >
         <DialogTitle
           sx={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            pb: 1,
           }}
         >
           <Typography variant="h6">
-            {missionary ? "Edit Missionary" : "Add New Missionary"}
+            {missionary
+              ? "Edit Volunteer or Missionary"
+              : "Add New Volunteer or Missionary"}
           </Typography>
           <IconButton onClick={onClose} edge="end">
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <DialogContent dividers>
+        <DialogContent dividers sx={{ py: 2 }}>
           <Box component="form" onSubmit={handleSubmit}>
-            {/* Assignment Level Selection */}
-            <Typography variant="h6" gutterBottom>
-              Assignment
-            </Typography>
-            <Grid container spacing={2} sx={{ mb: 3 }}>
-              {levelCards.map(({ value, icon: Icon, title, desc }) => (
-                <Grid item xs={12} md={4} key={value}>
-                  <Card
-                    elevation={formData.assignment_level === value ? 3 : 1}
-                    sx={{
-                      p: 2,
-                      cursor: "pointer",
-                      border:
-                        formData.assignment_level === value
-                          ? "2px solid"
-                          : "1px solid",
-                      borderColor:
-                        formData.assignment_level === value
-                          ? "primary.main"
-                          : "divider",
-                      backgroundColor:
-                        formData.assignment_level === value
-                          ? "primary.50"
-                          : "background.paper",
-                      "&:hover": {
-                        borderColor:
-                          formData.assignment_level === value
-                            ? "primary.main"
-                            : "primary.light",
-                      },
-                    }}
-                    onClick={() => handleAssignmentLevelChange(value)}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "flex-start",
-                        gap: 1.5,
-                      }}
-                    >
-                      <Icon
-                        sx={{
-                          color:
-                            formData.assignment_level === value
-                              ? "primary.main"
-                              : "text.secondary",
-                          fontSize: 24,
-                        }}
-                      />
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight="bold">
-                          {title}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {desc}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-            {/* Location & Position Selection Inline */}
-            {(formData.assignment_level === "city" ||
-              formData.assignment_level === "community") && (
-              <Grid container spacing={2} sx={{ mb: 3 }}>
-                {formData.assignment_level === "city" && (
-                  <Grid item xs={12} md={6}>
-                    <ReactSelect
-                      options={getCityOptions()}
-                      value={(() => {
-                        const selected = getAvailableCities().find(
-                          (city) => (city._id || city.id) === formData.city_id
-                        );
-                        return selected
-                          ? {
-                              value: selected._id || selected.id,
-                              label: `${selected.name}, ${selected.state}`,
-                              city: selected.name,
-                              state: selected.state,
-                            }
-                          : null;
-                      })()}
-                      onChange={(option) =>
-                        setFormData({
-                          ...formData,
-                          city_id: option ? option.value : "",
-                        })
-                      }
-                      isClearable
-                      placeholder="Select a city..."
-                      styles={{
-                        control: (base: any) => ({
-                          ...base,
-                          minHeight: "56px",
-                        }),
-                        menu: (base: any) => ({
-                          ...base,
-                          zIndex: 13000,
-                          position: "absolute",
-                        }),
-                        menuPortal: (base: any) => ({ ...base, zIndex: 13000 }),
-                      }}
-                      menuPortalTarget={document.body}
-                      menuPosition="absolute"
-                      menuShouldBlockScroll={true}
-                    />
-                  </Grid>
-                )}
-                {formData.assignment_level === "community" && (
-                  <Grid item xs={12} md={6}>
-                    <ReactSelect
-                      options={getCommunityOptions()}
-                      value={(() => {
-                        const selected = getAvailableCommunities().find(
-                          (comm) =>
-                            (comm._id || comm.id) === formData.community_id
-                        );
-                        return selected
-                          ? {
-                              value: selected._id || selected.id,
-                              label: `${selected.name} (${selected.city}, ${selected.state})`,
-                              city: selected.city,
-                              state: selected.state,
-                            }
-                          : null;
-                      })()}
-                      onChange={(option) =>
-                        setFormData({
-                          ...formData,
-                          community_id: option ? option.value : "",
-                        })
-                      }
-                      isClearable
-                      placeholder="Select a community..."
-                      styles={{
-                        control: (base: any) => ({
-                          ...base,
-                          minHeight: "56px",
-                        }),
-                        menu: (base: any) => ({
-                          ...base,
-                          zIndex: 13000,
-                          position: "absolute",
-                        }),
-                        menuPortal: (base: any) => ({ ...base, zIndex: 13000 }),
-                      }}
-                      menuPortalTarget={document.body}
-                      menuPosition="absolute"
-                      menuShouldBlockScroll={true}
-                    />
-                  </Grid>
-                )}
-                {/* Position Assignment Inline */}
-                <Grid item xs={12} md={6}>
-                  <ReactSelect
-                    options={getTitleOptions()}
-                    value={
-                      formData.title
-                        ? {
-                            value: formData.title,
-                            label: formData.title,
-                            group: formData.group,
-                          }
-                        : null
-                    }
-                    onChange={handleTitleChange}
-                    isClearable
-                    placeholder="Select a title..."
-                    styles={{
-                      control: (base: any) => ({
-                        ...base,
-                        minHeight: "56px",
-                      }),
-                      menu: (base: any) => ({
-                        ...base,
-                        zIndex: 13000,
-                        position: "absolute",
-                      }),
-                      menuPortal: (base: any) => ({
-                        ...base,
-                        zIndex: 13000,
-                      }),
-                    }}
-                    menuPortalTarget={document.body}
-                    menuPosition="absolute"
-                    menuShouldBlockScroll={true}
-                  />
-                </Grid>
-              </Grid>
-            )}
-            {/* Position Assignment for State Level */}
-            {formData.assignment_level === "state" && (
-              <>
-                <Grid container spacing={2} sx={{ mb: 3 }}>
-                  <Grid item xs={12}>
-                    <ReactSelect
-                      options={getTitleOptions()}
-                      value={
-                        formData.title
-                          ? {
-                              value: formData.title,
-                              label: formData.title,
-                              group: formData.group,
-                            }
-                          : null
-                      }
-                      onChange={handleTitleChange}
-                      isClearable
-                      placeholder="Select a title..."
-                      styles={{
-                        control: (base: any) => ({
-                          ...base,
-                          minHeight: "56px",
-                        }),
-                        menu: (base: any) => ({
-                          ...base,
-                          zIndex: 13000,
-                          position: "absolute",
-                        }),
-                        menuPortal: (base: any) => ({
-                          ...base,
-                          zIndex: 13000,
-                        }),
-                      }}
-                      menuPortalTarget={document.body}
-                      menuPosition="absolute"
-                      menuShouldBlockScroll={true}
-                    />
-                  </Grid>
-                </Grid>
-              </>
-            )}
-            {/* Basic Information */}
-            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-              Basic Information
-            </Typography>
-            <Grid container spacing={2}>
-              {/* Profile Picture Upload Section */}
-              <Grid item xs={12} sm={3}>
-                <Box
-                  sx={{ mb: 3, display: "flex", alignItems: "center", gap: 3 }}
-                >
-                  <Avatar
-                    src={formData.profile_picture_url}
-                    sx={{
-                      width: 100,
-                      height: 100,
-                      bgcolor: formData.profile_picture_url
-                        ? "transparent"
-                        : "grey.300",
-                    }}
-                  >
-                    {!formData.profile_picture_url && (
-                      <PersonIcon sx={{ fontSize: 40 }} />
-                    )}
-                  </Avatar>
-                  <Box>
-                    <input
-                      accept="image/*"
-                      style={{ display: "none" }}
-                      id="profile-picture-upload"
-                      type="file"
-                      onChange={handleFileSelectForCrop} // Changed to open cropper
-                      disabled={uploadLoading}
-                    />
-                    <label htmlFor="profile-picture-upload">
-                      <Button
-                        variant="outlined"
-                        component="span"
-                        startIcon={
-                          uploadLoading ? (
-                            <CircularProgress size={20} />
-                          ) : (
-                            <CloudUploadIcon />
-                          )
-                        }
-                        disabled={uploadLoading}
-                        sx={{ mb: 1 }}
-                      >
-                        {uploadLoading ? "Uploading..." : "Upload Photo"}
-                      </Button>
-                    </label>
-
-                    {formData.profile_picture_url && (
-                      <Button
-                        size="small"
-                        color="error"
-                        onClick={() =>
-                          setFormData({ ...formData, profile_picture_url: "" })
-                        }
-                        sx={{ mt: 1 }}
-                      >
-                        Remove Photo
-                      </Button>
-                    )}
-                  </Box>
-                </Box>
-              </Grid>
-              <Grid item xs={12} sm={9} gap={2} container>
-                <Grid item xs={12} sm={3.5}>
-                  <TextField
-                    label="First Name"
-                    required
-                    fullWidth
-                    sx={{ mt: 0 }}
-                    value={formData.first_name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, first_name: e.target.value })
-                    }
-                    margin="normal"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={3.5}>
-                  <TextField
-                    label="Last Name"
-                    required
-                    sx={{ mt: 0 }}
-                    fullWidth
-                    value={formData.last_name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, last_name: e.target.value })
-                    }
-                    margin="normal"
-                  />
-                </Grid>
-                <Grid
-                  item
-                  xs={12}
-                  sm={4}
-                  sx={{
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 2,
-                    mt: 0,
-                    minWidth: 250,
-                    maxWidth: 400,
-                  }}
-                >
-                  <FormControl
-                    component="fieldset"
-                    sx={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      width: "100%",
-                      height: "56px",
-                      alignSelf: "baseline",
-                      border: "1px solid #ccc",
-                      borderRadius: "4px",
-                      flexGrow: 1,
-                    }}
-                  >
-                    <FormLabel
-                      id="gender-radio-buttons-group-label"
-                      sx={{
-                        ml: "14px",
-                        color: "text.secondary",
-                        fontSize: "16",
-                        marginRight: 2,
-                        whiteSpace: "nowrap",
-                        flexShrink: 0,
-                      }}
-                    >
-                      Gender *
-                    </FormLabel>
-                    <RadioGroup
-                      row
-                      aria-labelledby="gender-radio-buttons-group-label"
-                      name="gender-row-radio-buttons-group"
-                      value={formData.gender}
-                      onChange={(e) =>
-                        setFormData({ ...formData, gender: e.target.value })
-                      }
-                      sx={{ flexGrow: 1, justifyContent: "flex-end" }}
-                    >
-                      <FormControlLabel
-                        value="female"
-                        control={<Radio size="small" />}
-                        label="Female"
-                      />
-                      <FormControlLabel
-                        value="male"
-                        control={<Radio size="small" />}
-                        label="Male"
-                      />
-                    </RadioGroup>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={3.5} sx={{ mt: 0 }}>
-                  <TextField
-                    label="Email"
-                    type="email"
-                    required
-                    sx={{ mt: 0 }}
-                    fullWidth
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    margin="normal"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={3.5}>
-                  <TextField
-                    label="Phone Number"
-                    type="tel"
-                    fullWidth
-                    required
-                    sx={{ mt: 0 }}
-                    value={formData.contact_number}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        contact_number: e.target.value,
-                      })
-                    }
-                    margin="normal"
-                  />
-                </Grid>
-              </Grid>
-            </Grid>
-            {/* Assignment Information */}
-            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-              Assignment Information
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={3}>
-                <TextField
-                  label="Name of Stake"
-                  type="text"
-                  fullWidth
-                  value={formData.stake_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, stake_name: e.target.value })
-                  }
-                  margin="normal"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  helperText="Missionary's home stake"
+            <Grid container spacing={4}>
+              <Grid item xs={12} md={6}>
+                <MissionaryAssignmentSection
+                  formData={formData}
+                  setFormData={setFormData}
+                  getCityOptions={getCityOptions}
+                  getAvailableCities={getAvailableCities}
+                  getCommunityOptions={getCommunityOptions}
+                  getAvailableCommunities={getAvailableCommunities}
+                  getTitleOptions={getTitleOptions}
+                  handlePersonTypeChange={handlePersonTypeChange}
+                  handleAssignmentLevelChange={handleAssignmentLevelChange}
+                  handleTitleChange={handleTitleChange}
+                  calculateEndDate={calculateEndDate}
                 />
               </Grid>
-              <Grid item xs={12} sm={2}>
-                <TextField
-                  label="Call Date"
-                  type="date"
-                  fullWidth
-                  value={formData.call_date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, call_date: e.target.value })
-                  }
-                  margin="normal"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={2}>
-                <FormControl fullWidth margin="normal" sx={{ mt: 2 }}>
-                  <InputLabel id="assignment-duration">Duration</InputLabel>
-                  <Select
-                    label="Duration"
-                    fullWidth
-                    value={formData.duration}
-                    onChange={(e) =>
-                      setFormData({ ...formData, duration: e.target.value })
-                    }
-                  >
-                    <MenuItem value="6 months">6 months</MenuItem>
-                    <MenuItem value="12 months">12 months</MenuItem>
-                    <MenuItem value="18 months">18 months</MenuItem>
-                    <MenuItem value="24 months">24 months</MenuItem>
-                    <MenuItem value="36 months">36 months</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={2}>
-                <TextField
-                  label="Release Date (Calculated)"
-                  type="date"
-                  InputProps={{ readOnly: true }}
-                  fullWidth
-                  value={calculateReleaseDate(
-                    formData.call_date,
-                    formData.duration
-                  )}
-                  sx={{
-                    mt: 2,
-                    "& .MuiInputBase-input": {
-                      color: "text.primary",
-                    },
-                  }}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
+              <Grid item xs={12} md={6}>
+                <MissionaryPersonalInfoSection
+                  formData={formData}
+                  setFormData={setFormData}
+                  uploadLoading={uploadLoading}
+                  handleFileSelectForCrop={handleFileSelectForCrop}
                 />
               </Grid>
             </Grid>
-            {/* Notes */}
-            <Typography variant="h6" gutterBottom sx={{ mt: 3, mb: 2 }}>
-              Notes
-            </Typography>
-            <TextField
-              label="Notes"
-              multiline
-              rows={3}
-              fullWidth
-              value={formData.notes}
-              onChange={(e) =>
-                setFormData({ ...formData, notes: e.target.value })
-              }
-              placeholder="Additional notes about this missionary's service..."
-              margin="normal"
-            />
+            <Grid item xs={12}>
+              <MissionaryNotesSection
+                formData={formData}
+                setFormData={setFormData}
+              />
+            </Grid>
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
@@ -907,8 +407,6 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Image Cropper Dialog */}
       <ImageCropperDialog
         open={cropperOpen}
         imageSrc={imageToCrop}

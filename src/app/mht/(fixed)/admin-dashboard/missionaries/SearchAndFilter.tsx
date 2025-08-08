@@ -30,6 +30,7 @@ import {
   Business,
   LocationCity,
   Group,
+  Schedule,
 } from "@mui/icons-material";
 
 interface FilterState {
@@ -38,6 +39,8 @@ interface FilterState {
   assignmentLevel: "all" | "state" | "city" | "community";
   selectedCityId: string | null;
   selectedCommunityId: string | null;
+  personType: "all" | "missionary" | "volunteer";
+  upcomingReleaseDays?: 30 | 60 | 90;
 }
 
 interface City {
@@ -60,6 +63,7 @@ interface UnifiedSearchFilterProps {
   cities: City[];
   communities: Community[];
   resultCount: number;
+  showUpcomingReleaseFilter?: boolean;
 }
 
 export function SearchAndFilter({
@@ -68,22 +72,21 @@ export function SearchAndFilter({
   cities,
   communities,
   resultCount,
+  showUpcomingReleaseFilter = false,
 }: UnifiedSearchFilterProps) {
   const [expanded, setExpanded] = useState(false);
+
   const updateFilter = (key: keyof FilterState, value: any) => {
     const newFilters = { ...filters, [key]: value };
-
     // Reset dependent filters when assignment level changes
     if (key === "assignmentLevel") {
       newFilters.selectedCityId = null;
       newFilters.selectedCommunityId = null;
     }
-
     // Reset community when city changes
     if (key === "selectedCityId") {
       newFilters.selectedCommunityId = null;
     }
-
     onFiltersChange(newFilters);
   };
 
@@ -94,6 +97,8 @@ export function SearchAndFilter({
       assignmentLevel: "all",
       selectedCityId: null,
       selectedCommunityId: null,
+      personType: "all",
+      ...(showUpcomingReleaseFilter && { upcomingReleaseDays: 90 }),
     });
   };
 
@@ -113,6 +118,8 @@ export function SearchAndFilter({
     if (filters.assignmentLevel !== "all") count++;
     if (filters.selectedCityId) count++;
     if (filters.selectedCommunityId) count++;
+    if (filters.personType !== "all") count++;
+    if (showUpcomingReleaseFilter && filters.upcomingReleaseDays) count++;
     return count;
   };
 
@@ -154,7 +161,7 @@ export function SearchAndFilter({
       <AccordionDetails>
         {/* Search and Status Row */}
         <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={6}>
             <TextField
               fullWidth
               label="Search missionaries..."
@@ -169,7 +176,7 @@ export function SearchAndFilter({
               }}
             />
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={3}>
             <FormControl fullWidth>
               <InputLabel>Status Filter</InputLabel>
               <Select
@@ -184,7 +191,98 @@ export function SearchAndFilter({
               </Select>
             </FormControl>
           </Grid>
+          <Grid item xs={12} md={3}>
+            <FormControl fullWidth>
+              <InputLabel>Person Type</InputLabel>
+              <Select
+                value={filters.personType}
+                label="Person Type"
+                onChange={(e) => updateFilter("personType", e.target.value)}
+              >
+                <MenuItem value="all">All Types</MenuItem>
+                <MenuItem value="missionary">Only Missionaries</MenuItem>
+                <MenuItem value="volunteer">Only Volunteers</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
         </Grid>
+
+        {/* Upcoming Release Filter - Only show on Upcoming Releases tab */}
+        {showUpcomingReleaseFilter && (
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              <Schedule sx={{ mr: 1, verticalAlign: "middle" }} />
+              Release Timeline
+            </Typography>
+            <RadioGroup
+              value={filters.upcomingReleaseDays || 90}
+              onChange={(e) =>
+                updateFilter("upcomingReleaseDays", parseInt(e.target.value))
+              }
+              row
+            >
+              <Grid container spacing={2}>
+                {[
+                  {
+                    value: 30,
+                    label: "Within 30 Days",
+                    description: "Releases in the next month",
+                    color: "#f44336",
+                  },
+                  {
+                    value: 60,
+                    label: "Within 60 Days",
+                    description: "Releases in the next 2 months",
+                    color: "#ff9800",
+                  },
+                  {
+                    value: 90,
+                    label: "Within 90 Days",
+                    description: "Releases in the next 3 months",
+                    color: "#4caf50",
+                  },
+                ].map((option) => {
+                  const isSelected =
+                    (filters.upcomingReleaseDays || 90) === option.value;
+                  return (
+                    <Grid item xs={12} md={4} key={option.value}>
+                      <Card
+                        sx={{
+                          p: 2,
+                          cursor: "pointer",
+                          border: 2,
+                          borderColor: isSelected ? option.color : "grey.300",
+                          "&:hover": { borderColor: option.color },
+                        }}
+                        onClick={() =>
+                          updateFilter("upcomingReleaseDays", option.value)
+                        }
+                      >
+                        <FormControlLabel
+                          value={option.value}
+                          control={<Radio sx={{ color: option.color }} />}
+                          label={
+                            <Box>
+                              <Typography variant="subtitle1" fontWeight="bold">
+                                {option.label}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                {option.description}
+                              </Typography>
+                            </Box>
+                          }
+                        />
+                      </Card>
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            </RadioGroup>
+          </Box>
+        )}
 
         {/* Assignment Level Selection */}
         <Box sx={{ mb: 3 }}>
@@ -299,7 +397,6 @@ export function SearchAndFilter({
                 </Select>
               </FormControl>
             </Grid>
-
             {filters.assignmentLevel === "community" &&
               filters.selectedCityId && (
                 <Grid item xs={12} md={6}>
@@ -347,10 +444,11 @@ export function SearchAndFilter({
               flexWrap: "wrap",
             }}
           >
-            {/* If there are active filters */}
             {(filters.searchTerm ||
               filters.statusFilter !== "all" ||
-              filters.assignmentLevel !== "all") && (
+              filters.assignmentLevel !== "all" ||
+              filters.personType !== "all" ||
+              (showUpcomingReleaseFilter && filters.upcomingReleaseDays)) && (
               <Typography variant="body2" color="text.secondary">
                 Active filters:
               </Typography>
@@ -359,7 +457,6 @@ export function SearchAndFilter({
               <Chip
                 label={`Search: "${filters.searchTerm}"`}
                 size="small"
-                sx={{ textTransform: "capitalize" }}
                 onDelete={() => updateFilter("searchTerm", "")}
                 variant="outlined"
               />
@@ -379,6 +476,23 @@ export function SearchAndFilter({
                 size="small"
                 sx={{ textTransform: "capitalize" }}
                 onDelete={() => updateFilter("assignmentLevel", "all")}
+                variant="outlined"
+              />
+            )}
+            {filters.personType !== "all" && (
+              <Chip
+                label={`Type: ${filters.personType}`}
+                size="small"
+                sx={{ textTransform: "capitalize" }}
+                onDelete={() => updateFilter("personType", "all")}
+                variant="outlined"
+              />
+            )}
+            {showUpcomingReleaseFilter && filters.upcomingReleaseDays && (
+              <Chip
+                label={`Within ${filters.upcomingReleaseDays} days`}
+                size="small"
+                onDelete={() => updateFilter("upcomingReleaseDays", undefined)}
                 variant="outlined"
               />
             )}

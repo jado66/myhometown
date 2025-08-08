@@ -7,8 +7,8 @@ export const light = {
   mode: "light",
   primary: {
     main: "#318D43",
-    light: "#2196f3",
-    dark: "#0d47a1",
+    light: "#4fb163",
+    dark: "#196127",
     contrastText: "#fff",
   },
   secondary: {

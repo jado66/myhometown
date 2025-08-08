@@ -52,7 +52,7 @@ const FIELD_MAPPINGS = [
   { field: "group", label: "Group", required: false },
   { field: "title", label: "Title", required: false },
   { field: "stake_name", label: "Stake Name", required: false },
-  { field: "call_date", label: "Call Date", required: false },
+  { field: "start_date", label: "Call Date", required: false },
   { field: "duration", label: "Duration", required: false },
   { field: "notes", label: "Notes", required: false },
 ];
@@ -75,7 +75,9 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
   const [activeStep, setActiveStep] = useState(0);
   const [csvData, setCsvData] = useState<any[]>([]);
   const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
-  const [fieldMappings, setFieldMappings] = useState<Record<string, string>>({});
+  const [fieldMappings, setFieldMappings] = useState<Record<string, string>>(
+    {}
+  );
   const [previewData, setPreviewData] = useState<any[]>([]);
   const [importing, setImporting] = useState(false);
   const [importResults, setImportResults] = useState<{
@@ -110,7 +112,9 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
     const mappings: Record<string, string> = {};
     FIELD_MAPPINGS.forEach(({ field }) => {
       const matchingHeader = headers.find(
-        (h) => h.toLowerCase().replace(/[_\s]/g, "") === field.toLowerCase().replace(/[_\s]/g, "")
+        (h) =>
+          h.toLowerCase().replace(/[_\s]/g, "") ===
+          field.toLowerCase().replace(/[_\s]/g, "")
       );
       if (matchingHeader) {
         mappings[field] = matchingHeader;
@@ -145,7 +149,8 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
 
       if (missionary.community_name) {
         const community = communities.find(
-          (c) => c.name.toLowerCase() === missionary.community_name.toLowerCase()
+          (c) =>
+            c.name.toLowerCase() === missionary.community_name.toLowerCase()
         );
         missionary.community_id = community ? community._id : "";
       }
@@ -185,7 +190,8 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
 
       if (missionary.community_name) {
         const community = communities.find(
-          (c) => c.name.toLowerCase() === missionary.community_name.toLowerCase()
+          (c) =>
+            c.name.toLowerCase() === missionary.community_name.toLowerCase()
         );
         missionary.community_id = community ? community._id : "";
         delete missionary.community_name;
@@ -225,7 +231,7 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
       "group",
       "title",
       "stake_name",
-      "call_date",
+      "start_date",
       "duration",
       "notes",
     ];
@@ -282,7 +288,8 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="body1" gutterBottom>
-                  Upload a CSV file containing missionary information. The file should include:
+                  Upload a CSV file containing missionary information. The file
+                  should include:
                 </Typography>
                 <Box sx={{ mt: 2, mb: 2 }}>
                   {FIELD_MAPPINGS.filter((f) => f.required).map((field) => (
@@ -318,7 +325,9 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
               }}
               onClick={() => fileInputRef.current?.click()}
             >
-              <CloudUpload sx={{ fontSize: 48, color: "primary.main", mb: 2 }} />
+              <CloudUpload
+                sx={{ fontSize: 48, color: "primary.main", mb: 2 }}
+              />
               <Typography variant="h6" gutterBottom>
                 Click to upload CSV file
               </Typography>
@@ -340,7 +349,8 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
         {activeStep === 1 && (
           <Box>
             <Alert severity="info" sx={{ mb: 3 }}>
-              Map your CSV columns to the missionary fields. Required fields are marked with *.
+              Map your CSV columns to the missionary fields. Required fields are
+              marked with *.
             </Alert>
 
             <Grid container spacing={2}>
@@ -352,7 +362,9 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
                     </InputLabel>
                     <Select
                       value={fieldMappings[field] || ""}
-                      onChange={(e) => handleMappingChange(field, e.target.value)}
+                      onChange={(e) =>
+                        handleMappingChange(field, e.target.value)
+                      }
                       label={`${label} ${required ? "*" : ""}`}
                     >
                       <MenuItem value="">
@@ -373,7 +385,11 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
               <Button
                 variant="contained"
                 onClick={generatePreview}
-                disabled={!FIELD_MAPPINGS.filter((f) => f.required).every((f) => fieldMappings[f.field])}
+                disabled={
+                  !FIELD_MAPPINGS.filter((f) => f.required).every(
+                    (f) => fieldMappings[f.field]
+                  )
+                }
               >
                 Continue to Preview
               </Button>
@@ -385,7 +401,8 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
         {activeStep === 2 && (
           <Box>
             <Alert severity="info" sx={{ mb: 3 }}>
-              Preview of first 5 records. Total records to import: {csvData.length}
+              Preview of first 5 records. Total records to import:{" "}
+              {csvData.length}
             </Alert>
 
             <TableContainer component={Paper}>
@@ -412,7 +429,8 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
                       </TableCell>
                       <TableCell>
                         {missionary.city_id
-                          ? cities.find((c) => c._id === missionary.city_id)?.name
+                          ? cities.find((c) => c._id === missionary.city_id)
+                              ?.name
                           : "State Level"}
                       </TableCell>
                     </TableRow>
@@ -421,7 +439,9 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
               </Table>
             </TableContainer>
 
-            <Box sx={{ mt: 3, display: "flex", justifyContent: "space-between" }}>
+            <Box
+              sx={{ mt: 3, display: "flex", justifyContent: "space-between" }}
+            >
               <Button onClick={() => setActiveStep(1)}>Back</Button>
               <Button
                 variant="contained"
@@ -443,7 +463,9 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
             <Box sx={{ textAlign: "center", py: 4 }}>
               {importResults.failed === 0 ? (
                 <>
-                  <CheckCircle sx={{ fontSize: 64, color: "success.main", mb: 2 }} />
+                  <CheckCircle
+                    sx={{ fontSize: 64, color: "success.main", mb: 2 }}
+                  />
                   <Typography variant="h5" gutterBottom>
                     Import Successful!
                   </Typography>
@@ -453,7 +475,9 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
                 </>
               ) : (
                 <>
-                  <ErrorIcon sx={{ fontSize: 64, color: "error.main", mb: 2 }} />
+                  <ErrorIcon
+                    sx={{ fontSize: 64, color: "error.main", mb: 2 }}
+                  />
                   <Typography variant="h5" gutterBottom>
                     Import Failed
                   </Typography>
@@ -464,7 +488,9 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
               )}
             </Box>
 
-            <Box sx={{ mt: 4, display: "flex", justifyContent: "center", gap: 2 }}>
+            <Box
+              sx={{ mt: 4, display: "flex", justifyContent: "center", gap: 2 }}
+            >
               <Button variant="outlined" onClick={reset}>
                 Import Another File
               </Button>

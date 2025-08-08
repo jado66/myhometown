@@ -1,6 +1,6 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
+import Loading from "@/components/util/Loading";
 import {
   Box,
   Container,
@@ -16,11 +16,25 @@ import {
   List,
   ListItem,
   ListItemText,
+  ToggleButton,
+  ToggleButtonGroup,
+  Divider,
 } from "@mui/material";
-import { Add, Schedule, Person, Download, Upload } from "@mui/icons-material";
+import {
+  Add,
+  Schedule,
+  Person,
+  Download,
+  Upload,
+  ViewModule,
+  ViewList,
+  BarChart,
+  Group,
+} from "@mui/icons-material";
 import ImportMissionaryCsvHelpDialog from "@/components/missionaries/ImportMissionaryCsvHelpDialog";
 import { SearchAndFilter } from "./SearchAndFilter";
 import { MissionaryCard } from "./MissionaryCard";
+import { MissionaryListView } from "./MissionaryListView";
 import { HoursOverview } from "./HoursOverview";
 import { useMissionaryHours } from "@/hooks/use-missionary-hours";
 import { AggregateStats } from "./AggregateStats";
@@ -28,6 +42,8 @@ import { useUser } from "@/contexts/UserProvider";
 import useManageCities from "@/hooks/use-manage-cities";
 import { useCommunities } from "@/hooks/use-communities";
 import { MissionaryDialog } from "./MissionaryDialog";
+import { UpcomingReleases } from "./UpcomingReleases";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 // Mock data types
 interface Missionary {
@@ -83,19 +99,38 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
+type ViewMode = "card" | "list";
+
 // Back to:
 export default function MissionaryManagement() {
-  const [missionaries, setMissionaries] = useState<Missionary[]>([]);
+  const [missionaries, setMissionaries] = useState<Missionary[] | null>(null);
   const { user } = useUser();
   const { cities } = useManageCities(user);
   const { communities } = useCommunities(user);
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useLocalStorage("missionary-tab-value", 0);
+
+  // View mode state with localStorage persistence
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("missionary-view-mode");
+      return (saved as ViewMode) || "card";
+    }
+    return "card";
+  });
+
+  // Save view mode to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("missionary-view-mode", viewMode);
+    }
+  }, [viewMode]);
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMissionary, setSelectedMissionary] = useState<
     Missionary | undefined
   >(undefined);
+
   // Bulk import dialog state
   const [bulkImportOpen, setBulkImportOpen] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
@@ -105,6 +140,7 @@ export default function MissionaryManagement() {
     valid: any[];
     errors: string[];
   }>({ valid: [], errors: [] });
+
   // CSV parsing and validation logic
   function parseCsv(text: string) {
     // Simple CSV parser (no quoted fields)
@@ -130,8 +166,10 @@ export default function MissionaryManagement() {
     const errors: string[] = [];
     const valid: any[] = [];
     const emailSet = new Set<string>();
+
     rows.forEach((row, idx) => {
       const rowNum = idx + 2; // 1-based, +1 for header
+
       // Required fields
       const first_name = row["First Name"] || "";
       const last_name = row["Last Name"] || "";
@@ -140,6 +178,7 @@ export default function MissionaryManagement() {
       const assignment_level = (row["Assignment Level"] || "").toLowerCase();
       const cityName = row["City"] || "";
       const communityName = row["Community"] || "";
+
       // Validate required fields
       if (!first_name) errors.push(`Row ${rowNum}: First Name is required.`);
       if (!last_name) errors.push(`Row ${rowNum}: Last Name is required.`);
@@ -147,6 +186,7 @@ export default function MissionaryManagement() {
       if (email && emailSet.has(email))
         errors.push(`Row ${rowNum}: Duplicate email '${email}'.`);
       if (email) emailSet.add(email);
+
       if (
         !assignment_status ||
         !["active", "inactive", "pending"].includes(assignment_status)
@@ -155,6 +195,7 @@ export default function MissionaryManagement() {
           `Row ${rowNum}: Status must be one of active, inactive, pending.`
         );
       }
+
       if (
         !assignment_level ||
         !["state", "city", "community"].includes(assignment_level)
@@ -163,6 +204,7 @@ export default function MissionaryManagement() {
           `Row ${rowNum}: Assignment Level must be one of state, city, community.`
         );
       }
+
       // Assignment logic
       let city_id = null,
         community_id = null;
@@ -205,6 +247,7 @@ export default function MissionaryManagement() {
             `Row ${rowNum}: Community must be blank for Assignment Level 'state'.`
           );
       }
+
       // If no errors for this row, map to DB fields
       if (
         errors.length === 0 ||
@@ -226,6 +269,7 @@ export default function MissionaryManagement() {
         });
       }
     });
+
     return { valid, errors };
   }
 
@@ -237,24 +281,31 @@ export default function MissionaryManagement() {
     setImportFile(file);
     setImportError(null);
     setImportResults({ valid: [], errors: [] });
+
     if (!file) return;
+
     const text = await file.text();
     const { header, rows } = parseCsv(text);
+
     if (!header.length || !rows.length) {
       setImportError("CSV file is empty or invalid.");
       return;
     }
+
     const results = validateAndMapRows(rows, cities, communities);
     setImportResults(results);
+
     if (results.errors.length > 0) {
       setImportError("Some rows have errors. Please fix them and re-upload.");
     } else {
       setImportError(null);
     }
   };
+
   // Handler to actually submit valid missionaries to the API
   const handleBulkImportSubmit = async () => {
     if (!importResults.valid.length) return;
+
     setImporting(true);
     try {
       // You may want to POST to your API endpoint in bulk, or one by one
@@ -266,6 +317,7 @@ export default function MissionaryManagement() {
           body: JSON.stringify(missionary),
         });
       }
+
       await fetchMissionaries();
       setBulkImportOpen(false);
       setImportFile(null);
@@ -308,11 +360,12 @@ export default function MissionaryManagement() {
       const data = await response.json();
       setMissionaries(data.missionaries || []);
     } catch (error) {
+      setMissionaries([]); // fallback to empty array on error
       console.error("Error fetching missionaries:", error);
     }
   };
 
-  const filteredMissionaries = missionaries.filter((missionary) => {
+  const filteredMissionaries = (missionaries || []).filter((missionary) => {
     const matchesSearch =
       missionary.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       missionary.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -366,12 +419,12 @@ export default function MissionaryManagement() {
       "Start Date": m.start_date || "",
       Notes: m.notes || "",
     }));
-
     console.log("Exporting CSV with data:", data);
   };
 
   // Open dialog for add or edit
   const handleOpenDialog = (missionary?: Missionary) => {
+    console.log(JSON.stringify(missionary, null, 2));
     setSelectedMissionary(missionary);
     setDialogOpen(true);
   };
@@ -385,16 +438,21 @@ export default function MissionaryManagement() {
   const handleSaveMissionary = async (formData: any) => {
     // If editing, update; if adding, create
     try {
-      const method = selectedMissionary ? "PUT" : "POST";
-      const url = selectedMissionary
-        ? `/api/database/missionaries/${selectedMissionary.id}`
-        : "/api/database/missionaries";
+      let method = "POST";
+      let url = "/api/database/missionaries";
+      if (selectedMissionary && selectedMissionary.id) {
+        method = "PATCH";
+        url = `/api/database/missionaries?id=${selectedMissionary.id}`;
+      }
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
+
       if (!response.ok) throw new Error("Failed to save missionary");
+
       await fetchMissionaries();
       handleCloseDialog();
     } catch (err) {
@@ -405,6 +463,33 @@ export default function MissionaryManagement() {
   const handleDeleteMissionary = (missionary: Missionary) => {
     console.log("Deleting missionary:", missionary);
   };
+
+  const handleViewModeChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newViewMode: ViewMode | null
+  ) => {
+    if (newViewMode !== null) {
+      setViewMode(newViewMode);
+    }
+  };
+
+  // Show loading until all data is loaded
+  const isLoading = missionaries === null || !cities || !communities;
+
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "60vh",
+        }}
+      >
+        <Loading />
+      </Box>
+    );
+  }
 
   return (
     <Grid container item sm={12} display="flex">
@@ -421,7 +506,7 @@ export default function MissionaryManagement() {
                 Manage contacts, assignments, and service records
               </Typography>
             </Box>
-            <Box sx={{ display: "flex", gap: 2 }}>
+            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
               <Button
                 variant="outlined"
                 startIcon={<Upload />}
@@ -436,7 +521,7 @@ export default function MissionaryManagement() {
               >
                 Export CSV
               </Button>
-              {/* Removed Bulk Hours button */}
+
               {/* Bulk Import Dialog */}
               <ImportMissionaryCsvHelpDialog
                 open={bulkImportOpen}
@@ -448,7 +533,6 @@ export default function MissionaryManagement() {
                 }}
                 handleImport={handleImportMissionaryCsv}
               />
-              {/* Show import results/errors below dialog */}
 
               <Button
                 variant="contained"
@@ -457,6 +541,7 @@ export default function MissionaryManagement() {
               >
                 Add Missionary
               </Button>
+
               {/* Missionary Dialog */}
               <MissionaryDialog
                 open={dialogOpen}
@@ -489,26 +574,71 @@ export default function MissionaryManagement() {
             >
               <Tab label="Missionary Table" />
               <Tab label="Hours Overview" />
+              <Tab label="Upcoming Releases" />
             </Tabs>
 
             <TabPanel value={tabValue} index={0}>
               {/* Aggregate Stats - Only shown on management tab */}
               <AggregateStats missionaries={filteredMissionaries} />
+              <Divider sx={{ my: 3 }} />
 
-              {/* Missionary Cards */}
-              <Grid container spacing={3}>
-                {filteredMissionaries.map((missionary) => (
-                  <Grid item xs={12} lg={6} key={missionary.id}>
-                    <MissionaryCard
-                      missionary={missionary}
-                      cities={cities}
-                      communities={communities}
-                      onEdit={handleOpenDialog}
-                      onDelete={handleDeleteMissionary}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  mb: 3,
+                  justifyContent: "space-between",
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  color="text.primary"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <Group sx={{ mr: 1 }} />
+                  Missionaries
+                </Typography>
+                <ToggleButtonGroup
+                  value={viewMode}
+                  exclusive
+                  onChange={handleViewModeChange}
+                  size="small"
+                >
+                  <ToggleButton value="card" aria-label="card view">
+                    <ViewModule sx={{ mr: 1 }} />
+                    Cards
+                  </ToggleButton>
+                  <ToggleButton value="list" aria-label="list view">
+                    <ViewList sx={{ mr: 1 }} />
+                    List
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
+
+              {/* Missionary Cards or List */}
+              {viewMode === "card" ? (
+                <Grid container spacing={3}>
+                  {filteredMissionaries.map((missionary) => (
+                    <Grid item xs={12} lg={6} key={missionary.id}>
+                      <MissionaryCard
+                        missionary={missionary}
+                        cities={cities}
+                        communities={communities}
+                        onEdit={handleOpenDialog}
+                        onDelete={handleDeleteMissionary}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              ) : (
+                <MissionaryListView
+                  missionaries={filteredMissionaries}
+                  cities={cities}
+                  communities={communities}
+                  onEdit={handleOpenDialog}
+                  onDelete={handleDeleteMissionary}
+                />
+              )}
 
               {filteredMissionaries.length === 0 && (
                 <Paper sx={{ p: 4, textAlign: "center", mt: 3 }}>
@@ -530,6 +660,18 @@ export default function MissionaryManagement() {
                 missionaries={filteredMissionaries}
                 filters={filters}
                 hours={hours}
+              />
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={2}>
+              <UpcomingReleases
+                missionaries={filteredMissionaries}
+                cities={cities}
+                communities={communities}
+                viewMode={viewMode}
+                onViewModeChange={handleViewModeChange}
+                onEdit={handleOpenDialog}
+                onDelete={handleDeleteMissionary}
               />
             </TabPanel>
           </Paper>

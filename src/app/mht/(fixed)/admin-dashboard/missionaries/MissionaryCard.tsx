@@ -9,6 +9,16 @@ import {
   Avatar,
   Menu,
   MenuItem,
+  Stack,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
+  Divider,
+  Popover,
+  Tooltip,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -17,8 +27,10 @@ import {
   Email as EmailIcon,
   LocationOn as LocationOnIcon,
   CalendarToday as CalendarTodayIcon,
-  Person as PersonIcon,
   MoreVert as MoreVertIcon,
+  Info as InfoIcon,
+  Close as CloseIcon,
+  StickyNote2 as NoteIcon,
 } from "@mui/icons-material";
 
 interface MissionaryCardProps {
@@ -27,7 +39,32 @@ interface MissionaryCardProps {
   communities: any[];
   onEdit: (missionary: any) => void;
   onDelete: (missionary: any) => void;
+  isUpcomingView?: boolean;
 }
+
+// Helper component for icon + text combinations
+const IconText: React.FC<{
+  icon: React.ReactNode;
+  text: string;
+  variant?: "body2" | "caption";
+  sx?: any;
+}> = ({ icon, text, variant = "body2", sx }) => (
+  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, ...sx }}>
+    {React.cloneElement(icon as React.ReactElement, {
+      sx: {
+        fontSize: variant === "caption" ? 14 : 16,
+        color: "text.secondary",
+      },
+    })}
+    <Typography
+      variant={variant}
+      color={variant === "caption" ? "text.secondary" : "inherit"}
+      noWrap
+    >
+      {text}
+    </Typography>
+  </Box>
+);
 
 export const MissionaryCard: React.FC<MissionaryCardProps> = ({
   missionary,
@@ -35,26 +72,47 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
   communities,
   onEdit,
   onDelete,
+  isUpcomingView = false,
 }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [detailsOpen, setDetailsOpen] = React.useState(false);
+  const [noteAnchorEl, setNoteAnchorEl] = React.useState<null | HTMLElement>(
+    null
+  );
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+  // Utility functions
+  const getReleaseDate = () => {
+    if (!missionary.start_date || !missionary.duration) return null;
+    const monthsMatch = missionary.duration.match(/(\d+)/);
+    if (!monthsMatch) return null;
+    const months = parseInt(monthsMatch[1], 10);
+    if (isNaN(months)) return null;
+    const start = new Date(missionary.start_date);
+    start.setMonth(start.getMonth() + months);
+    return start.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
+  const getDaysLeft = () => {
+    if (!missionary.end_date) return null;
+    const end = new Date(missionary.end_date);
+    const now = new Date();
+    const diffTime = end.getTime() - now.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
   const getLocationDisplay = () => {
-    if (missionary.assignment_level === "state") {
-      return "Utah State";
-    } else if (missionary.assignment_level === "city") {
+    if (missionary.assignment_level === "state") return "myHometown Utah";
+    if (missionary.assignment_level === "city") {
       const city = cities.find(
         (c) => c._id === missionary.city_id || c.id === missionary.city_id
       );
       return city ? `${city.name}, ${city.state}` : "Unknown City";
-    } else if (missionary.assignment_level === "community") {
+    }
+    if (missionary.assignment_level === "community") {
       const community = communities.find(
         (c) =>
           c._id === missionary.community_id || c.id === missionary.community_id
@@ -66,69 +124,181 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
     return "No Assignment";
   };
 
-  const getStatusColor = () => {
-    return missionary.assignment_status === "active" ? "success" : "default";
-  };
-
   const formatDate = (dateString: string) => {
     if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
+    return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     });
   };
 
+  const getDaysLeftChipColor = () => {
+    const days = missionary.daysUntilRelease ?? getDaysLeft() ?? 0;
+    if (days < 30) return "error";
+    if (days < 60) return "warning";
+    if (days < 90) return "primary";
+    return "success";
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) =>
+    setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
+  const handleNoteOpen = (event: React.MouseEvent<HTMLElement>) =>
+    setNoteAnchorEl(event.currentTarget);
+  const handleNoteClose = () => setNoteAnchorEl(null);
+
+  const fullName = `${missionary.first_name} ${missionary.last_name}`;
+  const initials = `${missionary.first_name?.[0] || ""}${
+    missionary.last_name?.[0] || ""
+  }`;
+
   return (
-    <Card sx={{ height: "100%", position: "relative" }}>
-      <CardContent>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            {/* Profile Picture Avatar */}
+    <>
+      <Card sx={{ height: "100%", position: "relative" }}>
+        <CardContent sx={{ p: 2 }}>
+          {/* Header with Avatar, Name, and Actions */}
+          <Stack
+            direction="row"
+            spacing={2}
+            alignItems="flex-start"
+            sx={{ mb: 2 }}
+          >
             <Avatar
               src={missionary.profile_picture_url}
-              alt={`${missionary.first_name} ${missionary.last_name}`}
-              sx={{
-                width: 60,
-                height: 60,
-                bgcolor: missionary.profile_picture_url
-                  ? "transparent"
-                  : "primary.light",
-              }}
+              alt={fullName}
+              sx={{ width: 56, height: 56, bgcolor: "primary.light" }}
             >
               {!missionary.profile_picture_url && (
-                <Typography variant="h6">
-                  {missionary.first_name?.[0]}
-                  {missionary.last_name?.[0]}
-                </Typography>
+                <Typography variant="h6">{initials}</Typography>
               )}
             </Avatar>
 
-            <Box>
-              <Typography variant="h6" component="h3" gutterBottom>
-                {missionary.first_name} {missionary.last_name}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="h6" component="h3" noWrap sx={{ mb: 0.5 }}>
+                {fullName}
               </Typography>
-              <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                <Chip
-                  label={missionary.assignment_status}
-                  size="small"
-                  sx={{ textTransform: "capitalize" }}
-                  color={getStatusColor()}
-                />
+
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                flexWrap="wrap"
+              >
                 <Chip
                   label={missionary.assignment_level}
                   size="small"
                   variant="outlined"
                   sx={{ textTransform: "capitalize" }}
                 />
-              </Box>
+                {missionary.title && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    fontWeight="medium"
+                  >
+                    {missionary.title}
+                  </Typography>
+                )}
+              </Stack>
             </Box>
-          </Box>
 
-          <IconButton onClick={handleMenuOpen} size="small">
-            <MoreVertIcon />
-          </IconButton>
+            {/* Top Right Actions */}
+            <Stack direction="row" spacing={0.5} alignItems="flex-start">
+              {isUpcomingView && (
+                <Chip
+                  label={`${
+                    missionary.daysUntilRelease ?? getDaysLeft()
+                  } days left`}
+                  color={getDaysLeftChipColor()}
+                  size="small"
+                  sx={{ mr: 1 }}
+                />
+              )}
+
+              {/* Note Button */}
+              {missionary.notes && (
+                <Tooltip title="View note">
+                  <IconButton
+                    onClick={handleNoteOpen}
+                    size="small"
+                    color="primary"
+                  >
+                    <NoteIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+
+              {/* More Details Button */}
+              <Tooltip title="More details">
+                <IconButton onClick={() => setDetailsOpen(true)} size="small">
+                  <InfoIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+
+              {/* Menu Button */}
+              <Tooltip title="Edit and Delete">
+                <IconButton onClick={handleMenuOpen} size="small">
+                  <MoreVertIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Stack>
+          </Stack>
+
+          {/* Contact Information - Horizontal Layout */}
+          <Grid container spacing={1} sx={{ mb: 2 }}>
+            <Grid item xs={12} sm={6}>
+              <IconText
+                icon={<EmailIcon />}
+                text={missionary.email}
+                variant="body2"
+                sx={{ mb: 1 }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              {missionary.contact_number && (
+                <IconText
+                  icon={<PhoneIcon />}
+                  text={missionary.contact_number}
+                  variant="body2"
+                />
+              )}
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <IconText
+                icon={<LocationOnIcon />}
+                text={getLocationDisplay()}
+                variant="body2"
+              />
+            </Grid>
+          </Grid>
+
+          {/* Mission Timeline */}
+          <Grid container spacing={2} alignItems="center" sx={{ mb: 0.5 }}>
+            {missionary.start_date && (
+              <Grid item>
+                <Typography variant="caption" color="text.secondary">
+                  {`Called: ${formatDate(missionary.start_date)}`}
+                </Typography>
+              </Grid>
+            )}
+            {missionary.duration && (
+              <Grid item>
+                <Typography variant="caption" color="text.secondary">
+                  Duration: {missionary.duration}
+                </Typography>
+              </Grid>
+            )}
+            {getReleaseDate() && (
+              <Grid item>
+                <Typography variant="caption" color="text.secondary">
+                  Release: {getReleaseDate()}
+                </Typography>
+              </Grid>
+            )}
+          </Grid>
+
+          {/* Actions Menu */}
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
@@ -140,7 +310,8 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
                 handleMenuClose();
               }}
             >
-              <EditIcon sx={{ mr: 1, fontSize: 20 }} /> Edit
+              <EditIcon sx={{ mr: 1, fontSize: 20 }} />
+              Edit
             </MenuItem>
             <MenuItem
               onClick={() => {
@@ -149,91 +320,172 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
               }}
               sx={{ color: "error.main" }}
             >
-              <DeleteIcon sx={{ mr: 1, fontSize: 20 }} /> Delete
+              <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
+              Delete
             </MenuItem>
           </Menu>
-        </Box>
 
-        {/* Title and Group */}
-        {(missionary.title || missionary.group) && (
-          <Box sx={{ mb: 2 }}>
-            {missionary.title && (
-              <Typography variant="subtitle1" fontWeight="bold">
-                {missionary.title}
-              </Typography>
-            )}
-            {missionary.group && (
-              <Typography variant="body2" color="text.secondary">
-                {missionary.group}
-              </Typography>
-            )}
-          </Box>
-        )}
-
-        {/* Contact Information */}
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <EmailIcon sx={{ fontSize: 18, color: "text.secondary" }} />
-            <Typography variant="body2">{missionary.email}</Typography>
-          </Box>
-          {missionary.contact_number && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <PhoneIcon sx={{ fontSize: 18, color: "text.secondary" }} />
-              <Typography variant="body2">
-                {missionary.contact_number}
-              </Typography>
-            </Box>
-          )}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <LocationOnIcon sx={{ fontSize: 18, color: "text.secondary" }} />
-            <Typography variant="body2">{getLocationDisplay()}</Typography>
-          </Box>
-        </Box>
-
-        {/* Assignment Details */}
-        {missionary.stake_name && (
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Home Stake: {missionary.stake_name}
-          </Typography>
-        )}
-
-        {/* Dates */}
-        <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-          {missionary.call_date && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-              <CalendarTodayIcon
-                sx={{ fontSize: 16, color: "text.secondary" }}
-              />
-              <Typography variant="caption" color="text.secondary">
-                Called: {formatDate(missionary.call_date)}
-              </Typography>
-            </Box>
-          )}
-          {missionary.duration && (
-            <Typography variant="caption" color="text.secondary">
-              Duration: {missionary.duration}
-            </Typography>
-          )}
-        </Box>
-
-        {/* Notes */}
-        {missionary.notes && (
-          <Box
-            sx={{
-              mt: 2,
-              p: 1,
-              bgcolor: "grey.50",
-              borderRadius: 1,
-              borderLeft: "3px solid",
-              borderColor: "primary.main",
+          {/* Note Popover */}
+          <Popover
+            open={Boolean(noteAnchorEl)}
+            anchorEl={noteAnchorEl}
+            onClose={handleNoteClose}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "right",
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+            PaperProps={{
+              sx: { maxWidth: 300, p: 2 },
             }}
           >
-            <Typography variant="caption" color="text.secondary">
-              {missionary.notes}
+            <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+              Note
             </Typography>
-          </Box>
-        )}
-      </CardContent>
-    </Card>
+            <Typography variant="body2">{missionary.notes}</Typography>
+          </Popover>
+        </CardContent>
+      </Card>
+
+      {/* Details Dialog */}
+      <Dialog
+        open={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography variant="h6">{fullName}</Typography>
+          <IconButton onClick={() => setDetailsOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent dividers>
+          <Stack spacing={3}>
+            {/* Basic Info */}
+            <Box>
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                Basic Information
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <IconText icon={<EmailIcon />} text={missionary.email} />
+                </Grid>
+                {missionary.contact_number && (
+                  <Grid item xs={12} sm={6}>
+                    <IconText
+                      icon={<PhoneIcon />}
+                      text={missionary.contact_number}
+                    />
+                  </Grid>
+                )}
+                <Grid item xs={12}>
+                  <IconText
+                    icon={<LocationOnIcon />}
+                    text={getLocationDisplay()}
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+
+            {/* Assignment Details */}
+            <Box>
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                Assignment Details
+              </Typography>
+              <Stack spacing={1}>
+                <Typography variant="body2">
+                  <strong>Level:</strong> {missionary.assignment_level}
+                </Typography>
+                {missionary.title && (
+                  <Typography variant="body2">
+                    <strong>Title:</strong> {missionary.title}
+                  </Typography>
+                )}
+                {missionary.stake_name && (
+                  <Typography variant="body2">
+                    <strong>Home Stake:</strong> {missionary.stake_name}
+                  </Typography>
+                )}
+              </Stack>
+            </Box>
+
+            {/* Mission Timeline */}
+            {(missionary.start_date || missionary.duration) && (
+              <Box>
+                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                  Mission Timeline
+                </Typography>
+                <Stack spacing={1}>
+                  {missionary.start_date && (
+                    <IconText
+                      icon={<CalendarTodayIcon />}
+                      text={`Called: ${formatDate(missionary.start_date)}`}
+                    />
+                  )}
+                  {missionary.duration && (
+                    <Typography variant="body2">
+                      <strong>Duration:</strong> {missionary.duration}
+                    </Typography>
+                  )}
+                  {getReleaseDate() && (
+                    <Typography variant="body2">
+                      <strong>Expected Release:</strong> {getReleaseDate()}
+                    </Typography>
+                  )}
+                  {isUpcomingView && (
+                    <Typography variant="body2">
+                      <strong>Days Remaining:</strong>{" "}
+                      {missionary.daysUntilRelease ?? getDaysLeft()}
+                    </Typography>
+                  )}
+                </Stack>
+              </Box>
+            )}
+
+            {/* Notes */}
+            {missionary.notes && (
+              <Box>
+                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                  Notes
+                </Typography>
+                <Box
+                  sx={{
+                    p: 2,
+                    bgcolor: "grey.50",
+                    borderRadius: 1,
+                    borderLeft: 3,
+                    borderColor: "primary.main",
+                  }}
+                >
+                  <Typography variant="body2">{missionary.notes}</Typography>
+                </Box>
+              </Box>
+            )}
+          </Stack>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setDetailsOpen(false)}>Close</Button>
+          <Button
+            variant="outlined"
+            startIcon={<EditIcon />}
+            onClick={() => onEdit(missionary)}
+          >
+            Edit
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };

@@ -53,13 +53,17 @@ export async function POST(request: NextRequest) {
       notes,
       title,
       group,
-      call_date,
+      start_date,
       duration,
       stake_name,
       gender,
       profile_picture_url,
       preferred_entry_method,
       last_login,
+      street_address,
+      address_city,
+      address_state,
+      zip_code,
     } = body;
 
     console.log(JSON.stringify(body, null, 2));
@@ -102,6 +106,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check for existing missionary with the same email
+    const { data: existing, error: existingError } = await supabase
+      .from("missionaries")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (existingError) {
+      console.error("Error checking for existing missionary:", existingError);
+      return NextResponse.json(
+        { error: "Error checking for existing missionary" },
+        { status: 500 }
+      );
+    }
+
+    if (existing) {
+      return NextResponse.json(
+        {
+          error: "A missionary with this email already exists.",
+          id: existing.id,
+        },
+        { status: 409 }
+      );
+    }
+
     const { data, error } = await supabase
       .from("missionaries")
       .insert({
@@ -116,13 +145,17 @@ export async function POST(request: NextRequest) {
         notes: notes || "",
         title: title || null,
         group: group || null,
-        call_date: call_date || null,
+        start_date: start_date || null,
         duration: duration || null,
         stake_name: stake_name || null,
         gender: gender || null,
         profile_picture_url: profile_picture_url || "",
         preferred_entry_method: preferred_entry_method || null,
         last_login: last_login || null,
+        street_address: street_address || null,
+        address_city: address_city || null,
+        address_state: address_state || null,
+        zip_code: zip_code || null,
       })
       .select()
       .single();
@@ -170,13 +203,17 @@ export async function PATCH(request: NextRequest) {
       notes,
       title,
       group,
-      call_date,
+      start_date,
       duration,
       stake_name,
       gender,
       profile_picture_url,
       preferred_entry_method,
       last_login,
+      street_address,
+      address_city,
+      address_state,
+      zip_code,
     } = body;
 
     // Validate assignment constraints if assignment_level is provided
@@ -223,7 +260,7 @@ export async function PATCH(request: NextRequest) {
     if (notes !== undefined) updateData.notes = notes || "";
     if (title !== undefined) updateData.title = title || null;
     if (group !== undefined) updateData.group = group || null;
-    if (call_date !== undefined) updateData.call_date = call_date || null;
+    if (start_date !== undefined) updateData.start_date = start_date || null;
     if (duration !== undefined) updateData.duration = duration || null;
     if (stake_name !== undefined) updateData.stake_name = stake_name || null;
     if (gender !== undefined) updateData.gender = gender || null;
@@ -232,6 +269,13 @@ export async function PATCH(request: NextRequest) {
     if (preferred_entry_method !== undefined)
       updateData.preferred_entry_method = preferred_entry_method || null;
     if (last_login !== undefined) updateData.last_login = last_login || null;
+    if (street_address !== undefined)
+      updateData.street_address = street_address || null;
+    if (address_city !== undefined)
+      updateData.address_city = address_city || null;
+    if (address_state !== undefined)
+      updateData.address_state = address_state || null;
+    if (zip_code !== undefined) updateData.zip_code = zip_code || null;
 
     const { data, error } = await supabase
       .from("missionaries")
