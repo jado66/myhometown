@@ -1,26 +1,23 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import {
   Box,
-  Card,
-  CardContent,
-  CardHeader,
-  Typography,
-  Avatar,
   Chip,
   Button,
   Divider,
-  Grid,
+  Typography,
   Paper,
+  Avatar,
 } from "@mui/material";
 import {
-  Schedule as ScheduleIcon,
-  TrendingUp as TrendingUpIcon,
-  Person as PersonIcon,
   Add as AddIcon,
   BarChart as BarChartIcon,
+  Schedule,
+  TrendingUp,
+  Person,
 } from "@mui/icons-material";
+import { AggregateStats } from "./AggregateStats";
 
 interface Missionary {
   id: string;
@@ -136,72 +133,35 @@ export function HoursOverview({
 
   return (
     <Box>
-      {/* Hours Stats Cards */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Avatar sx={{ mx: "auto", mb: 2, bgcolor: "primary.main" }}>
-                <ScheduleIcon />
-              </Avatar>
-              <Typography variant="h4" color="primary" fontWeight="bold">
-                {hoursStats.total}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Total Hours
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Avatar sx={{ mx: "auto", mb: 2, bgcolor: "success.main" }}>
-                <PersonIcon />
-              </Avatar>
-              <Typography variant="h4" color="success.main" fontWeight="bold">
-                {hoursStats.activeMissionaries}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Active Missionaries
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Avatar sx={{ mx: "auto", mb: 2, bgcolor: "info.main" }}>
-                <TrendingUpIcon />
-              </Avatar>
-              <Typography variant="h4" color="info.main" fontWeight="bold">
-                {hoursStats.averagePerMissionary}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Avg Hours/Missionary
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Avatar sx={{ mx: "auto", mb: 2, bgcolor: "warning.main" }}>
-                <ScheduleIcon />
-              </Avatar>
-              <Typography variant="h4" color="warning.main" fontWeight="bold">
-                {hoursStats.thisWeek}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                This Week
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      {/* Hours Stats Cards (shared AggregateStats) */}
+      <AggregateStats
+        cards={[
+          {
+            label: "Total Hours",
+            value: hoursStats.total,
+            color: "primary.main",
+            icon: <Schedule sx={{ color: "#fff" }} />,
+          },
+          {
+            label: "Active Missionaries",
+            value: hoursStats.activeMissionaries,
+            color: "success.main",
+            icon: <Person sx={{ color: "#fff" }} />,
+          },
+          {
+            label: "Avg Hours/Missionary",
+            value: hoursStats.averagePerMissionary,
+            color: "info.main",
+            icon: <TrendingUp sx={{ color: "#fff" }} />,
+          },
+          {
+            label: "This Week",
+            value: hoursStats.thisWeek,
+            color: "warning.main",
+            icon: <Schedule sx={{ color: "#fff" }} />,
+          },
+        ]}
+      />
 
       <Divider sx={{ my: 3 }} />
 

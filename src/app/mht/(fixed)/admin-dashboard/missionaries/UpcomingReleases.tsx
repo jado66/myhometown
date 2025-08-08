@@ -4,10 +4,7 @@ import React from "react";
 import {
   Box,
   Typography,
-  Grid,
   Paper,
-  Card,
-  CardContent,
   Chip,
   Alert,
   AlertTitle,
@@ -25,7 +22,8 @@ import {
   ViewModule,
   ViewList,
 } from "@mui/icons-material";
-import { MissionaryCard } from "./MissionaryCard";
+
+import { AggregateStats } from "./AggregateStats";
 import { MissionaryListView } from "./MissionaryListView";
 
 interface Missionary {
@@ -51,13 +49,6 @@ interface City {
   id: string;
   name: string;
   state: string;
-}
-
-interface Community {
-  _id: string;
-  id: string;
-  name: string;
-  city: string;
 }
 
 interface UpcomingReleasesProps {
@@ -178,61 +169,35 @@ export function UpcomingReleases({
 
   return (
     <Box>
-      {/* Stats Cards styled like HoursOverview */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Warning sx={{ fontSize: 40, color: "#d32f2f", mb: 1 }} />
-              <Typography variant="h4" color="#d32f2f" fontWeight="bold">
-                {criticalCount}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Within 30 days
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Info sx={{ fontSize: 40, color: "#f57c00", mb: 1 }} />
-              <Typography variant="h4" color="#f57c00" fontWeight="bold">
-                {warningCount}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Within 60 days
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <CheckCircle sx={{ fontSize: 40, color: "#2e7d32", mb: 1 }} />
-              <Typography variant="h4" color="#2e7d32" fontWeight="bold">
-                {infoCount}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Within 90 days
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Person sx={{ fontSize: 40, color: "text.secondary", mb: 1 }} />
-              <Typography variant="h4" fontWeight="bold">
-                {totalUpcoming}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Total upcoming
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      {/* Stats Cards (shared AggregateStats) */}
+      <AggregateStats
+        cards={[
+          {
+            label: "Within 30 days",
+            value: criticalCount,
+            color: "error.main",
+            icon: <Warning sx={{ color: "#fff" }} />,
+          },
+          {
+            label: "Within 60 days",
+            value: warningCount,
+            color: "warning.main",
+            icon: <Info sx={{ color: "#fff" }} />,
+          },
+          {
+            label: "Within 90 days",
+            value: infoCount,
+            color: "success.main",
+            icon: <CheckCircle sx={{ color: "#fff" }} />,
+          },
+          {
+            label: "Total upcoming",
+            value: totalUpcoming,
+            color: "grey.400",
+            icon: <Person sx={{ color: "text.secondary" }} />,
+          },
+        ]}
+      />
 
       <Divider sx={{ my: 3 }} />
 

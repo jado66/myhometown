@@ -40,6 +40,7 @@ interface MissionaryCardProps {
   onEdit: (missionary: any) => void;
   onDelete: (missionary: any) => void;
   isUpcomingView?: boolean;
+  onProfilePictureClick?: (url: string | null, name: string | null) => void;
 }
 
 // Helper component for icon + text combinations
@@ -73,6 +74,7 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
   onEdit,
   onDelete,
   isUpcomingView = false,
+  onProfilePictureClick,
 }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [detailsOpen, setDetailsOpen] = React.useState(false);
@@ -168,6 +170,9 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
               src={missionary.profile_picture_url}
               alt={fullName}
               sx={{ width: 56, height: 56, bgcolor: "primary.light" }}
+              onClick={() =>
+                onProfilePictureClick(missionary.profile_picture_url, fullName)
+              }
             >
               {!missionary.profile_picture_url && (
                 <Typography variant="h6">{initials}</Typography>

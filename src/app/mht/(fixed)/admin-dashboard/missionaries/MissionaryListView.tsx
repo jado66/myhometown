@@ -57,6 +57,7 @@ interface MissionaryListViewProps {
   onEdit: (missionary: any) => void;
   onDelete: (missionary: any) => void;
   isUpcomingView?: boolean;
+  onProfilePictureClick?: (url: string | null, name: string | null) => void;
 }
 
 export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
@@ -66,6 +67,7 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
   onEdit,
   onDelete,
   isUpcomingView = false,
+  onProfilePictureClick,
 }) => {
   // Calculate days left using end_date (for upcoming view)
   const getDaysLeft = (missionary: any) => {
@@ -162,7 +164,19 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                         bgcolor: missionary.profile_picture_url
                           ? "transparent"
                           : "primary.light",
+                        cursor: onProfilePictureClick ? "pointer" : undefined,
+                        boxShadow: onProfilePictureClick ? 2 : undefined,
+                        transition: "box-shadow 0.2s",
+                        "&:hover": onProfilePictureClick
+                          ? { boxShadow: 6 }
+                          : undefined,
                       }}
+                      onClick={() =>
+                        onProfilePictureClick?.(
+                          missionary.profile_picture_url || null,
+                          missionary.first_name + " " + missionary.last_name
+                        )
+                      }
                     >
                       {!missionary.profile_picture_url && (
                         <Typography variant="body2">

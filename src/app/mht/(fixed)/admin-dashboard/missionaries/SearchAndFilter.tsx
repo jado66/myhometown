@@ -168,7 +168,7 @@ export function SearchAndFilter({
               variant="outlined"
               value={filters.searchTerm}
               onChange={(e) => updateFilter("searchTerm", e.target.value)}
-              placeholder="Search by name, email, title, or group"
+              placeholder="Search by name, email, or title..."
               InputProps={{
                 startAdornment: (
                   <SearchIcon sx={{ mr: 1, color: "action.active" }} />
@@ -193,10 +193,10 @@ export function SearchAndFilter({
           </Grid>
           <Grid item xs={12} md={3}>
             <FormControl fullWidth>
-              <InputLabel>Person Type</InputLabel>
+              <InputLabel>Type Filter</InputLabel>
               <Select
                 value={filters.personType}
-                label="Person Type"
+                label="Type Filter"
                 onChange={(e) => updateFilter("personType", e.target.value)}
               >
                 <MenuItem value="all">All Types</MenuItem>

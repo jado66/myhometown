@@ -1,5 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 import Loading from "@/components/util/Loading";
 import {
   Box,
@@ -27,6 +31,9 @@ import {
   Download,
   Upload,
   ViewModule,
+  CheckCircle,
+  Business,
+  LocationCity,
   ViewList,
   BarChart,
   Group,
@@ -44,6 +51,8 @@ import { useCommunities } from "@/hooks/use-communities";
 import { MissionaryDialog } from "./MissionaryDialog";
 import { UpcomingReleases } from "./UpcomingReleases";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import ProfilePictureDialog from "./ProfilePictureDialog";
+import { toast } from "react-toastify";
 
 // Mock data types
 interface Missionary {
@@ -108,6 +117,22 @@ export default function MissionaryManagement() {
   const { cities } = useManageCities(user);
   const { communities } = useCommunities(user);
   const [tabValue, setTabValue] = useLocalStorage("missionary-tab-value", 0);
+
+  // Profile picture dialog state
+  const [profilePicDialogOpen, setProfilePicDialogOpen] = useState(false);
+  const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
+  const [profilePicName, setProfilePicName] = useState<string | null>(null);
+
+  const handleProfilePictureClick = (
+    url: string | null,
+    profilePic: string | null
+  ) => {
+    if (url) {
+      setProfilePicUrl(url);
+      setProfilePicName(profilePic);
+      setProfilePicDialogOpen(true);
+    }
+  };
 
   // View mode state with localStorage persistence
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -337,6 +362,7 @@ export default function MissionaryManagement() {
     assignmentLevel: "all",
     selectedCityId: null,
     selectedCommunityId: null,
+    personType: "all",
   });
 
   // Sync individual filter states for filtering logic
@@ -510,7 +536,12 @@ export default function MissionaryManagement() {
               <Button
                 variant="outlined"
                 startIcon={<Upload />}
-                onClick={() => setBulkImportOpen(true)}
+                // onClick={() => setBulkImportOpen(true)}
+                onClick={() =>
+                  toast.info(
+                    "Bulk import is currently disabled. This needs some refinement"
+                  )
+                }
               >
                 Bulk Import
               </Button>
@@ -579,7 +610,44 @@ export default function MissionaryManagement() {
 
             <TabPanel value={tabValue} index={0}>
               {/* Aggregate Stats - Only shown on management tab */}
-              <AggregateStats missionaries={filteredMissionaries} />
+              <AggregateStats
+                cards={[
+                  {
+                    label: "Total Missionaries",
+                    value: filteredMissionaries.length,
+                    color: "primary.main",
+                    icon: <Group sx={{ color: "#fff" }} />,
+                  },
+                  {
+                    label: "Active",
+                    value: filteredMissionaries.filter(
+                      (m) => m.assignment_status === "active"
+                    ).length,
+                    color: "success.main",
+                    icon: <CheckCircle sx={{ color: "#fff" }} />,
+                  },
+                  {
+                    label: "State Level",
+                    value: filteredMissionaries.filter(
+                      (m) => m.assignment_level === "state"
+                    ).length,
+                    color: "secondary.main",
+                    icon: <Business sx={{ color: "#fff" }} />,
+                  },
+                  {
+                    label: "Local Level",
+                    value:
+                      filteredMissionaries.filter(
+                        (m) => m.assignment_level === "city"
+                      ).length +
+                      filteredMissionaries.filter(
+                        (m) => m.assignment_level === "community"
+                      ).length,
+                    color: "warning.main",
+                    icon: <LocationCity sx={{ color: "#fff" }} />,
+                  },
+                ]}
+              />
               <Divider sx={{ my: 3 }} />
 
               <Box
@@ -626,6 +694,7 @@ export default function MissionaryManagement() {
                         communities={communities}
                         onEdit={handleOpenDialog}
                         onDelete={handleDeleteMissionary}
+                        onProfilePictureClick={handleProfilePictureClick}
                       />
                     </Grid>
                   ))}
@@ -637,6 +706,7 @@ export default function MissionaryManagement() {
                   communities={communities}
                   onEdit={handleOpenDialog}
                   onDelete={handleDeleteMissionary}
+                  onProfilePictureClick={handleProfilePictureClick}
                 />
               )}
 
@@ -674,6 +744,13 @@ export default function MissionaryManagement() {
                 onDelete={handleDeleteMissionary}
               />
             </TabPanel>
+
+            <ProfilePictureDialog
+              open={profilePicDialogOpen}
+              onClose={() => setProfilePicDialogOpen(false)}
+              profilePicUrl={profilePicUrl}
+              profilePicName={profilePicName}
+            />
           </Paper>
         </Container>
       </Box>
