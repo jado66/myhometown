@@ -253,7 +253,11 @@ const MissionaryAssignmentSection: React.FC<
         <Grid container spacing={2} sx={{ mb: 2 }}>
           {formData.assignment_level === "city" && (
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+              <Typography
+                variant="body2"
+                sx={{ mb: 1, fontWeight: 500 }}
+                color="#318D43"
+              >
                 City Assignment
               </Typography>
               <ThemedReactSelect
@@ -277,7 +281,11 @@ const MissionaryAssignmentSection: React.FC<
           )}
           {formData.assignment_level === "community" && (
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+              <Typography
+                variant="body2"
+                sx={{ mb: 1, fontWeight: 500 }}
+                color="#318D43"
+              >
                 Community Assignment
               </Typography>
               <ThemedReactSelect
@@ -304,7 +312,11 @@ const MissionaryAssignmentSection: React.FC<
             xs={12}
             md={formData.assignment_level === "state" ? 12 : 6}
           >
-            <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+            <Typography
+              variant="body2"
+              color="#318D43"
+              sx={{ mb: 1, fontWeight: 500 }}
+            >
               Position
             </Typography>
             <ThemedReactSelect

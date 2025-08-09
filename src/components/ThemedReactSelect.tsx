@@ -2,10 +2,11 @@ import React from "react";
 import ReactSelect from "react-select";
 
 // App-wide themed styles for ReactSelect
-const selectStyles = {
+const getSelectStyles = (height?: string | number) => ({
   control: (base, state) => ({
     ...base,
-    minHeight: "40px",
+    minHeight: height ? height : "40px",
+    height: height ? height : undefined,
     fontSize: "14px",
     borderColor: state.isFocused ? "#318D43" : base.borderColor, // green border on focus
     boxShadow: state.isFocused ? "0 0 0 2px #c7eacdff" : base.boxShadow, // subtle green shadow
@@ -67,19 +68,26 @@ const selectStyles = {
       color: "#318D43",
     },
   }),
-};
+});
 
 /**
  * ThemedReactSelect wraps react-select with app-wide theme styles.
  * Pass all react-select props as usual.
  */
-const ThemedReactSelect = (props) => {
+type ThemedReactSelectProps = React.ComponentProps<typeof ReactSelect> & {
+  height?: string | number;
+};
+
+const ThemedReactSelect: React.FC<ThemedReactSelectProps> = ({
+  height,
+  ...props
+}) => {
   return (
     <ReactSelect
       menuPortalTarget={
         typeof window !== "undefined" ? document.body : undefined
       }
-      styles={selectStyles}
+      styles={getSelectStyles(height)}
       {...props}
     />
   );
