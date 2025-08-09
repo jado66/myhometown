@@ -7,6 +7,7 @@ import {
   Paper,
   Chip,
   Alert,
+  Grid,
   AlertTitle,
   Divider,
   ToggleButtonGroup,
@@ -25,6 +26,7 @@ import {
 
 import { AggregateStats } from "./AggregateStats";
 import { MissionaryListView } from "./MissionaryListView";
+import { MissionaryCard } from "./MissionaryCard";
 
 interface Missionary {
   id: string;
@@ -42,6 +44,13 @@ interface Missionary {
   end_date?: string;
   notes?: string;
   person_type?: "missionary" | "volunteer";
+}
+
+interface Community {
+  _id: string;
+  id: string;
+  name: string;
+  city_id: string;
 }
 
 interface City {

@@ -60,7 +60,7 @@ const PermissionGuard = ({
   requiredPermission,
   children,
   user,
-  alternateContent,
+  alternateContent = null,
 }) => {
   if (!requiredPermission) {
     return children;
@@ -86,6 +86,7 @@ PermissionGuard.propTypes = {
     cities: PropTypes.array,
     communities: PropTypes.array,
   }),
+  // Optional prop for alternate content if permission check fails
   alternateContent: PropTypes.node,
   pages: PropTypes.arrayOf(
     PropTypes.shape({

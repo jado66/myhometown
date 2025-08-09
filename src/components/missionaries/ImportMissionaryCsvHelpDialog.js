@@ -52,7 +52,7 @@ const csvHeader = [
   "Assignment Level",
   "City",
   "Community",
-  "Group",
+
   "Title",
   "Start Date",
   "Notes",
@@ -70,7 +70,7 @@ function downloadTemplate() {
       "Salt Lake City",
       "",
       "Missionary",
-      "Sister",
+      "Support Staff",
       "2024-01-01",
       "",
     ].join(",") + "\n";
@@ -81,12 +81,26 @@ function downloadTemplate() {
       "john.smith@email.com",
       "801-555-5678",
       "Community",
-      "Ogdnen",
+      "Ogden",
       "West",
       "Missionary",
-      "Elder",
+      "Teacher",
       "2024-02-15",
       "New arrival",
+    ].join(",") + "\n";
+  const row3 =
+    [
+      "Alice",
+      "Johnson",
+      "alice.johnson@email.com",
+      "801-555-8765",
+      "State",
+      "",
+      "",
+      "Missionary",
+      "Volunteer",
+      "2024-03-10",
+      "Experienced missionary",
     ].join(",") + "\n";
   const csv = header + row1 + row2;
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -122,7 +136,7 @@ const ImportMissionaryCsvHelpDialog = ({ open, onClose, handleImport }) => (
             <b>Email</b> <i>(required, must be unique)</i>
           </li>
           <li>
-            <b>Phone</b> (optional)
+            <b>Phone</b> (required)
           </li>
           <li>
             <b>Assignment Level</b> <i>(required: state, city, community)</i>
@@ -133,14 +147,12 @@ const ImportMissionaryCsvHelpDialog = ({ open, onClose, handleImport }) => (
           <li>
             <b>Community</b> (required if Assignment Level is Community)
           </li>
-          <li>
-            <b>Group</b> (optional)
-          </li>
+
           <li>
             <b>Title</b> (optional)
           </li>
           <li>
-            <b>Start Date</b> (optional, YYYY-MM-DD)
+            <b>Start Date</b> (required, YYYY-MM-DD)
           </li>
           <li>
             <b>Notes</b> (optional)
@@ -171,7 +183,6 @@ const ImportMissionaryCsvHelpDialog = ({ open, onClose, handleImport }) => (
                 <TableCell>{row.assignment_level}</TableCell>
                 <TableCell sx={{ whiteSpace: "nowrap" }}>{row.city}</TableCell>
                 <TableCell>{row.community}</TableCell>
-                <TableCell>{row.group}</TableCell>
                 <TableCell>{row.title}</TableCell>
                 <TableCell>{row.start_date}</TableCell>
                 <TableCell>{row.notes}</TableCell>

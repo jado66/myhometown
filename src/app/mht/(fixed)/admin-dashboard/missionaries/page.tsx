@@ -53,6 +53,7 @@ import { UpcomingReleases } from "./UpcomingReleases";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import ProfilePictureDialog from "./ProfilePictureDialog";
 import { toast } from "react-toastify";
+import PermissionGuard from "@/guards/permission-guard";
 
 // Mock data types
 interface Missionary {
@@ -533,18 +534,15 @@ export default function MissionaryManagement() {
               </Typography>
             </Box>
             <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-              <Button
-                variant="outlined"
-                startIcon={<Upload />}
-                // onClick={() => setBulkImportOpen(true)}
-                onClick={() =>
-                  toast.info(
-                    "Bulk import is currently disabled. This needs some refinement"
-                  )
-                }
-              >
-                Bulk Import
-              </Button>
+              <PermissionGuard requiredPermission="administrator" user={user}>
+                <Button
+                  variant="outlined"
+                  startIcon={<Upload />}
+                  onClick={() => setBulkImportOpen(true)}
+                >
+                  Bulk Import
+                </Button>
+              </PermissionGuard>
               <Button
                 variant="outlined"
                 startIcon={<Download />}

@@ -48,6 +48,8 @@ import {
   MoreVert as MoreVertIcon,
   Info as InfoIcon,
   Close as CloseIcon,
+  Report as ReportIcon,
+  Warning,
 } from "@mui/icons-material";
 
 interface MissionaryListViewProps {
@@ -277,6 +279,19 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                 </TableCell>
 
                 <TableCell align="right">
+                  {/* Error icon button if title is missing */}
+                  {!missionary.title && (
+                    <Tooltip title="Missing title (required)">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        tabIndex={-1}
+                        sx={{ pointerEvents: "none" }}
+                      >
+                        <Warning />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                   <Tooltip title="View details">
                     <IconButton
                       onClick={() => {

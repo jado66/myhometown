@@ -31,6 +31,7 @@ import {
   Info as InfoIcon,
   Close as CloseIcon,
   StickyNote2 as NoteIcon,
+  Warning,
 } from "@mui/icons-material";
 
 interface MissionaryCardProps {
@@ -209,7 +210,7 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
             </Box>
 
             {/* Top Right Actions */}
-            <Stack direction="row" spacing={0.5} alignItems="flex-start">
+            <Stack direction="row" spacing={0.5} alignItems="center">
               {isUpcomingView && (
                 <Chip
                   label={`${
@@ -217,8 +218,17 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
                   } days left`}
                   color={getDaysLeftChipColor()}
                   size="small"
-                  sx={{ mr: 1 }}
+                  sx={{ mr: 1, mt: 2 }}
                 />
+              )}
+
+              {/* Error icon if title is missing */}
+              {!missionary.title && (
+                <Tooltip title="Missing title (required)">
+                  <IconButton size="small" color="error">
+                    <Warning color="error" fontSize="small" />
+                  </IconButton>
+                </Tooltip>
               )}
 
               {/* Note Button */}
