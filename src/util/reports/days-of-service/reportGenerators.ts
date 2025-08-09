@@ -930,13 +930,72 @@ export const generatePDFReport = async (
         yPosition = checkForNewPage(yPosition);
       }
 
+      // Helper to robustly parse and extract names from various field types (handles stringified JSON, arrays, and objects)
+      const getMaterialNames = (field: string) => {
+        let list: any[] = [];
+        const value = project[field];
+        if (!value) return [];
+        // If value is a string, try to parse as JSON array or object, or fallback to string
+        if (typeof value === "string") {
+          try {
+            const parsed = JSON.parse(value);
+            if (Array.isArray(parsed)) {
+              list = parsed;
+            } else if (typeof parsed === "object" && parsed !== null) {
+              list = [parsed];
+            } else {
+              list = [parsed];
+            }
+          } catch {
+            // If not JSON, treat as a single string item
+            list = [value];
+          }
+        } else if (Array.isArray(value)) {
+          list = value;
+        } else if (typeof value === "object" && value !== null) {
+          list = [value];
+        }
+        // Now flatten any stringified objects in the array
+        list = list.flatMap((item) => {
+          if (typeof item === "string") {
+            try {
+              const parsed = JSON.parse(item);
+              return [parsed];
+            } catch {
+              return [item];
+            }
+          }
+          return [item];
+        });
+        // Extract name property if object, else use as string or primitive
+        return list
+          .map((item: any) => {
+            if (typeof item === "object" && item !== null) {
+              if (typeof item.name === "string" && item.name.trim() !== "") {
+                return item.name;
+              } else {
+                return null;
+              }
+            }
+            if (typeof item === "string" && item.trim() !== "") {
+              return item;
+            }
+            if (typeof item === "number" || typeof item === "boolean") {
+              return String(item);
+            }
+            return null;
+          })
+          .filter((v) => v && v !== "none" && v !== "N/A");
+      };
+
       if (shouldIncludeField("equipment", settings)) {
         doc.text("Equipment:", margin, yPosition);
         yPosition += 4;
         yPosition = checkForNewPage(yPosition);
+        const equipmentNames = getMaterialNames("equipment");
         doc.text(
-          project.equipment?.length > 0
-            ? project.equipment.map((item: string) => `• ${item}`).join(" ")
+          equipmentNames.length > 0
+            ? equipmentNames.map((name: string) => `• ${name}`).join(" ")
             : "• N/A",
           margin + 3,
           yPosition
@@ -949,11 +1008,10 @@ export const generatePDFReport = async (
         doc.text("Volunteer Tools:", margin, yPosition);
         yPosition += 4;
         yPosition = checkForNewPage(yPosition);
+        const volunteerToolNames = getMaterialNames("volunteerTools");
         doc.text(
-          project.volunteerTools
-            ? JSON.parse(project.volunteerTools)
-                .map((item: string) => `• ${item}`)
-                .join(" ")
+          volunteerToolNames.length > 0
+            ? volunteerToolNames.map((name: string) => `• ${name}`).join(" ")
             : "• N/A",
           margin + 3,
           yPosition
@@ -966,10 +1024,11 @@ export const generatePDFReport = async (
         doc.text("Homeowner Materials:", margin, yPosition);
         yPosition += 4;
         yPosition = checkForNewPage(yPosition);
+        const homeownerMaterialNames = getMaterialNames("homeownerMaterials");
         doc.text(
-          project.homeownerMaterials
-            ? JSON.parse(project.homeownerMaterials)
-                .map((item: string) => `• ${item}`)
+          homeownerMaterialNames.length > 0
+            ? homeownerMaterialNames
+                .map((name: string) => `• ${name}`)
                 .join(" ")
             : "• N/A",
           margin + 3,
@@ -983,11 +1042,10 @@ export const generatePDFReport = async (
         doc.text("Other Materials:", margin, yPosition);
         yPosition += 4;
         yPosition = checkForNewPage(yPosition);
+        const otherMaterialNames = getMaterialNames("otherMaterials");
         doc.text(
-          project.otherMaterials
-            ? JSON.parse(project.otherMaterials)
-                .map((item: string) => `• ${item}`)
-                .join(" ")
+          otherMaterialNames.length > 0
+            ? otherMaterialNames.map((name: string) => `• ${name}`).join(" ")
             : "• N/A",
           margin + 3,
           yPosition
