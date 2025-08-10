@@ -3,48 +3,42 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Chip,
-  Grid,
   AppBar,
   Toolbar,
+  Typography,
+  Button,
   Container,
+  Alert,
+  Grid,
+  Card,
+  CardContent,
   Paper,
   List,
   ListItem,
-  Divider,
-  Alert,
-  CircularProgress,
-  IconButton,
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Chip,
+  IconButton,
+  Divider,
   Dialog,
-  DialogActions,
-  DialogContent,
   DialogTitle,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
 } from "@mui/material";
 import {
   Add,
-  Person,
   Edit,
   Delete,
   ExpandMore,
-  CalendarMonth,
-  CalendarViewWeek,
+  Person,
   Close,
-  SwapHoriz,
+  CalendarViewWeek,
+  CalendarMonth,
 } from "@mui/icons-material";
+import MissionaryLogHoursDialog from "@/components/MissionaryLogHoursDialog";
 import moment, { type Moment } from "moment";
-import ThemedReactSelect from "@/components/ThemedReactSelect";
 
 interface DetailedActivity {
   id: string;
@@ -63,46 +57,10 @@ interface MissionaryHourEntry {
   created_at: string;
 }
 
-const categories = [
-  { value: "outreach", label: "Community Outreach" },
-  { value: "community_service", label: "Community Service" },
-  { value: "administrative", label: "Administrative Work" },
-];
-
 const categoryDisplay: { [key: string]: { label: string; color: any } } = {
   outreach: { label: "Community Outreach", color: "primary" },
   community_service: { label: "Community Service", color: "warning" },
   administrative: { label: "Administrative Work", color: "secondary" },
-};
-
-const getMonthOptions = () => {
-  const options = [];
-  for (let i = 0; i < 3; i++) {
-    const date = moment().subtract(i, "months").startOf("month");
-    options.push({
-      value: date.toISOString(),
-      label: date.format("MMMM YYYY"),
-    });
-  }
-  return options;
-};
-
-const getWeekOptions = () => {
-  const options = [];
-  for (let i = 0; i < 13; i++) {
-    const weekStart = moment().subtract(i, "weeks").startOf("week");
-    const weekEnd = moment().subtract(i, "weeks").endOf("week");
-    options.push({
-      value: weekStart.toISOString(),
-      label:
-        i === 0
-          ? `This Week (${weekStart.format("MMM D")} - ${weekEnd.format(
-              "MMM D"
-            )})`
-          : `${weekStart.format("MMM D")} - ${weekEnd.format("MMM D, YYYY")}`,
-    });
-  }
-  return options;
 };
 
 export default function MissionaryDashboard({
@@ -268,8 +226,19 @@ export default function MissionaryDashboard({
         throw new Error("Activity hours must equal total hours.");
       }
 
+      // Calculate period start date consistently
+      const momentUnit = entryMethod === "weekly" ? "week" : "month";
+      const periodStartDate = selectedDate.clone().startOf(momentUnit);
+
       // Check for overlap (only for new entries)
       if (!editingId) {
+        console.log("Checking overlap with:", {
+          email,
+          entryMethod,
+          date: periodStartDate.toISOString(),
+          selectedDate: selectedDate.toISOString(),
+        });
+
         const overlapCheck = await fetch(
           `/api/missionary/hours/check-overlap`,
           {
@@ -278,11 +247,14 @@ export default function MissionaryDashboard({
             body: JSON.stringify({
               email,
               entryMethod,
-              date: selectedDate.toISOString(),
+              date: periodStartDate.toISOString(), // Send the calculated period start
             }),
           }
         );
         const overlapResult = await overlapCheck.json();
+
+        console.log("Overlap check result:", overlapResult);
+
         if (!overlapCheck.ok) {
           throw new Error(
             overlapResult.error || "Failed to check for overlap."
@@ -290,17 +262,14 @@ export default function MissionaryDashboard({
         }
         if (overlapResult.overlap) {
           throw new Error(
-            `You have already logged hours for this ${entryMethod}. Please select a different period.`
+            `You have already logged hours for this ${entryMethod}. Please select a different period or edit the existing entry.`
           );
         }
       }
 
       const payload = {
         entryMethod,
-        period_start_date: selectedDate
-          .clone()
-          .startOf(entryMethod as "week" | "month")
-          .toISOString(),
+        period_start_date: periodStartDate.format("YYYY-MM-DD"), // Use consistent format
         total_hours: hoursNum,
         activities: activities.map(({ id, ...rest }) => ({
           ...rest,
@@ -345,19 +314,8 @@ export default function MissionaryDashboard({
     }
   };
 
-  const addActivity = () => {
-    if (activities.length < 3) {
-      setActivities([
-        ...activities,
-        { id: crypto.randomUUID(), category: "", description: "", hours: "" },
-      ]);
-    }
-  };
-
   const removeActivity = (id: string) => {
-    if (activities.length > 1) {
-      setActivities(activities.filter((act) => act.id !== id));
-    }
+    setActivities((prev) => prev.filter((act) => act.id !== id));
   };
 
   const updateActivity = (
@@ -365,10 +323,8 @@ export default function MissionaryDashboard({
     field: keyof Omit<DetailedActivity, "id">,
     value: string
   ) => {
-    setActivities(
-      activities.map((act) =>
-        act.id === id ? { ...act, [field]: value } : act
-      )
+    setActivities((prev) =>
+      prev.map((act) => (act.id === id ? { ...act, [field]: value } : act))
     );
   };
 
@@ -398,13 +354,6 @@ export default function MissionaryDashboard({
       handleCloseDeleteDialog();
     }
   };
-
-  const periodStart = selectedDate
-    .clone()
-    .startOf(entryMethod === "weekly" ? "week" : "month");
-  const periodEnd = selectedDate
-    .clone()
-    .endOf(entryMethod === "weekly" ? "week" : "month");
 
   if (loading) {
     return (
@@ -676,240 +625,41 @@ export default function MissionaryDashboard({
       </Dialog>
 
       {/* Log Hours Dialog */}
-      <Dialog
+      <MissionaryLogHoursDialog
         open={logDialogOpen}
         onClose={() => {
           setLogDialogOpen(false);
           resetForm();
         }}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle sx={{ display: "flex", alignItems: "center", pr: 8 }}>
-          <Box sx={{ flexGrow: 1 }}>
-            {editingId ? "Edit" : "Log"} Your Volunteer Hours
-          </Box>
-          {/* Improved toggle button */}
-          {entryMethod && !editingId && (
-            <IconButton
-              size="small"
-              onClick={() => {
-                setEntryMethod(entryMethod === "weekly" ? "monthly" : "weekly");
-              }}
-              sx={{
-                mr: 1,
-                border: 1,
-                borderColor: "divider",
-                "&:hover": {
-                  backgroundColor: "action.hover",
-                },
-              }}
-              title={`Switch to ${
-                entryMethod === "weekly" ? "monthly" : "weekly"
-              } input`}
-            >
-              <SwapHoriz fontSize="small" />
-            </IconButton>
-          )}
-          <IconButton
-            onClick={() => {
-              setLogDialogOpen(false);
-              resetForm();
-            }}
-            sx={{ position: "absolute", right: 8, top: 8 }}
-          >
-            <Close />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 2 }}>
-            {/* Period Selection */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                  {entryMethod === "monthly" ? "Select Month" : "Select Week"}
-                </Typography>
-                {entryMethod === "monthly" ? (
-                  <ThemedReactSelect
-                    options={getMonthOptions()}
-                    value={getMonthOptions().find((opt) =>
-                      moment(opt.value).isSame(selectedDate, "month")
-                    )}
-                    onChange={(option) =>
-                      option && setSelectedDate(moment(option.value))
-                    }
-                    placeholder="Choose month..."
-                    height={40}
-                  />
-                ) : (
-                  <ThemedReactSelect
-                    options={getWeekOptions()}
-                    value={getWeekOptions().find((opt) =>
-                      moment(opt.value).isSame(selectedDate, "week")
-                    )}
-                    onChange={(option) =>
-                      option && setSelectedDate(moment(option.value))
-                    }
-                    placeholder="Choose week..."
-                    height={56}
-                  />
-                )}
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                  Total Hours
-                </Typography>
-                <TextField
-                  fullWidth
-                  type="number"
-                  value={totalHours}
-                  onChange={(e) => setTotalHours(e.target.value)}
-                  inputProps={{ step: "0.25", min: "0" }}
-                />
-              </Grid>
-            </Grid>
-
-            {/* Period Display */}
-            {entryMethod && (
-              <Paper sx={{ p: 2, mb: 3, bgcolor: "grey.100" }}>
-                <Typography variant="body1">
-                  <strong>Period:</strong> {periodStart.format("MMM D")} -{" "}
-                  {periodEnd.format("MMM D, YYYY")}
-                </Typography>
-              </Paper>
-            )}
-
-            {/* Activities */}
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Activity Breakdown
-            </Typography>
-            {activities.map((activity, idx) => {
-              const selectedCategories = activities
-                .filter((a, i) => i !== idx)
-                .map((a) => a.category)
-                .filter(Boolean);
-
-              return (
-                <Paper
-                  key={activity.id}
-                  sx={{ p: 2, mb: 2, border: "1px solid #ddd" }}
-                >
-                  <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={12} sm={4}>
-                      <FormControl fullWidth>
-                        <InputLabel>Category</InputLabel>
-                        <Select
-                          value={activity.category}
-                          label="Category"
-                          onChange={(e) =>
-                            updateActivity(
-                              activity.id,
-                              "category",
-                              e.target.value
-                            )
-                          }
-                        >
-                          {categories.map((cat) => (
-                            <MenuItem
-                              key={cat.value}
-                              value={cat.value}
-                              disabled={selectedCategories.includes(cat.value)}
-                            >
-                              {cat.label}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid item xs={8} sm={3}>
-                      <TextField
-                        fullWidth
-                        type="number"
-                        label="Hours"
-                        value={activity.hours}
-                        onChange={(e) =>
-                          updateActivity(activity.id, "hours", e.target.value)
-                        }
-                        inputProps={{ step: "0.25", min: "0" }}
-                      />
-                    </Grid>
-                    <Grid item xs={4} sm={1}>
-                      {activities.length > 1 && (
-                        <IconButton
-                          onClick={() => removeActivity(activity.id)}
-                          color="error"
-                        >
-                          <Delete />
-                        </IconButton>
-                      )}
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                      <TextField
-                        fullWidth
-                        label="Description"
-                        value={activity.description}
-                        onChange={(e) =>
-                          updateActivity(
-                            activity.id,
-                            "description",
-                            e.target.value
-                          )
-                        }
-                        multiline
-                        rows={1}
-                      />
-                    </Grid>
-                  </Grid>
-                </Paper>
-              );
-            })}
-
-            {activities.length < 3 && (
-              <Button startIcon={<Add />} onClick={addActivity} sx={{ mb: 2 }}>
-                Add Activity
-              </Button>
-            )}
-
-            {/* Location */}
-            <TextField
-              fullWidth
-              label="Location (Optional)"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              sx={{ mb: 2 }}
-            />
-
-            {error && (
-              <Alert severity="error" sx={{ mt: 2 }}>
-                {error}
-              </Alert>
-            )}
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              setLogDialogOpen(false);
-              resetForm();
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleSubmit}
-            disabled={submitting}
-          >
-            {submitting ? (
-              <CircularProgress size={20} />
-            ) : editingId ? (
-              "Update Hours"
-            ) : (
-              "Log Hours"
-            )}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        entryMethod={entryMethod}
+        setEntryMethod={setEntryMethod}
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+        totalHours={totalHours}
+        setTotalHours={setTotalHours}
+        activities={activities}
+        setActivities={setActivities}
+        addActivity={() =>
+          setActivities((prev) => [
+            ...prev,
+            {
+              id: crypto.randomUUID(),
+              category: "",
+              description: "",
+              hours: "",
+            },
+          ])
+        }
+        removeActivity={removeActivity}
+        updateActivity={updateActivity}
+        location={location}
+        setLocation={setLocation}
+        error={error}
+        submitting={submitting}
+        handleSubmit={handleSubmit}
+        editingId={editingId}
+        resetForm={resetForm}
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>

@@ -1,7 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-
-// Initialize Supabase client
 import moment from "moment";
 
 const supabase = createClient(
@@ -20,6 +18,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get missionary ID
     const { data: missionary } = await supabase
       .from("missionaries")
       .select("id")
@@ -33,13 +32,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Convert entryMethod to proper moment unit and calculate period start
+    const momentUnit = entryMethod === "weekly" ? "week" : "month";
     const periodStartDate = moment(date)
-      .startOf(entryMethod)
+      .startOf(momentUnit)
       .format("YYYY-MM-DD");
 
+    console.log("Checking overlap for:", {
+      missionary_id: missionary.id,
+      period_start_date: periodStartDate,
+      entry_method: entryMethod,
+      original_date: date,
+    });
+
+    // Check for existing entry
     const { data: existingEntry, error } = await supabase
       .from("missionary_hours")
-      .select("id")
+      .select("id, period_start_date, entry_method")
       .eq("missionary_id", missionary.id)
       .eq("period_start_date", periodStartDate)
       .eq("entry_method", entryMethod)
@@ -53,7 +62,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ overlap: !!existingEntry });
+    console.log("Existing entry found:", existingEntry);
+
+    return NextResponse.json({
+      overlap: !!existingEntry,
+      existingEntry: existingEntry || null,
+      calculatedPeriodStart: periodStartDate,
+    });
   } catch (error) {
     console.error("Overlap check API error:", error);
     return NextResponse.json(
