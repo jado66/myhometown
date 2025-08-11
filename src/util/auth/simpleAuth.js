@@ -33,7 +33,9 @@ export const isAuthenticated = (
   try {
     // Check if token is expired (1 month)
     const tokenData = atob(token);
-    const timestamp = parseInt(tokenData.split("-")[1]);
+    const timestamp = parseInt(
+      tokenData.substring(tokenData.lastIndexOf("-") + 1)
+    );
     const oneMonthAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
 
     return timestamp > oneMonthAgo;
@@ -147,7 +149,9 @@ export const isAuthenticatedBudget = () => {
   try {
     // Check if token is expired (1 month)
     const tokenData = atob(token);
-    const timestamp = parseInt(tokenData.split("-")[1]);
+    const timestamp = parseInt(
+      tokenData.substring(tokenData.lastIndexOf("-") + 1)
+    );
     const oneMonthAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
 
     return timestamp > oneMonthAgo;
