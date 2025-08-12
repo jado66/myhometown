@@ -32,12 +32,14 @@ import {
   Close as CloseIcon,
   StickyNote2 as NoteIcon,
   Warning,
+  Schedule as ScheduleIcon,
 } from "@mui/icons-material";
 
 interface MissionaryCardProps {
   missionary: any;
   cities: any[];
   communities: any[];
+  hours?: any[]; // Add hours prop
   onEdit: (missionary: any) => void;
   onDelete: (missionary: any) => void;
   isUpcomingView?: boolean;
@@ -72,6 +74,7 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
   missionary,
   cities,
   communities,
+  hours = [], // Default to empty array
   onEdit,
   onDelete,
   isUpcomingView = false,
@@ -82,6 +85,55 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
   const [noteAnchorEl, setNoteAnchorEl] = React.useState<null | HTMLElement>(
     null
   );
+
+  // Calculate hours for this missionary
+  const hoursData = React.useMemo(() => {
+    console.log("Card - Hours data:", hours); // Debug log
+    console.log("Card - Looking for missionary ID:", missionary.id); // Debug log
+
+    const missionaryHours = hours.filter((h) => {
+      console.log("Card - Comparing:", h.missionary_id, "with", missionary.id); // Debug log
+      return h.missionary_id === missionary.id;
+    });
+
+    console.log("Card - Filtered hours for missionary:", missionaryHours); // Debug log
+
+    // Calculate total hours
+    const totalHours = missionaryHours.reduce((sum, h) => {
+      const hoursValue = h.total_hours || 0;
+      return sum + hoursValue;
+    }, 0);
+
+    // Calculate current month hours
+    const now = new Date();
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const currentMonthHours = missionaryHours
+      .filter((h) => {
+        if (!h.period_start_date) return false;
+        const periodStart = new Date(h.period_start_date);
+        return periodStart >= currentMonthStart;
+      })
+      .reduce((sum, h) => sum + (h.total_hours || 0), 0);
+
+    const hasEntries = missionaryHours.length > 0;
+
+    console.log(
+      "Card - Total hours:",
+      totalHours,
+      "Current month:",
+      currentMonthHours,
+      "Has entries:",
+      hasEntries
+    ); // Debug log
+
+    return {
+      totalHours,
+      currentMonthHours,
+      hasEntries,
+      entryCount: missionaryHours.length,
+    };
+  }, [hours, missionary.id]);
 
   // Utility functions
   const getReleaseDate = () => {
@@ -207,6 +259,25 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
                   </Typography>
                 )}
               </Stack>
+
+              {/* Hours Display */}
+              <Box sx={{ mt: 1, display: "flex", gap: 1, flexWrap: "wrap" }}>
+                <Chip
+                  icon={<ScheduleIcon sx={{ fontSize: 14 }} />}
+                  label={`${hoursData.totalHours}h total`}
+                  size="small"
+                  color={hoursData.totalHours > 0 ? "primary" : "default"}
+                  variant="outlined"
+                />
+                <Chip
+                  label={`${hoursData.currentMonthHours}h this month`}
+                  size="small"
+                  color={
+                    hoursData.currentMonthHours > 0 ? "secondary" : "default"
+                  }
+                  variant="outlined"
+                />
+              </Box>
             </Box>
 
             {/* Top Right Actions */}
@@ -220,6 +291,15 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
                   size="small"
                   sx={{ mr: 1, mt: 2 }}
                 />
+              )}
+
+              {/* Error icon if no hours entries */}
+              {!hoursData.hasEntries && (
+                <Tooltip title="No hours entries recorded">
+                  <IconButton size="small" color="warning">
+                    <Warning color="warning" fontSize="small" />
+                  </IconButton>
+                </Tooltip>
               )}
 
               {/* Error icon if title is missing */}
@@ -411,6 +491,34 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
                   />
                 </Grid>
               </Grid>
+            </Box>
+
+            {/* Hours Information */}
+            <Box>
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                Service Hours
+              </Typography>
+              <Stack spacing={1}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <ScheduleIcon
+                    sx={{ fontSize: 16, color: "text.secondary" }}
+                  />
+                  <Typography variant="body2">
+                    {hoursData.totalHours} total hours recorded
+                  </Typography>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <ScheduleIcon
+                    sx={{ fontSize: 16, color: "text.secondary" }}
+                  />
+                  <Typography variant="body2">
+                    {hoursData.currentMonthHours} hours this month
+                  </Typography>
+                </Box>
+                <Typography variant="caption" color="text.secondary">
+                  {hoursData.entryCount} total entries
+                </Typography>
+              </Stack>
             </Box>
 
             {/* Assignment Details */}

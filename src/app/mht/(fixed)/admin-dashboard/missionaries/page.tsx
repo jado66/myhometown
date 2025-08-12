@@ -527,7 +527,7 @@ export default function MissionaryManagement() {
             <Person sx={{ mr: 2, color: "primary.main" }} />
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h6" component="h1" fontWeight="bold">
-                Missionary Management System
+                MHT Missionary Management
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Manage contacts, assignments, and service records
@@ -690,6 +690,7 @@ export default function MissionaryManagement() {
                         missionary={missionary}
                         cities={cities}
                         communities={communities}
+                        hours={hours}
                         onEdit={handleOpenDialog}
                         onDelete={handleDeleteMissionary}
                         onProfilePictureClick={handleProfilePictureClick}
@@ -702,6 +703,7 @@ export default function MissionaryManagement() {
                   missionaries={filteredMissionaries}
                   cities={cities}
                   communities={communities}
+                  hours={hours}
                   onEdit={handleOpenDialog}
                   onDelete={handleDeleteMissionary}
                   onProfilePictureClick={handleProfilePictureClick}
@@ -736,6 +738,7 @@ export default function MissionaryManagement() {
                 missionaries={filteredMissionaries}
                 cities={cities}
                 communities={communities}
+                hours={hours}
                 viewMode={viewMode}
                 onViewModeChange={handleViewModeChange}
                 onEdit={handleOpenDialog}

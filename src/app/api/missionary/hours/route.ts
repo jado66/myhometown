@@ -17,13 +17,25 @@ export async function POST(request: NextRequest) {
       updatePreference,
     } = await request.json();
 
-    if (!email || !entryMethod || !date || !total_hours || !activities) {
+    if (
+      !email ||
+      !entryMethod ||
+      !date ||
+      total_hours === undefined ||
+      total_hours === null ||
+      activities === undefined ||
+      activities === null
+    ) {
       return NextResponse.json(
         {
           error: `Missing required fields: ${!email ? "email " : ""}${
             !entryMethod ? "entryMethod " : ""
-          }${!date ? "date " : ""}${!total_hours ? "total_hours " : ""}${
-            !activities ? "activities" : ""
+          }${!date ? "date " : ""}${
+            total_hours === undefined || total_hours === null
+              ? "total_hours "
+              : ""
+          }${
+            activities === undefined || activities === null ? "activities" : ""
           }`,
         },
         { status: 400 }

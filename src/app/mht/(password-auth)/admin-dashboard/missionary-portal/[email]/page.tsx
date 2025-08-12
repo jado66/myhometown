@@ -39,6 +39,7 @@ import {
 } from "@mui/icons-material";
 import MissionaryLogHoursDialog from "@/components/MissionaryLogHoursDialog";
 import moment, { type Moment } from "moment";
+import { ScrollableWeeks } from "./ScrollableWeeks";
 
 interface DetailedActivity {
   id: string;
@@ -206,7 +207,7 @@ export default function MissionaryDashboard({
     try {
       // Validation
       const hoursNum = Number(totalHours);
-      if (!totalHours || hoursNum <= 0) {
+      if (!totalHours || hoursNum < 0) {
         throw new Error("Please enter valid total hours.");
       }
 
@@ -222,6 +223,7 @@ export default function MissionaryDashboard({
         (sum, act) => sum + (Number(act.hours) || 0),
         0
       );
+
       if (Math.abs(totalActivityHours - hoursNum) > 0.01) {
         throw new Error("Activity hours must equal total hours.");
       }
@@ -251,8 +253,8 @@ export default function MissionaryDashboard({
             }),
           }
         );
-        const overlapResult = await overlapCheck.json();
 
+        const overlapResult = await overlapCheck.json();
         console.log("Overlap check result:", overlapResult);
 
         if (!overlapCheck.ok) {
@@ -260,6 +262,7 @@ export default function MissionaryDashboard({
             overlapResult.error || "Failed to check for overlap."
           );
         }
+
         if (overlapResult.overlap) {
           throw new Error(
             `You have already logged hours for this ${entryMethod}. Please select a different period or edit the existing entry.`
@@ -456,121 +459,137 @@ export default function MissionaryDashboard({
           </Grid>
         </Grid>
 
-        {/* Recent Hour Logs */}
-        <Paper elevation={2}>
-          <Box sx={{ p: 2, borderBottom: 1, borderColor: "divider" }}>
-            <Typography variant="h5" fontWeight="bold">
-              Recent Hour Logs
-            </Typography>
-          </Box>
-          <Box sx={{ p: 2 }}>
-            {hours.length === 0 ? (
+        {hours.length === 0 ? (
+          <Paper elevation={2}>
+            <Box sx={{ p: 2, borderBottom: 1, borderColor: "divider" }}>
               <Alert severity="info" sx={{ m: 2 }}>
                 No hours logged yet.
               </Alert>
-            ) : (
-              <List sx={{ p: 0 }}>
-                {hours.map((entry) => (
-                  <ListItem
-                    key={entry.id}
-                    sx={{
-                      flexDirection: "column",
-                      alignItems: "stretch",
-                      p: 0,
-                    }}
-                  >
-                    <Accordion
+            </Box>
+          </Paper>
+        ) : (
+          <>
+            <Paper elevation={2}>
+              <Box sx={{ p: 2, borderBottom: 1, borderColor: "divider" }}>
+                <Typography variant="h5" fontWeight="bold">
+                  Recent Hour Logs
+                </Typography>
+              </Box>
+              <Box sx={{ p: 2 }}>
+                <List sx={{ p: 0 }}>
+                  {hours.slice(-3).map((entry, index) => (
+                    <ListItem
+                      key={entry.id}
                       sx={{
-                        width: "100%",
-                        boxShadow: "none",
-                        "&:before": { display: "none" },
+                        flexDirection: "column",
+                        alignItems: "stretch",
+                        p: 0,
                       }}
                     >
-                      <AccordionSummary expandIcon={<ExpandMore />}>
-                        <Grid container alignItems="center" spacing={2}>
-                          <Grid item xs={12} sm={5}>
-                            <Typography variant="h6">
-                              {entry.entry_method === "weekly"
-                                ? "Week of "
-                                : "Month of "}
-                              {moment(entry.period_start_date).format(
-                                "MMMM D, YYYY"
-                              )}
-                            </Typography>
-                          </Grid>
-                          <Grid item xs={6} sm={3}>
-                            <Chip
-                              label={`${entry.total_hours} hours`}
-                              color="primary"
-                            />
-                          </Grid>
-                          <Grid item xs={6} sm={4} sx={{ textAlign: "right" }}>
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEdit(entry.id);
-                              }}
-                            >
-                              <Edit />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenDeleteDialog(entry.id);
-                              }}
-                            >
-                              <Delete />
-                            </IconButton>
-                          </Grid>
-                        </Grid>
-                      </AccordionSummary>
-                      <AccordionDetails sx={{ bgcolor: "grey.50" }}>
-                        <Typography variant="subtitle2" gutterBottom>
-                          Activity Breakdown:
-                        </Typography>
-                        {entry.activities.map((act, index) => (
-                          <Paper
-                            key={index}
-                            variant="outlined"
-                            sx={{ p: 1.5, mb: 1 }}
-                          >
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                              }}
-                            >
-                              <Chip
-                                label={
-                                  categoryDisplay[act.category]?.label ||
-                                  act.category
-                                }
-                                color={
-                                  categoryDisplay[act.category]?.color ||
-                                  "default"
-                                }
-                                size="small"
-                              />
-                              <Typography fontWeight="bold">
-                                {act.hours}h
+                      <Accordion
+                        sx={{
+                          width: "100%",
+                          boxShadow: "none",
+                          "&:before": { display: "none" },
+                        }}
+                      >
+                        <AccordionSummary expandIcon={<ExpandMore />}>
+                          <Grid container alignItems="center" spacing={2}>
+                            <Grid item xs={12} sm={5}>
+                              <Typography variant="h6">
+                                {entry.entry_method === "weekly"
+                                  ? "Week of "
+                                  : "Month of "}
+                                {moment(entry.period_start_date).format(
+                                  "MMMM D, YYYY"
+                                )}
                               </Typography>
-                            </Box>
-                            <Typography variant="body2" sx={{ mt: 1 }}>
-                              {act.description}
-                            </Typography>
-                          </Paper>
-                        ))}
-                      </AccordionDetails>
-                    </Accordion>
-                    <Divider />
-                  </ListItem>
-                ))}
-              </List>
-            )}
-          </Box>
-        </Paper>
+                            </Grid>
+                            <Grid item xs={6} sm={3}>
+                              <Chip
+                                label={`${entry.total_hours} hours`}
+                                color="primary"
+                              />
+                            </Grid>
+                            <Grid
+                              item
+                              xs={6}
+                              sm={4}
+                              sx={{ textAlign: "right" }}
+                            >
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEdit(entry.id);
+                                }}
+                              >
+                                <Edit />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenDeleteDialog(entry.id);
+                                }}
+                              >
+                                <Delete />
+                              </IconButton>
+                            </Grid>
+                          </Grid>
+                        </AccordionSummary>
+                        <AccordionDetails sx={{ bgcolor: "grey.50" }}>
+                          <Typography variant="subtitle2" gutterBottom>
+                            Activity Breakdown:
+                          </Typography>
+                          {entry.activities.map((act, index) => (
+                            <Paper
+                              key={index}
+                              variant="outlined"
+                              sx={{ p: 1.5, mb: 1 }}
+                            >
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Chip
+                                  label={
+                                    categoryDisplay[act.category]?.label ||
+                                    act.category
+                                  }
+                                  color={
+                                    categoryDisplay[act.category]?.color ||
+                                    "default"
+                                  }
+                                  size="small"
+                                />
+                                <Typography fontWeight="bold">
+                                  {act.hours}h
+                                </Typography>
+                              </Box>
+                              <Typography variant="body2" sx={{ mt: 1 }}>
+                                {act.description}
+                              </Typography>
+                            </Paper>
+                          ))}
+                        </AccordionDetails>
+                      </Accordion>
+                      {index !== 2 && index !== hours.length - 1 && <Divider />}
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            </Paper>
+            {/* Scrollable Weeks Component */}
+            <Box sx={{ mb: 4 }}>
+              <ScrollableWeeks hourEntries={hours} />
+            </Box>
+          </>
+        )}
+
+        {/* Recent Hour Logs */}
       </Container>
 
       {/* Method Selection Dialog */}

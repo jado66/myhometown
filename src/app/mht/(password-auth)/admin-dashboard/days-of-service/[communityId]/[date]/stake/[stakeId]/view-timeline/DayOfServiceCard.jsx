@@ -21,15 +21,7 @@ import {
 import { useCommunities } from "@/hooks/use-communities";
 
 const DayOfServiceCard = ({
-  dayOfService: {
-    id,
-    start_date,
-    end_date,
-    community_id,
-    created_at,
-    updated_at,
-    name,
-  },
+  dayOfService: { id, end_date, community_id, created_at, updated_at, name },
 }) => {
   const [community, setCommunity] = useState(null);
   const [expanded, setExpanded] = useState(false);

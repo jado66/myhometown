@@ -217,15 +217,6 @@ export default function MissionaryLogHoursDialog({
             </Grid>
           </Grid>
 
-          {/* Location */}
-          <TextField
-            fullWidth
-            label="Location (Optional)"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            sx={{ mb: 2 }}
-          />
-
           <Divider sx={{ my: 2 }} />
 
           {/* Activities */}
