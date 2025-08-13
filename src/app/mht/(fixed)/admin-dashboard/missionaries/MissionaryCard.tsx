@@ -295,7 +295,7 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
 
               {/* Error icon if no hours entries */}
               {!hoursData.hasEntries && (
-                <Tooltip title="No hours entries recorded">
+                <Tooltip title="No hours logged this month">
                   <IconButton size="small" color="warning">
                     <Warning color="warning" fontSize="small" />
                   </IconButton>

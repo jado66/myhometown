@@ -5,6 +5,7 @@ import DialogContent from "@mui/material/DialogContent";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import Loading from "@/components/util/Loading";
+import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import {
   Box,
   Container,
@@ -487,8 +488,39 @@ export default function MissionaryManagement() {
     }
   };
 
+  // State for delete confirmation dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [missionaryToDelete, setMissionaryToDelete] =
+    useState<Missionary | null>(null);
+
   const handleDeleteMissionary = (missionary: Missionary) => {
-    console.log("Deleting missionary:", missionary);
+    setMissionaryToDelete(missionary);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!missionaryToDelete) return;
+    try {
+      const response = await fetch(
+        `/api/database/missionaries?id=${missionaryToDelete.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (!response.ok) throw new Error("Failed to delete missionary");
+      toast.success("Missionary deleted successfully");
+      await fetchMissionaries();
+    } catch (err) {
+      toast.error("Error deleting missionary");
+    } finally {
+      setDeleteDialogOpen(false);
+      setMissionaryToDelete(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setMissionaryToDelete(null);
   };
 
   const handleViewModeChange = (
@@ -520,6 +552,15 @@ export default function MissionaryManagement() {
 
   return (
     <Grid container item sm={12} display="flex">
+      <AskYesNoDialog
+        open={deleteDialogOpen}
+        title="Delete Missionary?"
+        description={`Are you sure you want to delete missionary ${missionaryToDelete?.first_name} ${missionaryToDelete?.last_name}? This action cannot be undone.`}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        onClose={handleCancelDelete}
+      />
+      ;
       <Box sx={{ backgroundColor: "#f5f5f5", flexGrow: 1, minHeight: "100vh" }}>
         {/* Header */}
         <AppBar position="static" color="default" elevation={1}>

@@ -212,13 +212,8 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                   <TableCell sx={{ width: 56 }}>
                     {/* Error icon if no hours entries */}
                     {!hoursData.hasEntries && (
-                      <Tooltip title="No hours entries recorded">
-                        <IconButton
-                          size="small"
-                          color="warning"
-                          tabIndex={-1}
-                          sx={{ pointerEvents: "none" }}
-                        >
+                      <Tooltip title="No hours logged this month">
+                        <IconButton size="small" color="warning" tabIndex={-1}>
                           <Warning />
                         </IconButton>
                       </Tooltip>
@@ -226,12 +221,7 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                     {/* Error icon button if title is missing */}
                     {!missionary.title && (
                       <Tooltip title="Missing title (required)">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          tabIndex={-1}
-                          sx={{ pointerEvents: "none" }}
-                        >
+                        <IconButton size="small" color="error" tabIndex={-1}>
                           <Warning />
                         </IconButton>
                       </Tooltip>
