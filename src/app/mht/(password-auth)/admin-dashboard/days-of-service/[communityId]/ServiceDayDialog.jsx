@@ -136,6 +136,7 @@ const ServiceDayDialog = ({
                 setFormData({ ...formData, start_date: e.target.value })
               }
               fullWidth
+              helperText="This is the day your communities starts entering projects "
               InputLabelProps={{ shrink: true }}
             />
             <TextField

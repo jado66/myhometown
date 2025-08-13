@@ -112,6 +112,10 @@ export const pages = () => {
           href: rootUrl + "/admin-dashboard/impersonate",
         },
         {
+          title: "Development Board",
+          href: rootUrl + "/admin-dashboard/tasks",
+        },
+        {
           title: "Bugs and Feature Requests",
           href: rootUrl + "/admin-dashboard/bugs-and-features",
         },

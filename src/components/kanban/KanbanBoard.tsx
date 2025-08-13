@@ -225,15 +225,12 @@ export function KanbanBoard() {
     }
   };
 
-  const rootUrl = process.env.NEXT_PUBLIC_DOMAIN;
-
   // Handler for opening/closing the ticket dialog
   const handleOpenTicketDialog = () => setTicketDialogOpen(true);
   const handleCloseTicketDialog = () => setTicketDialogOpen(false);
 
   // After ticket creation, update local board data without refetching
   const handleTicketCreated = (newTask: any) => {
-    setTicketDialogOpen(false);
     if (!localBoardData) return;
     // Add new task to tasks
     const updatedTasks = { ...localBoardData.tasks, [newTask.id]: newTask };

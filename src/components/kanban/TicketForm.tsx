@@ -7,6 +7,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import { Checkbox } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import { useKanbanData } from "@/hooks/use-kanban-data";
 import { Alert, CircularProgress, Container, Stack } from "@mui/material";
@@ -22,6 +23,7 @@ export function TicketForm({
 }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [creatingMultiple, setCreatingMultiple] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -40,11 +42,12 @@ export function TicketForm({
       if (onTicketCreated) {
         onTicketCreated(newTask);
       }
-      if (onSuccess) {
+
+      if (onSuccess && !creatingMultiple) {
         onSuccess();
       } else {
-        const rootUrl = process.env.NEXT_PUBLIC_DOMAIN;
-        router.push(`${rootUrl}/admin-dashboard/tasks`);
+        setTitle("");
+        setDescription("");
       }
     } catch (err) {
       setError("Failed to create ticket. Please try again.");
@@ -108,27 +111,42 @@ export function TicketForm({
           )}
           <Stack
             direction="row"
-            justifyContent="flex-end"
+            justifyContent="space-between"
             spacing={2}
             sx={{ mt: 3 }}
           >
-            <Button
-              variant="outlined"
-              onClick={handleCancel}
-              disabled={loading}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={loading}
-              startIcon={
-                loading ? <CircularProgress size={20} color="inherit" /> : null
-              }
-            >
-              {loading ? "Creating..." : "Create Ticket"}
-            </Button>
+            <Box display="flex" alignItems="center">
+              <Checkbox
+                id="create-another"
+                disabled={loading}
+                onChange={(e) => {
+                  setCreatingMultiple(e.target.checked);
+                }}
+              />
+              <Typography variant="body2">Create Another Ticket</Typography>
+            </Box>
+            <div>
+              <Button
+                variant="outlined"
+                onClick={handleCancel}
+                disabled={loading}
+                sx={{ mx: 2 }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={loading}
+                startIcon={
+                  loading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : null
+                }
+              >
+                {loading ? "Creating..." : "Create Ticket"}
+              </Button>
+            </div>
           </Stack>
         </Box>
       </Box>

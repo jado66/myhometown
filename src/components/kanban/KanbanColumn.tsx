@@ -10,7 +10,6 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 
-import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 import { ReportGmailerrorred } from "@mui/icons-material";
 
 interface KanbanColumnProps {
@@ -27,11 +26,6 @@ function isArchived(task: Task) {
   return !!task.is_hidden;
 }
 
-//   { name: "Purple", value: "#a16faf" },
-//   { name: "Blue", value: "#1b75bc" },
-//   { name: "Yellow", value: "#febc18" },
-//   { name: "Green", value: "#318d43" },
-//   { name: "Orange", value: "#e45620" },
 export function KanbanColumn({
   column,
   tasks,
