@@ -28,6 +28,7 @@ import {
   DialogActions,
   Divider,
   Badge,
+  CircularProgress,
 } from "@mui/material";
 import {
   Print as PrintIcon,
@@ -156,6 +157,7 @@ export default function MHTDesignHub() {
   const [showDialog, setShowDialog] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("design");
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     name: "",
@@ -208,30 +210,100 @@ export default function MHTDesignHub() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (selectedItems.length === 0) {
       alert("Please select at least one item before submitting.");
       return;
     }
 
-    console.log("Form submitted:", {
-      selectedItems,
-      formData,
-    });
-    alert(
-      "Form submitted successfully! We will confirm receipt of your request within 24hrs."
-    );
-    setSelectedItems([]);
-    setFormData({
-      title: "",
-      name: "",
-      email: "",
-      phone: "",
-      locationType: "",
-      community: "",
-      city: "",
-      additionalRequests: "",
-    });
+    setIsSubmitting(true);
+
+    try {
+      // Create email content
+      const locationInformation =
+        formData.locationType === "city"
+          ? `City: ${
+              formData.city.endsWith("City")
+                ? formData.city
+                : `${formData.city} City`
+            }`
+          : formData.locationType === "community"
+          ? `Community: ${
+              formData.community.endsWith("Community")
+                ? formData.community
+                : `${formData.community} Community`
+            }`
+          : "myHometown Utah";
+
+      // Send email using the existing API endpoint
+      const response = await fetch(
+        "/api/communications/send-mail/to-design-hub ",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            subject: `MHT Design Hub Order Request - ${formData.name}`,
+            html: {
+              // Adapting to your existing email format structure
+              firstName: formData.name.split(" ")[0] || formData.name,
+              lastName: formData.name.split(" ").slice(1).join(" ") || "",
+              email: formData.email,
+              phone: formData.phone,
+              title: formData.title,
+              location: locationInformation,
+              message: `Design Hub Order Request:
+
+
+Selected Items (${selectedItems.length}):
+${selectedItems
+  .map((id) => {
+    const item = allItems.find((i) => i.id === id);
+    return `- ${item?.title} (${item?.category})`;
+  })
+  .join("\n")}
+
+${
+  formData.additionalRequests
+    ? `Additional Requests: ${formData.additionalRequests}`
+    : ""
+}
+
+Submitted: ${new Date().toLocaleString()}`,
+            },
+          }),
+        }
+      );
+
+      if (response.ok) {
+        alert(
+          "Order submitted successfully! We will confirm receipt of your request within 24hrs."
+        );
+
+        // Reset form
+        setSelectedItems([]);
+        setFormData({
+          title: "",
+          name: "",
+          email: "",
+          phone: "",
+          locationType: "",
+          community: "",
+          city: "",
+          additionalRequests: "",
+        });
+      } else {
+        throw new Error("Failed to send email");
+      }
+    } catch (error) {
+      console.error("Error submitting order:", error);
+      alert(
+        "There was an error submitting your order. Please try again or contact support."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderCatalogItems = (items: CatalogItem[]) => (
@@ -425,7 +497,7 @@ export default function MHTDesignHub() {
                 Order Templated Material
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: "medium", mb: 2 }}>
-                Order templated material that’s ready to print!
+                Order templated material that's ready to print!
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: "medium", mb: 2 }}>
                 MyHometown and the Brigham Young Design Department have a
@@ -440,7 +512,7 @@ export default function MHTDesignHub() {
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: "medium", mb: 2 }}>
                 Select from the catalog below, fill out the request form and all
-                relevant information, and we’ll process your order and send you
+                relevant information, and we'll process your order and send you
                 print-ready files!
               </Typography>
             </Grid>
@@ -743,10 +815,15 @@ export default function MHTDesignHub() {
                         !formData.email ||
                         !formData.phone ||
                         !formData.locationType ||
-                        selectedItems.length === 0
+                        selectedItems.length === 0 ||
+                        isSubmitting
                       }
                     >
-                      SUBMIT ORDER
+                      {isSubmitting ? (
+                        <CircularProgress size={20} color="inherit" />
+                      ) : (
+                        "SUBMIT ORDER"
+                      )}
                     </Button>
                   </Grid>
                 </Grid>
