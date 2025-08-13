@@ -56,16 +56,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Insert the new hours log
-    const periodStartDate = moment(date)
-      .startOf(entryMethod)
-      .format("YYYY-MM-DD");
+    // 2. Insert the new hours log (allow multiple entries for same month/day)
+    const periodStartDate = moment(date).startOf("month").format("YYYY-MM-DD");
     const { data: newEntry, error: insertError } = await supabase
       .from("missionary_hours")
       .insert({
         missionary_id: missionary.id,
         period_start_date: periodStartDate,
-        entry_method: entryMethod,
+        entry_method: "monthly",
         total_hours: Number(total_hours),
         activities: activities, // This is the JSONB field
         location: location || null,
@@ -75,13 +73,6 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       console.error("Insert hours error:", insertError);
-      // Handle unique constraint violation
-      if (insertError.code === "23505") {
-        return NextResponse.json(
-          { error: "An entry for this period already exists." },
-          { status: 409 }
-        );
-      }
       return NextResponse.json(
         { error: "Failed to log hours" },
         { status: 500 }

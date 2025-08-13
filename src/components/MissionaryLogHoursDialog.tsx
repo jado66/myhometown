@@ -37,17 +37,18 @@ const categories = [
 
 function getMonthOptions() {
   const options = [];
-  for (let i = 0; i < 3; i++) {
-    const date = moment().subtract(i, "months").startOf("month");
+  const currentYear = moment().year();
+  for (let month = 0; month < 12; month++) {
+    const date = moment().year(currentYear).month(month).startOf("month");
+    if (date.isAfter(moment())) {
+      continue;
+    }
     options.push({
       value: date.toISOString(),
-      label:
-        i === 0
-          ? `This Month (${date.format("MMMM YYYY")})`
-          : date.format("MMMM YYYY"),
+      label: date.format("MMMM YYYY"),
     });
   }
-  return options;
+  return options.reverse();
 }
 function getWeekOptions() {
   const options = [];
@@ -116,12 +117,8 @@ export default function MissionaryLogHoursDialog({
   editingId,
   resetForm,
 }: MissionaryLogHoursDialogProps) {
-  const periodStart = selectedDate
-    .clone()
-    .startOf(entryMethod === "weekly" ? "week" : "month");
-  const periodEnd = selectedDate
-    .clone()
-    .endOf(entryMethod === "weekly" ? "week" : "month");
+  const periodStart = selectedDate.clone().startOf("month");
+  const periodEnd = selectedDate.clone().endOf("month");
 
   return (
     <Dialog
@@ -137,28 +134,7 @@ export default function MissionaryLogHoursDialog({
         <Box sx={{ flexGrow: 1 }}>
           {editingId ? "Edit" : "Log"} Your Volunteer Hours
         </Box>
-        {entryMethod && !editingId && (
-          <Button
-            size="small"
-            onClick={() => {
-              setEntryMethod(entryMethod === "weekly" ? "monthly" : "weekly");
-            }}
-            sx={{
-              mr: 1,
-              border: 1,
-              borderColor: "divider",
-              "&:hover": {
-                backgroundColor: "action.hover",
-              },
-            }}
-            title={`Switch to ${
-              entryMethod === "weekly" ? "monthly" : "weekly"
-            } input`}
-          >
-            <SwapHoriz fontSize="small" sx={{ mr: 1 }} />
-            Switch To {entryMethod === "weekly" ? "Monthly" : "Weekly"} Input
-          </Button>
-        )}
+        {/* Only monthly entry method is available now */}
         <IconButton
           onClick={() => {
             onClose();
@@ -175,33 +151,19 @@ export default function MissionaryLogHoursDialog({
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid item xs={12} sm={6}>
               <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                {entryMethod === "monthly" ? "Select Month" : "Select Week"}
+                Select Month
               </Typography>
-              {entryMethod === "monthly" ? (
-                <ThemedReactSelect
-                  options={getMonthOptions()}
-                  value={getMonthOptions().find((opt) =>
-                    moment(opt.value).isSame(selectedDate, "month")
-                  )}
-                  onChange={(option) =>
-                    option && setSelectedDate(moment(option.value))
-                  }
-                  placeholder="Choose month..."
-                  height={56}
-                />
-              ) : (
-                <ThemedReactSelect
-                  options={getWeekOptions()}
-                  value={getWeekOptions().find((opt) =>
-                    moment(opt.value).isSame(selectedDate, "week")
-                  )}
-                  onChange={(option) =>
-                    option && setSelectedDate(moment(option.value))
-                  }
-                  placeholder="Choose week..."
-                  height={56}
-                />
-              )}
+              <ThemedReactSelect
+                options={getMonthOptions()}
+                value={getMonthOptions().find((opt) =>
+                  moment(opt.value).isSame(selectedDate, "month")
+                )}
+                onChange={(option) =>
+                  option && setSelectedDate(moment(option.value))
+                }
+                placeholder="Choose month..."
+                height={56}
+              />
             </Grid>
             <Grid item xs={12} sm={6}>
               <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
