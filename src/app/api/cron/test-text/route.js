@@ -8,16 +8,21 @@ export async function GET(req) {
   console.log("Running test text cron job...");
 
   try {
-    const result = await sendSimpleText({
-      message: "This is a test message from the cron job",
-      phone: "18012548871",
-      name: "Test User"
-    });
+    const phoneNumbers = ["18012548871", "13852508633"];
+    const results = [];
+    for (const phone of phoneNumbers) {
+      const result = await sendSimpleText({
+        message: "This is a test message from the cron job.",
+        phone,
+        name: "Test User",
+      });
+      results.push({ phone, result });
+    }
 
     return new Response(
       JSON.stringify({
         success: true,
-        result,
+        results,
         timestamp: new Date().toISOString(),
       }),
       {
