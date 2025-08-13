@@ -617,14 +617,6 @@ export default function MissionaryManagement() {
                     icon: <Group sx={{ color: "#fff" }} />,
                   },
                   {
-                    label: "Active",
-                    value: filteredMissionaries.filter(
-                      (m) => m.assignment_status === "active"
-                    ).length,
-                    color: "success.main",
-                    icon: <CheckCircle sx={{ color: "#fff" }} />,
-                  },
-                  {
                     label: "State Level",
                     value: filteredMissionaries.filter(
                       (m) => m.assignment_level === "state"
@@ -633,14 +625,18 @@ export default function MissionaryManagement() {
                     icon: <Business sx={{ color: "#fff" }} />,
                   },
                   {
-                    label: "Local Level",
-                    value:
-                      filteredMissionaries.filter(
-                        (m) => m.assignment_level === "city"
-                      ).length +
-                      filteredMissionaries.filter(
-                        (m) => m.assignment_level === "community"
-                      ).length,
+                    label: "City Level",
+                    value: filteredMissionaries.filter(
+                      (m) => m.assignment_level === "city"
+                    ).length,
+                    color: "secondary.main",
+                    icon: <Business sx={{ color: "#fff" }} />,
+                  },
+                  {
+                    label: "Community Level",
+                    value: filteredMissionaries.filter(
+                      (m) => m.assignment_level === "community"
+                    ).length,
                     color: "warning.main",
                     icon: <LocationCity sx={{ color: "#fff" }} />,
                   },

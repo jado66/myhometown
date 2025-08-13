@@ -75,7 +75,7 @@ export default function MissionaryDashboard({
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalHours: 0,
-    thisWeekHours: 0,
+
     thisMonthHours: 0,
   });
   const [error, setError] = useState<string | null>(null);
@@ -132,15 +132,11 @@ export default function MissionaryDashboard({
       0
     );
 
-    const thisWeekHours = hoursData
-      .filter((h) => moment(h.period_start_date).isSame(now, "week"))
-      .reduce((sum, h) => sum + Number(h.total_hours), 0);
-
     const thisMonthHours = hoursData
       .filter((h) => moment(h.period_start_date).isSame(now, "month"))
       .reduce((sum, h) => sum + Number(h.total_hours), 0);
 
-    setStats({ totalHours, thisWeekHours, thisMonthHours });
+    setStats({ totalHours, thisMonthHours });
   };
 
   const resetForm = () => {
@@ -376,7 +372,7 @@ export default function MissionaryDashboard({
 
         {/* Stats Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={12} sm={6}>
             <Card elevation={2}>
               <CardContent>
                 <Typography color="text.secondary" gutterBottom>
@@ -393,24 +389,8 @@ export default function MissionaryDashboard({
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <Card elevation={2}>
-              <CardContent>
-                <Typography color="text.secondary" gutterBottom>
-                  This Week
-                </Typography>
-                <Typography
-                  variant="h3"
-                  component="div"
-                  fontWeight="bold"
-                  color="success.main"
-                >
-                  {stats.thisWeekHours}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={4}>
+
+          <Grid item xs={12} sm={6}>
             <Card elevation={2}>
               <CardContent>
                 <Typography color="text.secondary" gutterBottom>
