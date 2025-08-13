@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Box,
   Chip,
@@ -9,6 +9,10 @@ import {
   Typography,
   Paper,
   Avatar,
+  Tabs,
+  Tab,
+  Card,
+  CardContent,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -16,6 +20,8 @@ import {
   Schedule,
   TrendingUp,
   Person,
+  Analytics,
+  TableChart,
 } from "@mui/icons-material";
 import { AggregateStats } from "./AggregateStats";
 
@@ -38,7 +44,8 @@ interface FilterState {
   selectedCommunityId: string | null;
 }
 
-import { MissionaryHours } from "@/types/missionary/types";
+import type { MissionaryHours } from "@/types/missionary/types";
+import { HoursAnalytics } from "./HoursAnalytics";
 
 interface HoursOverviewProps {
   missionaries: Missionary[];
@@ -51,6 +58,8 @@ export function HoursOverview({
   filters,
   hours,
 }: HoursOverviewProps) {
+  const [activeTab, setActiveTab] = useState(0);
+
   // Calculate hours stats based on filtered missionaries
   const filteredHours = useMemo(() => {
     return hours.filter((h) =>
@@ -155,8 +164,8 @@ export function HoursOverview({
             icon: <TrendingUp sx={{ color: "#fff" }} />,
           },
           {
-            label: "This Week",
-            value: hoursStats.thisWeek,
+            label: "This Month",
+            value: hoursStats.thisMonth,
             color: "warning.main",
             icon: <Schedule sx={{ color: "#fff" }} />,
           },
@@ -165,100 +174,134 @@ export function HoursOverview({
 
       <Divider sx={{ my: 3 }} />
 
-      {/* Hours Summary */}
+      {/* Tabs for different views */}
+      <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
+        <Tabs
+          value={activeTab}
+          onChange={(e, newValue) => setActiveTab(newValue)}
+        >
+          <Tab
+            icon={<Analytics />}
+            label="Analytics & Charts"
+            iconPosition="start"
+          />
+          <Tab
+            icon={<TableChart />}
+            label="Missionary Summary"
+            iconPosition="start"
+          />
+        </Tabs>
+      </Box>
 
-      <Typography
-        variant="body2"
-        color="text.primary"
-        sx={{ display: "flex", mb: 3, alignItems: "center" }}
-      >
-        <BarChartIcon sx={{ mr: 1 }} />
-        Hours Summary by Missionary
-      </Typography>
+      {/* Tab Content */}
+      {activeTab === 0 && (
+        <HoursAnalytics
+          missionaries={missionaries}
+          hours={hours}
+          filters={filters}
+        />
+      )}
 
-      {missionaryHoursSummary.length > 0 ? (
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {missionaryHoursSummary.map((summary) => (
-            <Paper key={summary.missionary.id} sx={{ p: 3 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Avatar sx={{ bgcolor: "primary.main" }}>
-                    {summary.missionary.first_name[0]}
-                    {summary.missionary.last_name[0]}
-                  </Avatar>
-                  <Box>
-                    <Typography variant="h6">
-                      {summary.missionary.first_name}{" "}
-                      {summary.missionary.last_name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {summary.missionary.email}
-                    </Typography>
-                    <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
-                      {summary.missionary.title && (
+      {activeTab === 1 && (
+        <Box>
+          <Typography
+            variant="body2"
+            color="text.primary"
+            sx={{ display: "flex", mb: 3, alignItems: "center" }}
+          >
+            <BarChartIcon sx={{ mr: 1 }} />
+            Hours Summary by Missionary
+          </Typography>
+
+          {missionaryHoursSummary.length > 0 ? (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {missionaryHoursSummary.map((summary) => (
+                <Paper key={summary.missionary.id} sx={{ p: 3 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Avatar sx={{ bgcolor: "primary.main" }}>
+                        {summary.missionary.first_name[0]}
+                        {summary.missionary.last_name[0]}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="h6">
+                          {summary.missionary.first_name}{" "}
+                          {summary.missionary.last_name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {summary.missionary.email}
+                        </Typography>
+                        <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+                          {summary.missionary.title && (
+                            <Chip
+                              label={summary.missionary.title}
+                              size="small"
+                              sx={{ textTransform: "capitalize" }}
+                              variant="outlined"
+                            />
+                          )}
+                          <Chip
+                            label={summary.missionary.assignment_status}
+                            size="small"
+                            color={
+                              summary.missionary.assignment_status === "active"
+                                ? "success"
+                                : "default"
+                            }
+                          />
+                        </Box>
+                      </Box>
+                    </Box>
+                    <Box sx={{ textAlign: "right" }}>
+                      <Typography
+                        variant="h4"
+                        color="primary"
+                        fontWeight="bold"
+                      >
+                        {summary.totalHours}h
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {summary.entries} entries
+                      </Typography>
+                      <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
                         <Chip
-                          label={summary.missionary.title}
+                          label={`Weekly: ${summary.weeklyHours}h`}
                           size="small"
-                          sx={{ textTransform: "capitalize" }}
+                          color="primary"
                           variant="outlined"
                         />
-                      )}
-                      <Chip
-                        label={summary.missionary.assignment_status}
-                        size="small"
-                        color={
-                          summary.missionary.assignment_status === "active"
-                            ? "success"
-                            : "default"
-                        }
-                      />
+                        <Chip
+                          label={`Monthly: ${summary.monthlyHours}h`}
+                          size="small"
+                          color="secondary"
+                          variant="outlined"
+                        />
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
-                <Box sx={{ textAlign: "right" }}>
-                  <Typography variant="h4" color="primary" fontWeight="bold">
-                    {summary.totalHours}h
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {summary.entries} entries
-                  </Typography>
-                  <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
-                    <Chip
-                      label={`Weekly: ${summary.weeklyHours}h`}
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                    />
-                    <Chip
-                      label={`Monthly: ${summary.monthlyHours}h`}
-                      size="small"
-                      color="secondary"
-                      variant="outlined"
-                    />
-                  </Box>
-                </Box>
-              </Box>
-            </Paper>
-          ))}
-        </Box>
-      ) : (
-        <Box sx={{ textAlign: "center", py: 8 }}>
-          <ScheduleIcon sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
-          <Typography variant="h6" gutterBottom>
-            No hours recorded
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            No hours have been recorded for the selected missionaries.
-          </Typography>
-          <Button variant="contained" startIcon={<AddIcon />}>
-            Add First Hours Entry
-          </Button>
+                </Paper>
+              ))}
+            </Box>
+          ) : (
+            <Box sx={{ textAlign: "center", py: 8 }}>
+              <Schedule sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
+              <Typography variant="h6" gutterBottom>
+                No hours recorded
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                No hours have been recorded for the selected missionaries.
+              </Typography>
+              <Button variant="contained" startIcon={<AddIcon />}>
+                Add First Hours Entry
+              </Button>
+            </Box>
+          )}
         </Box>
       )}
 

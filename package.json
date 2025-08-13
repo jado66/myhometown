@@ -83,6 +83,7 @@
     "react-slick": "^0.29.0",
     "react-toastify": "^10.0.5",
     "react-visibility-sensor": "^5.1.1",
+    "recharts": "^3.1.2",
     "remove": "^0.1.5",
     "rrule": "^2.8.1",
     "slick-carousel": "^1.8.1",
