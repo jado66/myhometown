@@ -1,14 +1,18 @@
+"use client";
+
 import { Droppable } from "react-beautiful-dnd";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { KanbanCard } from "./KanbanCard";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { Column, Task } from "@/types/kanban/KanbanTypes";
-import { Stack } from "@mui/material";
+import { Stack, Button, Collapse } from "@mui/material";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 import { ReportGmailerrorred } from "@mui/icons-material";
 
@@ -82,11 +86,45 @@ export function KanbanColumn({
   // Show/hide archived toggle for done column (controlled from parent)
   const [hovered, setHovered] = useState(false);
 
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(5); // Default to show 5 tickets
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Calculate how many tickets can fit in the available space
+  useEffect(() => {
+    const calculateVisibleTickets = () => {
+      if (containerRef.current) {
+        // Approximate height per ticket (card + spacing)
+        const ticketHeight = 120; // Adjust based on your card height
+        const availableHeight = window.innerHeight - 300; // Account for header, padding, etc.
+        const maxVisible = Math.max(
+          3,
+          Math.floor(availableHeight / ticketHeight)
+        );
+        setVisibleCount(maxVisible);
+      }
+    };
+
+    calculateVisibleTickets();
+    window.addEventListener("resize", calculateVisibleTickets);
+    return () => window.removeEventListener("resize", calculateVisibleTickets);
+  }, []);
+
   // Only for done column: filter tasks based on showArchive
   let displayTasks = tasks;
   if (column.id === "done" && showArchive === false) {
     displayTasks = tasks.filter((t) => !isArchived(t));
   }
+
+  const visibleTasks = isExpanded
+    ? displayTasks
+    : displayTasks.slice(0, visibleCount);
+  const overflowCount = displayTasks.length - visibleCount;
+  const hasOverflow = overflowCount > 0 && !isExpanded;
+
+  const handleToggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
 
   return (
     <Paper
@@ -101,8 +139,10 @@ export function KanbanColumn({
         border: "1px solid #e0e0e0",
         bgcolor: "background.paper",
         flexShrink: 1,
-        borderRadius: 2, // Consistent rounded corners
+        borderRadius: 2,
         position: "relative",
+        maxHeight: isExpanded ? "none" : "calc(100vh - 200px)",
+        overflow: isExpanded ? "visible" : "hidden",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -155,6 +195,7 @@ export function KanbanColumn({
           </Box>
         )}
       </Box>
+
       <Droppable droppableId={column.id}>
         {(provided, snapshot) => (
           <Box
@@ -163,25 +204,87 @@ export function KanbanColumn({
             sx={{
               flexGrow: 1,
               minHeight: 100,
+              maxHeight: isExpanded ? "calc(100vh - 200px)" : "auto",
               p: 1,
               borderRadius: 1,
               transition: "background-color 0.2s",
               bgcolor: snapshot.isDraggingOver ? "action.hover" : "transparent",
+              overflow: isExpanded ? "auto" : "hidden",
+              overflowX: "hidden",
+              overflowY: isExpanded ? "auto" : "hidden",
             }}
           >
-            <Stack spacing={2}>
-              {/* Use Stack for consistent spacing between cards */}
-              {displayTasks.map((task, index) => (
-                <KanbanCard
-                  key={task.id}
-                  task={task}
-                  index={index}
-                  onDelete={onDelete}
-                  onArchive={onArchive}
-                  columnId={column.id}
-                />
-              ))}
-            </Stack>
+            <div ref={containerRef}>
+              <Stack spacing={2}>
+                {visibleTasks.map((task, index) => (
+                  <KanbanCard
+                    key={task.id}
+                    task={task}
+                    index={index}
+                    onDelete={onDelete}
+                    onArchive={onArchive}
+                    columnId={column.id}
+                  />
+                ))}
+              </Stack>
+
+              {hasOverflow && (
+                <Button
+                  onClick={handleToggleExpand}
+                  sx={{
+                    mt: 2,
+                    width: "100%",
+                    color: color,
+                    borderColor: color,
+                    "&:hover": {
+                      borderColor: color,
+                      backgroundColor: `${color}10`,
+                    },
+                  }}
+                  variant="outlined"
+                  startIcon={<ExpandMoreIcon />}
+                >
+                  + {overflowCount} more
+                </Button>
+              )}
+
+              <Collapse in={isExpanded}>
+                {isExpanded && overflowCount > 0 && (
+                  <Stack spacing={2} sx={{ mt: 2 }}>
+                    {displayTasks.slice(visibleCount).map((task, index) => (
+                      <KanbanCard
+                        key={task.id}
+                        task={task}
+                        index={index + visibleCount}
+                        onDelete={onDelete}
+                        onArchive={onArchive}
+                        columnId={column.id}
+                      />
+                    ))}
+                  </Stack>
+                )}
+
+                {isExpanded && overflowCount > 0 && (
+                  <Button
+                    onClick={handleToggleExpand}
+                    sx={{
+                      mt: 2,
+                      width: "100%",
+                      color: color,
+                      borderColor: color,
+                      "&:hover": {
+                        borderColor: color,
+                        backgroundColor: `${color}10`,
+                      },
+                    }}
+                    variant="outlined"
+                    startIcon={<ExpandLessIcon />}
+                  >
+                    Show less
+                  </Button>
+                )}
+              </Collapse>
+            </div>
             {provided.placeholder}
           </Box>
         )}

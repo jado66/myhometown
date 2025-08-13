@@ -54,10 +54,11 @@ const ServiceDayDialog = ({
         check_in_location: initialData.check_in_location || "",
       });
     } else {
+      const endDate = moment().format("YYYY-MM-DD");
       setFormData({
         name: "",
-        start_date: moment().format("YYYY-MM-DD"),
-        end_date: moment().format("YYYY-MM-DD"),
+        start_date: moment().subtract(6, "months").format("YYYY-MM-DD"),
+        end_date: endDate,
         city_id: cityId,
         community_id: communityId,
         partner_stakes: [],
@@ -129,23 +130,19 @@ const ServiceDayDialog = ({
             />
 
             <TextField
-              label="Start Date"
-              type="date"
-              value={formData.start_date}
-              onChange={(e) =>
-                setFormData({ ...formData, start_date: e.target.value })
-              }
-              fullWidth
-              helperText="This is the day your communities starts entering projects "
-              InputLabelProps={{ shrink: true }}
-            />
-            <TextField
-              label="End Date (Day of Service)"
+              label="Day of Service Date"
               type="date"
               value={formData.end_date}
-              onChange={(e) =>
-                setFormData({ ...formData, end_date: e.target.value })
-              }
+              onChange={(e) => {
+                const endDate = e.target.value;
+                setFormData({
+                  ...formData,
+                  end_date: endDate,
+                  start_date: moment(endDate)
+                    .subtract(6, "months")
+                    .format("YYYY-MM-DD"),
+                });
+              }}
               fullWidth
               InputLabelProps={{ shrink: true }}
             />

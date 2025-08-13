@@ -5,6 +5,9 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
+import BookIcon from "@mui/icons-material/Book";
+import TaskIcon from "@mui/icons-material/Task";
+import BugReportIcon from "@mui/icons-material/BugReport";
 import Tooltip from "@mui/material/Tooltip";
 import type { Task } from "@/types/kanban/KanbanTypes";
 
@@ -15,6 +18,19 @@ interface KanbanCardProps {
   onArchive?: (taskId: string) => void;
   columnId?: string;
 }
+
+const getTaskTypeIcon = (type: string) => {
+  switch (type) {
+    case "Story":
+      return <BookIcon fontSize="small" sx={{ color: "#4caf50" }} />;
+    case "Task":
+      return <TaskIcon fontSize="small" sx={{ color: "#2196f3" }} />;
+    case "Bug":
+      return <BugReportIcon fontSize="small" sx={{ color: "#f44336" }} />;
+    default:
+      return <BookIcon fontSize="small" sx={{ color: "#4caf50" }} />;
+  }
+};
 
 export function KanbanCard({
   task,
@@ -48,10 +64,29 @@ export function KanbanCard({
           <CardContent
             sx={{ p: 2, "&:last-child": { pb: 2 }, position: "relative" }}
           >
+            {/* Task type icon at top right */}
+            <Tooltip title={task.type || "Story"} arrow>
+              <div
+                style={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  zIndex: 1,
+                }}
+              >
+                {getTaskTypeIcon(task.type || "Story")}
+              </div>
+            </Tooltip>
+
             <Typography
               variant="subtitle1"
               component="h3"
-              sx={{ mb: 0.5, color: "text.primary", fontWeight: "medium" }}
+              sx={{
+                mb: 0.5,
+                color: "text.primary",
+                fontWeight: "medium",
+                pr: 4, // Add padding to avoid overlap with type icon
+              }}
             >
               {task.title}
             </Typography>
@@ -81,7 +116,7 @@ export function KanbanCard({
                 onClick={() => onDelete(task.id)}
                 sx={{
                   position: "absolute",
-                  top: 4,
+                  top: 36, // Moved down to avoid overlap with type icon
                   right: 4,
                   zIndex: 2,
                   opacity: 0,

@@ -1,17 +1,16 @@
-export type ColumnId = "backlog" | "testing" | "in-progress" | "done";
-
 export interface Task {
   id: string;
-  created_at: string;
   title: string;
   description: string | null;
   status: ColumnId;
   priority: number;
-  is_hidden?: boolean; // Optional for backward compatibility
+  created_at: string;
+  is_hidden: boolean;
+  type?: string; // Added type field
 }
 
 export interface Column {
-  id: ColumnId;
+  id: string;
   title: string;
   taskIds: string[];
 }
@@ -21,3 +20,5 @@ export interface BoardData {
   columns: { [key: string]: Column };
   columnOrder: ColumnId[];
 }
+
+export type ColumnId = "backlog" | "in-progress" | "testing" | "done";
