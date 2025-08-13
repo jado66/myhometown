@@ -32,8 +32,6 @@ import {
 } from "@mui/material";
 import {
   Print as PrintIcon,
-  Storefront as StorefrontIcon,
-  Checkroom as CheckroomIcon,
   Circle as CircleIcon,
   Email as EmailIcon,
   Delete as DeleteIcon,
@@ -41,6 +39,8 @@ import {
   ArrowBack as ArrowBackIcon,
   LocationCity,
   Palette,
+  CheckCircle as CheckCircleIcon,
+  Refresh as RefreshIcon,
 } from "@mui/icons-material";
 
 interface CatalogItem {
@@ -158,6 +158,12 @@ export default function MHTDesignHub() {
   const [activeTab, setActiveTab] = useState<string>("design");
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessPage, setShowSuccessPage] = useState(false);
+  const [submittedOrderData, setSubmittedOrderData] = useState<{
+    items: string[];
+    name: string;
+    email: string;
+  } | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     name: "",
@@ -277,9 +283,15 @@ Submitted: ${new Date().toLocaleString()}`,
       );
 
       if (response.ok) {
-        alert(
-          "Order submitted successfully! We will confirm receipt of your request within 24hrs."
-        );
+        setSubmittedOrderData({
+          items: selectedItems.map((id) => {
+            const item = allItems.find((i) => i.id === id);
+            return item?.title || "";
+          }),
+          name: formData.name,
+          email: formData.email,
+        });
+        setShowSuccessPage(true);
 
         // Reset form
         setSelectedItems([]);
@@ -304,6 +316,11 @@ Submitted: ${new Date().toLocaleString()}`,
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleBackToForm = () => {
+    setShowSuccessPage(false);
+    setSubmittedOrderData(null);
   };
 
   const renderCatalogItems = (items: CatalogItem[]) => (
@@ -412,6 +429,189 @@ Submitted: ${new Date().toLocaleString()}`,
   const selectedItemsData = selectedItems
     .map((id) => allItems.find((item) => item.id === id))
     .filter(Boolean);
+
+  const renderSuccessPage = () => (
+    <Container maxWidth="md" sx={{ py: 8 }}>
+      <Paper
+        elevation={3}
+        sx={{
+          p: 6,
+          textAlign: "center",
+          borderRadius: 3,
+        }}
+      >
+        <Box sx={{ mb: 4 }}>
+          <CheckCircleIcon
+            sx={{
+              fontSize: 80,
+              color: "success.main",
+              mb: 2,
+              filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.1))",
+            }}
+          />
+          <Typography
+            variant="h3"
+            component="h1"
+            gutterBottom
+            sx={{
+              fontWeight: "bold",
+              color: "success.dark",
+              mb: 2,
+            }}
+          >
+            Order Submitted Successfully!
+          </Typography>
+          <Typography
+            variant="h6"
+            color="text.secondary"
+            sx={{ mb: 4, maxWidth: 600, mx: "auto" }}
+          >
+            Thank you for your order, {submittedOrderData?.name}! We've received
+            your design request and will confirm receipt within 24 hours.
+          </Typography>
+        </Box>
+
+        <Divider sx={{ my: 4 }} />
+
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold" }}>
+            Order Summary
+          </Typography>
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 3,
+              mt: 2,
+              backgroundColor: "background.paper",
+              borderRadius: 2,
+            }}
+          >
+            <Grid container spacing={2} alignItems="center" sx={{ mb: 2 }}>
+              <Grid item>
+                <EmailIcon color="primary" />
+              </Grid>
+              <Grid item xs>
+                <Typography variant="body1">
+                  <strong>Confirmation sent to:</strong>{" "}
+                  {submittedOrderData?.email}
+                </Typography>
+              </Grid>
+            </Grid>
+
+            <Typography
+              variant="subtitle1"
+              gutterBottom
+              sx={{ fontWeight: "bold", mt: 3 }}
+            >
+              Selected Items ({submittedOrderData?.items.length}):
+            </Typography>
+            <Box sx={{ textAlign: "left" }}>
+              {submittedOrderData?.items.map((item, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    py: 0.5,
+                  }}
+                >
+                  <CircleIcon
+                    sx={{ fontSize: 8, mr: 2, color: "primary.main" }}
+                  />
+                  <Typography variant="body2">{item}</Typography>
+                </Box>
+              ))}
+            </Box>
+          </Paper>
+        </Box>
+
+        <Box sx={{ mb: 4 }}>
+          <Paper
+            sx={{
+              p: 3,
+              backgroundColor: "primary.light",
+              color: "primary.contrastText",
+              borderRadius: 2,
+            }}
+          >
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold" }}>
+              What happens next?
+            </Typography>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid item xs={12} sm={4}>
+                <Box sx={{ textAlign: "center" }}>
+                  <EmailIcon sx={{ fontSize: 40, mb: 1 }} />
+                  <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+                    Confirmation
+                  </Typography>
+                  <Typography variant="body2">
+                    You'll receive an email confirmation within 24 hours
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Box sx={{ textAlign: "center" }}>
+                  <Palette sx={{ fontSize: 40, mb: 1 }} />
+                  <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+                    Design Process
+                  </Typography>
+                  <Typography variant="body2">
+                    Our design team will customize your materials
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Box sx={{ textAlign: "center" }}>
+                  <PrintIcon sx={{ fontSize: 40, mb: 1 }} />
+                  <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+                    Print-Ready Files
+                  </Typography>
+                  <Typography variant="body2">
+                    You'll receive designs via email for order
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Paper>
+        </Box>
+
+        <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handleBackToForm}
+            startIcon={<RefreshIcon />}
+            sx={{
+              px: 4,
+              py: 1.5,
+              fontWeight: "bold",
+              borderRadius: 2,
+            }}
+          >
+            Submit Another Order
+          </Button>
+          <Button
+            variant="outlined"
+            size="large"
+            onClick={() => window.location.reload()}
+            startIcon={<ArrowBackIcon />}
+            sx={{
+              px: 4,
+              py: 1.5,
+              fontWeight: "bold",
+              borderRadius: 2,
+            }}
+          >
+            Back to Home
+          </Button>
+        </Box>
+      </Paper>
+    </Container>
+  );
+
+  if (showSuccessPage) {
+    return renderSuccessPage();
+  }
 
   return (
     <>

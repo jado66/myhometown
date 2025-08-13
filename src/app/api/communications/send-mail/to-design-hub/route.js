@@ -1,4 +1,11 @@
 import { myHometownTransporter } from "@/util/email/nodemailer-transporter";
+import { createClient } from "@supabase/supabase-js";
+
+// Initialize Supabase client for server-side operations
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY // Use service role key for server-side
+);
 
 // Enhanced HTML formatter for Design Hub orders
 const formattedDesignHubHtml = (html) => {
@@ -133,16 +140,146 @@ ${html.message}
   `;
 };
 
+// Function to parse selected items from the message
+const parseSelectedItemsFromMessage = (message) => {
+  try {
+    // Extract the items section from the message
+    const itemsMatch = message.match(
+      /Selected Items \((\d+)\):\n(.*?)(?:\n\nAdditional Requests:|$)/s
+    );
+    if (!itemsMatch) return [];
+
+    const itemsText = itemsMatch[2];
+    const items = itemsText
+      .split("\n")
+      .filter((line) => line.trim().startsWith("- "))
+      .map((line) => {
+        const match = line.match(/- (.*?) \((.*?)\)/);
+        if (match) {
+          return {
+            title: match[1].trim(),
+            category: match[2].trim(),
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    return items;
+  } catch (error) {
+    console.error("Error parsing selected items:", error);
+    return [];
+  }
+};
+
+// Function to extract location information
+const parseLocationInfo = (html) => {
+  const locationString = html.location || "";
+
+  if (locationString === "myHometown Utah") {
+    return {
+      locationType: "myHometown Utah",
+      locationName: null,
+    };
+  }
+
+  if (locationString.startsWith("City: ")) {
+    return {
+      locationType: "city",
+      locationName: locationString.replace("City: ", "").trim(),
+    };
+  }
+
+  if (locationString.startsWith("Community: ")) {
+    return {
+      locationType: "community",
+      locationName: locationString.replace("Community: ", "").trim(),
+    };
+  }
+
+  return {
+    locationType: "unknown",
+    locationName: locationString,
+  };
+};
+
+// Function to log request to Supabase
+const logRequestToSupabase = async (subject, html, rawRequestData) => {
+  try {
+    const selectedItems = parseSelectedItemsFromMessage(html.message);
+    const { locationType, locationName } = parseLocationInfo(html);
+
+    // Extract additional requests from message
+    const additionalRequestsMatch = html.message.match(
+      /Additional Requests: (.*?)(?:\n\nSubmitted:|$)/s
+    );
+    const additionalRequests = additionalRequestsMatch
+      ? additionalRequestsMatch[1].trim()
+      : null;
+
+    const requestData = {
+      first_name: html.firstName || "",
+      last_name: html.lastName || "",
+      title: html.title || "",
+      email: html.email || "",
+      phone: html.phone || "",
+      location_type: locationType,
+      location_name: locationName,
+      selected_items: selectedItems,
+      additional_requests: additionalRequests,
+      total_items: selectedItems.length,
+      email_sent: false, // Will be updated after email is sent successfully
+      raw_request_data: rawRequestData,
+    };
+
+    const { data, error } = await supabase
+      .from("design_hub_requests")
+      .insert(requestData)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Supabase insert error:", error);
+      return null;
+    }
+
+    console.log("Request logged to Supabase:", data.id);
+    return data;
+  } catch (error) {
+    console.error("Error logging to Supabase:", error);
+    return null;
+  }
+};
+
+// Function to update email sent status
+const updateEmailSentStatus = async (requestId, success) => {
+  try {
+    const { error } = await supabase
+      .from("design_hub_requests")
+      .update({
+        email_sent: success,
+        email_sent_at: success ? new Date().toISOString() : null,
+      })
+      .eq("id", requestId);
+
+    if (error) {
+      console.error("Error updating email status:", error);
+    }
+  } catch (error) {
+    console.error("Error updating email status:", error);
+  }
+};
+
 export async function POST(request, res) {
-  const { subject, html } = await request.json();
+  const requestBody = await request.json();
+  const { subject, html } = requestBody;
 
   const recipientEmail = "jado66@gmail.com"; // Testing email for Design Hub
 
+  // Log the request to Supabase first
+  const loggedRequest = await logRequestToSupabase(subject, html, requestBody);
+
   try {
-    // Determine email recipient based on subject line
-
-    // For Design Hub orders, use the testing email
-
     // Choose the appropriate HTML formatter
     let emailHtml;
     if (subject && subject.includes("MHT Design Hub Order Request")) {
@@ -161,10 +298,16 @@ export async function POST(request, res) {
     console.log("Message sent: %s", info.messageId);
     console.log("Sent to: %s", recipientEmail);
 
+    // Update the email sent status in Supabase
+    if (loggedRequest) {
+      await updateEmailSentStatus(loggedRequest.id, true);
+    }
+
     return new Response(
       JSON.stringify({
         message: "Email sent successfully",
         recipient: recipientEmail,
+        requestId: loggedRequest?.id || null,
       }),
       {
         status: 200,
@@ -175,11 +318,18 @@ export async function POST(request, res) {
     );
   } catch (error) {
     console.error("Email sending error:", error);
+
+    // Update the email sent status as failed in Supabase
+    if (loggedRequest) {
+      await updateEmailSentStatus(loggedRequest.id, false);
+    }
+
     // Send a JSON response with status code 500 (Internal Server Error) if an error occurs
     return new Response(
       JSON.stringify({
         message: "Error sending email",
         error: error.message,
+        requestId: loggedRequest?.id || null,
       }),
       {
         status: 500,
