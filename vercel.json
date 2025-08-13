@@ -16,7 +16,7 @@
     },
     {
       "path": "/api/cron/test-text",
-      "schedule": "*/10 * * * *"
+      "schedule": "*/5 * * * *"
     }
   ]
 }
