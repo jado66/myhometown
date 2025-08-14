@@ -130,7 +130,7 @@ const DaysOfServicePage = ({ params }) => {
         <>
           <Divider sx={{ my: 4 }} />
 
-          <Container maxWidth="lg" className="p-8">
+          <Container maxWidth="lg" className="p-8" id="form">
             {submitSuccess ? (
               <Alert sx={{ my: 4 }}>
                 <AlertTitle>Success!</AlertTitle>

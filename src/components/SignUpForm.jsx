@@ -4,7 +4,7 @@ import {
   Grid,
   Card,
   Typography,
-  TextField,
+  IconButton,
   styled,
   useTheme,
   Box,
@@ -14,7 +14,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import { IframeHelpDialog } from "./events/IframeHelpDialog";
-import { Edit, Visibility, VisibilityOff } from "@mui/icons-material";
+import { Edit, Link, Visibility, VisibilityOff } from "@mui/icons-material";
 import UploadImage from "./util/UploadImage";
 import { ClassSignupProvider } from "./class-signups/ClassSignupContext";
 import ClassCreationStepper from "./class-signups/ClassCreationStepper";
@@ -23,6 +23,7 @@ import { ViewClassSignupForm } from "./class-signups/stepper-components/ViewClas
 import { useFormResponses } from "@/hooks/useFormResponses";
 import Add from "@mui/icons-material/Add";
 import { DayOfServiceIdProvider } from "@/contexts/DayOfServiceIdProvider";
+import { toast } from "react-toastify";
 
 const StyledTreeItem = styled(TreeItem)(({ theme }) => ({
   "& .MuiTreeItem-content": {
@@ -189,6 +190,7 @@ export const SignUpForm = ({
   signUpFormId,
   onClose,
   form,
+  formLink,
   handleSubmit,
   isFormVisible,
   toggleDaysOfServiceVisibility,
@@ -203,6 +205,11 @@ export const SignUpForm = ({
 
   const handleEditSubclass = (classObj, formConfig) => {
     onClose(formConfig);
+  };
+
+  const copyFormLink = () => {
+    navigator.clipboard.writeText(formLink);
+    toast.success("Form link copied to clipboard");
   };
 
   const HeaderWithCloseButton = () => (
@@ -229,6 +236,16 @@ export const SignUpForm = ({
             display: { xs: "none", md: "flex" },
           }}
         >
+          {formLink && (
+            <IconButton
+              size="small"
+              sx={{ color: "primary.main", mr: 1 }}
+              onClick={copyFormLink}
+            >
+              <Link />
+            </IconButton>
+          )}
+
           <Button
             variant="outlined"
             onClick={toggleEditing}

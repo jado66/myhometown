@@ -169,6 +169,8 @@ const DaysOfServicePage = ({ params }) => {
   // Check if user has permission to edit (simplified example)
   const userCanEdit = true; // Replace with actual permission check
 
+  const pathToForm = window.location.pathname + "#form";
+
   if (!hasLoaded) {
     return (
       <Container
@@ -202,6 +204,7 @@ const DaysOfServicePage = ({ params }) => {
           handleSubmit={handleSubmit}
           onClose={handleSaveForm}
           isSubmitting={submitting}
+          formLink={pathToForm}
           initialValues={response?.response_data || {}}
           toggleDaysOfServiceVisibility={toggleDaysOfServiceVisibility}
           isFormVisible={community?.isDaysOfServiceVisibilityFormVisible}
