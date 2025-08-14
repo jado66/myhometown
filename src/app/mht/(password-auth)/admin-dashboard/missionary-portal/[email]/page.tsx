@@ -152,22 +152,8 @@ export default function MissionaryDashboard({
 
   const handleLogHours = async () => {
     // Check if user has a preference
-    try {
-      const response = await fetch(`/api/missionary/${email}/preference`);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.preference) {
-          setEntryMethod(data.preference);
-          setLogDialogOpen(true);
-        } else {
-          setMethodDialogOpen(true);
-        }
-      } else {
-        setMethodDialogOpen(true);
-      }
-    } catch (err) {
-      setMethodDialogOpen(true);
-    }
+
+    setLogDialogOpen(true);
   };
 
   const handleMethodSelect = (method: "weekly" | "monthly") => {
