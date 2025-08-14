@@ -47,7 +47,7 @@ export const MinorVolunteersComponent = ({
   // Get minors array from props or initialize empty array
   const minors = value || [];
 
-  const [hasMinors, setHasMinors] = useState(value?.length > 0);
+  const [hasMinors, setHasMinors] = useState(null);
 
   // Validate the form
   const validateForm = () => {
@@ -162,7 +162,7 @@ export const MinorVolunteersComponent = ({
         <RadioGroup
           aria-labelledby={`${field}-label`}
           name={field}
-          value={hasMinors ? "true" : "false"}
+          value={hasMinors}
           onChange={handleRadioChange}
           row
         >
