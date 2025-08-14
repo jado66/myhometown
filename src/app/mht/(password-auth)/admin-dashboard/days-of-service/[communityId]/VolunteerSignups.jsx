@@ -144,12 +144,12 @@ const DaysOfServicePage = ({
           />
 
           {/* Organization Summary Section */}
-          <OrganizationSummarySection
+          {/* <OrganizationSummarySection
             expanded={organizationAccordionOpen}
             onChange={handleOrganizationAccordionChange}
             projectSummary={projectSummary}
             generateCommunityReport={generateCommunityReport}
-          />
+          /> */}
 
           {/* Volunteer Signups Section */}
           <VolunteerSignupsSection

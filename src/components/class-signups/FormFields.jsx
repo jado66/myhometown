@@ -25,7 +25,7 @@ import {
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { FIELD_TYPES } from "./FieldTypes";
-import { Upload } from "@mui/icons-material";
+import { Check } from "@mui/icons-material";
 import { useImageUpload } from "@/hooks/use-upload-image";
 import SignaturePad from "react-signature-canvas";
 import { useEffect, useRef, useState } from "react";
@@ -373,6 +373,7 @@ export const FormField = ({
           <Box>
             <Button variant="outlined" onClick={() => setOpen(true)}>
               {config.label}
+              {value && <Check sx={{ ml: 1 }} />}
             </Button>
             <Dialog
               open={open}

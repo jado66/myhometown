@@ -37,6 +37,7 @@ export function ViewClassSignupForm({
     submitStatus,
     handleFormChange,
     handleSubmit,
+    validateForm,
     resetForm,
     testSignup,
   } = useClassSignup();
@@ -203,13 +204,20 @@ export function ViewClassSignupForm({
             fullWidth
             size="large"
             sx={{ mt: 3 }}
-            onClick={() => {
+            onClick={async () => {
               if (typeof onSubmit === "function") {
-                onSubmit(formData);
-                //reset form
+                // Validate the form first
+                const isFormValid = validateForm(formData);
+
+                if (!isFormValid) {
+                  return;
+                }
+
+                // If validation passes, submit the form
+                await onSubmit(formData);
                 resetForm();
               } else {
-                handleSubmit();
+                handleSubmit(); // This already includes validation
               }
             }}
             disabled={submitStatus === "submitting" || !isValid}

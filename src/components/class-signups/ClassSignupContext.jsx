@@ -593,6 +593,10 @@ export function ClassSignupProvider({
           if (!formData[fieldId]) {
             newErrors[fieldId] = `${config.label} is required`;
           }
+        } else if (config.type === FIELD_TYPES.infoDialog) {
+          if (!formData[fieldId]) {
+            newErrors[fieldId] = `You must acknowledge ${config.label}`;
+          }
         } else if (
           !formData[fieldId] ||
           (typeof formData[fieldId] === "string" &&
@@ -703,6 +707,7 @@ export function ClassSignupProvider({
     onDragEnd,
     handleBulkFieldUpdate,
     DAYS_OF_WEEK,
+    validateForm,
   };
 
   return (

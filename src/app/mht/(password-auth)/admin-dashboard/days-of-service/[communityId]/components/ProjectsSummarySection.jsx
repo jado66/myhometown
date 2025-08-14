@@ -53,7 +53,7 @@ const ProjectsSummarySection = ({
         aria-controls="projects-summary-content"
         id="projects-summary-header"
       >
-        <Typography variant="h6">Projects Volunteer Summary</Typography>
+        <Typography variant="h6">Days Of Service Summary</Typography>
       </AccordionSummary>
       <AccordionDetails>
         <Button

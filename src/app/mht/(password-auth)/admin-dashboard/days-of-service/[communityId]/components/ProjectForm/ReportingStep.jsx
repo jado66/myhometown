@@ -59,8 +59,9 @@ const ReportingStep = () => {
         label="Number of Volunteers"
         type="number"
         key="actual_volunteers"
-        helperText="The number of volunteers who actually participated in the project."
+        helperText="Please provide the number of volunteers who started on your project. To avoid duplicate count, do not include anyone who transferred from another project."
         min={0}
+        sx={{ mb: 1 }}
         value={formData.actual_volunteers}
         onChange={(e) =>
           handleNumberInputChange("actual_volunteers", e.target.value)
@@ -76,7 +77,7 @@ const ReportingStep = () => {
         onChange={(e) =>
           handleInputChange("actual_project_duration", e.target.value)
         }
-        helperText="This is NOT the total number of man hours. For example, if the project started at 8:00 AM and ended at noon, the duration would be 4 hours."
+        helperText="Specify the total duration of the project in hours. For example, if the project started at 8:00 AM and ended at 12:00 PM, enter 4 hours. Do not calculate total man-hours."
       />
       <Typography variant="h6" sx={{ mt: 3 }}>
         Project Report Pictures
