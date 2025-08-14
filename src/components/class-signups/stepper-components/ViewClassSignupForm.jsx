@@ -243,11 +243,7 @@ export function ViewClassSignupForm({
           {errors &&
             Object.keys(errors).length > 0 &&
             Object.keys(errors).map((key) => {
-              return (
-                <div key={key}>
-                  {key}: {errors[key]}
-                </div>
-              );
+              return <div key={key}>- {errors[key]}</div>;
             })}
         </Typography>
       )}

@@ -167,7 +167,7 @@ const ProjectsTable = ({ projects }) => (
       <TableHead>
         <TableRow>
           <TableCell>Project Name</TableCell>
-          <TableCell>Location</TableCell>
+          <TableCell>Project City</TableCell>
           <TableCell>Partner Group</TableCell>
           <TableCell align="right">Volunteers</TableCell>
           <TableCell align="right">Duration (hrs)</TableCell>
