@@ -169,7 +169,10 @@ const DaysOfServicePage = ({ params }) => {
   // Check if user has permission to edit (simplified example)
   const userCanEdit = true; // Replace with actual permission check
 
-  const pathToForm = window.location.pathname + "#form";
+  const pathToForm =
+    window.location.origin +
+    window.location.pathname.replace("edit/", "") +
+    "#form";
 
   if (!hasLoaded) {
     return (
