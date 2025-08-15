@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useCustomForms } from "@/hooks/useCustomForm";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { SignUpForm } from "@/components/SignUpForm";
-import { Container, Typography, Box, Divider } from "@mui/material";
+import { Container, Typography, Box, Divider, Button } from "@mui/material";
 import { Alert, AlertTitle } from "@mui/material";
 import { CustomDaysOfServiceContent } from "@/views/dayOfService/CustomDaysOfService";
 import Loading from "@/components/util/Loading";
@@ -129,14 +129,27 @@ const DaysOfServicePage = ({ params }) => {
       {community?.isDaysOfServiceVisibilityFormVisible && (
         <>
           <Divider sx={{ my: 4 }} />
-
           <Container maxWidth="lg" className="p-8" id="form">
             {submitSuccess ? (
-              <Alert sx={{ my: 4 }}>
-                <AlertTitle>Success!</AlertTitle>
-                Thank you for signing up. Your volunteer registration has been
-                submitted successfully.
-              </Alert>
+              <>
+                <Alert sx={{ my: 4 }}>
+                  <AlertTitle>Success!</AlertTitle>
+                  Thank you for signing up. Your volunteer registration has been
+                  submitted successfully.
+                </Alert>
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                      setSubmitSuccess(false);
+                      setSubmitError("");
+                    }}
+                  >
+                    Sign Up Another Volunteer
+                  </Button>
+                </Box>
+              </>
             ) : (
               <>
                 {submitError && (

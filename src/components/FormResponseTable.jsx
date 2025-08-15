@@ -313,7 +313,9 @@ export const FormResponseTable = ({
         col.accessorKey !== "actions"
     );
 
-    const headers = visibleColumns.map((col) => col.header).join(",") + "\n";
+    const headers =
+      visibleColumns.map((col) => col.header).join(",") +
+      ",Agreed To Safety Rules & Volunteer Form,Signed Form\n";
 
     const rows = dayData.volunteers
       .map((row) =>
@@ -329,6 +331,8 @@ export const FormResponseTable = ({
               return `"${String(cellValue).replace(/"/g, '""')}"`;
             }
           })
+          // These are validated on the form and you can't submit the form without it.
+          .concat('"Yes"', '"Yes"')
           .join(",")
       )
       .join("\n");
