@@ -63,7 +63,7 @@ const ProjectsSummarySection = ({
           onClick={generateCommunityReport}
         >
           <Assignment sx={{ mr: 1 }} />
-          Print Project Volunteer Hours Report
+          Print Days of Service Summary Report
         </Button>
 
         {sortedDates.length === 0 ? (
@@ -130,6 +130,16 @@ const ProjectsSummarySection = ({
           })
         )}
       </AccordionDetails>
+      {/* Close Accordion Button */}
+      <Box sx={{ display: "flex", justifyContent: "flex-end", my: 3, mr: 3 }}>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={() => onChange(false)}
+        >
+          Close
+        </Button>
+      </Box>
     </Accordion>
   );
 };

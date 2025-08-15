@@ -203,21 +203,59 @@ export const useFormResponses = () => {
   };
 
   // Delete a specific submission from a form's responses
+  // Replace the deleteSubmission function in your useFormResponses hook with this:
+
   const deleteSubmission = async (formId, submissionId) => {
     try {
-      // Call a Postgres function to delete the submission
-      const { data, error } = await supabase.rpc("delete_submission", {
-        form_id: formId,
-        submission_id: submissionId,
-      });
+      // First, get the current form responses
+      const { data: currentData, error: fetchError } = await supabase
+        .from("form_responses")
+        .select("response_data")
+        .eq("id", formId)
+        .single();
+
+      if (fetchError) {
+        console.error("Error fetching current data:", fetchError);
+        setError(fetchError);
+        return false;
+      }
+
+      if (
+        !currentData ||
+        !currentData.response_data ||
+        !currentData.response_data.submissions
+      ) {
+        console.error("No submissions found");
+        return false;
+      }
+
+      // Filter out the submission to delete
+      const updatedSubmissions = currentData.response_data.submissions.filter(
+        (submission) =>
+          submission.submissionId !== submissionId &&
+          submission.id !== submissionId
+      );
+
+      // Update the form responses with the filtered submissions
+      const { data, error } = await supabase
+        .from("form_responses")
+        .update({
+          response_data: {
+            ...currentData.response_data,
+            submissions: updatedSubmissions,
+          },
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", formId)
+        .select();
 
       if (error) {
-        console.error("Error deleting submission:", error);
+        console.error("Error updating form responses:", error);
         setError(error);
         return false;
       }
 
-      return data; // Should be true if successful
+      return true; // Success
     } catch (err) {
       console.error("Error deleting submission:", err);
       setError(err);
