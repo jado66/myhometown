@@ -313,6 +313,17 @@ export const FormResponseTable = ({
         col.accessorKey !== "actions"
     );
 
+    // Modify the type column to split and capitalize its value
+    const formatTypeColumn = (value) => {
+      if (!value) return "";
+      return value
+        .split(/(?=[A-Z])|_/)
+        .map(
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        )
+        .join(" ");
+    };
+
     const headers =
       visibleColumns.map((col) => col.header).join(",") +
       ",Agreed To Safety Rules & Volunteer Form,Signed Form\n";
@@ -321,10 +332,12 @@ export const FormResponseTable = ({
       .map((row) =>
         visibleColumns
           .map((col) => {
-            const cellValue = row[col.accessorKey];
+            let cellValue = row[col.accessorKey];
             // Handle special formatting for CSV export
             if (col.accessorKey === "hasPrepDay") {
               return `"${cellValue ? "Yes" : "No"}"`;
+            } else if (col.accessorKey === "whoAreYouType") {
+              return `"${formatTypeColumn(cellValue)}"`; // Use the formatTypeColumn function
             } else if (cellValue === null || cellValue === undefined) {
               return `""`;
             } else {
@@ -359,11 +372,13 @@ export const FormResponseTable = ({
         accessorKey: "fullName",
         header: "Volunteer",
         size: columnSizing.fullName,
+        minSize: 140,
       },
       {
         accessorKey: "email",
         header: "Email",
         size: columnSizing.email,
+        minSize: 140,
         Cell: ({ row }) => (
           <Typography variant="body2" noWrap>
             {row.original.email || "-"}
@@ -374,6 +389,7 @@ export const FormResponseTable = ({
         accessorKey: "phone",
         header: "Phone",
         size: columnSizing.phone,
+        minSize: 120,
         Cell: ({ row }) => (
           <Typography variant="body2" color="textSecondary" noWrap>
             {row.original.phone || "-"}
@@ -384,10 +400,22 @@ export const FormResponseTable = ({
         accessorKey: "whoAreYouType",
         header: "Type",
         size: columnSizing.whoAreYouType,
+        minSize: 120,
         filterFn: "equals",
         Cell: ({ row }) => (
           <Chip
-            label={row.original.whoAreYouType || "unknown"}
+            label={
+              row.original.whoAreYouType
+                ? row.original.whoAreYouType
+                    .split(/(?=[A-Z])|_/)
+                    .map(
+                      (word) =>
+                        word.charAt(0).toUpperCase() +
+                        word.slice(1).toLowerCase()
+                    )
+                    .join(" ")
+                : "Unknown"
+            }
             color="primary"
             variant="outlined"
             size="small"
@@ -399,6 +427,7 @@ export const FormResponseTable = ({
         accessorKey: "projectName", // Changed from projectId to projectName
         header: "Project", // Updated header
         size: columnSizing.projectName,
+        minSize: 140,
         filterFn: "equals",
         Cell: ({ row }) => (
           <Typography variant="body2" noWrap>
@@ -411,6 +440,7 @@ export const FormResponseTable = ({
         accessorKey: "submittedAtFormatted",
         header: "Submitted",
         size: columnSizing.submittedAtFormatted,
+        minSize: 120,
         sortingFn: "datetime",
         sortUndefined: -1,
         Cell: ({ row }) => (
@@ -424,6 +454,7 @@ export const FormResponseTable = ({
         accessorKey: "minorCount",
         header: "Minors",
         size: columnSizing.minorCount,
+        minSize: 175,
         filterFn: "equals",
         Cell: ({ row }) =>
           row.original.minorCount > 0 ? (
@@ -441,6 +472,7 @@ export const FormResponseTable = ({
         accessorKey: "hasPrepDay",
         header: "Prep Day",
         size: columnSizing.hasPrepDay,
+        minSize: 175,
         filterFn: "equals",
         Cell: ({ row }) => (
           <Chip
@@ -455,6 +487,7 @@ export const FormResponseTable = ({
         accessorKey: "actions",
         header: "Actions",
         size: columnSizing.actions,
+        minSize: 100,
         enableSorting: false,
         enableColumnFilter: false,
         Cell: ({ row }) => (

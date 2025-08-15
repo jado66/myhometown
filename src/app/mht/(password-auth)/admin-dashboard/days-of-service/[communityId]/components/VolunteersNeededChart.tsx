@@ -3,6 +3,7 @@
 import type React from "react";
 
 import { useState, useMemo } from "react";
+import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import {
   Box,
   Paper,
@@ -87,10 +88,18 @@ export default function VolunteerNeededChart({
   responses,
 }: VolunteerNeedsTableProps) {
   const [currentDayTab, setCurrentDayTab] = useState(0);
+  const [sortType, setSortType] = useState<"alphabetical" | "percentage">(
+    "alphabetical"
+  );
 
   // Handle tab change
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentDayTab(newValue);
+  };
+
+  // Handle sort change
+  const handleSortChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setSortType(event.target.value as "alphabetical" | "percentage");
   };
 
   // Process data to calculate volunteers signed up for each project
@@ -161,10 +170,23 @@ export default function VolunteerNeededChart({
     if (!processedData[currentDayTab] || !processedData[currentDayTab].projects)
       return [];
 
-    return processedData[currentDayTab].projects.sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
-  }, [processedData, currentDayTab]);
+    const projects = [...processedData[currentDayTab].projects];
+    if (sortType === "alphabetical") {
+      projects.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortType === "percentage") {
+      projects.sort((a, b) => {
+        // Calculate percentage signed up for each project
+        const percentA =
+          a.volunteersSignedUp /
+            (a.volunteerCount > 0 ? a.volunteerCount : 10) || 0;
+        const percentB =
+          b.volunteersSignedUp /
+            (b.volunteerCount > 0 ? b.volunteerCount : 10) || 0;
+        return percentA - percentB;
+      });
+    }
+    return projects;
+  }, [processedData, currentDayTab, sortType]);
 
   // Calculate summary statistics for the current day
   const currentDaySummary = useMemo(() => {
@@ -227,6 +249,25 @@ export default function VolunteerNeededChart({
           ))}
         </Tabs>
       </Paper>
+
+      {/* Sorting Filter */}
+      <Box sx={{ mb: 2, minWidth: 200 }}>
+        <FormControl fullWidth size="small">
+          <InputLabel id="sort-type-label">Sort By</InputLabel>
+          <Select
+            labelId="sort-type-label"
+            id="sort-type-select"
+            value={sortType}
+            label="Sort By"
+            onChange={handleSortChange}
+          >
+            <MenuItem value="alphabetical">Alphabetical (A-Z)</MenuItem>
+            <MenuItem value="percentage">
+              Percentage Signed Up (Lowest First)
+            </MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
 
       {/* Summary Stats */}
       <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 2 }}>

@@ -351,6 +351,7 @@ export const SignUpForm = ({
               onClose={onClose}
               onSubmit={handleSubmit}
               isVolunteerForm
+              autoScroll={false}
             />
           </ClassSignupProvider>
         </Box>

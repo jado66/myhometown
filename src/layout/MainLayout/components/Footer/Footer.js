@@ -1,8 +1,5 @@
 import React from "react";
 import Grid from "@mui/material/Grid";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Link from "@mui/material/Link";
 import Typography from "@mui/material/Typography";
 import MyHometownLogo from "@/assets/svg/logos/MyHometown";
 
@@ -28,6 +25,18 @@ const Footer = () => {
           color="textSecondary"
         >
           Copyright ©{` 2023 - ${new Date().getFullYear()}`} myHometown Utah
+        </Typography>
+      </Grid>
+      <Grid item md={4} xs={12} sx={{ order: { md: 2, xs: 3 } }}>
+        <Typography align={"center"} variant={"subtitle2"}>
+          <a
+            href="https://www.platinumprogramming.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
+            Powered by Platinum Programming
+          </a>
         </Typography>
       </Grid>
     </Grid>

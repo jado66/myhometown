@@ -206,7 +206,7 @@ export const WhoAreYouComponent = ({
 
       setSelectedProject(selectedOption);
       const updatedFormData = {
-        type: "groupMember",
+        type: value?.type || "groupMember", // Preserve the current type or default to groupMember
         value: selectedOption.label,
         projectId: selectedOption.value, // Include the project ID in the form data
         hasPrepDay: hasPrepDay,

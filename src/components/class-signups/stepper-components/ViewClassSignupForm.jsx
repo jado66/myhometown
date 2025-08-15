@@ -26,6 +26,7 @@ export function ViewClassSignupForm({
   onSubmit,
   isCreating,
   isVolunteerForm,
+  autoScroll = true,
 }) {
   const {
     classConfig,
@@ -108,10 +109,12 @@ export function ViewClassSignupForm({
           window.pageYOffset + elementRect.top - offsetPixels;
 
         // Smoothly scroll to the calculated position
-        window.scrollTo({
-          top: scrollPosition,
-          behavior: "smooth",
-        });
+        if (autoScroll) {
+          window.scrollTo({
+            top: scrollPosition,
+            behavior: "smooth",
+          });
+        }
       }
     };
 
