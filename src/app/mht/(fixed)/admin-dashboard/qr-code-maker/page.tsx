@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import {
   Box,
   Container,
@@ -21,11 +21,10 @@ export default function QRCodeGenerator() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string>("");
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const hardcodedOptions = {
     size: 400,
-    foregroundColor: "#318d43", // Dark green for brand
+    foregroundColor: "#000000", // Dark green for brand
     backgroundColor: "#ffffff",
     errorCorrectionLevel: "H" as const, // High error correction for logo overlay
     margin: 2,
@@ -47,25 +46,25 @@ export default function QRCodeGenerator() {
     try {
       console.log("Starting QR code generation with text:", text);
 
-      // Get QR code module count for pixel-perfect overlay
-      const qrObj = QRCode.create(text, {
-        errorCorrectionLevel: hardcodedOptions.errorCorrectionLevel,
+      const options = hardcodedOptions;
+      const desiredSize = options.size;
+
+      // Create QR object to get module info
+      const qr = QRCode.create(text, {
+        errorCorrectionLevel: options.errorCorrectionLevel,
       });
-      const moduleCount = qrObj.modules.size;
-      const moduleSize = hardcodedOptions.size / moduleCount;
+      const moduleCount = qr.modules.size;
 
-      const qrOptions = {
-        width: hardcodedOptions.size,
-        margin: hardcodedOptions.margin,
-        color: {
-          dark: hardcodedOptions.foregroundColor,
-          light: hardcodedOptions.backgroundColor,
-        },
-        errorCorrectionLevel: hardcodedOptions.errorCorrectionLevel,
-      };
+      // Calculate integer scale for pixel-perfect rendering
+      const margin = options.margin;
+      const totalUnits = moduleCount + margin * 2;
+      let scale = Math.floor(desiredSize / totalUnits);
+      if (scale < 1) scale = 1;
+      const size = scale * totalUnits;
 
-      const qrDataUrl = await QRCode.toDataURL(text, qrOptions);
-      console.log("QR code base generated successfully");
+      console.log(
+        `Module count: ${moduleCount}, Scale: ${scale}, Actual size: ${size}`
+      );
 
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
@@ -74,29 +73,27 @@ export default function QRCodeGenerator() {
         throw new Error("Could not get canvas context");
       }
 
-      canvas.width = hardcodedOptions.size;
-      canvas.height = hardcodedOptions.size;
+      canvas.width = size;
+      canvas.height = size;
 
-      // Load QR code image
-      const qrImage = new Image();
-      qrImage.crossOrigin = "anonymous";
+      // Fill background
+      ctx.fillStyle = options.backgroundColor;
+      ctx.fillRect(0, 0, size, size);
 
-      await new Promise((resolve, reject) => {
-        qrImage.onload = resolve;
-        qrImage.onerror = reject;
-        qrImage.src = qrDataUrl;
-      });
+      // Draw QR modules with integer pixels
+      ctx.fillStyle = options.foregroundColor;
+      for (let row = 0; row < moduleCount; row++) {
+        for (let col = 0; col < moduleCount; col++) {
+          if (qr.modules.data[row * moduleCount + col]) {
+            const x = (margin + col) * scale;
+            const y = (margin + row) * scale;
+            ctx.fillRect(x, y, scale, scale);
+          }
+        }
+      }
+      console.log("QR code modules drawn pixel-perfect");
 
-      // Draw QR code
-      ctx.drawImage(
-        qrImage,
-        0,
-        0,
-        hardcodedOptions.size,
-        hardcodedOptions.size
-      );
-      console.log("QR code drawn on canvas");
-
+      // Load logo
       const logoImage = new Image();
       logoImage.crossOrigin = "anonymous";
 
@@ -113,26 +110,43 @@ export default function QRCodeGenerator() {
         logoImage.src = `/svgs/MHT_H_Icon_Green.svg`;
       });
 
-      // Pixel-perfect overlay: make overlay size and margin integer multiples of moduleSize
-      const logoModules = Math.floor(moduleCount * 0.18); // logo covers ~18% of QR width
-      const marginModules = 2; // margin of 2 modules around logo
-      const overlayModules = logoModules + marginModules * 2;
-      const overlaySize = overlayModules * moduleSize;
-      const overlayX = (hardcodedOptions.size - overlaySize) / 2;
-      const overlayY = (hardcodedOptions.size - overlaySize) / 2;
-      const logoSize = logoModules * moduleSize;
-      const logoX = (hardcodedOptions.size - logoSize) / 2;
-      const logoY = (hardcodedOptions.size - logoSize) / 2;
+      // Pixel-perfect overlay calculations (all integer)
+      let logoModules = Math.floor(moduleCount * 0.18);
+      const marginModules = 2;
+      let overlayModules = logoModules + marginModules * 2;
 
-      // Draw white square background for logo (pixel-perfect)
+      // Prevent overlay from being too large for small QRs
+      const minEdgeModules = 4; // Leave at least this many modules on edges
+      if (overlayModules > moduleCount - minEdgeModules * 2) {
+        overlayModules = moduleCount - minEdgeModules * 2;
+        logoModules = overlayModules - marginModules * 2;
+        if (logoModules < 0) logoModules = 0;
+      }
+
+      const overlayStartModule = Math.floor((moduleCount - overlayModules) / 2);
+      const overlayX = (margin + overlayStartModule) * scale;
+      const overlaySize = overlayModules * scale;
+
+      // Draw white square background for logo (covers whole modules)
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(overlayX, overlayY, overlaySize, overlaySize);
+      ctx.fillRect(overlayX, overlayX, overlaySize, overlaySize);
 
-      // Draw logo
-      ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
-      console.log("Logo overlay completed (pixel-perfect)");
+      // Draw logo if possible
+      if (logoModules > 0) {
+        const logoStartModule = overlayStartModule + marginModules;
+        const logoX = (margin + logoStartModule) * scale;
+        const logoSize = logoModules * scale;
+        ctx.drawImage(logoImage, logoX, logoX, logoSize, logoSize);
+        console.log("Logo overlay completed (pixel-perfect)");
+      } else {
+        console.log("Skipping logo overlay (too small)");
+      }
+
       // Set the qrCodeUrl to the canvas data URL so it shows in the preview
       setQrCodeUrl(canvas.toDataURL());
+    } catch (err) {
+      console.error("QR generation error:", err);
+      setError("Failed to generate QR code. Please try again.");
     } finally {
       setIsGenerating(false);
     }
@@ -156,16 +170,12 @@ export default function QRCodeGenerator() {
         align="center"
         sx={{ mb: 4 }}
       >
-        Branded QR Code Generator
+        myHometown QR Code Generator
       </Typography>
 
       <Grid container spacing={4} justifyContent="center">
         <Grid item xs={12} md={8}>
           <Paper elevation={3} sx={{ p: 4 }}>
-            <Typography variant="h5" gutterBottom align="center">
-              Create Your Branded QR Code
-            </Typography>
-
             <Box
               sx={{
                 display: "flex",
@@ -180,7 +190,7 @@ export default function QRCodeGenerator() {
               >
                 <TextField
                   fullWidth
-                  label="Text or URL"
+                  label="URL"
                   placeholder="Enter text, URL, or any content..."
                   multiline
                   rows={3}
@@ -257,21 +267,13 @@ export default function QRCodeGenerator() {
                   onClick={downloadQRCode}
                   sx={{ mt: 2 }}
                 >
-                  Download Branded QR Code
+                  Download QR Code
                 </Button>
               )}
             </Box>
           </Paper>
         </Grid>
       </Grid>
-
-      <Box sx={{ mt: 4, textAlign: "center" }}>
-        <Typography variant="body2" color="text.secondary">
-          Generate custom branded QR codes with your logo automatically
-          centered. Perfect for business cards, marketing materials, and digital
-          campaigns.
-        </Typography>
-      </Box>
     </Container>
   );
 }
