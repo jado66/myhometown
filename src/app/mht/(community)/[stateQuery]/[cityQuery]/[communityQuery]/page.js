@@ -315,6 +315,7 @@ const Page = ({ params }) => {
         </Grid>
         <Grid item xs={12}>
           <Grid
+            id="flyers"
             container
             spacing={2} // Adds spacing between items
             display="flex"

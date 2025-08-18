@@ -44,6 +44,7 @@ import { LoadedClassesProvider } from "@/contexts/LoadedClassesProvider";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { useEvents } from "@/hooks/useEvents";
+import { Link as LinkIcon } from "@mui/icons-material";
 
 import MarketingItemEdit from "@/components/community/MarketingItemEdit";
 
@@ -1087,7 +1088,29 @@ const Page = ({ params }) => {
 
           <Divider sx={{ my: 5 }} />
 
-          <Grid container item xs={12} display="flex" justifyContent="center">
+          <Grid
+            container
+            item
+            xs={12}
+            display="flex"
+            justifyContent="center"
+            sx={{ position: "relative" }}
+          >
+            <Button
+              onClick={
+                // copy to clipboard
+                () => {
+                  navigator.clipboard.writeText(
+                    `${window.location.href}#flyers`.replace(/edit\//g, "")
+                  );
+                  toast.success("Link copied to clipboard");
+                }
+              }
+              variant="text"
+              sx={{ m: 0, position: "absolute", top: 0, right: 0 }}
+            >
+              <LinkIcon sx={{ mr: 1 }} />
+            </Button>
             <MarketingItemEdit
               index={1}
               content={content}
