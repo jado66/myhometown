@@ -39,6 +39,7 @@ export function KanbanCard({
   onArchive,
   columnId,
 }: KanbanCardProps) {
+  // Add onClick to Card to show details
   return (
     <Draggable draggableId={task.id} index={index}>
       {(provided, snapshot) => (
@@ -56,9 +57,24 @@ export function KanbanCard({
             "&:hover": {
               boxShadow: 3,
               borderColor: "#bdbdbd",
+              cursor: "pointer",
             },
             borderRadius: 2,
             position: "relative",
+          }}
+          onClick={() => {
+            if (typeof window !== "undefined") {
+              // Prevent click if clicking delete/archive
+              // (let those buttons handle their own events)
+            }
+            if ((window.event as MouseEvent).defaultPrevented) return;
+            if (typeof (window.event as MouseEvent).target === "object" && ((window.event as MouseEvent).target as HTMLElement).closest("button")) return;
+            if (typeof onDelete === "function" && typeof onArchive === "function") {
+              // Do nothing, handled by button
+            }
+            if ((window as any).kanbanCardClick) {
+              (window as any).kanbanCardClick(task);
+            }
           }}
         >
           <CardContent
@@ -96,6 +112,7 @@ export function KanbanCard({
                 color="text.secondary"
                 sx={{
                   mb: 1,
+                  // Remove truncation for details dialog
                   display: "-webkit-box",
                   WebkitLineClamp: 2,
                   WebkitBoxOrient: "vertical",
@@ -113,7 +130,10 @@ export function KanbanCard({
               <IconButton
                 aria-label="delete"
                 size="small"
-                onClick={() => onDelete(task.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(task.id);
+                }}
                 sx={{
                   position: "absolute",
                   top: 36, // Moved down to avoid overlap with type icon
@@ -138,7 +158,10 @@ export function KanbanCard({
                 <IconButton
                   aria-label="archive"
                   size="small"
-                  onClick={() => onArchive(task.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onArchive(task.id);
+                  }}
                   sx={{
                     position: "absolute",
                     bottom: 4,

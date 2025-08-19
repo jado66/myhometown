@@ -37,6 +37,18 @@ export function KanbanBoard() {
     setShowArchived,
   } = useKanbanData();
   const [localBoardData, setLocalBoardData] = useState(boardData);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<any>(null);
+  // Listen for KanbanCard click
+  useEffect(() => {
+    (window as any).kanbanCardClick = (task: any) => {
+      setSelectedTask(task);
+      setDetailsDialogOpen(true);
+    };
+    return () => {
+      (window as any).kanbanCardClick = null;
+    };
+  }, []);
   const [ticketDialogOpen, setTicketDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
@@ -402,6 +414,47 @@ export function KanbanBoard() {
           </Box>
         </Container>
       </DragDropContext>
+
+      <Dialog
+        open={detailsDialogOpen}
+        onClose={() => setDetailsDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ m: 0, p: 2 }}>
+          Ticket Details
+          <IconButton
+            aria-label="close"
+            onClick={() => setDetailsDialogOpen(false)}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <Box sx={{ p: 3 }}>
+          {selectedTask && (
+            <>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                {selectedTask.title}
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                {selectedTask.description || "No description provided."}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Type: {selectedTask.type}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Created: {new Date(selectedTask.created_at).toLocaleString()}
+              </Typography>
+            </>
+          )}
+        </Box>
+      </Dialog>
 
       <Dialog
         open={ticketDialogOpen}

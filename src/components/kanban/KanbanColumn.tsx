@@ -142,7 +142,8 @@ export function KanbanColumn({
         borderRadius: 2,
         position: "relative",
         maxHeight: isExpanded ? "none" : "calc(100vh - 200px)",
-        overflow: isExpanded ? "visible" : "hidden",
+        overflowY: "auto",
+        overflowX: "hidden",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -204,14 +205,13 @@ export function KanbanColumn({
             sx={{
               flexGrow: 1,
               minHeight: 100,
-              maxHeight: isExpanded ? "calc(100vh - 200px)" : "auto",
+              maxHeight: "calc(100vh - 260px)",
               p: 1,
               borderRadius: 1,
               transition: "background-color 0.2s",
               bgcolor: snapshot.isDraggingOver ? "action.hover" : "transparent",
-              overflow: isExpanded ? "auto" : "hidden",
+              overflowY: "auto",
               overflowX: "hidden",
-              overflowY: isExpanded ? "auto" : "hidden",
             }}
           >
             <div ref={containerRef}>
