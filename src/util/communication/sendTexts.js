@@ -120,6 +120,7 @@ async function sendClassSignupText({
   classDoc,
   isWaitlisted = false,
   wasPromoted = false,
+  wasTransferred = false,
 }) {
   try {
     // Format the date range if start and end dates are different
@@ -134,8 +135,21 @@ async function sendClassSignupText({
     const meetingSchedule = formatMeetingTimes(classDoc.meetings);
 
     let message;
+    if (wasTransferred) {
+      // Transfer notification message
+      message = `Hello ${firstName}, You have been enrolled in ${classDoc.title}.
 
-    if (wasPromoted) {
+Class Details:
+Date: ${dateRange}
+Schedule:
+${meetingSchedule}
+Location: ${classDoc.location}
+
+We look forward to seeing you in your new class!
+
+Best Regards,
+myHometown`;
+    } else if (wasPromoted) {
       // Promotion confirmation message
       message = `Good news, ${firstName}! A spot has opened up in ${classDoc.title} and you've been moved from the waitlist to enrolled status.
 

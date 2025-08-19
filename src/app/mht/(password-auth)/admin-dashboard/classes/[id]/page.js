@@ -95,6 +95,46 @@ export default function ClassPage({ params }) {
     return <Loading />;
   }
 
+  // Refetch mergedCommunityData when a class is updated (e.g., after transfer)
+  const refetchCommunityData = async () => {
+    setLoading(true);
+    try {
+      const communityData = await getCommunity(params.id);
+      const classesData = await getClassesByCommunity(params.id);
+      if (communityData && classesData) {
+        const classesMap = new Map(
+          classesData.map((classItem) => [classItem.id, classItem])
+        );
+        const mergedData = JSON.parse(JSON.stringify(communityData));
+        mergedData.classes = mergedData.classes.map((category) => {
+          if (category.type === "header") {
+            return category;
+          }
+          return {
+            ...category,
+            classes: category.classes.map((communityClass) => {
+              const fullClassData = classesMap.get(communityClass.id);
+              return {
+                ...communityClass,
+                ...fullClassData,
+                title: communityClass.title || fullClassData?.title,
+                icon: communityClass.icon || fullClassData?.icon,
+                visibility:
+                  communityClass.visibility ?? fullClassData?.visibility,
+              };
+            }),
+          };
+        });
+        setCommunity(communityData);
+        setMergedCommunityData(mergedData);
+      }
+    } catch (error) {
+      console.error("Error refetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Container maxWidth="xl">
       <Typography
@@ -105,18 +145,6 @@ export default function ClassPage({ params }) {
       >
         {community?.name} Community Classes
       </Typography>
-
-      {/* <Grid
-        container
-        spacing={2}
-        alignItems="center"
-        justifyContent="space-between"
-      >
-        <Grid item xs={12} sm={6}>
-          <pre>{JSON.stringify(mergedCommunityData, null, 2)}</pre>
-        </Grid>
-        <Grid item xs={12} sm={6} textAlign="right"></Grid>
-      </Grid> */}
 
       <Divider sx={{ mb: 4 }} />
 
@@ -139,12 +167,12 @@ export default function ClassPage({ params }) {
         />
       </Box>
       <ViewToggle viewType={viewType} onToggle={toggleView} />
-      {/* <pre>{JSON.stringify(mergedCommunityData, null, 2)}</pre> */}
       <Suspense fallback={<div>Loading...</div>}>
         <ClassList
           community={mergedCommunityData}
           searchTerm={searchTerm}
           viewType={viewType}
+          onClassDataUpdate={refetchCommunityData}
         />
       </Suspense>
     </Container>

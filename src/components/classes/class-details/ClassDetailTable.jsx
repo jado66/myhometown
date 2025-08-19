@@ -1,3 +1,4 @@
+// ClassDetailTable.jsx
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { DataGrid, GridToolbar, GridActionsCellItem } from "@mui/x-data-grid";
 import {
@@ -7,86 +8,33 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   Box,
   Typography,
-  IconButton,
-  FormControlLabel,
-  Checkbox,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormHelperText,
   Tabs,
   Tab,
-  Divider,
   Alert,
   Tooltip,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
-import { AVAILABLE_FIELDS } from "@/components/class-signups/AvailableFields";
-import { FIELD_TYPES } from "@/components/class-signups/FieldTypes";
-import JsonViewer from "@/components/util/debug/DebugOutput";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import { toast } from "react-toastify";
 
-// Utility function to format dates consistently
-const formatDate = (dateString) => {
-  if (!dateString) return "";
+// Import utility functions
+import {
+  formatDate,
+  getStudentAttendance,
+  getFieldConfig,
+  isStructuralElement,
+  validateField,
+} from "./ClassDetailTable.utils";
 
-  // Create date by parsing the components to ensure consistent timezone handling
-  const date = new Date(dateString);
-
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-  });
-};
-
-// Utility function to get attendance data for a specific student
-const getStudentAttendance = (classData, studentId) => {
-  if (!classData?.attendance || !Array.isArray(classData.attendance)) {
-    return { count: 0, dates: [] };
-  }
-
-  const attendanceRecords = classData.attendance.filter(
-    (record) => record.studentId === studentId && record.present === true
-  );
-
-  return {
-    count: attendanceRecords.length,
-    dates: attendanceRecords.map((record) => record.date),
-    lastAttended:
-      attendanceRecords.length > 0
-        ? attendanceRecords.sort(
-            (a, b) => new Date(b.date) - new Date(a.date)
-          )[0].date
-        : null,
-  };
-};
-
-const getFieldConfig = (fieldKey, formConfig) => {
-  const customConfig = formConfig[fieldKey] || {};
-  const baseConfig = AVAILABLE_FIELDS[fieldKey] || {};
-
-  // We want to prioritize the type from AVAILABLE_FIELDS
-  const fieldType = baseConfig.type || customConfig.type || FIELD_TYPES.text;
-
-  return {
-    ...baseConfig,
-    ...customConfig, // Custom config overrides base config
-    type: fieldType, // Override any type that might have been set by customConfig
-    label: customConfig.label || baseConfig.label || fieldKey,
-    required: customConfig.required ?? baseConfig.required ?? false,
-    options: baseConfig.options || customConfig.options, // Prioritize base options
-  };
-};
+// Import dialog components
+import TransferDialog from "./TransferDialog";
+import StudentFormDialog from "./StudentFormDialog";
 
 const ClassDetailTable = ({
   classData,
@@ -97,10 +45,11 @@ const ClassDetailTable = ({
   onRemoveSignup,
   removeSignupLoading,
 }) => {
+  // State management
   const [rows, setRows] = useState([]);
   const [waitlistedRows, setWaitlistedRows] = useState([]);
   const [showDialog, setShowDialog] = useState(false);
-  const [dialogMode, setDialogMode] = useState("add"); // "add" or "edit"
+  const [dialogMode, setDialogMode] = useState("add");
   const [editingStudent, setEditingStudent] = useState(null);
   const [studentData, setStudentData] = useState({});
   const [formErrors, setFormErrors] = useState({});
@@ -112,6 +61,40 @@ const ClassDetailTable = ({
   const [promoteLoading, setPromoteLoading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
 
+  // Transfer-related state
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
+  const [studentToTransfer, setStudentToTransfer] = useState(null);
+  const [selectedTargetClass, setSelectedTargetClass] = useState("");
+  const [transferLoading, setTransferLoading] = useState(false);
+  const [loadingClasses, setLoadingClasses] = useState(false);
+  const [classesForTransfer, setClassesForTransfer] = useState([]);
+
+  // Load available classes for transfer
+  useEffect(() => {
+    const fetchClasses = async () => {
+      if (!classData?.communityId) return;
+
+      setLoadingClasses(true);
+      try {
+        const response = await fetch(
+          `/api/database/classes/by-community/${classData.communityId}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          const filteredClasses =
+            data.results?.filter((c) => c.id !== classData.id) || [];
+          setClassesForTransfer(filteredClasses);
+        }
+      } catch (error) {
+        console.error("Error fetching classes:", error);
+      } finally {
+        setLoadingClasses(false);
+      }
+    };
+
+    fetchClasses();
+  }, [classData?.communityId, classData?.id]);
+
   // Update rows when classData changes
   useEffect(() => {
     if (classData?.signups) {
@@ -121,7 +104,6 @@ const ClassDetailTable = ({
       const waitlisted = classData.signups.filter(
         (signup) => signup.isWaitlisted
       );
-
       setRows(enrolled);
       setWaitlistedRows(waitlisted);
     }
@@ -133,14 +115,12 @@ const ClassDetailTable = ({
       return { uniqueCount: 0, totalSessions: 0, attendanceRate: 0 };
     }
 
-    // Get unique students who have attended
     const uniqueStudentIds = new Set(
       classData.attendance
         .filter((record) => record.present === true)
         .map((record) => record.studentId)
     );
 
-    // Get unique sessions (dates)
     const uniqueDates = new Set(
       classData.attendance.map((record) => record.date)
     );
@@ -171,47 +151,17 @@ const ClassDetailTable = ({
     isMainCapacityFull && (!isWaitlistEnabled || isWaitlistFull);
   const hasAvailableCapacity = enrolledCount < totalCapacity;
 
-  const validateField = (fieldKey, value) => {
-    const field = getFieldConfig(fieldKey, classData.signupForm.formConfig);
-
-    // Check if required
-    if (field.required && !value && value !== false) {
-      return `${field.label} is required`;
-    }
-
-    // If field has custom validation, use it
-    if (field.validation && value) {
-      const validationResult = field.validation(value);
-      if (validationResult) {
-        return validationResult;
-      }
-    }
-
-    // Built-in validation based on type
-    if (value) {
-      switch (field.type) {
-        case "tel":
-          if (!/^\+?[\d\s-]{10,}$/.test(value)) {
-            return "Invalid phone number format";
-          }
-          break;
-        case "email":
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-            return "Invalid email format";
-          }
-          break;
-      }
-    }
-
-    return null;
-  };
-
+  // Form validation
   const validateForm = () => {
     const errors = {};
     let isValid = true;
 
     classData.signupForm.fieldOrder.forEach((fieldKey) => {
-      const error = validateField(fieldKey, studentData[fieldKey]);
+      const error = validateField(
+        fieldKey,
+        studentData[fieldKey],
+        classData.signupForm.formConfig
+      );
       if (error) {
         errors[fieldKey] = error;
         isValid = false;
@@ -222,11 +172,10 @@ const ClassDetailTable = ({
     return isValid;
   };
 
+  // Event handlers
   const handleDeleteClick = useCallback(
     (params) => () => {
-      console.log(JSON.stringify(params.row, null, 2));
       const id = params.row.id;
-
       const studentAttendance = getStudentAttendance(classData, id);
 
       if (studentAttendance && studentAttendance.count > 0) {
@@ -234,20 +183,16 @@ const ClassDetailTable = ({
         return;
       }
 
-      console.log("Student attendance:", studentAttendance);
-
-      // Instead of deleting immediately, open confirmation dialog
       setStudentToDelete(id);
       setDeleteConfirmOpen(true);
     },
-    []
+    [classData]
   );
 
   const handleConfirmedDelete = async () => {
     if (onRemoveSignup && studentToDelete) {
       const success = await onRemoveSignup(studentToDelete);
       if (success) {
-        // Update both regular and waitlisted rows
         setRows((prevRows) =>
           prevRows.filter((row) => row.id !== studentToDelete)
         );
@@ -262,7 +207,6 @@ const ClassDetailTable = ({
 
   const handlePromoteClick = useCallback(
     (id) => () => {
-      // Find the student in the waitlisted rows
       const student = waitlistedRows.find((row) => row.id === id);
       if (student) {
         setStudentToPromote(student);
@@ -272,19 +216,77 @@ const ClassDetailTable = ({
     [waitlistedRows]
   );
 
+  const handleTransferClick = useCallback(
+    (id) => () => {
+      const student = [...rows, ...waitlistedRows].find((row) => row.id === id);
+      if (student) {
+        setStudentToTransfer(student);
+        setSelectedTargetClass("");
+        setTransferDialogOpen(true);
+      }
+    },
+    [rows, waitlistedRows]
+  );
+
+  const handleConfirmedTransfer = async () => {
+    if (!studentToTransfer || !selectedTargetClass) return;
+
+    setTransferLoading(true);
+    try {
+      const response = await fetch(
+        `/api/database/classes/${classData.id}/transfer`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            studentId: studentToTransfer.id,
+            targetClassId: selectedTargetClass,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || "Failed to transfer student");
+        return;
+      }
+
+      // Refetch class data after transfer
+      if (typeof onUpdate === "function") {
+        await onUpdate();
+      }
+      refetchCommunityData();
+
+      const targetClassName =
+        classesForTransfer.find((c) => c.id === selectedTargetClass)?.title ||
+        "the selected class";
+      const message = data.targetClass?.isWaitlisted
+        ? `${studentToTransfer.firstName} ${studentToTransfer.lastName} has been transferred to the waitlist of ${targetClassName}.`
+        : `${studentToTransfer.firstName} ${studentToTransfer.lastName} has been transferred to ${targetClassName}.`;
+
+      toast.success(message);
+    } catch (error) {
+      console.error("Error transferring student:", error);
+      toast.error("Failed to transfer student. Please try again.");
+    } finally {
+      setTransferLoading(false);
+      setTransferDialogOpen(false);
+      setStudentToTransfer(null);
+      setSelectedTargetClass("");
+    }
+  };
+
   const handleConfirmedPromote = async () => {
     if (!studentToPromote) return;
 
     setPromoteLoading(true);
     try {
-      // API call to update the student's waitlist status
       const response = await fetch(
         `/api/database/classes/${classData.id}/promote`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ studentId: studentToPromote.id }),
         }
       );
@@ -293,16 +295,12 @@ const ClassDetailTable = ({
         throw new Error("Failed to promote student");
       }
 
-      // If successful, update the local state
       const promotedStudent = { ...studentToPromote, isWaitlisted: false };
-
-      // Remove from waitlist and add to enrolled
       setWaitlistedRows((prev) =>
         prev.filter((row) => row.id !== studentToPromote.id)
       );
       setRows((prev) => [...prev, promotedStudent]);
 
-      // Show success message
       toast.success(
         `${studentToPromote.firstName} ${studentToPromote.lastName} has been promoted from the waitlist.`
       );
@@ -318,7 +316,6 @@ const ClassDetailTable = ({
 
   const handleEditClick = useCallback(
     (id) => () => {
-      // Find the student in either enrolled or waitlisted
       const student =
         rows.find((row) => row.id === id) ||
         waitlistedRows.find((row) => row.id === id);
@@ -350,14 +347,11 @@ const ClassDetailTable = ({
       } else if (dialogMode === "edit") {
         setEditLoading(true);
         try {
-          // API call to update student
           const response = await fetch(
             `/api/database/classes/${classData.id}/signup/${editingStudent.id}`,
             {
               method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify(studentData),
             }
           );
@@ -366,9 +360,6 @@ const ClassDetailTable = ({
             throw new Error("Failed to update student information");
           }
 
-          const updatedData = await response.json();
-
-          // Update local state
           if (editingStudent.isWaitlisted) {
             setWaitlistedRows((prev) =>
               prev.map((row) =>
@@ -405,136 +396,15 @@ const ClassDetailTable = ({
   };
 
   const handleFieldChange = (fieldKey, value) => {
-    setStudentData((prev) => ({
-      ...prev,
-      [fieldKey]: value,
-    }));
-    // Clear error when field is modified
+    setStudentData((prev) => ({ ...prev, [fieldKey]: value }));
     if (formErrors[fieldKey]) {
-      setFormErrors((prev) => ({
-        ...prev,
-        [fieldKey]: null,
-      }));
+      setFormErrors((prev) => ({ ...prev, [fieldKey]: null }));
     }
   };
 
-  const isStructuralElement = (type) => {
-    return [
-      FIELD_TYPES.divider,
-      FIELD_TYPES.header,
-      FIELD_TYPES.staticText,
-      FIELD_TYPES.bannerImage,
-    ].includes(type);
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
   };
-
-  const renderFormField = (fieldKey) => {
-    const field = getFieldConfig(fieldKey, classData.signupForm.formConfig);
-    const error = formErrors[fieldKey];
-
-    // Don't render structural elements
-    if (isStructuralElement(field.type)) {
-      return null;
-    }
-
-    switch (field.type) {
-      case FIELD_TYPES.checkbox:
-        return (
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={!!studentData[fieldKey]}
-                onChange={(e) => handleFieldChange(fieldKey, e.target.checked)}
-              />
-            }
-            label={field.label}
-          />
-        );
-
-      case FIELD_TYPES.select:
-        return (
-          <FormControl fullWidth error={!!error}>
-            <InputLabel>{field.label}</InputLabel>
-            <Select
-              value={studentData[fieldKey] || ""}
-              onChange={(e) => handleFieldChange(fieldKey, e.target.value)}
-              label={field.label}
-            >
-              {field.options?.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-            {error && <FormHelperText>{error}</FormHelperText>}
-          </FormControl>
-        );
-
-      case FIELD_TYPES.textarea:
-        return (
-          <TextField
-            label={field.label}
-            multiline
-            rows={4}
-            fullWidth
-            value={studentData[fieldKey] || ""}
-            onChange={(e) => handleFieldChange(fieldKey, e.target.value)}
-            error={!!error}
-            helperText={error || field.helpText}
-            required={field.required}
-          />
-        );
-
-      case FIELD_TYPES.date:
-        return (
-          <TextField
-            label={field.label}
-            type="date"
-            fullWidth
-            value={studentData[fieldKey] || ""}
-            onChange={(e) => handleFieldChange(fieldKey, e.target.value)}
-            error={!!error}
-            helperText={error || field.helpText}
-            required={field.required}
-            InputLabelProps={{
-              shrink: true,
-            }}
-          />
-        );
-
-      case FIELD_TYPES.email:
-      case FIELD_TYPES.tel:
-      case FIELD_TYPES.text:
-      default:
-        return (
-          <TextField
-            label={field.label}
-            type={field.type || "text"}
-            fullWidth
-            value={studentData[fieldKey] || ""}
-            onChange={(e) => handleFieldChange(fieldKey, e.target.value)}
-            error={!!error}
-            helperText={error || field.helpText}
-            required={field.required}
-          />
-        );
-    }
-  };
-
-  const processRowUpdate = useCallback(
-    (newRow, oldRow) => {
-      const updatedRow = { ...newRow, mode: undefined };
-      setRows((prevRows) =>
-        prevRows.map((row) => (row.id === newRow.id ? updatedRow : row))
-      );
-      if (onUpdate) {
-        onUpdate(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
-      }
-      return updatedRow;
-    },
-    [onUpdate, rows]
-  );
-
-  // Create base columns from signup form
   const baseColumns = useMemo(
     () =>
       classData.signupForm.fieldOrder
@@ -556,8 +426,6 @@ const ClassDetailTable = ({
             width: 180,
             flex: 1,
             sortable: true,
-            // editable: true,
-            // Add valueFormatter for boolean fields
             valueFormatter:
               field.type === "checkbox"
                 ? ({ value }) => (value ? "Yes" : "No")
@@ -601,7 +469,6 @@ const ClassDetailTable = ({
         },
         sortable: true,
         valueGetter: (params) => {
-          // For sorting purposes
           return getStudentAttendance(classData, params.row.id).count;
         },
       },
@@ -622,15 +489,24 @@ const ClassDetailTable = ({
         field: "actions",
         type: "actions",
         headerName: "Actions",
-        width: 100,
+        width: 140,
         getActions: (params) => [
           <GridActionsCellItem
+            key="edit"
             icon={<EditIcon />}
             label="Edit Student"
             onClick={handleEditClick(params.id)}
             disabled={editLoading}
           />,
           <GridActionsCellItem
+            key="transfer"
+            icon={<SwapHorizIcon />}
+            label="Transfer to Another Class"
+            onClick={handleTransferClick(params.id)}
+            disabled={transferLoading}
+          />,
+          <GridActionsCellItem
+            key="delete"
             icon={<DeleteIcon />}
             label="Remove Student"
             onClick={handleDeleteClick(params)}
@@ -643,8 +519,10 @@ const ClassDetailTable = ({
       baseColumns,
       handleEditClick,
       handleDeleteClick,
+      handleTransferClick,
       removeSignupLoading,
       editLoading,
+      transferLoading,
       classData,
     ]
   );
@@ -683,7 +561,6 @@ const ClassDetailTable = ({
         },
         sortable: true,
         valueGetter: (params) => {
-          // For sorting purposes
           return getStudentAttendance(classData, params.row.id).count;
         },
       },
@@ -704,9 +581,10 @@ const ClassDetailTable = ({
         field: "actions",
         type: "actions",
         headerName: "Actions",
-        width: 160,
+        width: 180,
         getActions: (params) => [
           <GridActionsCellItem
+            key="promote"
             icon={<PersonAddIcon />}
             label="Promote to Class"
             onClick={handlePromoteClick(params.id)}
@@ -714,6 +592,15 @@ const ClassDetailTable = ({
             showInMenu={false}
           />,
           <GridActionsCellItem
+            key="transfer"
+            icon={<SwapHorizIcon />}
+            label="Transfer to Another Class"
+            onClick={handleTransferClick(params.id)}
+            disabled={transferLoading}
+            showInMenu={false}
+          />,
+          <GridActionsCellItem
+            key="edit"
             icon={<EditIcon />}
             label="Edit Student"
             onClick={handleEditClick(params.id)}
@@ -721,9 +608,10 @@ const ClassDetailTable = ({
             showInMenu={false}
           />,
           <GridActionsCellItem
+            key="delete"
             icon={<DeleteIcon />}
             label="Remove Student"
-            onClick={handleDeleteClick(params.id)}
+            onClick={handleDeleteClick(params)}
             disabled={removeSignupLoading}
             showInMenu={false}
           />,
@@ -735,17 +623,15 @@ const ClassDetailTable = ({
       handlePromoteClick,
       handleEditClick,
       handleDeleteClick,
+      handleTransferClick,
       removeSignupLoading,
       promoteLoading,
       editLoading,
+      transferLoading,
       hasAvailableCapacity,
       classData,
     ]
   );
-
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
 
   return (
     <>
@@ -785,6 +671,25 @@ const ClassDetailTable = ({
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Transfer Student Dialog */}
+      <TransferDialog
+        open={transferDialogOpen}
+        onClose={() => {
+          setTransferDialogOpen(false);
+          setStudentToTransfer(null);
+          setSelectedTargetClass("");
+        }}
+        studentToTransfer={studentToTransfer}
+        classData={classData}
+        classesForTransfer={classesForTransfer}
+        selectedTargetClass={selectedTargetClass}
+        setSelectedTargetClass={setSelectedTargetClass}
+        onConfirm={handleConfirmedTransfer}
+        transferLoading={transferLoading}
+        loadingClasses={loadingClasses}
+      />
+
       {/* Promote Confirmation Dialog */}
       <Dialog
         open={promoteDialogOpen}
@@ -834,6 +739,8 @@ const ClassDetailTable = ({
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Main Content */}
       <Box sx={{ mb: 3 }}>
         <Box
           sx={{
@@ -844,8 +751,6 @@ const ClassDetailTable = ({
           }}
         >
           <Typography variant="h6">Class Roster</Typography>
-
-          <JsonViewer data={classData} />
 
           <Button
             variant="contained"
@@ -907,7 +812,7 @@ const ClassDetailTable = ({
           </Box>
         )}
       </Box>
-      {/* Regular enrollment table */}
+
       {/* Regular enrollment table */}
       <div
         role="tabpanel"
@@ -998,8 +903,8 @@ const ClassDetailTable = ({
         </div>
       )}
 
-      {/* Student Dialog (Add/Edit) */}
-      <Dialog
+      {/* Student Form Dialog */}
+      <StudentFormDialog
         open={showDialog}
         onClose={() => {
           setShowDialog(false);
@@ -1007,85 +912,18 @@ const ClassDetailTable = ({
           setFormErrors({});
           setEditingStudent(null);
         }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>
-          {dialogMode === "edit"
-            ? `Edit Student: ${editingStudent?.firstName} ${editingStudent?.lastName}`
-            : isMainCapacityFull && isWaitlistEnabled
-            ? "Add to Waitlist"
-            : "Add New Student"}
-          <IconButton
-            aria-label="close"
-            onClick={() => {
-              setShowDialog(false);
-              setStudentData({});
-              setFormErrors({});
-              setEditingStudent(null);
-            }}
-            sx={{
-              position: "absolute",
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          {dialogMode === "add" && isMainCapacityFull && isWaitlistEnabled && (
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="body2" color="text.secondary">
-                The class is currently at full capacity. This student will be
-                added to the waitlist.
-              </Typography>
-              <Divider sx={{ my: 2 }} />
-            </Box>
-          )}
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}>
-            {classData.signupForm.fieldOrder
-              .filter((fieldKey) => {
-                const field = getFieldConfig(
-                  fieldKey,
-                  classData.signupForm.formConfig
-                );
-                return !isStructuralElement(field.type);
-              })
-              .map((fieldKey) => (
-                <Box key={fieldKey}>{renderFormField(fieldKey)}</Box>
-              ))}
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              setShowDialog(false);
-              setStudentData({});
-              setFormErrors({});
-              setEditingStudent(null);
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleDialogSubmit}
-            variant="contained"
-            disabled={signupLoading || editLoading}
-          >
-            {signupLoading || editLoading
-              ? dialogMode === "edit"
-                ? "Updating..."
-                : "Adding..."
-              : dialogMode === "edit"
-              ? "Update Student"
-              : isMainCapacityFull && isWaitlistEnabled
-              ? "Add to Waitlist"
-              : "Add Student"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        dialogMode={dialogMode}
+        editingStudent={editingStudent}
+        studentData={studentData}
+        formErrors={formErrors}
+        classData={classData}
+        isMainCapacityFull={isMainCapacityFull}
+        isWaitlistEnabled={isWaitlistEnabled}
+        onSubmit={handleDialogSubmit}
+        onFieldChange={handleFieldChange}
+        signupLoading={signupLoading}
+        editLoading={editLoading}
+      />
     </>
   );
 };

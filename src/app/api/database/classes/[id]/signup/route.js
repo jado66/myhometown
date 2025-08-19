@@ -1,3 +1,4 @@
+// MHT Dashboard\src\app\api\database\classes\[id]\signup\route.js
 import { sendClassSignupText } from "@/util/communication/sendTexts";
 import { connectToMongoDatabase } from "@/util/db/mongodb";
 import { v4 as uuidv4 } from "uuid";

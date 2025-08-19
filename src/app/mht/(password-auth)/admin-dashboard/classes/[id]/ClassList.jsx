@@ -33,7 +33,6 @@ import Close from "@mui/icons-material/Close";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Assignment, Phone, School, Visibility } from "@mui/icons-material";
 import { ExampleIcons } from "@/components/events/ClassesTreeView/IconSelect";
-import ClassDetailTable from "./ClassDetailTable";
 import ResponsiveRollTable from "./ResponsiveRollTable";
 import ClassPreview from "@/components/class-signups/stepper-components/ClassPreview";
 import { useClasses } from "@/hooks/use-classes";
@@ -45,6 +44,7 @@ import { ReportsDialog } from "./ReportsDialog";
 import PermissionGuard from "@/guards/permission-guard";
 import { useUser } from "@/hooks/use-user";
 import JsonViewer from "@/components/util/debug/DebugOutput";
+import ClassDetailTable from "@/components/classes/class-details/ClassDetailTable";
 
 const ClassListView = ({ classItem, onTakeAttendance, onViewClass }) => {
   const { user } = useUser();
@@ -436,7 +436,12 @@ const SemesterAccordion = ({
   );
 };
 
-export default function ClassList({ community, searchTerm, viewType }) {
+export default function ClassList({
+  community,
+  searchTerm,
+  viewType,
+  refetchCommunityData,
+}) {
   // Hidden toggle state
   const [showHidden, setShowHidden] = useState(false);
   const {
@@ -686,6 +691,7 @@ export default function ClassList({ community, searchTerm, viewType }) {
               onRemoveSignup={handleRemoveSignup}
               removeSignupLoading={removeSignupLoading}
               signupLoading={signupLoading}
+              refetchCommunityData={refetchCommunityData}
             />
           </Box>
         </Dialog>

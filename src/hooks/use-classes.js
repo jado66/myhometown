@@ -6,6 +6,7 @@ export const useClasses = () => {
   const [error, setError] = useState(null);
   const [signupLoading, setSignupLoading] = useState(false);
   const [removeSignupLoading, setRemoveSignupLoading] = useState(false);
+  const [transferLoading, setTransferLoading] = useState(false);
 
   const fetchClasses = async () => {
     setLoading(true);
@@ -184,6 +185,70 @@ export const useClasses = () => {
     }
   };
 
+  const transferStudent = async (sourceClassId, studentId, targetClassId) => {
+    setTransferLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/database/classes/${sourceClassId}/transfer`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            studentId,
+            targetClassId,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle specific error cases
+        if (response.status === 409) {
+          throw new Error(data.error || "Target class is fully booked");
+        }
+        throw new Error(data.error || "Failed to transfer student");
+      }
+
+      setTransferLoading(false);
+      return data;
+    } catch (err) {
+      setError(err.message);
+      setTransferLoading(false);
+      throw err; // Re-throw to allow component to handle the error
+    }
+  };
+
+  const promoteFromWaitlist = async (classId, studentId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/database/classes/${classId}/promote`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ studentId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to promote student");
+      }
+
+      const data = await response.json();
+      setLoading(false);
+      return data;
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+      return null;
+    }
+  };
+
   const getClassesByCommunity = async (communityId) => {
     setLoading(true);
     setError(null);
@@ -218,7 +283,10 @@ export const useClasses = () => {
     getClassesByCommunity,
     signupForClass,
     removeSignup,
+    transferStudent,
+    promoteFromWaitlist,
     removeSignupLoading,
     signupLoading,
+    transferLoading,
   };
 };
