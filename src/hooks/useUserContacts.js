@@ -49,6 +49,13 @@ export function useUserContacts(userId, userCommunities, userCities) {
   // Initial fetch
   useEffect(() => {
     if (!userId) {
+      setContacts({
+        userContacts: [],
+        communityContacts: {},
+        cityContacts: {},
+      });
+      setError(null);
+      setLoading(false);
       return;
     }
 

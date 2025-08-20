@@ -499,12 +499,12 @@ export default function BulkMMSMessaging() {
             </Alert>
           ) : (
             <>
-              {allContacts.length === 0 && (
+              {/* {allContacts.length === 0 && (
                 <Alert severity="info">
                   You don't have any contacts in your Directory. Visit your{" "}
                   <a href="./directory">Contact Directory</a> to add contacts.
                 </Alert>
-              )}
+              )} */}
               {activeTab === 0 && (
                 <>
                   <Box
