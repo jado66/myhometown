@@ -44,6 +44,8 @@ const ClassDetailTable = ({
   onAddStudent,
   onRemoveSignup,
   removeSignupLoading,
+  cleanedSemesters,
+  refetchCommunityData,
 }) => {
   // State management
   const [rows, setRows] = useState([]);
@@ -68,6 +70,7 @@ const ClassDetailTable = ({
   const [transferLoading, setTransferLoading] = useState(false);
   const [loadingClasses, setLoadingClasses] = useState(false);
   const [classesForTransfer, setClassesForTransfer] = useState([]);
+  const [sendTextNotification, setSendTextNotification] = useState(true);
 
   // Load available classes for transfer
   useEffect(() => {
@@ -222,6 +225,7 @@ const ClassDetailTable = ({
       if (student) {
         setStudentToTransfer(student);
         setSelectedTargetClass("");
+        setSendTextNotification(true); // Reset to default
         setTransferDialogOpen(true);
       }
     },
@@ -241,6 +245,7 @@ const ClassDetailTable = ({
           body: JSON.stringify({
             studentId: studentToTransfer.id,
             targetClassId: selectedTargetClass,
+            sendTextNotification: sendTextNotification,
           }),
         }
       );
@@ -261,11 +266,21 @@ const ClassDetailTable = ({
       const targetClassName =
         classesForTransfer.find((c) => c.id === selectedTargetClass)?.title ||
         "the selected class";
-      const message = data.targetClass?.isWaitlisted
+
+      let baseMessage = data.targetClass?.isWaitlisted
         ? `${studentToTransfer.firstName} ${studentToTransfer.lastName} has been transferred to the waitlist of ${targetClassName}.`
         : `${studentToTransfer.firstName} ${studentToTransfer.lastName} has been transferred to ${targetClassName}.`;
 
-      toast.success(message);
+      // Add text notification status to the message
+      if (sendTextNotification && data.textNotificationSent) {
+        baseMessage += " Text notification sent.";
+      } else if (sendTextNotification && !data.textNotificationSent) {
+        baseMessage += " Text notification failed to send.";
+      } else {
+        baseMessage += " No text notification sent.";
+      }
+
+      toast.success(baseMessage);
     } catch (error) {
       console.error("Error transferring student:", error);
       toast.error("Failed to transfer student. Please try again.");
@@ -274,6 +289,7 @@ const ClassDetailTable = ({
       setTransferDialogOpen(false);
       setStudentToTransfer(null);
       setSelectedTargetClass("");
+      setSendTextNotification(true);
     }
   };
 
@@ -679,6 +695,7 @@ const ClassDetailTable = ({
           setTransferDialogOpen(false);
           setStudentToTransfer(null);
           setSelectedTargetClass("");
+          setSendTextNotification(true);
         }}
         studentToTransfer={studentToTransfer}
         classData={classData}
@@ -688,6 +705,9 @@ const ClassDetailTable = ({
         onConfirm={handleConfirmedTransfer}
         transferLoading={transferLoading}
         loadingClasses={loadingClasses}
+        cleanedSemesters={cleanedSemesters}
+        sendTextNotification={sendTextNotification}
+        setSendTextNotification={setSendTextNotification}
       />
 
       {/* Promote Confirmation Dialog */}

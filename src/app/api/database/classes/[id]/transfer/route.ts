@@ -1,10 +1,18 @@
-// MHT Dashboard\src\app\api\database\classes\[id]\transfer\route.js
+// MHT Dashboard\src\app\api\database\classes\[id]\transfer\route.ts
 import { sendClassSignupText } from "@/util/communication/sendTexts";
 import { connectToMongoDatabase } from "@/util/db/mongodb";
+import { NextRequest } from "next/server";
 
-export async function POST(req, { params }) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const { id: sourceClassId } = params;
-  const { studentId, targetClassId } = await req.json();
+  const {
+    studentId,
+    targetClassId,
+    sendTextNotification = true,
+  } = await req.json();
 
   if (!studentId || !targetClassId) {
     return new Response(
@@ -13,7 +21,7 @@ export async function POST(req, { params }) {
     );
   }
 
-  let db, classes;
+  let db: any, classes: any;
   try {
     ({ db } = await connectToMongoDatabase());
     classes = db.collection("Classes");
@@ -38,7 +46,7 @@ export async function POST(req, { params }) {
 
     // Find the student in the source class
     const studentIndex = sourceClass.signups.findIndex(
-      (signup) => signup.id === studentId
+      (signup: any) => signup.id === studentId
     );
 
     if (studentIndex === -1) {
@@ -59,10 +67,10 @@ export async function POST(req, { params }) {
       (targetIsWaitlistEnabled ? targetWaitlistCapacity : 0);
 
     const targetEnrolledCount = targetClass.signups.filter(
-      (s) => !s.isWaitlisted
+      (s: any) => !s.isWaitlisted
     ).length;
     const targetWaitlistedCount = targetClass.signups.filter(
-      (s) => s.isWaitlisted
+      (s: any) => s.isWaitlisted
     ).length;
 
     // Check if target class is completely full
@@ -114,18 +122,23 @@ export async function POST(req, { params }) {
       await session.endSession();
     }
 
-    // Send notification about the transfer
+    // Send notification about the transfer (only if requested)
     let notificationResult = null;
-    try {
-      notificationResult = await sendClassSignupText({
-        firstName: transferredStudent.firstName,
-        phone: transferredStudent.phone,
-        classDoc: targetClass,
-        isWaitlisted: willBeWaitlisted,
-        wasTransferred: true,
-      });
-    } catch (notificationError) {
-      console.error("Error sending transfer notification:", notificationError);
+    if (sendTextNotification) {
+      try {
+        notificationResult = await sendClassSignupText({
+          firstName: transferredStudent.firstName,
+          phone: transferredStudent.phone,
+          classDoc: targetClass,
+          isWaitlisted: willBeWaitlisted,
+          wasTransferred: true,
+        });
+      } catch (notificationError) {
+        console.error(
+          "Error sending transfer notification:",
+          notificationError
+        );
+      }
     }
 
     return new Response(
@@ -138,6 +151,8 @@ export async function POST(req, { params }) {
           isWaitlisted: willBeWaitlisted,
         },
         notification: notificationResult,
+        textNotificationSent:
+          sendTextNotification && notificationResult?.success,
       }),
       { status: 200 }
     );

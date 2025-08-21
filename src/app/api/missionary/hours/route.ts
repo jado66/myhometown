@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   try {
     const {
       email,
-      entryMethod,
+
       date,
       total_hours,
       activities,
@@ -19,7 +19,6 @@ export async function POST(request: NextRequest) {
 
     if (
       !email ||
-      !entryMethod ||
       !date ||
       total_hours === undefined ||
       total_hours === null ||
@@ -29,8 +28,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: `Missing required fields: ${!email ? "email " : ""}${
-            !entryMethod ? "entryMethod " : ""
-          }${!date ? "date " : ""}${
+            !date ? "date " : ""
+          }${
             total_hours === undefined || total_hours === null
               ? "total_hours "
               : ""
@@ -77,19 +76,6 @@ export async function POST(request: NextRequest) {
         { error: "Failed to log hours" },
         { status: 500 }
       );
-    }
-
-    // 3. Update user's preference if needed
-    if (updatePreference && missionary.preferred_entry_method !== entryMethod) {
-      const { error: preferenceError } = await supabase
-        .from("missionaries")
-        .update({ preferred_entry_method: entryMethod })
-        .eq("id", missionary.id);
-
-      if (preferenceError) {
-        // Log the error but don't fail the request, as the main task (logging hours) succeeded.
-        console.error("Failed to update preference:", preferenceError);
-      }
     }
 
     return NextResponse.json({ success: true, data: newEntry });

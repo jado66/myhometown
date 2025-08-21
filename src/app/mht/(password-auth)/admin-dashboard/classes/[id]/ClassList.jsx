@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -442,7 +442,6 @@ export default function ClassList({
   viewType,
   refetchCommunityData,
 }) {
-  // Hidden toggle state
   const [showHidden, setShowHidden] = useState(false);
   const {
     updateClass,
@@ -463,7 +462,7 @@ export default function ClassList({
 
   const [semester, setSemester] = useState(null);
 
-  // Organize classes into semesters
+  // Organize classes into semesters (full data)
   const semesters = useMemo(() => {
     const semestersMap = {};
     let currentSemesterId = null;
@@ -472,7 +471,6 @@ export default function ClassList({
     if (community?.classes && community.classes.length > 0) {
       community.classes.forEach((category) => {
         if (category.type === "header") {
-          // Headers are our semester markers
           hasFoundAnyHeaders = true;
           currentSemesterId = category.id;
           semestersMap[currentSemesterId] = {
@@ -482,7 +480,6 @@ export default function ClassList({
             visibility: category.visibility !== false,
           };
         } else if (category.classes && category.classes.length > 0) {
-          // If we have a current semester ID, add this category to it
           if (currentSemesterId && semestersMap[currentSemesterId]) {
             semestersMap[currentSemesterId].sections.push({
               id: category.id,
@@ -492,7 +489,6 @@ export default function ClassList({
               visibility: category.visibility !== false,
             });
           } else {
-            // If no current semester, create a default one
             const defaultId = "default-semester";
             if (!semestersMap[defaultId]) {
               semestersMap[defaultId] = {
@@ -502,7 +498,6 @@ export default function ClassList({
                 visibility: true,
               };
             }
-
             semestersMap[defaultId].sections.push({
               id: category.id,
               title: category.title,
@@ -514,14 +509,28 @@ export default function ClassList({
         }
       });
     }
-
-    // Filter out empty semesters
     const filteredSemesters = Object.values(semestersMap).filter(
       (semester) => semester.sections.length > 0
     );
-
     return filteredSemesters.length > 0 ? filteredSemesters : [];
   }, [community?.classes]);
+
+  // Cleaned semesters: only id and title fields
+  const cleanedSemesters = useMemo(() => {
+    if (!semesters || semesters.length === 0) return [];
+    return semesters.map((semester) => ({
+      id: semester.id,
+      title: semester.title,
+      sections: semester.sections.map((section) => ({
+        id: section.id,
+        title: section.title,
+        classes: section.classes.map((cls) => ({
+          id: cls.id,
+          title: cls.title,
+        })),
+      })),
+    }));
+  }, [semesters]);
 
   const handleAccordionChange = (panel) => (event, isExpanded) => {
     setExpandedAccordion(isExpanded ? panel : null);
@@ -692,6 +701,7 @@ export default function ClassList({
               removeSignupLoading={removeSignupLoading}
               signupLoading={signupLoading}
               refetchCommunityData={refetchCommunityData}
+              cleanedSemesters={cleanedSemesters}
             />
           </Box>
         </Dialog>
@@ -701,6 +711,10 @@ export default function ClassList({
 
   return (
     <>
+      <JsonViewer
+        data={cleanedSemesters}
+        title="Cleaned Semesters (id & title only)"
+      />
       <Box
         sx={{
           display: "flex",
@@ -793,6 +807,8 @@ export default function ClassList({
             onRemoveSignup={handleRemoveSignup}
             removeSignupLoading={removeSignupLoading}
             signupLoading={signupLoading}
+            cleanedSemesters={cleanedSemesters}
+            refetchCommunityData={refetchCommunityData}
           />
         </Box>
       </Dialog>
@@ -838,17 +854,4 @@ const formatDate = (dateString) => {
     month: "numeric", // Use "numeric" for numeric month (e.g., 2 for February)
     day: "numeric", // Use "numeric" for numeric day
   });
-};
-
-// Add this hook to organize the data
-const useMemo = (callback, dependencies) => {
-  // This is a simple implementation of React's useMemo
-  // In a real application, you would use React's useMemo hook
-  const [value, setValue] = useState(null);
-
-  useEffect(() => {
-    setValue(callback());
-  }, dependencies);
-
-  return value;
 };

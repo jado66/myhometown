@@ -383,6 +383,20 @@ const Topbar = ({ onSidebarOpen }) => {
               >
                 Missionary Login
               </MenuItem>
+              <MenuItem
+                onClick={handleResourcesClose}
+                component="a"
+                sx={{
+                  color: "black",
+                  fontWeight: "bold",
+                  "&:hover": {
+                    color: "#3A3B3C",
+                  },
+                }}
+                href={rootUrl + `/admin-dashboard/volunteer-portal`}
+              >
+                Volunteer Login
+              </MenuItem>
             </Menu>
           </Box>
         </Box>

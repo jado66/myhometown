@@ -173,6 +173,7 @@ export default function ClassPage({ params }) {
           searchTerm={searchTerm}
           viewType={viewType}
           onClassDataUpdate={refetchCommunityData}
+          refetchCommunityData={refetchCommunityData}
         />
       </Suspense>
     </Container>
