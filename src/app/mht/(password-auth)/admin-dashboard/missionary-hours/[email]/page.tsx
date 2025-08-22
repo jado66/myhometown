@@ -48,7 +48,7 @@ interface DetailedActivity {
   hours: string;
 }
 
-interface VolunteerHourEntry {
+interface MissionaryHourEntry {
   id: string;
   period_start_date: string;
   entry_method: "weekly" | "monthly";
@@ -64,14 +64,14 @@ const categoryDisplay: { [key: string]: { label: string; color: any } } = {
   administrative: { label: "Administrative Work", color: "secondary" },
 };
 
-export default function VolunteerDashboard({
+export default function MissionaryDashboard({
   params,
 }: {
   params: { email: string };
 }) {
   const router = useRouter();
   const email = decodeURIComponent(params.email);
-  const [hours, setHours] = useState<VolunteerHourEntry[]>([]);
+  const [hours, setHours] = useState<MissionaryHourEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalHours: 0,
@@ -125,7 +125,7 @@ export default function VolunteerDashboard({
     }
   }, [email]);
 
-  const calculateStats = (hoursData: VolunteerHourEntry[]) => {
+  const calculateStats = (hoursData: MissionaryHourEntry[]) => {
     const now = moment();
     const totalHours = hoursData.reduce(
       (sum, h) => sum + Number(h.total_hours),
@@ -210,9 +210,7 @@ export default function VolunteerDashboard({
       );
 
       if (Math.abs(totalActivityHours - hoursNum) > 0.01) {
-        throw new Error(
-          `Activity hours must equal total hours. Double check your entries.`
-        );
+        throw new Error("Activity hours must equal total hours.");
       }
 
       // Calculate period start date consistently
@@ -329,7 +327,7 @@ export default function VolunteerDashboard({
           <Person sx={{ mr: 2, color: "primary.main" }} />
           <Box sx={{ flexGrow: 1 }}>
             <Typography variant="h5" component="h1" fontWeight="bold">
-              Volunteer Portal
+              Missionary Hours
             </Typography>
             <Typography variant="body1" color="text.secondary">
               Welcome back, {email}!

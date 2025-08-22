@@ -44,7 +44,7 @@ export default function MissionaryLogin() {
         setSuccess(true);
         setMessage("Login successful! Redirecting...");
         setTimeout(() => {
-          router.push(rootUrl + `/admin-dashboard/volunteer-portal/${email}`);
+          router.push(rootUrl + `/admin-dashboard/volunteer-hours/${email}`);
         }, 1000);
       } else {
         setSuccess(false);
@@ -81,7 +81,7 @@ export default function MissionaryLogin() {
                   gutterBottom
                   fontWeight="bold"
                 >
-                  Volunteer Portal
+                  Missionary Hours
                 </Typography>
                 <Typography variant="h6" color="text.secondary">
                   Enter your email address to login

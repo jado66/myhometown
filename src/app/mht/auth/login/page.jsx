@@ -11,6 +11,7 @@ import {
   InputAdornment,
   Link,
   Paper,
+  Divider,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { supabase } from "@/util/supabase";
@@ -95,12 +96,6 @@ const LoginPage = () => {
           </Typography>
 
           <Box component="form" onSubmit={handleLogin} sx={{ width: "100%" }}>
-            {error && (
-              <Typography color="error" sx={{ mb: 2 }}>
-                {error}
-              </Typography>
-            )}
-
             <TextField
               margin="normal"
               required
@@ -140,6 +135,24 @@ const LoginPage = () => {
                 ),
               }}
             />
+            {error && (
+              <>
+                <Typography color="error" sx={{ mb: 2 }}>
+                  {error}
+                </Typography>
+
+                <Divider sx={{ my: 2 }} />
+
+                <Typography sx={{ mb: 2 }}>
+                  Are you sure you are in the right place? If you are a teacher,
+                  Days of Service support, volunteer, or missionary, you can log
+                  in{" "}
+                  <Link href={process.env.NEXT_PUBLIC_DOMAIN + "/login"}>
+                    here.
+                  </Link>
+                </Typography>
+              </>
+            )}
 
             <Link
               href={process.env.NEXT_PUBLIC_DOMAIN + "/auth/forgot-password"}

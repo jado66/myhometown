@@ -251,97 +251,23 @@ const SidebarNav = ({ onClose }) => {
           </Box>
 
           <Box marginBottom={2}>
-            <Button
-              variant="link"
-              onClick={() => setExpandLogin((prev) => !prev)}
-              sx={{ ml: 0, pl: 0 }}
+            <NextLink
+              href={rootUrl + "/login"}
+              style={{ textDecoration: "none" }}
+              onClick={onClose}
             >
               <Typography
                 variant="h5"
                 sx={{
                   fontWeight: 700,
                   marginBottom: 1,
-                  mb: 0,
-                  display: "flex",
-                  alignItems: "flex-start",
+                  display: "block",
                   color: "black",
                 }}
               >
                 Login
-                {expandLogin ? <ExpandLess /> : <ExpandMore />}
               </Typography>
-            </Button>
-            {expandLogin && (
-              <div style={{ marginLeft: "2em" }}>
-                <NextLink
-                  href={rootUrl + "/admin-dashboard"}
-                  style={{ textDecoration: "none", color: "#686868" }}
-                >
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      fontWeight: 700,
-                      marginY: 1,
-                      display: "block",
-                      color: "black",
-                    }}
-                  >
-                    Admin Login
-                  </Typography>
-                </NextLink>
-                <NextLink
-                  href={rootUrl + "/admin-dashboard/classes"}
-                  style={{ textDecoration: "none", color: "#686868" }}
-                >
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      fontWeight: 700,
-                      marginBottom: 1,
-                      mt: 1,
-                      display: "block",
-                      color: "black",
-                    }}
-                  >
-                    Teacher Login
-                  </Typography>
-                </NextLink>
-                <NextLink
-                  href={rootUrl + "/admin-dashboard/days-of-service"}
-                  style={{ textDecoration: "none", color: "#686868" }}
-                >
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      fontWeight: 700,
-                      marginBottom: 1,
-                      mt: 1,
-                      display: "block",
-                      color: "black",
-                    }}
-                  >
-                    Service Login
-                  </Typography>
-                </NextLink>
-                <NextLink
-                  href={rootUrl + "/admin-dashboard/missionary-portal"}
-                  style={{ textDecoration: "none", color: "#686868" }}
-                >
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      fontWeight: 700,
-                      marginBottom: 1,
-                      mt: 1,
-                      display: "block",
-                      color: "black",
-                    }}
-                  >
-                    Missionary Login
-                  </Typography>
-                </NextLink>
-              </div>
-            )}
+            </NextLink>
           </Box>
         </Box>
       </Box>

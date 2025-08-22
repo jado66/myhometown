@@ -19,18 +19,11 @@ import UserGuard from "@/guards/user-guard";
 const AdminDashboardPages = () => {
   const theme = useTheme();
 
-  const { user, isLoading } = useUser();
-
   const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
 
   return (
     <Box>
-      <Box
-        position={"relative"}
-        sx={{
-          backgroundColor: theme.palette.alternate.main,
-        }}
-      >
+      <Box position={"relative"}>
         <Container>
           {/* {<pre>{JSON.stringify(user, null, 2)}</pre>} */}
           <Box padding={5}>
@@ -44,7 +37,7 @@ const AdminDashboardPages = () => {
                 color={"primary"}
                 align={"center"}
               >
-                Admin dashboard
+                myHometown Login
               </Typography>
               <Box
                 component={Typography}
@@ -53,126 +46,58 @@ const AdminDashboardPages = () => {
                 align={"center"}
                 gutterBottom
               >
-                Manage your groups or use admin tools
+                Select the login method you would like to use.
               </Box>
-              <Typography
-                variant={"h6"}
-                component={"p"}
-                color={"textSecondary"}
-                align={"center"}
-              >
-                Welcome to the admin dashboard.
-              </Typography>
             </Box>
-
-            {isLoading && (
-              <Grid
-                container
-                spacing={4}
-                justifyContent={"center"}
-                alignItems={"center"}
-                mt={5}
-              >
-                <Loading size={50} />
-              </Grid>
-            )}
 
             <Grid
               container
               spacing={4}
               sx={{
-                visibility: !isLoading ? "visible" : "hidden",
                 justifyContent: "center",
               }}
             >
               {[
                 {
-                  title: "User Management",
+                  title: "Admin",
                   subtitle:
-                    "Add, remove, or edit users and their roles to manage who can access your city or community.",
+                    "Manage city and community pages, classes, texting and communications.",
                   media: "/admin-icons/User Management.svg",
-                  href: rootUrl + "/admin-dashboard/manage-users",
-                  requiredPermission: "admin",
+                  href: "/admin-dashboard",
                 },
-                {
-                  title: "City Management",
-                  subtitle:
-                    "Manage your cities. Add, remove, or edit city information.",
-                  media: "/admin-icons/City Management.svg",
-                  href: rootUrl + "/admin-dashboard/cities",
-                  // requiredPermission: "cityManagement",
-                },
-                {
-                  title: "Community Management",
-                  subtitle:
-                    "Manage your communities. Add, remove, or edit community information.",
-                  media: "/admin-icons/Community Management.svg",
-                  href: rootUrl + "/admin-dashboard/communities",
-                  // requiredPermission: "communityManagement",
-                },
+
                 {
                   title: "Classes and Rolls",
                   subtitle:
                     "View your classes and rolls. Take attendance and manage your classes.",
                   media: "/admin-icons/Classes and Rolls.svg",
-                  href: rootUrl + "/admin-dashboard/classes",
+                  href: "/admin-dashboard/classes",
                 },
                 {
                   title: "Days of Service",
                   subtitle:
                     "View and manage your days of service. Track your projects and volunteers.",
                   media: "/admin-icons/Days of Service.svg",
-                  href: rootUrl + "/admin-dashboard/days-of-service",
+                  href: "/admin-dashboard/days-of-service",
                 },
 
                 {
-                  title: "Texting & Communications",
+                  title: "Missionary Hours",
                   subtitle:
-                    "Manage all text communications for your city or community members.",
+                    "View and manage your missionary hours. Track your service hours and progress.",
                   media: "/admin-icons/Text SMS Communications.svg",
-                  href: rootUrl + "/admin-dashboard/texting",
-                  requiredPermission: "texting",
+                  href: "/admin-dashboard/missionary-hours",
                 },
                 {
-                  title: "Missionary Management",
+                  title: "Volunteer Hours",
                   subtitle:
-                    "Manage your missionaries. Add, remove, or edit missionary information. Log their service hours and track your progress.",
+                    "View and manage your volunteer hours. Track your service hours and progress.",
                   media: "/admin-icons/Text SMS Communications.svg",
-                  href: rootUrl + "/admin-dashboard/missionaries",
-                  requiredPermission: "administrator",
-                },
-                {
-                  title: "Missionary Logs",
-                  subtitle:
-                    "View and manage missionary logs. Track your service hours and progress.",
-                  media: "/admin-icons/Text SMS Communications.svg",
-                  href: rootUrl + "/admin-dashboard/missionary-hours",
-                  requiredPermission: "administrator",
+                  href: "/admin-dashboard/volunteer-hours",
                 },
               ].map((item, i) => (
-                <PermissionGuard
-                  requiredPermission={item.requiredPermission}
-                  user={user}
-                  key={i}
-                >
-                  <AdminDashboardCard item={item} i={i} />
-                </PermissionGuard>
+                <AdminDashboardCard item={item} i={i} />
               ))}
-
-              <UserGuard
-                allowedEmails={["jado66@gmail.com", "kcraven10@gmail.com"]}
-                user={user}
-              >
-                <AdminDashboardCard
-                  item={{
-                    title: "App Health",
-                    subtitle: "Manage your application health and performance.",
-                    media: "/admin-icons/health.png",
-                    href: rootUrl + "/admin-dashboard/health",
-                  }}
-                  i={-1}
-                />
-              </UserGuard>
             </Grid>
           </Box>
         </Container>
@@ -189,7 +114,8 @@ const AdminDashboardCard = ({ item, i }) => {
   const router = useRouter();
 
   const onClick = () => {
-    router.push(item.href);
+    const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+    router.push(rootUrl + item.href);
   };
 
   return (
