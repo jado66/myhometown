@@ -28,20 +28,12 @@ import Loading from "@/components/util/Loading";
 import { useCommunities } from "@/hooks/use-communities";
 import {
   authenticateCommunity,
+  CityIdToPasswordHash,
   CommunityIdToPasswordHash,
   isAuthenticated,
 } from "@/util/auth/simpleAuth";
 import { ExpandMore, Visibility, VisibilityOff } from "@mui/icons-material";
 import { toast } from "react-toastify";
-
-const CityIdToPasswordHash = {
-  Provo: "Provo6940!",
-  Orem: "Orem1723!",
-  Ogden: "Ogden8324!",
-  Santaquin: "Santaquin8271!",
-  "Salt Lake City": "SLC4676!",
-  "West Valley City": "WVC6961!",
-};
 
 const CommunitySelectionPage = ({ type = "classes" }) => {
   const searchParams = useSearchParams();
