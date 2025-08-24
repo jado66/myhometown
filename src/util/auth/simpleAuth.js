@@ -51,6 +51,7 @@ export const CityIdToPasswordHash = {
   "Salt Lake City": "434347",
   "West Valley City": "385957",
   Santaquin: "689943",
+  Layton: "978612",
 };
 
 export const CommunityIdToPasswordHash = {
