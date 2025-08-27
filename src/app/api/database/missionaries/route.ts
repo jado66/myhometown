@@ -62,8 +62,10 @@ export async function POST(request: NextRequest) {
       last_login,
       street_address,
       address_city,
+      person_type,
       address_state,
       zip_code,
+      position_detail,
     } = body;
 
     console.log(JSON.stringify(body, null, 2));
@@ -154,8 +156,10 @@ export async function POST(request: NextRequest) {
         last_login: last_login || null,
         street_address: street_address || null,
         address_city: address_city || null,
+        person_type: person_type || null,
         address_state: address_state || null,
         zip_code: zip_code || null,
+        position_detail: position_detail || null,
       })
       .select()
       .single();
@@ -214,6 +218,8 @@ export async function PATCH(request: NextRequest) {
       address_city,
       address_state,
       zip_code,
+      person_type,
+      position_detail,
     } = body;
 
     // Validate assignment constraints if assignment_level is provided
@@ -276,6 +282,9 @@ export async function PATCH(request: NextRequest) {
     if (address_state !== undefined)
       updateData.address_state = address_state || null;
     if (zip_code !== undefined) updateData.zip_code = zip_code || null;
+    if (person_type !== undefined) updateData.person_type = person_type || null;
+    if (position_detail !== undefined)
+      updateData.position_detail = position_detail || null;
 
     const { data, error } = await supabase
       .from("missionaries")

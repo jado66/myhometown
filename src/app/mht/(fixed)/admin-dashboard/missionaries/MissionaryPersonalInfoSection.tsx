@@ -13,17 +13,25 @@ import {
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { Help } from "@mui/icons-material";
 
 interface MissionaryPersonalInfoSectionProps {
   formData: any;
   setFormData: (fn: (prev: any) => any) => void;
   uploadLoading: boolean;
   handleFileSelectForCrop: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  errors?: { [key: string]: string };
 }
 
 const MissionaryPersonalInfoSection: React.FC<
   MissionaryPersonalInfoSectionProps
-> = ({ formData, setFormData, uploadLoading, handleFileSelectForCrop }) => (
+> = ({
+  formData,
+  setFormData,
+  uploadLoading,
+  handleFileSelectForCrop,
+  errors = {},
+}) => (
   <Card variant="outlined" sx={{ mb: 3 }}>
     <CardContent sx={{ p: 3 }}>
       <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -48,12 +56,16 @@ const MissionaryPersonalInfoSection: React.FC<
                 width: 100,
                 height: 100,
                 mb: 2,
-                bgcolor: formData.profile_picture_url
+                bgcolor: errors.profile_picture_url
+                  ? "#d32f2f"
+                  : formData.profile_picture_url
                   ? "transparent"
                   : "grey.300",
               }}
             >
-              {!formData.profile_picture_url && (
+              {errors.profile_picture_url && <Help color="white" />}
+
+              {!formData.profile_picture_url && !errors.profile_picture_url && (
                 <PersonIcon sx={{ fontSize: 40 }} />
               )}
             </Avatar>
@@ -83,8 +95,8 @@ const MissionaryPersonalInfoSection: React.FC<
                   {uploadLoading
                     ? "Uploading..."
                     : formData.profile_picture_url
-                    ? "Edit Photo"
-                    : "Upload Photo"}
+                    ? "Edit"
+                    : "Upload"}
                 </Button>
               </label>
               {formData.profile_picture_url && (
@@ -98,7 +110,7 @@ const MissionaryPersonalInfoSection: React.FC<
                     }))
                   }
                 >
-                  Remove Photo
+                  Remove
                 </Button>
               )}
             </Box>
@@ -143,6 +155,8 @@ const MissionaryPersonalInfoSection: React.FC<
                     first_name: e.target.value,
                   }))
                 }
+                error={!!errors.first_name}
+                helperText={errors.first_name}
               />
             </Grid>
             <Grid item xs={12}>
@@ -158,6 +172,8 @@ const MissionaryPersonalInfoSection: React.FC<
                     last_name: e.target.value,
                   }))
                 }
+                error={!!errors.last_name}
+                helperText={errors.last_name}
               />
             </Grid>
           </Grid>
@@ -176,6 +192,8 @@ const MissionaryPersonalInfoSection: React.FC<
                     email: e.target.value,
                   }))
                 }
+                error={!!errors.email}
+                helperText={errors.email}
               />
             </Grid>
             <Grid item xs={12}>
@@ -192,6 +210,8 @@ const MissionaryPersonalInfoSection: React.FC<
                     contact_number: e.target.value,
                   }))
                 }
+                error={!!errors.contact_number}
+                helperText={errors.contact_number}
               />
             </Grid>
           </Grid>
@@ -211,6 +231,8 @@ const MissionaryPersonalInfoSection: React.FC<
                 street_address: e.target.value,
               }))
             }
+            error={!!errors.street_address}
+            helperText={errors.street_address}
           />
         </Grid>
         <Grid item xs={4}>
@@ -225,6 +247,8 @@ const MissionaryPersonalInfoSection: React.FC<
                 address_city: e.target.value,
               }))
             }
+            error={!!errors.address_city}
+            helperText={errors.address_city}
           />
         </Grid>
         <Grid item xs={4}>
@@ -239,6 +263,8 @@ const MissionaryPersonalInfoSection: React.FC<
                 address_state: e.target.value,
               }))
             }
+            error={!!errors.address_state}
+            helperText={errors.address_state}
           />
         </Grid>
         <Grid item xs={3}>
@@ -253,6 +279,8 @@ const MissionaryPersonalInfoSection: React.FC<
                 zip_code: e.target.value,
               }))
             }
+            error={!!errors.zip_code}
+            helperText={errors.zip_code}
           />
         </Grid>
         {formData.person_type === "missionary" && (
@@ -268,6 +296,8 @@ const MissionaryPersonalInfoSection: React.FC<
                   stake_name: e.target.value,
                 }))
               }
+              error={!!errors.stake_name}
+              helperText={errors.stake_name}
             />
           </Grid>
         )}

@@ -44,7 +44,7 @@ export default function MissionaryLogin() {
         setSuccess(true);
         setMessage("Login successful! Redirecting...");
         setTimeout(() => {
-          router.push(rootUrl + `/admin-dashboard/volunteer-hours/${email}`);
+          router.push(rootUrl + `/admin-dashboard/missionary-hours/${email}`);
         }, 1000);
       } else {
         setSuccess(false);

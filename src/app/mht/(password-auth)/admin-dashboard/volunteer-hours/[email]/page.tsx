@@ -59,8 +59,8 @@ interface VolunteerHourEntry {
 }
 
 const categoryDisplay: { [key: string]: { label: string; color: any } } = {
-  outreach: { label: "Community Outreach", color: "primary" },
-  community_service: { label: "Community Service", color: "warning" },
+  outreach: { label: "Community Resource Center", color: "primary" },
+  community_service: { label: "Days Of Service", color: "warning" },
   administrative: { label: "Administrative Work", color: "secondary" },
 };
 
@@ -626,6 +626,7 @@ export default function VolunteerDashboard({
         handleSubmit={handleSubmit}
         editingId={editingId}
         resetForm={resetForm}
+        isVolunteer
       />
 
       {/* Delete Confirmation Dialog */}

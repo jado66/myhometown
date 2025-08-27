@@ -176,7 +176,7 @@ export function SearchAndFilter({
               }}
             />
           </Grid>
-          <Grid item xs={12} md={3}>
+          {/* <Grid item xs={12} md={3}>
             <FormControl fullWidth>
               <InputLabel>Status Filter</InputLabel>
               <Select
@@ -190,7 +190,7 @@ export function SearchAndFilter({
                 <MenuItem value="pending">Pending</MenuItem>
               </Select>
             </FormControl>
-          </Grid>
+          </Grid> */}
           <Grid item xs={12} md={3}>
             <FormControl fullWidth>
               <InputLabel>Type Filter</InputLabel>

@@ -220,12 +220,11 @@ export function UpcomingReleases({
         }}
       >
         <Typography
-          variant="body2"
+          variant="h5"
           color="text.primary"
           sx={{ display: "flex", alignItems: "center" }}
         >
-          <Group sx={{ mr: 1 }} />
-          Upcoming Releases
+          Upcoming Releases Table
         </Typography>
         <ToggleButtonGroup
           value={viewMode}

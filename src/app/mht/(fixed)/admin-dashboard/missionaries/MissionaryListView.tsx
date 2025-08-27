@@ -52,6 +52,7 @@ import {
   Warning,
   Schedule as ScheduleIcon,
   CalendarToday as CalendarTodayIcon,
+  Help,
 } from "@mui/icons-material";
 
 interface MissionaryListViewProps {
@@ -193,8 +194,9 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
               <TableCell sx={{ width: 56 }}></TableCell>{" "}
               {/* Error/Warning column */}
               {isUpcomingView && <TableCell>Days Left</TableCell>}
-              <TableCell>Missionary</TableCell>
+              <TableCell>Name</TableCell>
               <TableCell>Contact</TableCell>
+              <TableCell>Type</TableCell>
               <TableCell>Assignment</TableCell>
               <TableCell>Title/Group</TableCell>
               <TableCell>Total Hours</TableCell>
@@ -220,9 +222,16 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                     )}
                     {/* Error icon button if title is missing */}
                     {!missionary.title && (
-                      <Tooltip title="Missing title (required)">
-                        <IconButton size="small" color="error" tabIndex={-1}>
-                          <Warning />
+                      <Tooltip title="Additional Information Required">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          tabIndex={-1}
+                          onClick={() => {
+                            onEdit(missionary);
+                          }}
+                        >
+                          <Help />
                         </IconButton>
                       </Tooltip>
                     )}
@@ -321,7 +330,19 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                       )}
                     </Box>
                   </TableCell>
-
+                  <TableCell>
+                    <Box>
+                      {missionary.title && (
+                        <Typography
+                          variant="body2"
+                          fontWeight="medium"
+                          sx={{ textTransform: "capitalize" }}
+                        >
+                          {missionary.person_type}
+                        </Typography>
+                      )}
+                    </Box>
+                  </TableCell>
                   <TableCell>
                     <Box
                       sx={{ display: "flex", alignItems: "center", gap: 0.5 }}

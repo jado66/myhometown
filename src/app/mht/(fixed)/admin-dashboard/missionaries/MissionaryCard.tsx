@@ -33,6 +33,7 @@ import {
   StickyNote2 as NoteIcon,
   Warning,
   Schedule as ScheduleIcon,
+  Help,
 } from "@mui/icons-material";
 
 interface MissionaryCardProps {
@@ -304,9 +305,15 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
 
               {/* Error icon if title is missing */}
               {!missionary.title && (
-                <Tooltip title="Missing title (required)">
-                  <IconButton size="small" color="error">
-                    <Warning color="error" fontSize="small" />
+                <Tooltip title="Additional Information Required">
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={() => {
+                      onEdit(missionary);
+                    }}
+                  >
+                    <Help color="error" fontSize="small" />
                   </IconButton>
                 </Tooltip>
               )}

@@ -1,3 +1,6 @@
+"use client";
+
+import React from "react";
 import {
   Dialog,
   DialogTitle,
@@ -10,15 +13,11 @@ import {
   Grid,
   Paper,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Alert,
   CircularProgress,
   Divider,
 } from "@mui/material";
-import { Close, SwapHoriz, Add, Delete } from "@mui/icons-material";
+import { Close } from "@mui/icons-material";
 import moment, { type Moment } from "moment";
 import ThemedReactSelect from "@/components/ThemedReactSelect";
 
@@ -30,9 +29,24 @@ interface DetailedActivity {
 }
 
 const categories = [
-  { value: "outreach", label: "Community Outreach" },
-  { value: "community_service", label: "Community Service" },
-  { value: "administrative", label: "Administrative Work" },
+  {
+    value: "crc",
+    label: "Community Resource Center",
+    description:
+      "Assisting with local resource center operations, and community support services.",
+  },
+  {
+    value: "dos",
+    label: "Days Of Service",
+    description:
+      "Door-to-door visits, street contacting, referral visits, and direct outreach activities",
+  },
+  {
+    value: "administrative",
+    label: "Administrative Work",
+    description:
+      "Planning, reporting, training, meetings, and organizational tasks",
+  },
 ];
 
 function getMonthOptions() {
@@ -93,6 +107,7 @@ interface MissionaryLogHoursDialogProps {
   handleSubmit: () => void;
   editingId: string | null;
   resetForm: () => void;
+  isVolunteer: boolean;
 }
 
 export default function MissionaryLogHoursDialog({
@@ -116,9 +131,22 @@ export default function MissionaryLogHoursDialog({
   handleSubmit,
   editingId,
   resetForm,
+  isVolunteer = true,
 }: MissionaryLogHoursDialogProps) {
   const periodStart = selectedDate.clone().startOf("month");
   const periodEnd = selectedDate.clone().endOf("month");
+
+  React.useEffect(() => {
+    if (activities.length === 0) {
+      const initialActivities = categories.map((cat) => ({
+        id: cat.value,
+        category: cat.value,
+        description: "",
+        hours: "",
+      }));
+      setActivities(initialActivities);
+    }
+  }, [activities.length, setActivities]);
 
   return (
     <Dialog
@@ -132,9 +160,9 @@ export default function MissionaryLogHoursDialog({
     >
       <DialogTitle sx={{ display: "flex", alignItems: "center", pr: 8 }}>
         <Box sx={{ flexGrow: 1 }}>
-          {editingId ? "Edit" : "Log"} Your Volunteer Hours
+          {editingId ? "Edit" : "Log"} Your{" "}
+          {isVolunteer ? "Volunteer" : "Missionary"} Hours
         </Box>
-        {/* Only monthly entry method is available now */}
         <IconButton
           onClick={() => {
             onClose();
@@ -181,50 +209,47 @@ export default function MissionaryLogHoursDialog({
 
           <Divider sx={{ my: 2 }} />
 
-          {/* Activities */}
+          {/* Activity Breakdown */}
           <Typography variant="h6" sx={{ mb: 2 }}>
             Activity Breakdown
           </Typography>
-          {activities.map((activity, idx) => {
-            const selectedCategories = activities
-              .filter((a, i) => i !== idx)
-              .map((a) => a.category)
-              .filter(Boolean);
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Enter hours for any categories that apply. You don't need to fill in
+            all categories to submit.
+          </Typography>
+
+          {categories.map((category) => {
+            const activity = activities.find(
+              (a) => a.category === category.value
+            ) || {
+              id: category.value,
+              category: category.value,
+              description: "",
+              hours: "",
+            };
 
             return (
-              <Box key={activity.id} sx={{ px: 2, mb: 1 }}>
+              <Paper
+                key={category.value}
+                sx={{ p: 3, mb: 2, backgroundColor: "grey.50" }}
+              >
+                <Typography variant="h6" sx={{ mb: 1, color: "primary.main" }}>
+                  {category.label}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+                >
+                  {category.description}
+                </Typography>
+
                 <Grid container spacing={2} alignItems="center">
-                  <Grid item xs={12} sm={4}>
-                    <FormControl fullWidth>
-                      <InputLabel>Category</InputLabel>
-                      <Select
-                        value={activity.category}
-                        label="Category"
-                        onChange={(e) =>
-                          updateActivity(
-                            activity.id,
-                            "category",
-                            e.target.value
-                          )
-                        }
-                      >
-                        {categories.map((cat) => (
-                          <MenuItem
-                            key={cat.value}
-                            value={cat.value}
-                            disabled={selectedCategories.includes(cat.value)}
-                          >
-                            {cat.label}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={8} sm={3}>
+                  <Grid item xs={12} sm={3}>
                     <TextField
                       fullWidth
                       type="number"
-                      label="Hours"
+                      label="Hours "
                       value={activity.hours}
                       onChange={(e) =>
                         updateActivity(activity.id, "hours", e.target.value)
@@ -232,11 +257,10 @@ export default function MissionaryLogHoursDialog({
                       inputProps={{ step: "0.25", min: "0" }}
                     />
                   </Grid>
-
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={12} sm={9}>
                     <TextField
                       fullWidth
-                      label="Description"
+                      label="Description (optional)"
                       value={activity.description}
                       onChange={(e) =>
                         updateActivity(
@@ -245,34 +269,13 @@ export default function MissionaryLogHoursDialog({
                           e.target.value
                         )
                       }
-                      multiline
-                      rows={1}
+                      placeholder={`Describe your ${category.label.toLowerCase()} activities...`}
                     />
                   </Grid>
-                  <Grid item xs={4} sm={1}>
-                    {activities.length > 1 && (
-                      <IconButton
-                        onClick={() => removeActivity(activity.id)}
-                        color="error"
-                      >
-                        <Delete />
-                      </IconButton>
-                    )}
-                  </Grid>
                 </Grid>
-              </Box>
+              </Paper>
             );
           })}
-
-          {activities.length < 3 && (
-            <Button
-              startIcon={<Add />}
-              onClick={addActivity}
-              sx={{ mb: 2, ml: 2 }}
-            >
-              Add Activity
-            </Button>
-          )}
 
           {error && (
             <Alert severity="error" sx={{ mt: 2 }}>

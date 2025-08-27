@@ -451,6 +451,13 @@ export default function MissionaryManagement() {
   };
 
   // Open dialog for add or edit
+
+  const handleCreateNewMissionary = () => {
+    setSelectedMissionary(undefined);
+
+    setDialogOpen(true);
+  };
+
   const handleOpenDialog = (missionary?: Missionary) => {
     console.log(JSON.stringify(missionary, null, 2));
     setSelectedMissionary(missionary);
@@ -607,7 +614,7 @@ export default function MissionaryManagement() {
               <Button
                 variant="contained"
                 startIcon={<Add />}
-                onClick={() => handleOpenDialog()}
+                onClick={handleCreateNewMissionary}
               >
                 Add Missionary
               </Button>
@@ -694,12 +701,11 @@ export default function MissionaryManagement() {
                 }}
               >
                 <Typography
-                  variant="body2"
+                  variant="h6"
                   color="text.primary"
                   sx={{ display: "flex", alignItems: "center" }}
                 >
-                  <Group sx={{ mr: 1 }} />
-                  Missionaries
+                  Missionaries &amp; Volunteers Table
                 </Typography>
                 <ToggleButtonGroup
                   value={viewMode}

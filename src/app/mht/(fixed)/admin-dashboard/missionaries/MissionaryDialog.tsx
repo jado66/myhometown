@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import * as yup from "yup";
 import {
   Dialog,
   DialogTitle,
@@ -17,6 +18,7 @@ import { useImageUpload } from "@/hooks/use-upload-webp";
 import MissionaryAssignmentSection from "./MissionaryAssignmentSection";
 import MissionaryPersonalInfoSection from "./MissionaryPersonalInfoSection";
 import MissionaryNotesSection from "./MissionaryNotesSection";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 // Title positions organized by level and group
 const POSITIONS_BY_LEVEL = {
@@ -29,7 +31,7 @@ const POSITIONS_BY_LEVEL = {
     ],
   },
   city: {
-    "Executive Board": [
+    "City Board": [
       "City Chair",
       "Associate City Chair",
       "Executive Secretary",
@@ -38,7 +40,7 @@ const POSITIONS_BY_LEVEL = {
     ],
   },
   community: {
-    "Executive Board": [
+    "Community Board": [
       "Community Executive Director",
       "Technology Specialist",
     ],
@@ -74,6 +76,46 @@ interface MissionaryDialogProps {
   };
 }
 
+const missionarySchema = yup.object().shape({
+  person_type: yup.string().required("Person type is required"),
+  email: yup.string().email("Invalid email").required("Email is required"),
+  first_name: yup.string().required("First name is required"),
+  last_name: yup.string().required("Last name is required"),
+  profile_picture_url: yup.string().notRequired(),
+  city_id: yup.string().when("assignment_level", {
+    is: (val: string) => val === "city",
+    then: yup.string().required("City is required for city assignment"),
+    otherwise: yup.string(),
+  }),
+  community_id: yup.string().when("assignment_level", {
+    is: (val: string) => val === "community",
+    then: yup
+      .string()
+      .required("Community is required for community assignment"),
+    otherwise: yup.string(),
+  }),
+  assignment_status: yup.string().required("Assignment status is required"),
+  assignment_level: yup.string().required("Assignment level is required"),
+  contact_number: yup.string().required("Contact number is required"),
+  group: yup.string().notRequired(),
+  start_date: yup.string().required("Start date is required"),
+  duration: yup.string().required("Duration is required"),
+  stake_name: yup.string().when("person_type", {
+    is: (val: string) => val === "missionary",
+    then: yup.string().required("Stake name is required"),
+    otherwise: yup.string().notRequired(),
+  }),
+  gender: yup.string().required("Gender is required"),
+  street_address: yup.string().required("Street address is required"),
+  address_city: yup.string().required("Address city is required"),
+  address_state: yup.string().required("Address state is required"),
+  zip_code: yup.string().required("Zip code is required"),
+  // Optional fields
+  position_detail: yup.string().notRequired(),
+  title: yup.string().notRequired(),
+  notes: yup.string().notRequired(),
+});
+
 const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
   open,
   onClose,
@@ -98,7 +140,6 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
     group: "",
     title: "",
     start_date: "",
-    start_date: "",
     duration: "",
     stake_name: "",
     gender: "female",
@@ -110,6 +151,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
   });
 
   const isAdmin = user?.permissions?.administrator || false;
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   // State for the image cropper dialog
   const [cropperOpen, setCropperOpen] = useState(false);
@@ -145,9 +187,48 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
         address_city: missionary.address_city || "",
         address_state: missionary.address_state || "",
         zip_code: missionary.zip_code || "",
+        position_detail: missionary.position_detail || "",
       });
+    } else {
+      // Reset errors when creating a new missionary
+      setErrors({});
     }
   }, [missionary]);
+
+  // Run validation when dialog opens if editing
+  useEffect(() => {
+    if (open && missionary) {
+      const validateOnOpen = async () => {
+        let submitData = { ...formData };
+        if (submitData.assignment_level === "state") {
+          submitData.city_id = "";
+          submitData.community_id = "";
+        } else if (submitData.assignment_level === "city") {
+          submitData.community_id = "";
+        }
+        if (submitData.person_type === "volunteer") {
+          submitData.stake_name = "";
+        }
+
+        let newErrors: { [key: string]: string } = {};
+        try {
+          await missionarySchema.validate(submitData, { abortEarly: false });
+        } catch (validationError: any) {
+          if (validationError.inner) {
+            validationError.inner.forEach((err: any) => {
+              if (err.path) newErrors[err.path] = err.message;
+            });
+          }
+        }
+        // Always check these custom validations
+        if (!formData.group) newErrors.group = "Group is required";
+        if (!formData.profile_picture_url)
+          newErrors.profile_picture_url = "Profile Picture is required";
+        setErrors(newErrors);
+      };
+      validateOnOpen();
+    }
+  }, [open, missionary, formData]);
 
   // Get available cities based on permissions
   const getAvailableCities = () => {
@@ -277,22 +358,76 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const submitData = { ...formData };
+    setErrors({});
+    let submitData = { ...formData };
     if (submitData.assignment_level === "state") {
       submitData.city_id = "";
       submitData.community_id = "";
     } else if (submitData.assignment_level === "city") {
       submitData.community_id = "";
     }
-
-    // For volunteers, clear stake_name
     if (submitData.person_type === "volunteer") {
       submitData.stake_name = "";
     }
-
+    let missingFields: string[] = [];
+    // Check for missing required fields
+    try {
+      await missionarySchema.validate(submitData, { abortEarly: false });
+    } catch (validationError: any) {
+      if (validationError.inner) {
+        validationError.inner.forEach((err: any) => {
+          if (err.path) missingFields.push(err.path);
+        });
+      }
+    }
+    // Custom required fields
+    if (!submitData.profile_picture_url)
+      missingFields.push("profile_picture_url");
+    if (!submitData.group) missingFields.push("group");
+    // If any missing, show help alert
+    if (missingFields.length > 0) {
+      const fieldNames: { [key: string]: string } = {
+        person_type: "Person Type",
+        email: "Email",
+        first_name: "First Name",
+        last_name: "Last Name",
+        profile_picture_url: "Profile Picture",
+        city_id: "City",
+        community_id: "Community",
+        assignment_status: "Assignment Status",
+        assignment_level: "Assignment Level",
+        contact_number: "Contact Number",
+        group: "Group",
+        title: "Title",
+        start_date: "Start Date",
+        duration: "Duration",
+        stake_name: "Stake Name",
+        gender: "Gender",
+        street_address: "Street Address",
+        address_city: "Address City",
+        address_state: "Address State",
+        zip_code: "Zip Code",
+        position_detail: "Position Detail",
+        notes: "Notes",
+      };
+      const missingLabels = missingFields.map((f) => fieldNames[f] || f);
+      alert(
+        "Please complete all required fields before saving:\n\n" +
+          missingLabels.join("\n")
+      );
+      // Set errors for UI
+      const newErrors: { [key: string]: string } = {};
+      missingFields.forEach((f) => {
+        newErrors[f] = `${fieldNames[f] || f} is required`;
+      });
+      setErrors(newErrors);
+      return;
+    }
+    // If all required fields are present, proceed
+    setErrors({});
     onSave(submitData);
   };
 
@@ -358,9 +493,10 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
           </IconButton>
         </DialogTitle>
         <DialogContent dividers sx={{ py: 2 }}>
+          <JsonViewer data={formData} />
           <Box component="form" onSubmit={handleSubmit}>
             <Grid container spacing={4}>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={7}>
                 <MissionaryAssignmentSection
                   formData={formData}
                   setFormData={setFormData}
@@ -373,14 +509,16 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
                   handleAssignmentLevelChange={handleAssignmentLevelChange}
                   handleTitleChange={handleTitleChange}
                   calculateEndDate={calculateEndDate}
+                  errors={errors}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={5}>
                 <MissionaryPersonalInfoSection
                   formData={formData}
                   setFormData={setFormData}
                   uploadLoading={uploadLoading}
                   handleFileSelectForCrop={handleFileSelectForCrop}
+                  errors={errors}
                 />
               </Grid>
             </Grid>
@@ -388,6 +526,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
               <MissionaryNotesSection
                 formData={formData}
                 setFormData={setFormData}
+                errors={errors}
               />
             </Grid>
           </Box>
@@ -396,6 +535,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
           <Button onClick={onClose} variant="outlined">
             Cancel
           </Button>
+
           <Button
             onClick={handleSubmit}
             variant="contained"
