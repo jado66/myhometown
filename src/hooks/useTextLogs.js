@@ -129,9 +129,7 @@ async function fetchAllTextBatches(
 
   // Build query with pagination and filtering
   const buildQuery = () => {
-    let query = supabase
-      .from("text_batches")
-      .select("*", { count: "exact" });
+    let query = supabase.from("text_batches").select("*", { count: "exact" });
 
     // Add filters if provided
     if (startDate) {

@@ -255,6 +255,8 @@ export default function BulkMMSMessaging() {
 
       const classRecipients = classData.signups
         .filter((signup) => signup.phone)
+        // filter isWaitlisted
+        .filter((signup) => !signup.isWaitlisted)
         .map((signup) => ({
           value: signup.phone,
           label: `${signup.first_name || ""} ${signup.last_name || ""} (${
