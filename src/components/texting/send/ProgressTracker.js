@@ -24,10 +24,12 @@ import {
   Warning,
   Schedule,
   Send,
+  Info,
 } from "@mui/icons-material";
 
 const ProgressTracker = ({ sendStatus, progress, onReset, apiResponse }) => {
   const [expanded, setExpanded] = useState(false);
+  const [showHelper, setShowHelper] = useState(true);
   const [detailedResults, setDetailedResults] = useState([]);
 
   // Update detailed results when we get the API response
@@ -42,6 +44,10 @@ const ProgressTracker = ({ sendStatus, progress, onReset, apiResponse }) => {
 
   const handleToggleExpanded = () => {
     setExpanded(!expanded);
+  };
+
+  const handleToggleHelper = () => {
+    setShowHelper(!showHelper);
   };
 
   const getStatusIcon = (status, isTest = false) => {
@@ -155,13 +161,14 @@ const ProgressTracker = ({ sendStatus, progress, onReset, apiResponse }) => {
         >
           <Typography variant="h6">Message Results</Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            {/* <Chip
-              label="Completed"
-              color="success"
+            <IconButton
               size="small"
-              icon={<Check />}
-            /> */}
-            {/* {!expanded ? "See Details" : "Hide Details"} */}
+              onClick={handleToggleHelper}
+              aria-label="status help"
+              title="Status explanations"
+            >
+              <Info fontSize="small" />
+            </IconButton>
             <IconButton
               size="small"
               onClick={handleToggleExpanded}
@@ -171,6 +178,32 @@ const ProgressTracker = ({ sendStatus, progress, onReset, apiResponse }) => {
             </IconButton>
           </Box>
         </Box>
+
+        {/* Helper Text */}
+        <Collapse in={showHelper} timeout="auto" unmountOnExit>
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              <strong>Status Meanings:</strong>
+            </Typography>
+            <Typography variant="caption" component="div">
+              <strong>Sent</strong> - Message was successfully handed off to
+              Texting Provider for processing.{" "}
+              <strong>
+                This does not guarantee delivery to the recipient.
+              </strong>
+              <br />
+              Delivery is dependant on many factors including: recipient&apos;s
+              carrier, phone status, DO NOT DISTURB settings, etc.
+              <br />
+              <strong>Failed</strong> - Message could not be processed (i.e.,
+              invalid number, carrier outage or maintenance, etc.)
+              <br />
+              <strong>Delivery Status</strong> - The delivery status (e.g.,
+              delivered, undelivered, etc.) will be reported in the Texting
+              Logs.
+            </Typography>
+          </Alert>
+        </Collapse>
 
         {/* Summary Stats */}
         <Box sx={{ mb: 2 }}>
