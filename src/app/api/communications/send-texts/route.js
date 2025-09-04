@@ -31,10 +31,6 @@ export async function POST(req) {
     "- TWILIO_PHONE_NUMBER:",
     process.env.TWILIO_PHONE_NUMBER || "MISSING"
   );
-  console.log(
-    "- NEXT_PUBLIC_SITE_URL:",
-    process.env.NEXT_PUBLIC_SITE_URL || "MISSING"
-  );
   console.log("- BatchId:", batchId);
 
   if (!batchId) {
@@ -68,12 +64,6 @@ export async function POST(req) {
   }
 
   const { message, recipients, mediaUrls = [] } = requestBody;
-
-  // Hardcode two fake numbers for testing failed sends
-  recipients.push(
-    { phone: "+123456791", logId: "test-fail-1" },
-    { phone: "+199999999", logId: "test-fail-2" }
-  );
 
   console.log("Request Details:");
   console.log("- Message length:", message?.length || 0);
@@ -130,14 +120,18 @@ export async function POST(req) {
       );
       console.log("Recipient data:", { phone: r.phone, logId: r.logId });
 
+      // Check if this is a test number (non-UUID logId)
+      const isTestNumber =
+        r.logId &&
+        (r.logId.startsWith("test-") ||
+          !r.logId.match(
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+          ));
+
       try {
         // Validate recipient data
         if (!r.phone) {
           throw new Error("No phone number provided for recipient");
-        }
-
-        if (!r.logId) {
-          console.warn("WARNING: No logId provided for recipient");
         }
 
         // Enhanced phone number formatting with validation
@@ -172,9 +166,12 @@ export async function POST(req) {
           body: message,
           from: process.env.TWILIO_PHONE_NUMBER,
           to: formattedPhone,
-          statusCallback: `https://myhometownut.com/api/twilio-status?logId=${r.logId}`,
-          // statusCallback: `${process.env.NEXT_PUBLIC_DOMAIN}/api/twilio-status?logId=${r.logId}`,
         };
+
+        // Only add statusCallback for real log entries (not test numbers)
+        if (!isTestNumber && r.logId) {
+          messageData.statusCallback = `https://myhometownut.com/api/twilio-status?logId=${r.logId}`;
+        }
 
         // Add media URLs if present
         if (mediaUrls && mediaUrls.length > 0) {
@@ -196,8 +193,8 @@ export async function POST(req) {
         console.log(`- Direction: ${msg.direction}`);
         console.log(`- Time taken: ${Date.now() - recipientStartTime}ms`);
 
-        // Update text_log with SID
-        if (r.logId) {
+        // Update text_log with SID (only for real log entries, not test numbers)
+        if (!isTestNumber && r.logId) {
           try {
             const { error: updateError } = await supabaseServer
               .from("text_logs")
@@ -212,6 +209,8 @@ export async function POST(req) {
           } catch (dbError) {
             console.error("ERROR: Database update failed:", dbError);
           }
+        } else if (isTestNumber) {
+          console.log("⚠️ Skipping database update for test number");
         }
 
         successCount++;
@@ -220,6 +219,7 @@ export async function POST(req) {
           status: "sent",
           sid: msg.sid,
           logId: r.logId,
+          isTestNumber,
         });
       } catch (error) {
         console.error(`❌ Failed to send message:`);
@@ -234,10 +234,11 @@ export async function POST(req) {
           status: "failed",
           error: error.message,
           logId: r.logId,
+          isTestNumber,
         });
 
-        // Update database with failure
-        if (r.logId) {
+        // Update database with failure (only for real log entries, not test numbers)
+        if (!isTestNumber && r.logId) {
           try {
             const { error: updateError } = await supabaseServer
               .from("text_logs")
@@ -280,12 +281,33 @@ export async function POST(req) {
           } catch (batchDbError) {
             console.error("ERROR: Batch count update failed:", batchDbError);
           }
+        } else if (isTestNumber) {
+          console.log("⚠️ Skipping database update for test number failure");
         }
       }
     });
 
     console.log("Waiting for all messages to complete...");
     await Promise.allSettled(sendPromises);
+
+    // Update batch status to completed
+    try {
+      const { error: batchUpdateError } = await supabaseServer
+        .from("text_batches")
+        .update({ status: "completed" })
+        .eq("id", batchId);
+
+      if (batchUpdateError) {
+        console.error(
+          "ERROR updating batch status to completed:",
+          batchUpdateError
+        );
+      } else {
+        console.log("✅ Batch status updated to completed");
+      }
+    } catch (error) {
+      console.error("ERROR: Failed to update batch status:", error);
+    }
 
     const totalTime = Date.now() - startTime;
     console.log("\n=== SUMMARY ===");

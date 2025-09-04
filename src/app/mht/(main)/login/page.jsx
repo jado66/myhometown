@@ -59,14 +59,6 @@ const AdminDashboardPages = () => {
             >
               {[
                 {
-                  title: "Admin",
-                  subtitle:
-                    "Manage city and community pages, classes, texting and communications.",
-                  media: "/admin-icons/User Management.svg",
-                  href: "/admin-dashboard",
-                },
-
-                {
                   title: "Classes and Rolls",
                   subtitle:
                     "View your classes and rolls. Take attendance and manage your classes.",
@@ -94,6 +86,13 @@ const AdminDashboardPages = () => {
                     "View and manage your volunteer hours. Track your service hours and progress.",
                   media: "/admin-icons/Text SMS Communications.svg",
                   href: "/admin-dashboard/volunteer-hours",
+                },
+                {
+                  title: "Admin",
+                  subtitle:
+                    "Manage city and community pages, classes, texting and communications.",
+                  media: "/admin-icons/User Management.svg",
+                  href: "/admin-dashboard",
                 },
               ].map((item, i) => (
                 <AdminDashboardCard item={item} i={i} />

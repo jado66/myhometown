@@ -55,6 +55,7 @@ export default function BulkMMSMessaging() {
   const [totalFileSize, setTotalFileSize] = useState(0);
   const [className, setClassName] = useState("");
   const redisHealth = useRedisHealth(60000);
+  const [apiResponse, setApiResponse] = useState(null);
   const { getClass } = useClasses();
 
   // New state for section management
@@ -371,19 +372,35 @@ export default function BulkMMSMessaging() {
       const mediaUrls = mediaFiles.map((file) => file.url);
       setIsSending(true);
 
-      await sendMessages(
+      // Call sendMessages and capture the response
+      const response = await sendMessages(
         message,
         uniqueRecipients,
         mediaUrls,
-
         selectedRecipients
       );
+
+      // Set the API response for the ProgressTracker
+      setApiResponse(response);
+
       setHasSent(true);
       setIsSending(false);
     } catch (error) {
       console.error("Error sending messages:", error);
       toast.error("Failed to send messages: " + error.message);
       setIsSending(false);
+
+      // Also set error in API response format
+      setApiResponse({
+        success: false,
+        error: error.message,
+        summary: {
+          total: uniqueRecipients.length,
+          successful: 0,
+          failed: uniqueRecipients.length,
+          results: [],
+        },
+      });
     }
   };
 
@@ -409,6 +426,7 @@ export default function BulkMMSMessaging() {
     setFilteredRecipientsForSending([]);
     reset();
     setActiveTab(0);
+    setApiResponse(null);
   };
 
   const getFilteredContactsForGroup = (group, allContacts) => {
@@ -466,7 +484,14 @@ export default function BulkMMSMessaging() {
   }
 
   return (
-    <>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        p: 3,
+        m: 3,
+      }}
+    >
       <BackButton
         top="0px"
         text={activeTab === 0 ? "Back" : "Edit Message"}
@@ -476,9 +501,9 @@ export default function BulkMMSMessaging() {
       <Card
         sx={{
           width: "100%",
-          m: 3,
+
           mt: 5,
-          p: 3,
+
           display: "flex",
           flexDirection: "column",
           boxShadow: "none",
@@ -596,6 +621,7 @@ export default function BulkMMSMessaging() {
         sendStatus={sendStatus}
         progress={progress}
         onReset={reset}
+        apiResponse={apiResponse}
       />
 
       <Box sx={{ padding: 2, ml: 3 }}>
@@ -605,6 +631,6 @@ export default function BulkMMSMessaging() {
           personal use. Please do not include sensitive information.
         </Typography>
       </Box>
-    </>
+    </Box>
   );
 }

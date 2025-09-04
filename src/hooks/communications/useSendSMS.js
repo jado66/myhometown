@@ -11,21 +11,8 @@ export function useSendSMS(user) {
     successful: 0,
     failed: 0,
     results: [],
+    batchId: null,
   });
-  const channelRef = useRef(null);
-  const batchIdRef = useRef(null);
-
-  const cleanup = useCallback(() => {
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
-    batchIdRef.current = null;
-  }, []);
-
-  useEffect(() => {
-    return cleanup;
-  }, [cleanup]);
 
   const extractGroupsFromRecipients = (selectedRecipients) => {
     return selectedRecipients
@@ -40,7 +27,7 @@ export function useSendSMS(user) {
   const sendMessages = useCallback(
     async (message, recipients, mediaUrls = [], selectedRecipients = []) => {
       const messageId = uuidv4();
-      const owner_type = "user"; // Adjust as needed
+      const owner_type = "user";
       const owner_id = user?.id;
       const sender_id = user?.id;
 
@@ -51,6 +38,7 @@ export function useSendSMS(user) {
         successful: 0,
         failed: 0,
         results: [],
+        batchId: null,
       });
 
       const selectedGroups = extractGroupsFromRecipients(selectedRecipients);
@@ -76,121 +64,118 @@ export function useSendSMS(user) {
         sentAt: new Date().toISOString(),
       };
 
-      // Create batch in Supabase
-      const { data: batch, error: batchError } = await supabase
-        .from("text_batches")
-        .insert({
-          sender_id,
-          owner_type,
-          owner_id,
-          message_content: message,
-          media_urls: mediaUrls.length > 0 ? mediaUrls : null,
-          status: "in_progress",
-          total_count: recipients.length,
-          pending_count: recipients.length,
-          metadata,
-        })
-        .select()
-        .single();
+      try {
+        // Create batch in Supabase
+        const { data: batch, error: batchError } = await supabase
+          .from("text_batches")
+          .insert({
+            sender_id,
+            owner_type,
+            owner_id,
+            message_content: message,
+            media_urls: mediaUrls.length > 0 ? mediaUrls : null,
+            status: "in_progress",
+            total_count: recipients.length,
+            pending_count: recipients.length,
+            metadata,
+          })
+          .select()
+          .single();
 
-      if (batchError) {
-        toast.error("Failed to create batch: " + batchError.message);
-        setSendStatus("error");
-        return [];
-      }
-
-      batchIdRef.current = batch.id;
-
-      // Batch insert pending logs
-      const pendingLogs = recipients.map((r) => ({
-        batch_id: batch.id,
-        message_id: messageId,
-        sender_id,
-        recipient_phone: r.value,
-        recipient_contact_id: r.contactId || null,
-        message_content: message,
-        media_urls: mediaUrls.length > 0 ? JSON.stringify(mediaUrls) : null,
-        status: "pending",
-        error_message: null,
-        owner_id,
-        owner_type,
-        metadata: JSON.stringify(metadata),
-      }));
-
-      const { data: logData, error: logError } = await supabase
-        .from("text_logs")
-        .insert(pendingLogs)
-        .select();
-
-      if (logError) {
-        toast.error("Failed to log pending messages: " + logError.message);
-        setSendStatus("error");
-        return [];
-      }
-
-      // Map log IDs for webhook (passed in statusCallback URL)
-      const logIdMap = new Map();
-      logData.forEach((log, idx) => {
-        logIdMap.set(recipients[idx].value, log.id);
-      });
-
-      // Initiate sends via API (Twilio will callback to webhook)
-      const response = await fetch(
-        `/api/communications/send-texts?batchId=${batch.id}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            message,
-            recipients: recipients.map((r) => ({
-              phone: r.value,
-              logId: logIdMap.get(r.value), // Pass logId for statusCallback
-            })),
-            mediaUrls,
-          }),
+        if (batchError) {
+          toast.error("Failed to create batch: " + batchError.message);
+          setSendStatus("error");
+          return [];
         }
-      );
 
-      const data = await response.json();
-      if (!response.ok) {
-        toast.error(data.error || "Failed to initiate sending");
-        setSendStatus("error");
-        return [];
-      }
+        // Update progress with batchId
+        setProgress((prev) => ({
+          ...prev,
+          batchId: batch.id,
+        }));
 
-      // Subscribe to realtime updates on the batch
-      channelRef.current = supabase
-        .channel(`batch-${batch.id}`)
-        .on(
-          "postgres_changes",
+        // Batch insert pending logs
+        const pendingLogs = recipients.map((r) => ({
+          batch_id: batch.id,
+          message_id: messageId,
+          sender_id,
+          recipient_phone: r.value,
+          recipient_contact_id: r.contactId || null,
+          message_content: message,
+          media_urls: mediaUrls.length > 0 ? JSON.stringify(mediaUrls) : null,
+          status: "pending",
+          error_message: null,
+          owner_id,
+          owner_type,
+          metadata: JSON.stringify(metadata),
+        }));
+
+        const { data: logData, error: logError } = await supabase
+          .from("text_logs")
+          .insert(pendingLogs)
+          .select();
+
+        if (logError) {
+          toast.error("Failed to log pending messages: " + logError.message);
+          setSendStatus("error");
+          return [];
+        }
+
+        // Map log IDs for webhook
+        const logIdMap = new Map();
+        logData.forEach((log, idx) => {
+          logIdMap.set(recipients[idx].value, log.id);
+        });
+
+        // Initiate sends via API
+        const response = await fetch(
+          `/api/communications/send-texts?batchId=${batch.id}`,
           {
-            event: "UPDATE",
-            schema: "public",
-            table: "text_batches",
-            filter: `id=eq.${batch.id}`,
-          },
-          (payload) => {
-            const b = payload.new;
-            const completed = b.total_count - b.pending_count;
-            const successful = b.delivered_count + b.sent_count; // Adjust definition as needed
-            setProgress({
-              total: b.total_count,
-              completed,
-              successful,
-              failed: b.failed_count,
-              results: [], // If needed, fetch details separately
-            });
-
-            if (b.status === "completed") {
-              setSendStatus("completed");
-              toast.success("All messages processed!");
-              cleanup();
-            }
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              message,
+              recipients: recipients.map((r) => ({
+                phone: r.value,
+                logId: logIdMap.get(r.value),
+              })),
+              mediaUrls,
+            }),
           }
-        )
-        .subscribe();
+        );
 
-      return []; // Results can be fetched later if needed
+        const data = await response.json();
+
+        if (!response.ok) {
+          toast.error(data.error || "Failed to initiate sending");
+          setSendStatus("error");
+          return [];
+        }
+
+        // Update progress based on API response
+        if (data.summary) {
+          setProgress((prev) => ({
+            ...prev,
+            total: data.summary.total,
+            completed: data.summary.total, // All messages processed
+            successful: data.summary.successful,
+            failed: data.summary.failed,
+            results: data.summary.results || [],
+          }));
+        }
+
+        setSendStatus("completed");
+
+        return data;
+      } catch (error) {
+        console.error("Error in sendMessages:", error);
+        setSendStatus("error");
+        setProgress((prev) => ({
+          ...prev,
+          error: error.message,
+        }));
+        throw error;
+      }
     },
     [user]
   );
@@ -203,9 +188,9 @@ export function useSendSMS(user) {
       successful: 0,
       failed: 0,
       results: [],
+      batchId: null,
     });
-    cleanup();
-  }, [cleanup]);
+  }, []);
 
   return { sendStatus, progress, sendMessages, reset };
 }
