@@ -190,17 +190,6 @@ export default function ScheduledTextsPage() {
             Scheduled Messages
           </Typography>
           {/* Debug button - remove in production */}
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={callSendText}
-            sx={{
-              display:
-                process.env.NODE_ENV === "development" ? "block" : "none",
-            }}
-          >
-            Test Send (Debug)
-          </Button>
         </Box>
 
         {error && (
@@ -534,7 +523,7 @@ export default function ScheduledTextsPage() {
                       <Typography variant="subtitle1" gutterBottom>
                         Message Details
                       </Typography>
-                      Detailed Log <JsonViewer data={metadata} />
+                      Detailed Log
                       <Paper variant="outlined" sx={{ p: 2 }}>
                         <Typography variant="body2" gutterBottom>
                           <strong>Type:</strong>{" "}

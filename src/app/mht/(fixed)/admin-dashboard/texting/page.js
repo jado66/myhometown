@@ -84,15 +84,7 @@ const TextingOverviewPage = () => {
             >
               {[
                 {
-                  title: "Send Texts",
-                  subtitle:
-                    "Compose and send text messages to individuals or groups in your community.",
-                  media: "/admin-icons/Send Text.svg",
-                  href: rootUrl + "/admin-dashboard/texting/send",
-                  requiredPermission: "texting",
-                },
-                {
-                  title: "Manage Directory",
+                  title: "Contact Directory",
                   subtitle:
                     "Add, edit, or remove contacts and manage your texting directory.",
                   media: "/admin-icons/Directory Management.svg",
@@ -100,19 +92,28 @@ const TextingOverviewPage = () => {
                   requiredPermission: "texting",
                 },
                 {
-                  title: "View Logs",
+                  title: "Send Messages",
                   subtitle:
-                    "Review sent messages, delivery status, and communication history.",
-                  media: "/admin-icons/Message Logs.svg",
-                  href: rootUrl + "/admin-dashboard/texting/logs",
+                    "Compose and send text messages to individuals or groups in your community.",
+                  media: "/admin-icons/Send Text.svg",
+                  href: rootUrl + "/admin-dashboard/texting/send",
                   requiredPermission: "texting",
                 },
+
                 {
                   title: "Scheduled Messages",
                   subtitle:
                     "Schedule messages for future delivery and manage upcoming communications.",
                   media: "/admin-icons/Scheduled Messages.svg",
                   href: rootUrl + "/admin-dashboard/texting/scheduled-messages",
+                  requiredPermission: "texting",
+                },
+                {
+                  title: "Texting Logs",
+                  subtitle:
+                    "Review sent messages, delivery status, and communication history.",
+                  media: "/admin-icons/Message Logs.svg",
+                  href: rootUrl + "/admin-dashboard/texting/logs",
                   requiredPermission: "texting",
                 },
               ].map((item, i) => (

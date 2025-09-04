@@ -36,18 +36,19 @@ export const pages = () => {
       requiredPermission: "texting",
       pages: [
         {
+          title: "Contact Directory",
+          href: rootUrl + "/admin-dashboard/texting/directory",
+          requiredPermission: "texting",
+        },
+        {
           title: "Send Messages",
           href: rootUrl + "/admin-dashboard/texting/send",
           requiredPermission: "texting",
         },
+
         {
-          title: "View Scheduled Messages",
+          title: "Scheduled Messages",
           href: rootUrl + "/admin-dashboard/texting/scheduled-messages",
-          requiredPermission: "texting",
-        },
-        {
-          title: "Contact Directory",
-          href: rootUrl + "/admin-dashboard/texting/directory",
           requiredPermission: "texting",
         },
         {
