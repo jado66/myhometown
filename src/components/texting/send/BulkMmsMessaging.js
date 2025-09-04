@@ -554,10 +554,10 @@ export default function BulkMMSMessaging() {
                     </Typography>
                   )}
 
-                  <RecipientImporter
+                  {/* <RecipientImporter
                     onImportRecipients={handleImportRecipients}
                     existingRecipients={selectedRecipients}
-                  />
+                  /> */}
 
                   <RecipientSelector
                     selectedRecipients={selectedRecipients}

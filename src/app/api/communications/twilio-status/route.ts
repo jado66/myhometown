@@ -2,8 +2,6 @@ import { supabaseServer } from "@/util/supabaseServer";
 import twilio from "twilio";
 import { NextRequest } from "next/server";
 
-const twilioValidator = twilio.webhook({ validate: true }); // Validates signature
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.text(); // Twilio sends urlencoded
@@ -20,21 +18,29 @@ export async function POST(req: NextRequest) {
       signature: signature ? "present" : "missing",
     });
 
-    // For development/testing, you might want to skip signature validation
-    // Uncomment the following lines if signature validation is causing issues with localtunnel
-    /*
+    // Enable signature validation for production
+    if (!signature) {
+      console.log("Missing Twilio signature");
+      return new Response("Missing signature", { status: 403 });
+    }
+
     try {
-      const isValid = twilioValidator(signature, url, params);
+      // Validate the signature using your auth token
+      const authToken = process.env.TWILIO_AUTH_TOKEN;
+      if (!authToken) {
+        throw new Error("Missing TWILIO_AUTH_TOKEN environment variable");
+      }
+
+      const isValid = twilio.validateRequest(authToken, signature, url, params);
+
       if (!isValid) {
-        console.log('Invalid Twilio signature');
+        console.log("Invalid Twilio signature");
         return new Response("Invalid signature", { status: 403 });
       }
     } catch (validationError) {
-      console.error('Signature validation error:', validationError);
-      // In development, you might want to continue despite validation errors
-      // return new Response("Signature validation failed", { status: 403 });
+      console.error("Signature validation error:", validationError);
+      return new Response("Signature validation failed", { status: 403 });
     }
-    */
 
     const { MessageSid, MessageStatus, ErrorCode, ErrorMessage } = params;
     const logId = new URL(req.url).searchParams.get("logId");
