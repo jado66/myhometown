@@ -43,7 +43,7 @@ import {
 } from "@mui/icons-material";
 
 import BackButton from "@/components/BackButton";
-import { useTextLogs } from "@/hooks/useTextLogs";
+import { useTextLogs, parseMetadata } from "@/hooks/useTextLogs";
 import { useUser } from "@/hooks/use-user";
 
 // Import our custom components
@@ -63,12 +63,12 @@ export default function TextLogViewer() {
   const { user } = useUser();
 
   // Get text logs using our custom hook - now passing isAdmin flag
-  const { logs, loading, error, fetchTextLogs } = useTextLogs(
-    user?.id,
-    user?.communities_details?.map((c) => c.id) || [],
-    user?.cities_details?.map((c) => c.id) || [],
-    user?.permissions?.administrator || false // Pass admin status here
-  );
+  const { logs, loading, error, fetchTextLogs } =
+    useTextLogs();
+    // user?.id,
+    // user?.communities_details?.map((c) => c.id) || [],
+    // user?.cities_details?.map((c) => c.id) || [],
+    // user?.permissions?.administrator || false // Pass admin status here
 
   // State for filters and pagination
   const [useClientSidePagination, setUseClientSidePagination] = useState(true);
@@ -87,22 +87,6 @@ export default function TextLogViewer() {
 
   // For viewing message details
   const [selectedLog, setSelectedLog] = useState(null);
-
-  // Helper function to parse metadata and extract groups
-  const parseMetadata = (metadataString) => {
-    try {
-      return JSON.parse(metadataString);
-    } catch (error) {
-      console.error("Error parsing metadata:", error);
-      return null;
-    }
-  };
-
-  // Helper function to extract groups from metadata
-  const getGroupsFromMetadata = (metadata) => {
-    if (!metadata || !metadata.selectedGroups) return [];
-    return metadata.selectedGroups;
-  };
 
   // Handle search
   const handleSearch = () => {
@@ -203,8 +187,18 @@ export default function TextLogViewer() {
   };
 
   // View log details
-  const handleViewDetails = (log) => {
-    setSelectedLog(log);
+  const handleViewDetails = async (log) => {
+    setDetailsLoading(true);
+    try {
+      const individualLogs = await fetchBatchDetails(log.id);
+      const statuses = individualLogs.map((d) => d.status);
+      setSelectedLog({ ...log, individualLogs, statuses });
+    } catch (err) {
+      console.error("Error fetching batch details:", err);
+      // Optional: Show alert
+    } finally {
+      setDetailsLoading(false);
+    }
   };
 
   // Close details view
@@ -221,60 +215,34 @@ export default function TextLogViewer() {
     let allLogs = [];
     const isAdmin = user?.permissions?.administrator || false;
 
-    if (activeTab === 0) {
-      // All logs
-      if (isAdmin) {
-        // For admins, use allUserLogs which contains ALL logs from ALL users
-        allLogs = [...(logs.allUserLogs || [])];
+    return allLogs.map((log) => {
+      // Compute positive categories
+      const positiveCounts = [
+        log.pending_count || 0,
+        log.sent_count || 0,
+        log.delivered_count || 0,
+        log.failed_count || 0,
+      ].filter((c) => c > 0).length;
 
-        // Also add community and city logs
-        Object.values(logs.communityLogs).forEach((communityLogList) => {
-          allLogs = [...allLogs, ...communityLogList];
-        });
+      // Compute aggregate status (fallback if backend doesn't update it)
+      const computedStatus =
+        (log.failed_count || 0) > 0
+          ? "failed"
+          : (log.delivered_count || 0) === (log.total_count || 0)
+          ? "delivered"
+          : (log.sent_count || 0) + (log.delivered_count || 0) ===
+            (log.total_count || 0)
+          ? "sent"
+          : "pending";
 
-        Object.values(logs.cityLogs).forEach((cityLogList) => {
-          allLogs = [...allLogs, ...cityLogList];
-        });
-      } else {
-        // For non-admins, show their own logs plus their associated community/city logs
-        allLogs = [...logs.userLogs];
-
-        Object.values(logs.communityLogs).forEach((communityLogList) => {
-          allLogs = [...allLogs, ...communityLogList];
-        });
-
-        Object.values(logs.cityLogs).forEach((cityLogList) => {
-          allLogs = [...allLogs, ...cityLogList];
-        });
-      }
-    } else if (activeTab === 1) {
-      // Personal Messages - only user's own logs
-      allLogs = logs.userLogs;
-    } else if (activeTab === 2) {
-      // For admin: Community Messages, For non-admin: City Messages
-      if (isAdmin) {
-        Object.values(logs.communityLogs).forEach((communityLogList) => {
-          allLogs = [...allLogs, ...communityLogList];
-        });
-      } else {
-        Object.values(logs.cityLogs).forEach((cityLogList) => {
-          allLogs = [...allLogs, ...cityLogList];
-        });
-      }
-    } else if (activeTab === 3) {
-      // City Messages (only for admin)
-      if (isAdmin) {
-        Object.values(logs.cityLogs).forEach((cityLogList) => {
-          allLogs = [...allLogs, ...cityLogList];
-        });
-      }
-    }
-
-    // Add the status summary for mixed statuses
-    return allLogs.map((log) => ({
-      ...log,
-      status: getStatusSummary(log.statuses || [log.status]),
-    }));
+      return {
+        ...log,
+        status: computedStatus, // Use this over log.status if backend not updated
+        isMixed: (log.total_count || 0) > 1 && positiveCounts > 1,
+        recipientCount: log.total_count || 0,
+        groups: getGroupsFromMetadata(parseMetadata(log.metadata)),
+      };
+    });
   }, [logs, activeTab, user?.permissions?.administrator]);
 
   const tabs = user?.permissions?.administrator

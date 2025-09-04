@@ -1,12 +1,15 @@
 import { supabase } from "@/util/supabase";
 import { useState, useEffect, useCallback } from "react";
+import { useUser } from "./use-user";
 
 export function useTextLogs(
-  userId,
-  userCommunities = [],
-  userCities = [],
-  isAdmin = false
+  // userId,
+  // userCommunities = [],
+  // userCities = [],
+  isAdmin = true
 ) {
+  const { user } = useUser();
+
   const [logs, setLogs] = useState({
     userLogs: [],
     communityLogs: {},
@@ -24,39 +27,26 @@ export function useTextLogs(
 
   const fetchTextLogs = useCallback(
     async (options = {}) => {
-      if (!userId) {
+      if (!user.id) {
         setLoading(false);
         return;
       }
 
-      const {
-        limit = 25,
-        page = 1,
-        startDate = null,
-        endDate = null,
-        status = null,
-        searchTerm = null,
-        sortBy = "created_at",
-        sortDirection = "desc",
-      } = options;
+      // Comment out all querying options for now - just show all texts
+      // const {
+      //   limit = 25,
+      //   page = 1,
+      //   startDate = null,
+      //   endDate = null,
+      //   status = null,
+      //   searchTerm = null,
+      //   sortBy = "created_at",
+      //   sortDirection = "desc",
+      // } = options;
 
       try {
-        const result = await fetchAllTextBatches(
-          userId,
-          userCommunities,
-          userCities,
-          isAdmin,
-          {
-            limit,
-            page,
-            startDate,
-            endDate,
-            status,
-            searchTerm,
-            sortBy,
-            sortDirection,
-          }
-        );
+        // Simplified to fetch all text batches without filtering
+        const result = await fetchAllTextBatches(user.id, [], [], true, {});
         setLogs(result);
         setError(null);
       } catch (err) {
@@ -66,14 +56,15 @@ export function useTextLogs(
         setLoading(false);
       }
     },
-    [userId, userCommunities, userCities, isAdmin]
+    [user.id, isAdmin]
   );
 
   useEffect(() => {
-    if (userId) {
+    if (user.id) {
       fetchTextLogs();
     }
-  }, [userId, fetchTextLogs]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user.id, isAdmin]);
 
   // If needed, add function to fetch details for a batch (individual logs)
   const fetchBatchDetails = async (batchId) => {
@@ -101,18 +92,21 @@ async function fetchAllTextBatches(
   isAdmin,
   options
 ) {
-  const {
-    limit = 25,
-    page = 1,
-    startDate = null,
-    endDate = null,
-    status = null,
-    searchTerm = null,
-    sortBy = "created_at",
-    sortDirection = "desc",
-  } = options;
+  // Comment out all the complex filtering options for now
+  // const {
+  //   limit = 25,
+  //   page = 1,
+  //   startDate = null,
+  //   endDate = null,
+  //   status = null,
+  //   searchTerm = null,
+  //   recipientPhone = null,
+  //   sortBy = "created_at",
+  //   sortDirection = "desc",
+  // } = options;
 
-  const offset = (page - 1) * limit;
+  // const offset = (page - 1) * limit;
+
   const result = {
     userLogs: [],
     communityLogs: {},
@@ -126,97 +120,46 @@ async function fetchAllTextBatches(
     },
   };
 
-  const buildQuery = (baseConditions) => {
-    let query = supabase
+  // Simplified query builder - just fetch all text batches
+  const buildSimpleQuery = () => {
+    return supabase
       .from("text_batches")
       .select("*", { count: "exact" })
-      .range(offset, offset + limit - 1)
-      .order(sortBy, { ascending: sortDirection === "asc" });
-
-    Object.entries(baseConditions).forEach(([key, value]) => {
-      if (Array.isArray(value)) {
-        query = query.in(key, value);
-      } else {
-        query = query.eq(key, value);
-      }
-    });
-
-    if (startDate) query.gte("created_at", startDate);
-    if (endDate) query.lte("created_at", endDate);
-    if (status) query.eq("status", status);
-    if (searchTerm) query.ilike("message_content", `%${searchTerm}%`);
-
-    return query;
+      .order("created_at", { ascending: false });
   };
 
   try {
-    if (isAdmin) {
-      // All user batches
-      const { data: allUserData, count: allUserCount } = await buildQuery({
-        owner_type: "user",
-      });
-      result.allUserLogs = allUserData;
-      result.totalCounts.allUserLogs = allUserCount;
+    // For now, just fetch all text batches regardless of admin status
+    const { data: allData, count: allCount } = await buildSimpleQuery();
 
-      // User's own batches (for personal tab)
-      const { data: userData, count: userCount } = await buildQuery({
-        sender_id: userId,
-      });
-      result.userLogs = userData;
-      result.totalCounts.userLogs = userCount;
+    // Put all data in the allUserLogs for display
+    result.allUserLogs = allData || [];
+    result.totalCounts.allUserLogs = allCount || 0;
 
-      // All community batches
-      const { data: commData, count: commCount } = await buildQuery({
-        owner_type: "community",
-      });
-      commData.forEach((log) => {
-        if (!result.communityLogs[log.owner_id])
-          result.communityLogs[log.owner_id] = [];
-        result.communityLogs[log.owner_id].push(log);
-      });
-      // Counts per community would need separate queries if needed; for simplicity, total per owner_id
-
-      // All city batches
-      const { data: cityData, count: cityCount } = await buildQuery({
-        owner_type: "city",
-      });
-      cityData.forEach((log) => {
-        if (!result.cityLogs[log.owner_id]) result.cityLogs[log.owner_id] = [];
-        result.cityLogs[log.owner_id].push(log);
-      });
-    } else {
-      // Non-admin
-      const { data: userData, count: userCount } = await buildQuery({
-        sender_id: userId,
-      });
-      result.userLogs = userData;
-      result.totalCounts.userLogs = userCount;
-
-      if (userCommunities.length > 0) {
-        for (const commId of userCommunities) {
-          const { data, count } = await buildQuery({
-            owner_type: "community",
-            owner_id: commId,
-          });
-          result.communityLogs[commId] = data;
-          result.totalCounts.communityLogs[commId] = count;
-        }
-      }
-
-      if (userCities.length > 0) {
-        for (const cityId of userCities) {
-          const { data, count } = await buildQuery({
-            owner_type: "city",
-            owner_id: cityId,
-          });
-          result.cityLogs[cityId] = data;
-          result.totalCounts.cityLogs[cityId] = count;
-        }
-      }
-    }
+    // Also populate other fields for compatibility
+    result.communityLogs = { all: allData || [] };
+    result.totalCounts.communityLogs = { all: allCount || 0 };
+    result.cityLogs = { all: allData || [] };
+    result.totalCounts.cityLogs = { all: allCount || 0 };
   } catch (error) {
     throw error;
   }
 
   return result;
 }
+
+// Helper function to parse metadata and extract groups
+export const parseMetadata = (metadataString) => {
+  try {
+    return JSON.parse(metadataString);
+  } catch (error) {
+    console.error("Error parsing metadata:", error);
+    return null;
+  }
+};
+
+// Helper function to extract groups from metadata
+export const getGroupsFromMetadata = (metadata) => {
+  if (!metadata || !metadata.selectedGroups) return [];
+  return metadata.selectedGroups;
+};
