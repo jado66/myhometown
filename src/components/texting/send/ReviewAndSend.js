@@ -224,7 +224,13 @@ const ReviewAndSend = ({
       </Typography>
 
       <Paper elevation={1} sx={{ p: 2, mb: 2, backgroundColor: "grey.100" }}>
-        <Typography sx={{ display: "flex" }}>
+        <Typography
+          sx={{
+            display: "flex",
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+          }}
+        >
           {message?.trim() || (
             <>
               <Warning sx={{ mr: 2 }} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useTheme } from "@mui/material/styles";
 import moment from "moment";
 import Box from "@mui/material/Box";
@@ -19,6 +19,11 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
+import Pagination from "@mui/material/Pagination";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 import {
   ExpandMore as ChevronDownIcon,
   ChevronRight as ChevronRightIcon,
@@ -263,7 +268,8 @@ export function TextBatchViewer({
   isAdmin = false,
 }: TextBatchViewerProps) {
   const theme = useTheme();
-  const { logs, loading, error, fetchBatchDetails } = useTextLogs();
+  const { logs, loading, error, fetchTextLogs, fetchBatchDetails } =
+    useTextLogs();
   const [expandedBatches, setExpandedBatches] = useState<Set<string>>(
     new Set()
   );
@@ -271,6 +277,10 @@ export function TextBatchViewer({
     {}
   );
   const [loadingDetails, setLoadingDetails] = useState<Set<string>>(new Set());
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -289,6 +299,27 @@ export function TextBatchViewer({
     setDialogOpen(false);
     setSelectedLog(null);
   };
+
+  // Pagination handlers
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    page: number
+  ) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (event: any) => {
+    setPageSize(event.target.value);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+
+  // Fetch data when pagination changes
+  React.useEffect(() => {
+    fetchTextLogs({
+      page: currentPage,
+      limit: pageSize,
+    });
+  }, [currentPage, pageSize, fetchTextLogs]);
 
   const toggleBatch = async (batchId: string) => {
     const newExpanded = new Set(expandedBatches);
@@ -322,11 +353,38 @@ export function TextBatchViewer({
   const renderBatchSection = (title: string, batches: TextBatch[]) => {
     if (!batches || batches.length === 0) return null;
 
+    const totalCount = logs.totalCounts.allUserLogs || 0;
+    const totalPages = Math.ceil(totalCount / pageSize);
+
     return (
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-          {title}
-        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            {title} ({totalCount} total)
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel>Per Page</InputLabel>
+              <Select
+                value={pageSize}
+                onChange={handlePageSizeChange}
+                label="Per Page"
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={25}>25</MenuItem>
+                <MenuItem value={50}>50</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </Box>
         {batches.map((batch) => (
           <Card key={batch.id} sx={{ mb: 2, width: "100%" }}>
             <CardHeader
@@ -439,7 +497,14 @@ export function TextBatchViewer({
                       borderColor: "divider",
                     }}
                   >
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        whiteSpace: "pre-wrap",
+                        wordBreak: "break-word",
+                      }}
+                    >
                       {batch.message_content}
                     </Typography>
                   </Box>
@@ -529,6 +594,21 @@ export function TextBatchViewer({
             </Collapse>
           </Card>
         ))}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+            <Pagination
+              count={totalPages}
+              page={currentPage}
+              onChange={handlePageChange}
+              color="primary"
+              size="large"
+              showFirstButton
+              showLastButton
+            />
+          </Box>
+        )}
       </Box>
     );
   };
@@ -562,17 +642,54 @@ export function TextBatchViewer({
   }
 
   return (
-    <Box sx={{ p: 3, flexGrow: 1 }}>
+    <Box sx={{ p: 3, flexGrow: 1, position: "relative" }}>
+      {loading && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <Box sx={{ textAlign: "center" }}>
+            <CircularProgress size={32} sx={{ mb: 2 }} />
+            <Typography>Loading batches...</Typography>
+          </Box>
+        </Box>
+      )}
       <Stack spacing={4}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
-          <Typography
-            variant="h4"
-            component="h2"
-            fontWeight="bold"
-            sx={{ mt: 5 }}
-          >
-            Text Message Batches
-          </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 3,
+          }}
+        >
+          <Box>
+            <Typography
+              variant="h4"
+              component="h2"
+              fontWeight="bold"
+              sx={{ mt: 5 }}
+            >
+              Text Message Batches
+            </Typography>
+            {logs.totalCounts.allUserLogs > 0 && (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Page {currentPage} of{" "}
+                {Math.ceil(logs.totalCounts.allUserLogs / pageSize)}• Showing{" "}
+                {pageSize} per page
+              </Typography>
+            )}
+          </Box>
         </Box>
 
         {logs.userLogs &&
@@ -595,12 +712,21 @@ export function TextBatchViewer({
                 textAlign: "center",
                 py: 6,
                 display: "flex",
+                flexDirection: "column",
                 justifyContent: "center",
                 alignItems: "center",
               }}
             >
-              <Typography variant="body1" color="text.secondary">
+              <MessageSquareIcon
+                sx={{ fontSize: 48, color: "text.disabled", mb: 2 }}
+              />
+              <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
                 No text message batches found
+              </Typography>
+              <Typography variant="body2" color="text.disabled">
+                {currentPage > 1
+                  ? "Try going back to previous pages or adjusting your filters."
+                  : "Text message batches will appear here once they are sent."}
               </Typography>
             </Box>
           )}

@@ -119,9 +119,8 @@ export async function POST(req) {
         };
 
         // Only add statusCallback for real log entries (not test numbers)
-        if (!isTestNumber && r.logId) {
-          messageData.statusCallback = `${process.env.NEXT_PUBLIC_WEBHOOK_DESTINATION}/api/communications/twilio-status?logId=${r.logId}`;
-        }
+
+        messageData.statusCallback = `https://www.myhometownut.com/api/communications/twilio-status?logId=${r.logId}`;
 
         // Add media URLs if present
         if (mediaUrls && mediaUrls.length > 0) {

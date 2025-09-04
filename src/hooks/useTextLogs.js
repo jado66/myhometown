@@ -32,21 +32,29 @@ export function useTextLogs(
         return;
       }
 
-      // Comment out all querying options for now - just show all texts
-      // const {
-      //   limit = 25,
-      //   page = 1,
-      //   startDate = null,
-      //   endDate = null,
-      //   status = null,
-      //   searchTerm = null,
-      //   sortBy = "created_at",
-      //   sortDirection = "desc",
-      // } = options;
+      const {
+        limit = 10,
+        page = 1,
+        startDate = null,
+        endDate = null,
+        status = null,
+        searchTerm = null,
+        sortBy = "created_at",
+        sortDirection = "desc",
+      } = options;
 
       try {
-        // Simplified to fetch all text batches without filtering
-        const result = await fetchAllTextBatches(user.id, [], [], true, {});
+        setLoading(true);
+        const result = await fetchAllTextBatches(user.id, [], [], true, {
+          limit,
+          page,
+          startDate,
+          endDate,
+          status,
+          searchTerm,
+          sortBy,
+          sortDirection,
+        });
         setLogs(result);
         setError(null);
       } catch (err) {
@@ -61,7 +69,7 @@ export function useTextLogs(
 
   useEffect(() => {
     if (user.id) {
-      fetchTextLogs();
+      fetchTextLogs({ page: 1, limit: 10 });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.id, isAdmin]);
@@ -92,20 +100,19 @@ async function fetchAllTextBatches(
   isAdmin,
   options
 ) {
-  // Comment out all the complex filtering options for now
-  // const {
-  //   limit = 25,
-  //   page = 1,
-  //   startDate = null,
-  //   endDate = null,
-  //   status = null,
-  //   searchTerm = null,
-  //   recipientPhone = null,
-  //   sortBy = "created_at",
-  //   sortDirection = "desc",
-  // } = options;
+  const {
+    limit = 10,
+    page = 1,
+    startDate = null,
+    endDate = null,
+    status = null,
+    searchTerm = null,
+    recipientPhone = null,
+    sortBy = "created_at",
+    sortDirection = "desc",
+  } = options;
 
-  // const offset = (page - 1) * limit;
+  const offset = (page - 1) * limit;
 
   const result = {
     userLogs: [],
@@ -120,17 +127,38 @@ async function fetchAllTextBatches(
     },
   };
 
-  // Simplified query builder - just fetch all text batches
-  const buildSimpleQuery = () => {
-    return supabase
+  // Build query with pagination and filtering
+  const buildQuery = () => {
+    let query = supabase
       .from("text_batches")
-      .select("*", { count: "exact" })
-      .order("created_at", { ascending: false });
+      .select("*", { count: "exact" });
+
+    // Add filters if provided
+    if (startDate) {
+      query = query.gte("created_at", startDate);
+    }
+    if (endDate) {
+      query = query.lte("created_at", endDate);
+    }
+    if (status) {
+      query = query.eq("status", status);
+    }
+    if (searchTerm) {
+      query = query.ilike("message_content", `%${searchTerm}%`);
+    }
+
+    // Add pagination
+    query = query.range(offset, offset + limit - 1);
+
+    // Add sorting
+    const ascending = sortDirection === "asc";
+    query = query.order(sortBy, { ascending });
+
+    return query;
   };
 
   try {
-    // For now, just fetch all text batches regardless of admin status
-    const { data: allData, count: allCount } = await buildSimpleQuery();
+    const { data: allData, count: allCount } = await buildQuery();
 
     // Put all data in the allUserLogs for display
     result.allUserLogs = allData || [];
