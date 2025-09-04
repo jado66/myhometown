@@ -1,11 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabaseServer } from "@/util/supabaseServer";
 
 export async function GET(
   request: NextRequest,
@@ -21,7 +15,7 @@ export async function GET(
     }
 
     // First, get the missionary's ID from their email
-    const { data: missionary, error: missionaryError } = await supabase
+    const { data: missionary, error: missionaryError } = await supabaseServer
       .from("missionaries")
       .select("id")
       .eq("email", email)
@@ -35,7 +29,7 @@ export async function GET(
     }
 
     // Then, fetch all hour entries for that missionary ID
-    const { data: hours, error: hoursError } = await supabase
+    const { data: hours, error: hoursError } = await supabaseServer
       .from("missionary_hours")
       .select("*")
       .eq("missionary_id", missionary.id)

@@ -1,15 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabaseServer } from "@/util/supabaseServer";
 
 export async function GET(request: NextRequest) {
   try {
     // Get aggregate hours data for all missionaries
-    const { data: hoursData, error } = await supabase.rpc(
+    const { data: hoursData, error } = await supabaseServer.rpc(
       "get_missionary_hours_aggregate"
     );
 

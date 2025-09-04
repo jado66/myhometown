@@ -1,9 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+import { supabaseServer } from "@/util/supabaseServer";
 
 export async function POST(request) {
   try {
@@ -21,7 +16,7 @@ export async function POST(request) {
     // Step 1: Get user info for cleanup
     let userEmail = null;
     try {
-      const { data: userData } = await supabase
+      const { data: userData } = await supabaseServer
         .from("users")
         .select("email")
         .eq("id", userId)
@@ -36,11 +31,11 @@ export async function POST(request) {
     let authDeleted = false;
     try {
       const { data: authUser, error: getUserError } =
-        await supabase.auth.admin.getUserById(userId);
+        await supabaseServer.auth.admin.getUserById(userId);
 
       if (authUser && !getUserError) {
         console.log("API: Auth user found, deleting...");
-        const { error: authError } = await supabase.auth.admin.deleteUser(
+        const { error: authError } = await supabaseServer.auth.admin.deleteUser(
           userId
         );
 
@@ -60,7 +55,7 @@ export async function POST(request) {
     if (userEmail) {
       try {
         console.log("API: Cleaning up invitation records for:", userEmail);
-        const { error: inviteError } = await supabase
+        const { error: inviteError } = await supabaseServer
           .from("user_invitations")
           .delete()
           .eq("email", userEmail);
@@ -81,12 +76,12 @@ export async function POST(request) {
 
     // First, set foreign key references to NULL
     try {
-      await supabase
+      await supabaseServer
         .from("days_of_service_project_forms")
         .update({ created_by: null })
         .eq("created_by", userId);
 
-      await supabase
+      await supabaseServer
         .from("days_of_service_project_forms")
         .update({ updated_by: null })
         .eq("updated_by", userId);
@@ -98,7 +93,7 @@ export async function POST(request) {
     }
 
     // Now delete the user
-    const { error: dbError } = await supabase
+    const { error: dbError } = await supabaseServer
       .from("users")
       .delete()
       .eq("id", userId);

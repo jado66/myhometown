@@ -1,12 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { createClient } from "@supabase/supabase-js";
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabaseServer } from "@/util/supabaseServer";
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,9 +14,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find missionary by using supabase
+    // Find missionary by using supabaseServer
 
-    const { data: missionary, error } = await supabase
+    const { data: missionary, error } = await supabaseServer
       .from("missionaries")
       .select("*")
       .eq("email", email)
@@ -29,7 +24,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error("Supabase error:", error);
+      console.error("supabaseServer error:", error);
       return NextResponse.json(
         { success: false, message: "Missionary not found or inactive" },
         { status: 404 }

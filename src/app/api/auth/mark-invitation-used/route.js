@@ -1,10 +1,4 @@
-// Create this as /api/auth/mark-invitation-used/route.js
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+import { supabaseServer } from "@/util/supabaseServer";
 
 export async function POST(request) {
   try {
@@ -18,7 +12,7 @@ export async function POST(request) {
     }
 
     // Mark the invitation as used
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from("user_invitations")
       .update({
         used: true,

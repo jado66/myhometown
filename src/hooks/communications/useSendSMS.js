@@ -1,11 +1,9 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { supabase } from "@/util/supabase";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
-import { useTextLogs } from "../useTextLogs";
 import { v4 as uuidv4 } from "uuid";
 
-export function useSendSMS() {
-  const { batchAddTextLogs, updateTextLogStatus } = useTextLogs();
-
+export function useSendSMS(user) {
   const [sendStatus, setSendStatus] = useState("idle");
   const [progress, setProgress] = useState({
     total: 0,
@@ -14,489 +12,187 @@ export function useSendSMS() {
     failed: 0,
     results: [],
   });
+  const channelRef = useRef(null);
+  const batchIdRef = useRef(null);
 
-  const eventSourceRef = useRef(null);
-  const processedMessagesRef = useRef(new Set());
-  const timeoutRef = useRef(null);
-  const logIdsRef = useRef(new Map()); // Track log IDs for each recipient
-  const batchLogsRef = useRef([]); // Keep track of logs for fallback batch logging
-
-  // Cleanup function
   const cleanup = useCallback(() => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-      eventSourceRef.current = null;
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
     }
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    processedMessagesRef.current.clear();
-    logIdsRef.current.clear();
-    batchLogsRef.current = [];
+    batchIdRef.current = null;
   }, []);
 
-  // Cleanup on unmount
   useEffect(() => {
     return cleanup;
   }, [cleanup]);
 
-  // Helper function to extract groups from selected recipients
   const extractGroupsFromRecipients = (selectedRecipients) => {
-    const groups = selectedRecipients
-      .filter(
-        (recipient) => recipient.value && recipient.value.startsWith("group:")
-      )
-      .map((recipient) => ({
-        value: recipient.value,
-        label: recipient.originalValue || recipient.value.replace("group:", ""),
-        originalValue:
-          recipient.originalValue || recipient.value.replace("group:", ""),
+    return selectedRecipients
+      .filter((r) => r.value?.startsWith("group:"))
+      .map((r) => ({
+        value: r.value,
+        label: r.originalValue || r.value.replace("group:", ""),
+        originalValue: r.originalValue || r.value.replace("group:", ""),
       }));
-
-    return groups;
   };
 
-  // Updated sendMessages function with group tracking
   const sendMessages = useCallback(
-    async (
-      message,
-      recipients,
-      mediaUrls = [],
-      user,
-      selectedRecipients = []
-    ) => {
+    async (message, recipients, mediaUrls = [], selectedRecipients = []) => {
       const messageId = uuidv4();
-      const results = [];
-      let completedCount = 0;
-      let successfulCount = 0;
-      let failedCount = 0;
-      const totalCount = recipients.length;
-
-      const owner_type = "user";
+      const owner_type = "user"; // Adjust as needed
       const owner_id = user?.id;
       const sender_id = user?.id;
 
+      setSendStatus("sending");
       setProgress({
-        total: totalCount,
-        completed: completedCount,
-        successful: successfulCount,
-        failed: failedCount,
+        total: recipients.length,
+        completed: 0,
+        successful: 0,
+        failed: 0,
         results: [],
       });
 
-      setSendStatus("sending");
-
-      // Extract groups from selectedRecipients (before expansion)
-      const selectedGroups = extractGroupsFromRecipients(
-        selectedRecipients || []
-      );
-
-      // Create a recipients list for metadata - all recipients (after expansion)
-      const allRecipientsData = recipients.map((recipient) => ({
-        name: `${recipient.firstName || ""} ${recipient.lastName || ""}`.trim(),
-        phone: recipient.value,
-        contactId: recipient.contactId || null,
-        groups: recipient.groups || [],
-        ownerType: recipient.ownerType || null,
-        ownerId: recipient.ownerId || null,
+      const selectedGroups = extractGroupsFromRecipients(selectedRecipients);
+      const allRecipientsData = recipients.map((r) => ({
+        name: `${r.firstName || ""} ${r.lastName || ""}`.trim(),
+        phone: r.value,
+        contactId: r.contactId || null,
+        groups: r.groups || [],
+        ownerType: r.ownerType || null,
+        ownerId: r.ownerId || null,
       }));
 
-      // Create enhanced metadata with groups information
-      const createMetadata = (smsProviderResponse = null) => ({
-        // Store ALL recipients in the metadata
+      const metadata = {
         allRecipients: allRecipientsData,
-        // Store the original selected groups
-        selectedGroups: selectedGroups,
-        // Include sender info
+        selectedGroups,
         sender: {
           id: user?.id,
           name: `${user?.first_name || ""} ${user?.last_name || ""}`.trim(),
         },
-        // SMS provider response
-        smsProviderResponse: smsProviderResponse,
-        // Additional metadata
-        messageType: mediaUrls && mediaUrls.length > 0 ? "mms" : "sms",
+        messageType: mediaUrls.length > 0 ? "mms" : "sms",
         recipientCount: recipients.length,
         groupCount: selectedGroups.length,
         sentAt: new Date().toISOString(),
-      });
+      };
 
-      // Step 1: Log all messages as "pending"
-      const pendingLogs = recipients.map((recipient) => ({
+      // Create batch in Supabase
+      const { data: batch, error: batchError } = await supabase
+        .from("text_batches")
+        .insert({
+          sender_id,
+          owner_type,
+          owner_id,
+          message_content: message,
+          media_urls: mediaUrls.length > 0 ? mediaUrls : null,
+          status: "in_progress",
+          total_count: recipients.length,
+          pending_count: recipients.length,
+          metadata,
+        })
+        .select()
+        .single();
+
+      if (batchError) {
+        toast.error("Failed to create batch: " + batchError.message);
+        setSendStatus("error");
+        return [];
+      }
+
+      batchIdRef.current = batch.id;
+
+      // Batch insert pending logs
+      const pendingLogs = recipients.map((r) => ({
+        batch_id: batch.id,
         message_id: messageId,
         sender_id,
-        recipient_phone: recipient.value,
-        recipient_contact_id: recipient.contactId || null,
+        recipient_phone: r.value,
+        recipient_contact_id: r.contactId || null,
         message_content: message,
         media_urls: mediaUrls.length > 0 ? JSON.stringify(mediaUrls) : null,
         status: "pending",
         error_message: null,
         owner_id,
         owner_type,
-        metadata: JSON.stringify(createMetadata()),
+        metadata: JSON.stringify(metadata),
       }));
 
-      try {
-        const { data: pendingLogData, error: pendingLogError } =
-          await batchAddTextLogs(pendingLogs, sender_id);
-        if (pendingLogError) {
-          console.error("Error logging pending messages:", pendingLogError);
-          toast.error("Failed to log pending messages");
-          setSendStatus("error");
-          return results;
-        }
+      const { data: logData, error: logError } = await supabase
+        .from("text_logs")
+        .insert(pendingLogs)
+        .select();
 
-        // Store log IDs for status updates
-        pendingLogData.forEach((log, index) => {
-          logIdsRef.current.set(recipients[index].value, log.id);
-        });
-      } catch (error) {
-        console.error("Error during batchAddTextLogs:", error);
-        toast.error("Failed to log messages: " + error.message);
+      if (logError) {
+        toast.error("Failed to log pending messages: " + logError.message);
         setSendStatus("error");
-        return results;
+        return [];
       }
 
-      // Step 2: Initialize SSE connection
-      try {
-        eventSourceRef.current = new EventSource(
-          `/api/communications/send-texts/stream?messageId=${messageId}`
-        );
+      // Map log IDs for webhook (passed in statusCallback URL)
+      const logIdMap = new Map();
+      logData.forEach((log, idx) => {
+        logIdMap.set(recipients[idx].value, log.id);
+      });
 
-        // Inside the onmessage event handler of useSendSMS hook
-        eventSourceRef.current.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            const {
-              type,
-              status,
-              recipient,
-              error,
-              messageId: receivedMessageId,
-            } = data;
+      // Initiate sends via API (Twilio will callback to webhook)
+      const response = await fetch(
+        `/api/communications/send-texts?batchId=${batch.id}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message,
+            recipients: recipients.map((r) => ({
+              phone: r.value,
+              logId: logIdMap.get(r.value), // Pass logId for statusCallback
+            })),
+            mediaUrls,
+          }),
+        }
+      );
 
-            // Ignore messages for other messageIds
-            if (receivedMessageId !== messageId) return;
+      const data = await response.json();
+      if (!response.ok) {
+        toast.error(data.error || "Failed to initiate sending");
+        setSendStatus("error");
+        return [];
+      }
 
-            if (type === "connected") {
-              console.debug("SSE stream connected for messageId:", messageId);
-            } else if (type === "status") {
-              // Process status update
-              if (processedMessagesRef.current.has(recipient)) {
-                console.warn(
-                  "Duplicate status update for recipient:",
-                  recipient
-                );
-                return;
-              }
-              processedMessagesRef.current.add(recipient);
-
-              const logId = logIdsRef.current.get(recipient);
-              const recipientData =
-                recipients.find((r) => r.value === recipient) || {};
-
-              // Store log entry for fallback batch logging
-              const logEntry = {
-                id: logId,
-                message_id: messageId,
-                sender_id,
-                recipient_phone: recipient,
-                recipient_contact_id: recipientData.contactId || null,
-                message_content: message,
-                media_urls:
-                  mediaUrls.length > 0 ? JSON.stringify(mediaUrls) : null,
-                status: status === "success" ? "sent" : "failed",
-                error_message: status === "failed" ? error : null,
-                sent_at: status === "success" ? new Date().toISOString() : null,
-                owner_id,
-                owner_type,
-                metadata: JSON.stringify(
-                  createMetadata(status === "success" ? data : null)
-                ),
-              };
-              batchLogsRef.current.push(logEntry);
-
-              // Update the log status
-              if (logId) {
-                // Try multiple times with exponential backoff if needed
-                const retryUpdate = async (attempts = 3, delay = 500) => {
-                  try {
-                    const result = await updateTextLogStatus(
-                      logId,
-                      status === "success" ? "sent" : "failed",
-                      status === "success" ? new Date().toISOString() : null,
-                      status === "failed" ? error : null,
-                      JSON.stringify(
-                        createMetadata(status === "success" ? data : null)
-                      )
-                    );
-
-                    if (result.error) {
-                      throw new Error(result.error);
-                    }
-
-                    // Log success
-                    console.debug(
-                      `Successfully updated log ${logId} to ${status}`
-                    );
-                  } catch (err) {
-                    console.error(
-                      `Error updating log ${logId} (attempt ${4 - attempts}):`,
-                      err
-                    );
-
-                    if (attempts > 1) {
-                      // Wait and retry with exponential backoff
-                      await new Promise((resolve) =>
-                        setTimeout(resolve, delay)
-                      );
-                      await retryUpdate(attempts - 1, delay * 2);
-                    } else {
-                      console.error(
-                        `Failed to update log ${logId} after multiple attempts`
-                      );
-                      // We'll fall back to batch processing when the stream completes
-                    }
-                  }
-                };
-
-                // Start the retry process
-                retryUpdate();
-              }
-
-              // Rest of the existing code...
-              const result = {
-                recipient,
-                status,
-                error: status === "failed" ? error : null,
-                timestamp: new Date().toISOString(),
-              };
-
-              results.push(result);
-              completedCount++;
-              if (status === "success") successfulCount++;
-              else failedCount++;
-
-              setProgress({
-                total: totalCount,
-                completed: completedCount,
-                successful: successfulCount,
-                failed: failedCount,
-                results: [...results],
-              });
-            } else if (type === "complete") {
-              // Handle the completion event
-              console.debug("SSE stream completed for messageId:", messageId);
-              setSendStatus("completed");
-              toast.success("All messages processed successfully!");
-
-              // Fallback: If we have batch logs, try to re-log them all
-              if (batchLogsRef.current.length > 0) {
-                // Process any logs that might not have been successfully updated
-                const processFailedUpdates = async () => {
-                  for (const log of batchLogsRef.current) {
-                    if (log.id) {
-                      try {
-                        // Make sure we're using the updated metadata structure with all recipients
-                        const result = await updateTextLogStatus(
-                          log.id,
-                          log.status,
-                          log.sent_at,
-                          log.error_message,
-                          log.metadata // Use the full metadata we created earlier
-                        );
-
-                        if (result.error) {
-                          console.error(
-                            `Error updating log ${log.id}:`,
-                            result.error
-                          );
-                        } else {
-                          console.debug(
-                            `Successfully updated log ${log.id} in fallback`
-                          );
-                        }
-                      } catch (err) {
-                        console.error(
-                          `Failed to update log ${log.id} in fallback:`,
-                          err
-                        );
-                      }
-                    }
-                  }
-                };
-
-                processFailedUpdates();
-              }
-
-              cleanup();
-
-              // Handle any remaining pending logs
-              const pendingRecipients = recipients.filter(
-                (r) => !processedMessagesRef.current.has(r.value)
-              );
-
-              if (pendingRecipients.length > 0) {
-                console.warn(
-                  "Pending logs detected:",
-                  pendingRecipients.length
-                );
-
-                const processPendingLogs = async () => {
-                  for (const recipient of pendingRecipients) {
-                    const logId = logIdsRef.current.get(recipient.value);
-                    if (logId) {
-                      try {
-                        const result = await updateTextLogStatus(
-                          logId,
-                          "failed",
-                          null,
-                          "No status update received from stream",
-                          JSON.stringify(createMetadata())
-                        );
-
-                        if (result.error) {
-                          console.error(
-                            `Error updating pending log ${logId}:`,
-                            result.error
-                          );
-                        }
-                      } catch (err) {
-                        console.error(
-                          `Failed to update pending log ${logId}:`,
-                          err
-                        );
-                      }
-                    }
-                  }
-                };
-
-                processPendingLogs();
-              }
-            }
-          } catch (error) {
-            console.error("Error processing stream message:", error);
-          }
-        };
-
-        // Step 3: Send the messages
-        const response = await fetch(
-          `/api/communications/send-texts?messageId=${messageId}`,
+      // Subscribe to realtime updates on the batch
+      channelRef.current = supabase
+        .channel(`batch-${batch.id}`)
+        .on(
+          "postgres_changes",
           {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              message,
-              recipients: recipients.map((r) => ({
-                label: r.label || r.value,
-                value: r.value,
-              })),
-              mediaUrls,
-            }),
-          }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to initiate message sending");
-        }
-
-        // Step 4: Set timeout for stream completion
-        timeoutRef.current = setTimeout(() => {
-          console.error("Stream timeout for messageId:", messageId);
-          setSendStatus("error");
-          toast.error("Message sending timed out");
-
-          // Fallback: If we have batch logs, try to update them all
-          if (batchLogsRef.current.length > 0) {
-            // Create new logs without IDs for completed messages
-            const newBatchLogs = batchLogsRef.current.map((log) => {
-              // Remove the id field from each log for re-logging
-              const { id, ...logWithoutId } = log;
-              return logWithoutId;
+            event: "UPDATE",
+            schema: "public",
+            table: "text_batches",
+            filter: `id=eq.${batch.id}`,
+          },
+          (payload) => {
+            const b = payload.new;
+            const completed = b.total_count - b.pending_count;
+            const successful = b.delivered_count + b.sent_count; // Adjust definition as needed
+            setProgress({
+              total: b.total_count,
+              completed,
+              successful,
+              failed: b.failed_count,
+              results: [], // If needed, fetch details separately
             });
 
-            // Try batch updating all logs as a fallback
-            batchAddTextLogs(newBatchLogs, sender_id).catch((err) => {
-              console.error("Error with fallback batch logging:", err);
-
-              // Last resort: Update each log individually via direct API call
-              batchLogsRef.current.forEach((log) => {
-                if (log.id) {
-                  fetch(`/api/text-logs/${log.id}`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      status: log.status,
-                      sent_at: log.sent_at,
-                      error_message: log.error_message,
-                      metadata: log.metadata, // Include the metadata with all recipients
-                    }),
-                  }).catch((patchErr) => {
-                    console.error(
-                      `Failed direct update for log ID ${log.id}:`,
-                      patchErr
-                    );
-                  });
-                }
-              });
-            });
-          }
-
-          cleanup();
-
-          // Update pending logs to "failed"
-          recipients.forEach((recipient) => {
-            if (!processedMessagesRef.current.has(recipient.value)) {
-              const logId = logIdsRef.current.get(recipient.value);
-              if (logId) {
-                updateTextLogStatus(
-                  logId,
-                  "failed",
-                  null,
-                  "Stream timed out",
-                  JSON.stringify(createMetadata())
-                ).catch((err) => {
-                  console.error(
-                    "Error updating pending log:",
-                    recipient.value,
-                    err
-                  );
-                });
-              }
+            if (b.status === "completed") {
+              setSendStatus("completed");
+              toast.success("All messages processed!");
+              cleanup();
             }
-          });
-        }, 60000); // 60 seconds
-      } catch (error) {
-        console.error("Error sending messages:", error);
-        setSendStatus("error");
-        toast.error("Failed to send messages: " + error.message);
-        cleanup();
-
-        // Update all logs to "failed"
-        recipients.forEach((recipient) => {
-          const logId = logIdsRef.current.get(recipient.value);
-          if (logId) {
-            updateTextLogStatus(
-              logId,
-              "failed",
-              null,
-              error.message || "Failed to initiate sending",
-              JSON.stringify(createMetadata())
-            ).catch((err) => {
-              console.error("Error updating log:", recipient.value, err);
-            });
           }
-        });
+        )
+        .subscribe();
 
-        return results;
-      }
-
-      return results;
+      return []; // Results can be fetched later if needed
     },
-    [batchAddTextLogs, updateTextLogStatus, cleanup]
+    [user]
   );
 
   const reset = useCallback(() => {
@@ -511,10 +207,5 @@ export function useSendSMS() {
     cleanup();
   }, [cleanup]);
 
-  return {
-    sendStatus,
-    progress,
-    sendMessages,
-    reset,
-  };
+  return { sendStatus, progress, sendMessages, reset };
 }

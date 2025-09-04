@@ -99,44 +99,44 @@ const designCatalogItems: CatalogItem[] = [
 
 const swagCatalogItems: CatalogItem[] = [
   {
-    id: "t-shirts",
-    title: "T-Shirts",
-    description: "Custom branded t-shirts for your community",
+    id: "badges",
+    title: "Volunteer Badges",
+    description: "Branded volunteer badges for your event",
     image: "/placeholder.svg?height=200&width=300",
     category: "swag",
   },
   {
-    id: "hoodies",
-    title: "Hoodies",
-    description: "Comfortable hoodies with your community branding",
+    id: "tents",
+    title: "Tents",
+    description: "Durable tents for outdoor events and activities",
     image: "/placeholder.svg?height=200&width=300",
     category: "swag",
   },
   {
-    id: "hats",
-    title: "Hats",
-    description: "Branded caps and beanies for community members",
+    id: "flags",
+    title: "Flags",
+    description: "Branded flags for community events",
     image: "/placeholder.svg?height=200&width=300",
     category: "swag",
   },
   {
-    id: "water-bottles",
-    title: "Water Bottles",
-    description: "Eco-friendly water bottles with community logos",
+    id: "car-magnets",
+    title: "Car Magnets",
+    description: "Custom car magnets for community branding",
     image: "/placeholder.svg?height=200&width=300",
     category: "swag",
   },
   {
-    id: "buttons",
-    title: "Buttons",
-    description: "Custom buttons and pins for events and campaigns",
+    id: "table-cloths",
+    title: "Table Cloths",
+    description: "Custom table cloths for events and campaigns",
     image: "/placeholder.svg?height=200&width=300",
     category: "swag",
   },
   {
-    id: "business-cards",
-    title: "Business Cards",
-    description: "Professional business cards for community leaders",
+    id: "safety-vests",
+    title: "Safety Vests",
+    description: "High-visibility safety vests for event staff",
     image: "/placeholder.svg?height=200&width=300",
     category: "swag",
   },
@@ -739,7 +739,7 @@ Submitted: ${new Date().toLocaleString()}`,
                   label={
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Palette />
-                      Design Catalog ({getItemCountForCategory("design")})
+                      Printed Materials ({getItemCountForCategory("design")})
                     </Box>
                   }
                   value="design"
@@ -748,7 +748,7 @@ Submitted: ${new Date().toLocaleString()}`,
                   label={
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Badge />
-                      Swag Catalog ({getItemCountForCategory("swag")})
+                      Promotional Items ({getItemCountForCategory("swag")})
                     </Box>
                   }
                   value="swag"

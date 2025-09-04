@@ -1,12 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
+import { supabaseServer } from "@/util/supabaseServer";
 export async function GET(
   request: NextRequest,
   { params }: { params: { email: string } }
@@ -18,7 +11,7 @@ export async function GET(
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from("missionaries")
       .select("preferred_entry_method")
       .eq("email", email)

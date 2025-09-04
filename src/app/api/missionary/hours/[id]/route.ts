@@ -1,18 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/util/supabaseServer";
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 // GET a single entry (for the edit page)
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const { id } = params;
-  const { data, error } = await supabase
+  const { data, error } = await supabaseServer
     .from("missionary_hours")
     .select("*")
     .eq("id", id)
@@ -32,7 +27,7 @@ export async function PUT(
   const { id } = params;
   const body = await request.json();
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseServer
     .from("missionary_hours")
     .update({
       entry_method: body.entryMethod,
@@ -59,7 +54,7 @@ export async function DELETE(
   console.log("DELETE request received for ID:", params.id);
 
   const { id } = params;
-  const { error } = await supabase
+  const { error } = await supabaseServer
     .from("missionary_hours")
     .delete()
     .eq("id", id);

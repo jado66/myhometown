@@ -1,10 +1,4 @@
-// Create this as /api/auth/validate-invitation/route.js
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+import { supabaseServer } from "@/util/supabaseServer";
 
 export async function GET(request) {
   try {
@@ -19,7 +13,7 @@ export async function GET(request) {
     }
 
     // Check if the invitation exists and is unused
-    const { data: invitation, error } = await supabase
+    const { data: invitation, error } = await supabaseServer
       .from("user_invitations")
       .select("*")
       .eq("token", token)

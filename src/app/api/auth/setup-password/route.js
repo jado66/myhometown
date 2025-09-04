@@ -1,9 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+import { supabaseServer } from "@/util/supabaseServer";
 
 export async function POST(request) {
   try {
@@ -18,7 +13,7 @@ export async function POST(request) {
     }
 
     // Validate the invitation token first
-    const { data: invitation, error: invitationError } = await supabase
+    const { data: invitation, error: invitationError } = await supabaseServer
       .from("user_invitations")
       .select("*")
       .eq("token", token)
@@ -35,7 +30,7 @@ export async function POST(request) {
     // Since the user already exists (created in the invite process),
     // we just need to update them with a password and remove the invitation_pending flag
     const { data: authData, error: updateError } =
-      await supabase.auth.admin.updateUserById(userId, {
+      await supabaseServer.auth.admin.updateUserById(userId, {
         password: password,
         user_metadata: {
           first_name: firstName,
@@ -57,7 +52,7 @@ export async function POST(request) {
     console.log("✅ Password set successfully for user:", userId);
 
     // Mark invitation as used
-    const { error: markUsedError } = await supabase
+    const { error: markUsedError } = await supabaseServer
       .from("user_invitations")
       .update({ used: true, used_at: new Date().toISOString() })
       .eq("token", token);

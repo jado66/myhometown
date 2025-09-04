@@ -17,8 +17,17 @@ const ProgressTracker = ({ sendStatus, progress, onReset }) => {
   if (sendStatus === "idle") return null;
 
   const renderMessageResult = (result) => {
-    if (result.status === "failed") return `Error: ${result.error}`;
-    return `Sent at ${formatTimestamp(result.timestamp)}`;
+    if (result.status === "failed") {
+      return `Error: ${result.error || "Unknown error"}`;
+    }
+    if (result.status === "sent") {
+      let details = [];
+      if (result.sid) details.push(`SID: ${result.sid}`);
+      if (result.timestamp)
+        details.push(`at ${formatTimestamp(result.timestamp)}`);
+      return details.length > 0 ? details.join(" ") : "Sent";
+    }
+    return "Status unknown";
   };
 
   return (
@@ -45,14 +54,14 @@ const ProgressTracker = ({ sendStatus, progress, onReset }) => {
         {progress.results.map((result, index) => (
           <ListItem key={index}>
             <ListItemIcon>
-              {result.status === "success" ? (
+              {result.status === "sent" ? (
                 <Check color="success" />
               ) : (
                 <Close color="error" />
               )}
             </ListItemIcon>
             <ListItemText
-              primary={result.recipient}
+              primary={result.phone || result.recipient || "Unknown recipient"}
               secondary={renderMessageResult(result)}
             />
           </ListItem>

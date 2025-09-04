@@ -47,7 +47,7 @@ export default function BulkMMSMessaging() {
   const [activeTab, setActiveTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
-  const { sendStatus, progress, sendMessages, reset } = useSendSMS();
+  const { sendStatus, progress, sendMessages, reset } = useSendSMS(user);
   const [hasSent, setHasSent] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [mediaFiles, setMediaFiles] = useState([]);
@@ -375,7 +375,7 @@ export default function BulkMMSMessaging() {
         message,
         uniqueRecipients,
         mediaUrls,
-        user,
+
         selectedRecipients
       );
       setHasSent(true);

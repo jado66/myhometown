@@ -1,12 +1,6 @@
 import { myHometownTransporter } from "@/util/email/nodemailer-transporter";
-import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import { supabaseServer } from "@/util/supabaseServer";
 
 const formattedHtml = ({ propertyOwner, url }) => {
   return `
@@ -98,15 +92,15 @@ export async function POST(request) {
     // Generate a unique token
     const accessToken = uuidv4();
 
-    // Store token in Supabase
-    const { error: tokenError } = await supabase.from("tokens").insert({
+    // Store token in supabaseServer
+    const { error: tokenError } = await supabaseServer.from("tokens").insert({
       email: to,
       token: accessToken,
       is_used: false,
     });
 
     if (tokenError) {
-      console.error("Supabase token insertion error:", tokenError);
+      console.error("supabaseServer token insertion error:", tokenError);
       return new Response(
         JSON.stringify({
           error: "Failed to store access token",

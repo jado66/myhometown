@@ -1,10 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabaseServer } from "@/util/supabaseServer";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the missionary exists
-    const { data: missionary, error: missionaryError } = await supabase
+    const { data: missionary, error: missionaryError } = await supabaseServer
       .from("missionaries")
       .select("email, id")
       .eq("email", email)
@@ -57,7 +52,7 @@ export async function POST(request: NextRequest) {
       entry_method: entry_method || "manual",
     }));
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from("missionary_hours")
       .insert(insertEntries)
       .select();
@@ -95,7 +90,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    let query = supabase
+    let query = supabaseServer
       .from("bulk_entry_summary")
       .select("*")
       .eq("missionary_email", email)

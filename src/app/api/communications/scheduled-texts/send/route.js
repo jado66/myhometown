@@ -1,13 +1,9 @@
 // Updated API route for scheduled texts with group support
 import { sendTextWithStream } from "@/util/communication/sendTexts";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/util/supabaseServer";
 import { v4 as uuidv4 } from "uuid";
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+// Initialize supabaseServer client
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
@@ -29,7 +25,7 @@ export async function POST(req) {
     }
 
     // Fetch the scheduled text from database
-    const { data: scheduledText, error } = await supabase
+    const { data: scheduledText, error } = await supabaseServer
       .from("scheduled_texts")
       .select("*")
       .eq("id", id)
@@ -87,7 +83,7 @@ export async function POST(req) {
     console.log("Selected groups from metadata:", selectedGroups);
 
     // Get user info for logging metadata
-    const { data: userData, error: userError } = await supabase
+    const { data: userData, error: userError } = await supabaseServer
       .from("users")
       .select("id, first_name, last_name, email")
       .eq("id", user_id)
@@ -152,7 +148,7 @@ export async function POST(req) {
     }));
 
     // Insert pending logs
-    const { data: insertedLogs, error: logError } = await supabase
+    const { data: insertedLogs, error: logError } = await supabaseServer
       .from("text_logs")
       .insert(pendingLogs)
       .select();
@@ -192,7 +188,7 @@ export async function POST(req) {
           : result.error || "Failed to send";
 
         // Update the text log with the result
-        const { error: updateError } = await supabase
+        const { error: updateError } = await supabaseServer
           .from("text_logs")
           .update({
             status: deliveryStatus,
@@ -223,7 +219,7 @@ export async function POST(req) {
         );
 
         // Update the text log with failure status
-        const { error: updateError } = await supabase
+        const { error: updateError } = await supabaseServer
           .from("text_logs")
           .update({
             status: "failed",
@@ -250,7 +246,7 @@ export async function POST(req) {
     }
 
     // Step 3: Update the scheduled_texts table with delivery results
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseServer
       .from("scheduled_texts")
       .update({
         metadata: {
@@ -267,7 +263,7 @@ export async function POST(req) {
     }
 
     // Step 4: Delete the scheduled text after successful processing
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await supabaseServer
       .from("scheduled_texts")
       .delete()
       .eq("id", id);

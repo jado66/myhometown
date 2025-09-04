@@ -1,11 +1,4 @@
-// src/app/api/cron/process-scheduled-texts/route.js
-import { createClient } from "@supabase/supabase-js";
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+import { supabaseServer } from "@/util/supabaseServer";
 
 export const maxDuration = 300; // Allow longer runtime for processing multiple texts
 export const dynamic = "force-dynamic";
@@ -19,7 +12,7 @@ export async function GET(req) {
     const now = new Date();
 
     // Fetch scheduled texts that are due
-    const { data: scheduledTexts, error } = await supabase
+    const { data: scheduledTexts, error } = await supabaseServer
       .from("scheduled_texts")
       .select("id")
       .lt("scheduled_time", now.toISOString())

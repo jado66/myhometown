@@ -1,11 +1,5 @@
 import { myHometownTransporter } from "@/util/email/nodemailer-transporter";
-import { createClient } from "@supabase/supabase-js";
-
-// Initialize Supabase client for server-side operations
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY // Use service role key for server-side
-);
+import { supabaseServer } from "@/util/supabaseServer";
 
 // Enhanced HTML formatter for Design Hub orders
 const formattedDesignHubHtml = (html) => {
@@ -203,7 +197,7 @@ const parseLocationInfo = (html) => {
   };
 };
 
-// Function to log request to Supabase
+// Function to log request to supabaseServer
 const logRequestToSupabase = async (subject, html, rawRequestData) => {
   try {
     const selectedItems = parseSelectedItemsFromMessage(html.message);
@@ -232,21 +226,21 @@ const logRequestToSupabase = async (subject, html, rawRequestData) => {
       raw_request_data: rawRequestData,
     };
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from("design_hub_requests")
       .insert(requestData)
       .select()
       .single();
 
     if (error) {
-      console.error("Supabase insert error:", error);
+      console.error("supabaseServer insert error:", error);
       return null;
     }
 
-    console.log("Request logged to Supabase:", data.id);
+    console.log("Request logged to supabaseServer:", data.id);
     return data;
   } catch (error) {
-    console.error("Error logging to Supabase:", error);
+    console.error("Error logging to supabaseServer:", error);
     return null;
   }
 };
@@ -254,7 +248,7 @@ const logRequestToSupabase = async (subject, html, rawRequestData) => {
 // Function to update email sent status
 const updateEmailSentStatus = async (requestId, success) => {
   try {
-    const { error } = await supabase
+    const { error } = await supabaseServer
       .from("design_hub_requests")
       .update({
         email_sent: success,
@@ -276,7 +270,7 @@ export async function POST(request, res) {
 
   const recipientEmail = "jado66@gmail.com"; // Testing email for Design Hub
 
-  // Log the request to Supabase first
+  // Log the request to supabaseServer first
   const loggedRequest = await logRequestToSupabase(subject, html, requestBody);
 
   try {
@@ -298,7 +292,7 @@ export async function POST(request, res) {
     console.log("Message sent: %s", info.messageId);
     console.log("Sent to: %s", recipientEmail);
 
-    // Update the email sent status in Supabase
+    // Update the email sent status in supabaseServer
     if (loggedRequest) {
       await updateEmailSentStatus(loggedRequest.id, true);
     }
@@ -319,7 +313,7 @@ export async function POST(request, res) {
   } catch (error) {
     console.error("Email sending error:", error);
 
-    // Update the email sent status as failed in Supabase
+    // Update the email sent status as failed in supabaseServer
     if (loggedRequest) {
       await updateEmailSentStatus(loggedRequest.id, false);
     }

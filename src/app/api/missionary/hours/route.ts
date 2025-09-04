@@ -1,10 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import moment from "moment";
-import { createClient } from "@supabase/supabase-js";
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabaseServer } from "@/util/supabaseServer";
+
 export async function POST(request: NextRequest) {
   try {
     const {
@@ -42,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Verify missionary and get their ID
-    const { data: missionary, error: missionaryError } = await supabase
+    const { data: missionary, error: missionaryError } = await supabaseServer
       .from("missionaries")
       .select("id, preferred_entry_method")
       .eq("email", email)
@@ -57,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     // 2. Insert the new hours log (allow multiple entries for same month/day)
     const periodStartDate = moment(date).startOf("month").format("YYYY-MM-DD");
-    const { data: newEntry, error: insertError } = await supabase
+    const { data: newEntry, error: insertError } = await supabaseServer
       .from("missionary_hours")
       .insert({
         missionary_id: missionary.id,

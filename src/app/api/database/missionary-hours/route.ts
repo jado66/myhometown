@@ -1,11 +1,6 @@
 // app/api/database/missionary-hours/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabaseServer } from "@/util/supabaseServer";
 
 // GET - Fetch missionary hours
 export async function GET(request: NextRequest) {
@@ -16,7 +11,7 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get("end_date");
     const entryMethod = searchParams.get("entry_method");
 
-    let query = supabase
+    let query = supabaseServer
       .from("missionary_hours")
       .select(
         `
@@ -110,7 +105,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from("missionary_hours")
       .insert([
         {
@@ -205,7 +200,7 @@ export async function PATCH(request: NextRequest) {
       updateData.activities = activities;
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from("missionary_hours")
       .update(updateData)
       .eq("id", id)
@@ -263,7 +258,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const { error } = await supabase
+    const { error } = await supabaseServer
       .from("missionary_hours")
       .delete()
       .eq("id", id);

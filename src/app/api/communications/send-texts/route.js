@@ -1,91 +1,326 @@
-// src\app\api\communications\send-texts\route.js
-import { sendTextWithStream } from "@/util/communication/sendTexts";
-import { completeStream, sendMessageToStream } from "./stream/route";
+import { supabaseServer } from "@/util/supabaseServer";
+import { twilioClient } from "@/util/twilio";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function POST(req) {
-  const url = new URL(req.url);
-  const messageId = url.searchParams.get("messageId");
+  const startTime = Date.now();
+  console.log("=== TWILIO API CALL STARTED ===");
+  console.log("Timestamp:", new Date().toISOString());
 
-  if (!messageId) {
-    return new Response(JSON.stringify({ error: "No messageId provided" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+  const url = new URL(req.url);
+  const batchId = url.searchParams.get("batchId");
+
+  // Enhanced environment variable logging
+  console.log("Environment Check:");
+  console.log(
+    "- TWILIO_ACCOUNT_SID:",
+    process.env.TWILIO_ACCOUNT_SID
+      ? `${process.env.TWILIO_ACCOUNT_SID.substring(0, 10)}...`
+      : "MISSING"
+  );
+  console.log(
+    "- TWILIO_AUTH_TOKEN:",
+    process.env.TWILIO_AUTH_TOKEN
+      ? `${process.env.TWILIO_AUTH_TOKEN.substring(0, 10)}...`
+      : "MISSING"
+  );
+  console.log(
+    "- TWILIO_PHONE_NUMBER:",
+    process.env.TWILIO_PHONE_NUMBER || "MISSING"
+  );
+  console.log(
+    "- NEXT_PUBLIC_SITE_URL:",
+    process.env.NEXT_PUBLIC_SITE_URL || "MISSING"
+  );
+  console.log("- BatchId:", batchId);
+
+  if (!batchId) {
+    console.error("ERROR: No batchId provided");
+    return Response.json({ error: "No batchId provided" }, { status: 400 });
   }
 
-  const { message, recipients, mediaUrls } = await req.json();
+  // Validate Twilio credentials
+  if (
+    !process.env.TWILIO_ACCOUNT_SID ||
+    !process.env.TWILIO_AUTH_TOKEN ||
+    !process.env.TWILIO_PHONE_NUMBER
+  ) {
+    console.error("ERROR: Missing Twilio credentials");
+    return Response.json(
+      { error: "Twilio credentials not configured" },
+      { status: 500 }
+    );
+  }
 
+  let requestBody;
   try {
-    // Process messages sequentially
-    for (const recipient of recipients) {
-      try {
-        const result = await sendTextWithStream({
-          message,
-          recipient: {
-            phone: recipient.label, // Changed from label to value
-            name: recipient.label || recipient.value,
-          },
-          mediaUrls,
-          messageId,
-        });
+    requestBody = await req.json();
+    console.log("Request body parsed successfully");
+  } catch (error) {
+    console.error("ERROR: Failed to parse request body:", error);
+    return Response.json(
+      { error: "Invalid JSON in request body" },
+      { status: 400 }
+    );
+  }
 
-        // Send status update to stream
-        await sendMessageToStream(messageId, {
-          type: "status",
-          status: "success",
-          recipient: recipient.value,
-          messageId,
-          timestamp: new Date().toISOString(),
-        });
-      } catch (error) {
-        console.error(`Error sending to ${recipient.label}:`, error);
+  const { message, recipients, mediaUrls = [] } = requestBody;
 
-        // Send failure status to stream
-        await sendMessageToStream(messageId, {
-          type: "status",
-          status: "failed",
-          recipient: recipient.value,
-          error: error.message,
-          messageId,
-          timestamp: new Date().toISOString(),
-        });
-      }
-    }
+  // Hardcode two fake numbers for testing failed sends
+  recipients.push(
+    { phone: "+123456791", logId: "test-fail-1" },
+    { phone: "+199999999", logId: "test-fail-2" }
+  );
 
-    // Mark stream as complete
-    await completeStream(messageId);
+  console.log("Request Details:");
+  console.log("- Message length:", message?.length || 0);
+  console.log("- Recipients count:", recipients?.length || 0);
+  console.log("- Media URLs count:", mediaUrls?.length || 0);
+  console.log(
+    "- Message preview:",
+    message?.substring(0, 100) + (message?.length > 100 ? "..." : "")
+  );
+  console.log("- Media URLs:", mediaUrls);
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        messageId,
-        timestamp: new Date().toISOString(),
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
+  if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
+    console.error("ERROR: No valid recipients provided");
+    return Response.json(
+      { error: "No valid recipients provided" },
+      { status: 400 }
+    );
+  }
+
+  if (!message || message.trim() === "") {
+    console.error("ERROR: No message provided");
+    return Response.json({ error: "Message cannot be empty" }, { status: 400 });
+  }
+
+  // Test Twilio connection
+  try {
+    console.log("Testing Twilio connection...");
+    const account = await twilioClient.api
+      .accounts(process.env.TWILIO_ACCOUNT_SID)
+      .fetch();
+    console.log(
+      "Twilio connection successful. Account status:",
+      account.status
     );
   } catch (error) {
-    console.error("Error in send-texts API:", error);
+    console.error("ERROR: Twilio connection failed:", error.message);
+    return Response.json(
+      { error: "Twilio authentication failed: " + error.message },
+      { status: 500 }
+    );
+  }
 
-    // Ensure stream completion even on error
-    await completeStream(messageId);
+  let successCount = 0;
+  let failureCount = 0;
+  const results = [];
 
-    return new Response(
-      JSON.stringify({
-        error: error.message,
-        messageId,
-        timestamp: new Date().toISOString(),
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
+  try {
+    console.log(`Starting to send ${recipients.length} messages...`);
+
+    const sendPromises = recipients.map(async (r, index) => {
+      const recipientStartTime = Date.now();
+      console.log(
+        `\n--- Processing recipient ${index + 1}/${recipients.length} ---`
+      );
+      console.log("Recipient data:", { phone: r.phone, logId: r.logId });
+
+      try {
+        // Validate recipient data
+        if (!r.phone) {
+          throw new Error("No phone number provided for recipient");
+        }
+
+        if (!r.logId) {
+          console.warn("WARNING: No logId provided for recipient");
+        }
+
+        // Enhanced phone number formatting with validation
+        const originalPhone = r.phone;
+        const cleanPhone = r.phone.replace(/\D/g, "");
+        console.log(`Phone formatting: "${originalPhone}" -> "${cleanPhone}"`);
+
+        if (cleanPhone.length === 0) {
+          throw new Error("Phone number contains no digits");
+        }
+
+        let formattedPhone;
+        if (cleanPhone.length === 10) {
+          formattedPhone = `+1${cleanPhone}`;
+          console.log("Applied US formatting (+1)");
+        } else if (cleanPhone.length === 11 && cleanPhone.startsWith("1")) {
+          formattedPhone = `+${cleanPhone}`;
+          console.log("Applied North America formatting");
+        } else if (cleanPhone.length > 7 && cleanPhone.length < 16) {
+          formattedPhone = `+${cleanPhone}`;
+          console.log("Applied international formatting");
+        } else {
+          throw new Error(
+            `Invalid phone number length: ${cleanPhone.length} digits`
+          );
+        }
+
+        console.log(`Final formatted phone: ${formattedPhone}`);
+
+        // Prepare message data
+        const messageData = {
+          body: message,
+          from: process.env.TWILIO_PHONE_NUMBER,
+          to: formattedPhone,
+          statusCallback: `https://myhometownut.com/api/twilio-status?logId=${r.logId}`,
+          // statusCallback: `${process.env.NEXT_PUBLIC_DOMAIN}/api/twilio-status?logId=${r.logId}`,
+        };
+
+        // Add media URLs if present
+        if (mediaUrls && mediaUrls.length > 0) {
+          messageData.mediaUrl = mediaUrls;
+          console.log(`Adding ${mediaUrls.length} media URLs`);
+        }
+
+        console.log("Sending message to Twilio...");
+        console.log("Message data:", {
+          ...messageData,
+          body: messageData.body.substring(0, 50) + "...",
+        });
+
+        const msg = await twilioClient.messages.create(messageData);
+
+        console.log(`✅ Message sent successfully!`);
+        console.log(`- Twilio SID: ${msg.sid}`);
+        console.log(`- Status: ${msg.status}`);
+        console.log(`- Direction: ${msg.direction}`);
+        console.log(`- Time taken: ${Date.now() - recipientStartTime}ms`);
+
+        // Update text_log with SID
+        if (r.logId) {
+          try {
+            const { error: updateError } = await supabaseServer
+              .from("text_logs")
+              .update({ twilio_sid: msg.sid })
+              .eq("id", r.logId);
+
+            if (updateError) {
+              console.error("ERROR updating text_log:", updateError);
+            } else {
+              console.log("✅ Database updated with Twilio SID");
+            }
+          } catch (dbError) {
+            console.error("ERROR: Database update failed:", dbError);
+          }
+        }
+
+        successCount++;
+        results.push({
+          phone: formattedPhone,
+          status: "sent",
+          sid: msg.sid,
+          logId: r.logId,
+        });
+      } catch (error) {
+        console.error(`❌ Failed to send message:`);
+        console.error(`- Error: ${error.message}`);
+        console.error(`- Code: ${error.code || "N/A"}`);
+        console.error(`- More info: ${error.moreInfo || "N/A"}`);
+        console.error(`- Time taken: ${Date.now() - recipientStartTime}ms`);
+
+        failureCount++;
+        results.push({
+          phone: r.phone,
+          status: "failed",
+          error: error.message,
+          logId: r.logId,
+        });
+
+        // Update database with failure
+        if (r.logId) {
+          try {
+            const { error: updateError } = await supabaseServer
+              .from("text_logs")
+              .update({
+                status: "failed",
+                error_message: error.message,
+              })
+              .eq("id", r.logId);
+
+            if (updateError) {
+              console.error(
+                "ERROR updating failed status in database:",
+                updateError
+              );
+            } else {
+              console.log("✅ Database updated with failure status");
+            }
+          } catch (dbError) {
+            console.error("ERROR: Database update failed:", dbError);
+          }
+
+          // Update batch counts
+          try {
+            const { error: batchError } = await supabaseServer.rpc(
+              "update_batch_counts",
+              {
+                p_batch_id: batchId,
+                p_delta_pending: -1,
+                p_delta_sent: 0,
+                p_delta_delivered: 0,
+                p_delta_failed: 1,
+              }
+            );
+
+            if (batchError) {
+              console.error("ERROR updating batch counts:", batchError);
+            } else {
+              console.log("✅ Batch counts updated");
+            }
+          } catch (batchDbError) {
+            console.error("ERROR: Batch count update failed:", batchDbError);
+          }
+        }
       }
+    });
+
+    console.log("Waiting for all messages to complete...");
+    await Promise.allSettled(sendPromises);
+
+    const totalTime = Date.now() - startTime;
+    console.log("\n=== SUMMARY ===");
+    console.log(`✅ Successful sends: ${successCount}`);
+    console.log(`❌ Failed sends: ${failureCount}`);
+    console.log(`⏱️  Total time: ${totalTime}ms`);
+    console.log(
+      `📊 Average time per message: ${Math.round(
+        totalTime / recipients.length
+      )}ms`
+    );
+
+    console.log("=== TWILIO API CALL COMPLETED ===\n");
+
+    return Response.json({
+      success: true,
+      batchId,
+      summary: {
+        total: recipients.length,
+        successful: successCount,
+        failed: failureCount,
+        results: results,
+      },
+    });
+  } catch (error) {
+    console.error("=== CRITICAL ERROR ===");
+    console.error("Unexpected error in main try/catch:", error);
+    console.error("Stack trace:", error.stack);
+
+    return Response.json(
+      {
+        error: "Internal server error: " + error.message,
+        batchId,
+      },
+      { status: 500 }
     );
   }
 }

@@ -1,12 +1,6 @@
 import { myHometownTransporter } from "@/util/email/nodemailer-transporter";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/util/supabaseServer";
 import { v4 as uuidv4 } from "uuid";
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
 
 const formattedInviteHtml = (email, firstName, lastName, inviteLink) => {
   return `
@@ -115,7 +109,7 @@ export async function POST(request) {
     let authUser = null;
     try {
       const { data: users, error: listError } =
-        await supabase.auth.admin.listUsers();
+        await supabaseServer.auth.admin.listUsers();
       if (!listError && users) {
         authUser = users.users.find((u) => u.email === email);
         if (authUser) {
@@ -131,7 +125,7 @@ export async function POST(request) {
       console.log("➕ Creating new auth user...");
       try {
         const { data: newAuthUser, error: createError } =
-          await supabase.auth.admin.createUser({
+          await supabaseServer.auth.admin.createUser({
             email,
             email_confirm: true,
             user_metadata: {
@@ -157,12 +151,13 @@ export async function POST(request) {
     const invitationToken = uuidv4();
 
     // Check for existing invitation
-    const { data: existingInvitation, error: lookupError } = await supabase
-      .from("user_invitations")
-      .select("*")
-      .eq("email", email)
-      .eq("used", false)
-      .single();
+    const { data: existingInvitation, error: lookupError } =
+      await supabaseServer
+        .from("user_invitations")
+        .select("*")
+        .eq("email", email)
+        .eq("used", false)
+        .single();
 
     let token = invitationToken;
 
@@ -170,7 +165,7 @@ export async function POST(request) {
       console.log("♻️ Updating existing invitation");
       token = existingInvitation.token;
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await supabaseServer
         .from("user_invitations")
         .update({
           first_name: firstName,
@@ -185,7 +180,7 @@ export async function POST(request) {
       }
     } else {
       console.log("➕ Creating new invitation...");
-      const { error: insertError } = await supabase
+      const { error: insertError } = await supabaseServer
         .from("user_invitations")
         .insert([
           {
@@ -208,7 +203,7 @@ export async function POST(request) {
       console.log("🆕 Creating user record immediately...");
 
       try {
-        const { data: insertedUser, error: userError } = await supabase
+        const { data: insertedUser, error: userError } = await supabaseServer
           .from("users")
           .insert([
             {
@@ -229,20 +224,21 @@ export async function POST(request) {
           // If user already exists, update instead
           if (userError.code === "23505") {
             console.log("User record exists, updating...");
-            const { data: updatedUser, error: updateError } = await supabase
-              .from("users")
-              .update({
-                email: email,
-                first_name: firstName,
-                last_name: lastName,
-                contact_number: userData.contact_number || null,
-                permissions: userData.permissions || {},
-                cities: userData.cities?.map((c) => c.id) || [],
-                communities: userData.communities?.map((c) => c.id) || [],
-              })
-              .eq("id", authUser.id)
-              .select()
-              .single();
+            const { data: updatedUser, error: updateError } =
+              await supabaseServer
+                .from("users")
+                .update({
+                  email: email,
+                  first_name: firstName,
+                  last_name: lastName,
+                  contact_number: userData.contact_number || null,
+                  permissions: userData.permissions || {},
+                  cities: userData.cities?.map((c) => c.id) || [],
+                  communities: userData.communities?.map((c) => c.id) || [],
+                })
+                .eq("id", authUser.id)
+                .select()
+                .single();
 
             if (updateError) {
               console.warn(
