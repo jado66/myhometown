@@ -13,6 +13,12 @@ import Chip from "@mui/material/Chip";
 import Collapse from "@mui/material/Collapse";
 import IconButton from "@mui/material/IconButton";
 import CircularProgress from "@mui/material/CircularProgress";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
 import {
   ExpandMore as ChevronDownIcon,
   ChevronRight as ChevronRightIcon,
@@ -22,6 +28,7 @@ import {
   Cancel as XCircleIcon,
   Warning as AlertCircleIcon,
   Info,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 import { useTextLogs, parseMetadata } from "@/hooks/useTextLogs";
 import { Stack } from "@mui/material";
@@ -72,6 +79,145 @@ interface TextBatchViewerProps {
   isAdmin?: boolean;
 }
 
+interface StatusDialogProps {
+  open: boolean;
+  onClose: () => void;
+  log: TextLog | null;
+  status: "pending" | "sent";
+}
+
+const StatusDialog = ({ open, onClose, log, status }: StatusDialogProps) => {
+  if (!log) return null;
+
+  const isPending = status === "pending";
+  const metadata = log.metadata ? parseMetadata(log.metadata) : {};
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        {isPending ? (
+          <AlertCircleIcon sx={{ color: "warning.main" }} />
+        ) : (
+          <ClockIcon sx={{ color: "info.main" }} />
+        )}
+        {isPending ? "Message Pending" : "Message Sent"}
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          sx={{ position: "absolute", right: 8, top: 8 }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+
+      <DialogContent>
+        <Stack spacing={2}>
+          <Box>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+              Recipient:
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {log.recipient_phone}
+            </Typography>
+          </Box>
+
+          <Divider />
+
+          <Box>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+              Status:
+            </Typography>
+            <Chip
+              label={isPending ? "Pending Delivery" : "Sent"}
+              color={isPending ? "warning" : "info"}
+              size="small"
+            />
+          </Box>
+
+          <Box>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+              Sent At:
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {log.sent_at
+                ? moment(log.sent_at).format("MMM DD, YYYY HH:mm:ss")
+                : moment(log.created_at).format("MMM DD, YYYY HH:mm:ss")}
+            </Typography>
+          </Box>
+
+          {isPending ? (
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                Why is this message pending?
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Text messages fail to deliver due to poor cell reception, the
+                recipient&apos;s phone being off or out of range, network
+                issues, wrong numbers, or being blocked by the recipient.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                If the message is not received within 24-72 hours it will be
+                marked as failed.
+              </Typography>
+            </Box>
+          ) : (
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                Next Steps:
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                The message has been successfully sent and is being processed by
+                the recipient's carrier. You should receive a delivery
+                confirmation shortly.
+              </Typography>
+            </Box>
+          )}
+
+          {log.twilio_sid && (
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                Message ID:
+              </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontFamily: "monospace" }}
+              >
+                {log.twilio_sid}
+              </Typography>
+            </Box>
+          )}
+
+          {/* {metadata && Object.keys(metadata).length > 0 && (
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                Additional Details:
+              </Typography>
+              <Box sx={{ bgcolor: "action.hover", p: 1, borderRadius: 1 }}>
+                <pre
+                  style={{
+                    fontSize: "12px",
+                    margin: 0,
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
+                  {JSON.stringify(metadata, null, 2)}
+                </pre>
+              </Box>
+            </Box>
+          )} */}
+        </Stack>
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={onClose} variant="contained">
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
 const getStatusIcon = (status: string) => {
   switch (status.toLowerCase()) {
     case "delivered":
@@ -105,6 +251,7 @@ const getStatusColor = (status: string) => {
 const getBatchStatus = (status: string) => {
   return status.toLowerCase() === "in_progress" ? "mixed results" : status;
 };
+
 const getDisplayStatus = (status: string) => {
   return status.toLowerCase() === "sent" ? "pending" : status;
 };
@@ -124,6 +271,24 @@ export function TextBatchViewer({
     {}
   );
   const [loadingDetails, setLoadingDetails] = useState<Set<string>>(new Set());
+
+  // Dialog state
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedLog, setSelectedLog] = useState<TextLog | null>(null);
+  const [dialogStatus, setDialogStatus] = useState<"pending" | "sent">(
+    "pending"
+  );
+
+  const handleOpenDialog = (log: TextLog, status: "pending" | "sent") => {
+    setSelectedLog(log);
+    setDialogStatus(status);
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setSelectedLog(null);
+  };
 
   const toggleBatch = async (batchId: string) => {
     const newExpanded = new Set(expandedBatches);
@@ -331,12 +496,13 @@ export function TextBatchViewer({
                               />
                               {log.status.toLowerCase() === "sent" && (
                                 <IconButton
+                                  size="small"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    // Handle info dialog open
+                                    handleOpenDialog(log, "pending");
                                   }}
                                 >
-                                  <Info sx={{ fontSize: 24 }} />
+                                  <Info sx={{ fontSize: 20 }} />
                                 </IconButton>
                               )}
                             </Box>
@@ -439,6 +605,14 @@ export function TextBatchViewer({
             </Box>
           )}
       </Stack>
+
+      {/* Status Dialog */}
+      <StatusDialog
+        open={dialogOpen}
+        onClose={handleCloseDialog}
+        log={selectedLog}
+        status={dialogStatus}
+      />
     </Box>
   );
 }
