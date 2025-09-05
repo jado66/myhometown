@@ -186,6 +186,7 @@ export const BatchCard = ({
 
           <IndividualMessagesList
             batchId={batch.id}
+            batch={batch} // Pass the entire batch object
             batchDetails={batchDetails}
             isLoading={isLoadingDetails}
             searchTerm={searchTerm}

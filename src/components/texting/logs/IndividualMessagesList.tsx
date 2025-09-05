@@ -4,11 +4,12 @@ import React from "react";
 import { Box, Typography, CircularProgress } from "@mui/material";
 import { IndividualMessageCard } from "./IndividualMessageCard";
 import { MessageSearchBar } from "./MessageSearchBar";
-import { TextLog } from "./types";
+import { TextLog, TextBatch } from "./types";
 
 interface IndividualMessagesListProps {
   batchId: string;
   batchDetails: TextLog[] | undefined;
+  batch: TextBatch; // Add batch prop to access metadata
   isLoading: boolean;
   searchTerm: string;
   onSearchChange: (searchTerm: string) => void;
@@ -16,18 +17,45 @@ interface IndividualMessagesListProps {
   onOpenDialog: (log: TextLog, status: "pending" | "sent") => void;
 }
 
-const filterMessagesBySearch = (messages: TextLog[], searchTerm: string) => {
+// Helper function to get contact name from metadata
+const getContactName = (phone: string, batch: TextBatch): string => {
+  if (!batch.metadata?.allRecipients) return phone;
+
+  // Normalize phone numbers for comparison (remove formatting)
+  const normalizePhone = (phoneNum: string) => phoneNum.replace(/\D/g, "");
+  const normalizedPhone = normalizePhone(phone);
+
+  const recipient = batch.metadata.allRecipients.find(
+    (r) => normalizePhone(r.phone) === normalizedPhone
+  );
+
+  return recipient ? `${recipient.name} (${phone})` : phone;
+};
+
+const filterMessagesBySearch = (
+  messages: TextLog[],
+  searchTerm: string,
+  batch: TextBatch
+) => {
   if (!searchTerm.trim()) return messages;
 
   const term = searchTerm.toLowerCase().trim();
-  return messages.filter((log) =>
-    log.recipient_phone.toLowerCase().includes(term)
-  );
+  return messages.filter((log) => {
+    const contactDisplay = getContactName(
+      log.recipient_phone,
+      batch
+    ).toLowerCase();
+    return (
+      contactDisplay.includes(term) ||
+      log.recipient_phone.toLowerCase().includes(term)
+    );
+  });
 };
 
 export const IndividualMessagesList = ({
   batchId,
   batchDetails,
+  batch,
   isLoading,
   searchTerm,
   onSearchChange,
@@ -67,7 +95,8 @@ export const IndividualMessagesList = ({
         (() => {
           const filteredMessages = filterMessagesBySearch(
             batchDetails,
-            searchTerm
+            searchTerm,
+            batch
           );
           const sortedMessages = filteredMessages.sort((a, b) => {
             // Define the order: undelivered first, then failed, then pending (sent), then delivered
@@ -104,6 +133,7 @@ export const IndividualMessagesList = ({
                     <IndividualMessageCard
                       key={log.id}
                       log={log}
+                      batch={batch} // Pass batch to access metadata
                       onOpenDialog={onOpenDialog}
                     />
                   ))
