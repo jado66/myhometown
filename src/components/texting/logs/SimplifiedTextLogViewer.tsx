@@ -99,6 +99,32 @@ export function TextBatchViewer({
     });
   }, [currentPage, pageSize, fetchTextLogs]);
 
+  // Preload batch details for all batches when logs change
+  React.useEffect(() => {
+    const preloadBatchDetails = async () => {
+      const allBatches = [
+        ...(logs.userLogs || []),
+        ...Object.values(logs.communityLogs).flat(),
+        ...Object.values(logs.cityLogs).flat(),
+      ];
+
+      for (const batch of allBatches) {
+        if (!batchDetails[batch.id]) {
+          try {
+            const details = await fetchBatchDetails(batch.id);
+            setBatchDetails((prev) => ({ ...prev, [batch.id]: details }));
+          } catch (err) {
+            console.error("Error preloading batch details:", err);
+          }
+        }
+      }
+    };
+
+    if (logs && !loading) {
+      preloadBatchDetails();
+    }
+  }, [logs, loading, fetchBatchDetails, batchDetails]);
+
   const toggleBatch = async (batchId: string) => {
     const newExpanded = new Set(expandedBatches);
 

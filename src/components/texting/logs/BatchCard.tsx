@@ -107,19 +107,26 @@ export const BatchCard = ({
           </Box>
         }
         subheader={(() => {
-          // Use calculated counts if batch details are available, otherwise fall back to database counts
+          // Always use calculated counts from batch details
           const calculatedCounts = calculateBatchCounts(batchDetails);
           const hasDetails = batchDetails && batchDetails.length > 0;
 
-          const deliveredCount = hasDetails
-            ? calculatedCounts.delivered_count
-            : batch.delivered_count;
-          const pendingCount = hasDetails
-            ? calculatedCounts.sent_count + calculatedCounts.pending_count
-            : batch.sent_count + batch.pending_count;
-          const failedCount = hasDetails
-            ? calculatedCounts.failed_count
-            : batch.failed_count;
+          // If we don't have details yet, show loading state
+          if (!hasDetails) {
+            return (
+              <Grid container spacing={1} sx={{ mt: 1 }}>
+                <Grid item xs={12}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                    Loading delivery details...
+                  </Typography>
+                </Grid>
+              </Grid>
+            );
+          }
+
+          const deliveredCount = calculatedCounts.delivered_count;
+          const pendingCount = calculatedCounts.sent_count + calculatedCounts.pending_count;
+          const failedCount = calculatedCounts.failed_count;
 
           return (
             <Grid container spacing={1} sx={{ mt: 1 }}>
