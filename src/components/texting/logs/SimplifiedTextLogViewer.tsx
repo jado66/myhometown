@@ -123,7 +123,7 @@ export function TextBatchViewer({
     if (logs && !loading) {
       preloadBatchDetails();
     }
-  }, [logs, loading, fetchBatchDetails, batchDetails]);
+  }, [logs, loading, batchDetails]);
 
   const toggleBatch = async (batchId: string) => {
     const newExpanded = new Set(expandedBatches);
