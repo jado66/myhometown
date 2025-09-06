@@ -106,7 +106,7 @@ export function TextBatchViewer({
         ...(logs.userLogs || []),
         ...Object.values(logs.communityLogs).flat(),
         ...Object.values(logs.cityLogs).flat(),
-      ];
+      ] as TextBatch[];
 
       for (const batch of allBatches) {
         if (!batchDetails[batch.id]) {

@@ -6,6 +6,11 @@ import { IndividualMessageCard } from "./IndividualMessageCard";
 import { MessageSearchBar } from "./MessageSearchBar";
 import { TextLog, TextBatch } from "./types";
 
+interface Recipient {
+  phone: string;
+  name: string;
+}
+
 interface IndividualMessagesListProps {
   batchId: string;
   batchDetails: TextLog[] | undefined;
@@ -26,7 +31,7 @@ const getContactName = (phone: string, batch: TextBatch): string => {
   const normalizedPhone = normalizePhone(phone);
 
   const recipient = batch.metadata.allRecipients.find(
-    (r) => normalizePhone(r.phone) === normalizedPhone
+    (r: Recipient) => normalizePhone(r.phone) === normalizedPhone
   );
 
   return recipient ? `${recipient.name} (${phone})` : phone;

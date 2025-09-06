@@ -16,6 +16,12 @@ import {
   Info as InfoIcon,
 } from "@mui/icons-material";
 import { TextLog, TextBatch } from "./types";
+import { ErrorMessageDisplay } from "./ErrorMessageDisplay";
+
+interface Recipient {
+  phone: string;
+  name: string;
+}
 
 interface IndividualMessageCardProps {
   log: TextLog;
@@ -37,7 +43,7 @@ const getContactName = (
   const normalizedPhone = normalizePhone(phone);
 
   const recipient = batch.metadata.allRecipients.find(
-    (r) => normalizePhone(r.phone) === normalizedPhone
+    (r: Recipient) => normalizePhone(r.phone) === normalizedPhone
   );
 
   return {
@@ -83,19 +89,22 @@ export const IndividualMessageCard = ({
 }: IndividualMessageCardProps) => {
   const contactInfo = getContactName(log.recipient_phone, batch);
   const status = log.status?.toLowerCase() === "sent" ? "sent" : "pending";
+  const isPending = log.status?.toLowerCase() === "pending" || log.status?.toLowerCase() === "sent";
+  const isFailed = log.status?.toLowerCase() === "failed" || log.status?.toLowerCase() === "undelivered";
+  const isDelivered = log.status?.toLowerCase() === "delivered";
 
   return (
     <Card
       variant="outlined"
       sx={{
         mb: 1,
-        cursor: "pointer",
-        "&:hover": {
+        cursor: isPending ? "pointer" : "default",
+        "&:hover": isPending ? {
           bgcolor: "action.hover",
-        },
+        } : {},
         transition: "background-color 0.2s",
       }}
-      onClick={() => onOpenDialog(log, status)}
+      onClick={isPending ? () => onOpenDialog(log, status) : undefined}
     >
       <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
         <Box
@@ -133,11 +142,21 @@ export const IndividualMessageCard = ({
               size="small"
               sx={{ textTransform: "capitalize" }}
             />
-            <IconButton size="small" sx={{ ml: 1 }}>
-              <InfoIcon fontSize="small" />
-            </IconButton>
+            {/* Only show info button for pending messages */}
+            {isPending && (
+              <IconButton size="small" sx={{ ml: 1 }}>
+                <InfoIcon fontSize="small" />
+              </IconButton>
+            )}
           </Box>
         </Box>
+        
+        {/* Show error message display for failed messages */}
+        {isFailed && (
+          <Box sx={{ mt: 1 }}>
+            <ErrorMessageDisplay errorMessage={log.error_message} />
+          </Box>
+        )}
       </CardContent>
     </Card>
   );

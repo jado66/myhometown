@@ -116,7 +116,10 @@ export const BatchCard = ({
             return (
               <Grid container spacing={1} sx={{ mt: 1 }}>
                 <Grid item xs={12}>
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "text.secondary" }}
+                  >
                     Loading delivery details...
                   </Typography>
                 </Grid>
@@ -125,7 +128,8 @@ export const BatchCard = ({
           }
 
           const deliveredCount = calculatedCounts.delivered_count;
-          const pendingCount = calculatedCounts.sent_count + calculatedCounts.pending_count;
+          const pendingCount =
+            calculatedCounts.sent_count + calculatedCounts.pending_count;
           const failedCount = calculatedCounts.failed_count;
 
           return (
