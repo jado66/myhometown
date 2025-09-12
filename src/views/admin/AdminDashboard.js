@@ -133,11 +133,12 @@ const AdminDashboardPages = () => {
                   href: rootUrl + "/admin-dashboard/texting",
                   requiredPermission: "texting",
                 },
+
                 {
                   title: "Missionary Management",
                   subtitle:
                     "Manage your missionaries. Add, remove, or edit missionary information. Log their service hours and track your progress.",
-                  media: "/admin-icons/Text SMS Communications.svg",
+                  media: "/admin-icons/missionary-management.png",
                   href: rootUrl + "/admin-dashboard/missionaries",
                   requiredPermission: "administrator",
                 },
@@ -145,7 +146,7 @@ const AdminDashboardPages = () => {
                   title: "Missionary Logs",
                   subtitle:
                     "View and manage missionary logs. Track your service hours and progress.",
-                  media: "/admin-icons/Text SMS Communications.svg",
+                  media: "/admin-icons/missionary-logs.png",
                   href: rootUrl + "/admin-dashboard/missionary-hours",
                   requiredPermission: "administrator",
                 },

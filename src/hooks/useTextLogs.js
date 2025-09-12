@@ -3,10 +3,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useUser } from "./use-user";
 
 export function useTextLogs(
-  // userId,
-  // userCommunities = [],
-  // userCities = [],
-  isAdmin = true
+  userCommunities = [],
+  userCities = [],
+  isAdmin = false
 ) {
   const { user } = useUser();
 
@@ -45,16 +44,22 @@ export function useTextLogs(
 
       try {
         setLoading(true);
-        const result = await fetchAllTextBatches(user.id, [], [], true, {
-          limit,
-          page,
-          startDate,
-          endDate,
-          status,
-          searchTerm,
-          sortBy,
-          sortDirection,
-        });
+        const result = await fetchAllTextBatches(
+          user.id,
+          userCommunities,
+          userCities,
+          isAdmin,
+          {
+            limit,
+            page,
+            startDate,
+            endDate,
+            status,
+            searchTerm,
+            sortBy,
+            sortDirection,
+          }
+        );
         setLogs(result);
         setError(null);
       } catch (err) {
@@ -64,7 +69,7 @@ export function useTextLogs(
         setLoading(false);
       }
     },
-    [user.id, isAdmin]
+    [user.id, userCommunities, userCities, isAdmin]
   );
 
   useEffect(() => {
@@ -107,7 +112,6 @@ async function fetchAllTextBatches(
     endDate = null,
     status = null,
     searchTerm = null,
-    recipientPhone = null,
     sortBy = "created_at",
     sortDirection = "desc",
   } = options;
@@ -127,11 +131,8 @@ async function fetchAllTextBatches(
     },
   };
 
-  // Build query with pagination and filtering
-  const buildQuery = () => {
-    let query = supabase.from("text_batches").select("*", { count: "exact" });
-
-    // Add filters if provided
+  const applyCommonFilters = (q) => {
+    let query = q;
     if (startDate) {
       query = query.gte("created_at", startDate);
     }
@@ -144,31 +145,87 @@ async function fetchAllTextBatches(
     if (searchTerm) {
       query = query.ilike("message_content", `%${searchTerm}%`);
     }
-
-    // Add pagination
+    query = query.order(sortBy, { ascending: sortDirection === "asc" });
     query = query.range(offset, offset + limit - 1);
-
-    // Add sorting
-    const ascending = sortDirection === "asc";
-    query = query.order(sortBy, { ascending });
-
     return query;
   };
 
-  try {
-    const { data: allData, count: allCount } = await buildQuery();
+  if (isAdmin) {
+    let query = supabase.from("text_batches").select("*", { count: "exact" });
+    query = applyCommonFilters(query);
+    const { data, count, error } = await query;
+    if (error) throw error;
+    result.allUserLogs = data || [];
+    result.totalCounts.allUserLogs = count || 0;
+    result.communityLogs = { all: data || [] };
+    result.totalCounts.communityLogs = { all: count || 0 };
+    result.cityLogs = {};
+    result.totalCounts.cityLogs = {};
+    result.userLogs = [];
+    result.totalCounts.userLogs = 0;
+  } else {
+    // Fetch user batches
+    let userQuery = supabase
+      .from("text_batches")
+      .select("*", { count: "exact" })
+      .eq("owner_type", "user")
+      .eq("owner_id", userId);
+    userQuery = applyCommonFilters(userQuery);
+    const {
+      data: userData,
+      count: userCount,
+      error: userError,
+    } = await userQuery;
+    if (userError) {
+      console.error("Error fetching user batches:", userError);
+    } else {
+      result.userLogs = userData || [];
+      result.totalCounts.userLogs = userCount || 0;
+    }
 
-    // Put all data in the allUserLogs for display
-    result.allUserLogs = allData || [];
-    result.totalCounts.allUserLogs = allCount || 0;
+    // Fetch community batches
+    for (const communityId of userCommunities) {
+      let communityQuery = supabase
+        .from("text_batches")
+        .select("*", { count: "exact" })
+        .eq("owner_type", "community")
+        .eq("owner_id", communityId);
+      communityQuery = applyCommonFilters(communityQuery);
+      const { data, count, error } = await communityQuery;
+      if (error) {
+        console.error(
+          `Error fetching batches for community ${communityId}:`,
+          error
+        );
+        result.communityLogs[communityId] = [];
+        result.totalCounts.communityLogs[communityId] = 0;
+      } else {
+        result.communityLogs[communityId] = data || [];
+        result.totalCounts.communityLogs[communityId] = count || 0;
+      }
+    }
 
-    // Also populate other fields for compatibility
-    result.communityLogs = { all: allData || [] };
-    result.totalCounts.communityLogs = { all: allCount || 0 };
-    result.cityLogs = { all: allData || [] };
-    result.totalCounts.cityLogs = { all: allCount || 0 };
-  } catch (error) {
-    throw error;
+    // Fetch city batches
+    for (const cityId of userCities) {
+      let cityQuery = supabase
+        .from("text_batches")
+        .select("*", { count: "exact" })
+        .eq("owner_type", "city")
+        .eq("owner_id", cityId);
+      cityQuery = applyCommonFilters(cityQuery);
+      const { data, count, error } = await cityQuery;
+      if (error) {
+        console.error(`Error fetching batches for city ${cityId}:`, error);
+        result.cityLogs[cityId] = [];
+        result.totalCounts.cityLogs[cityId] = 0;
+      } else {
+        result.cityLogs[cityId] = data || [];
+        result.totalCounts.cityLogs[cityId] = count || 0;
+      }
+    }
+
+    result.allUserLogs = [];
+    result.totalCounts.allUserLogs = 0;
   }
 
   return result;

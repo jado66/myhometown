@@ -77,14 +77,14 @@ const AdminDashboardPages = () => {
                   title: "Missionary Hours",
                   subtitle:
                     "View and manage your missionary hours. Track your service hours and progress.",
-                  media: "/admin-icons/Text SMS Communications.svg",
+                  media: "/admin-icons/missionary-logs.png",
                   href: "/admin-dashboard/missionary-hours",
                 },
                 {
                   title: "Volunteer Hours",
                   subtitle:
                     "View and manage your volunteer hours. Track your service hours and progress.",
-                  media: "/admin-icons/Text SMS Communications.svg",
+                  media: "/admin-icons/missionary-logs.png",
                   href: "/admin-dashboard/volunteer-hours",
                 },
                 {

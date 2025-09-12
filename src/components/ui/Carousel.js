@@ -23,6 +23,7 @@ const CarouselComponent = ({
   removeCarouselImage,
   noDots,
   speed,
+  onImageClick,
 }) => {
   const theme = useTheme();
 
@@ -73,8 +74,10 @@ const CarouselComponent = ({
               style={{
                 width: "100%",
                 borderRadius: "12px",
+                cursor: onImageClick ? "pointer" : undefined,
                 // boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
               }}
+              onClick={() => onImageClick && onImageClick(image)}
             />
           </Box>
         ))}

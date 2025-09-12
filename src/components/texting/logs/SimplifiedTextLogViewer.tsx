@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -28,7 +28,7 @@ export function TextBatchViewer({
 }: TextBatchViewerProps) {
   const theme = useTheme();
   const { logs, loading, error, fetchTextLogs, fetchBatchDetails } =
-    useTextLogs();
+    useTextLogs(userCommunities, userCities, isAdmin);
   const [expandedBatches, setExpandedBatches] = useState<Set<string>>(
     new Set()
   );
@@ -92,20 +92,20 @@ export function TextBatchViewer({
   };
 
   // Fetch data when pagination changes
-  React.useEffect(() => {
+  useEffect(() => {
     fetchTextLogs({
       page: currentPage,
       limit: pageSize,
     });
-  }, [currentPage, pageSize, fetchTextLogs]);
+  }, [currentPage, pageSize]);
 
   // Preload batch details for all batches when logs change
-  React.useEffect(() => {
+  useEffect(() => {
     const preloadBatchDetails = async () => {
       const allBatches = [
         ...(logs.userLogs || []),
-        ...Object.values(logs.communityLogs).flat(),
-        ...Object.values(logs.cityLogs).flat(),
+        ...Object.values(logs.communityLogs || {}).flat(),
+        ...Object.values(logs.cityLogs || {}).flat(),
       ] as TextBatch[];
 
       for (const batch of allBatches) {
@@ -123,7 +123,7 @@ export function TextBatchViewer({
     if (logs && !loading) {
       preloadBatchDetails();
     }
-  }, [logs, loading, batchDetails]);
+  }, [logs, loading]);
 
   const toggleBatch = async (batchId: string) => {
     const newExpanded = new Set(expandedBatches);
@@ -154,10 +154,13 @@ export function TextBatchViewer({
     setExpandedBatches(newExpanded);
   };
 
-  const renderBatchSection = (title: string, batches: TextBatch[]) => {
+  const renderBatchSection = (
+    title: string,
+    batches: TextBatch[],
+    totalCount: number
+  ) => {
     if (!batches || batches.length === 0) return null;
 
-    const totalCount = logs.totalCounts.allUserLogs || 0;
     const totalPages = Math.ceil(totalCount / pageSize);
 
     return (
@@ -219,10 +222,19 @@ export function TextBatchViewer({
     return <LoadingState isLoading={loading} error={error} />;
   }
 
+  const userBatchesLength = (logs.userLogs || []).length;
+  const communityBatchesLength = Object.values(logs.communityLogs || {}).reduce(
+    (sum: number, arr) => sum + (arr ? (arr as TextBatch[]).length : 0),
+    0
+  );
+  const cityBatchesLength = Object.values(logs.cityLogs || {}).reduce(
+    (sum: number, arr) => sum + (arr ? (arr as TextBatch[]).length : 0),
+    0
+  );
   const hasNoBatches =
-    (!logs.userLogs || logs.userLogs.length === 0) &&
-    Object.keys(logs.communityLogs).length === 0 &&
-    Object.keys(logs.cityLogs).length === 0;
+    userBatchesLength === 0 &&
+    communityBatchesLength === 0 &&
+    cityBatchesLength === 0;
 
   return (
     <Box sx={{ p: 3, flexGrow: 1, position: "relative" }}>
@@ -266,7 +278,7 @@ export function TextBatchViewer({
             >
               Text Message Batches
             </Typography>
-            {logs.totalCounts.allUserLogs > 0 && (
+            {isAdmin && logs.totalCounts.allUserLogs > 0 && (
               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                 Page {currentPage} of{" "}
                 {Math.ceil(logs.totalCounts.allUserLogs / pageSize)}• Showing{" "}
@@ -276,9 +288,30 @@ export function TextBatchViewer({
           </Box>
         </Box>
 
-        {Object.entries(logs.communityLogs).map(([communityId, batches]) =>
-          renderBatchSection(`All Messages`, batches as TextBatch[])
-        )}
+        {logs.userLogs.length > 0 &&
+          renderBatchSection(
+            "Your Texts",
+            logs.userLogs as TextBatch[],
+            logs.totalCounts.userLogs
+          )}
+
+        {Object.entries(logs.communityLogs).map(([key, batches]) => {
+          const title = key === "all" ? "All Messages" : `Community ${key}`;
+          const total =
+            logs.totalCounts.communityLogs[
+              key as keyof typeof logs.totalCounts.communityLogs
+            ];
+          return renderBatchSection(title, batches as TextBatch[], total);
+        })}
+
+        {Object.entries(logs.cityLogs).map(([key, batches]) => {
+          const title = `City ${key}`;
+          const total =
+            logs.totalCounts.cityLogs[
+              key as keyof typeof logs.totalCounts.cityLogs
+            ];
+          return renderBatchSection(title, batches as TextBatch[], total);
+        })}
 
         {hasNoBatches && <EmptyState currentPage={currentPage} />}
       </Stack>
