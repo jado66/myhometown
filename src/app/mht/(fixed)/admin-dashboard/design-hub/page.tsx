@@ -36,22 +36,22 @@ import { LightBox } from "@/components/LightBox";
 
 // Example images for each tab
 const flyersExamples = [
-  "/mht/design-hub/Classes Flyer.webp",
-  "/mht/design-hub/ComingSoon-Span.webp",
-  "/mht/design-hub/Door Hanger.webp",
-  "/mht/design-hub/Flyer Children.webp",
-  "/mht/design-hub/Flyer Classes 2.webp",
-  "/mht/design-hub/Grand opening Flyer.webp",
+  "/design-hub/Classes Flyer.webp",
+  "/design-hub/ComingSoon-Span.webp",
+  "/design-hub/Door Hanger.webp",
+  "/design-hub/Flyer Children.webp",
+  "/design-hub/Flyer Classes 2.webp",
+  "/design-hub/Grand opening Flyer.webp",
 ];
 const certificatesExamples = [
-  "/mht/design-hub/Certificate.jpeg",
-  "/mht/design-hub/Certificate.jpeg",
-  "/mht/design-hub/Certificate.jpeg",
+  "/design-hub/Certificate.jpeg",
+  "/design-hub/Certificate.jpeg",
+  "/design-hub/Certificate.jpeg",
 ];
 const signsBannersExamples = [
-  "/mht/design-hub/Banner 1.jpeg",
-  "/mht/design-hub/Banner 2.jpeg",
-  "/mht/design-hub/Yard Sign.jpeg",
+  "/design-hub/Banner 1.jpeg",
+  "/design-hub/Banner 2.jpeg",
+  "/design-hub/Yard Sign.jpeg",
 ];
 
 interface CartItem {
@@ -363,7 +363,7 @@ export default function DesignHub() {
           <Grid item xs={12} md={6} sx={{ px: 3 }}>
             <Box
               component="img"
-              src="/mht/design-hub/placeholder.png"
+              src="/design-hub/placeholder.png"
               alt="Placeholder Image"
               sx={{
                 width: "100%",
