@@ -24,7 +24,7 @@ export function TextBatchViewer({
   userId,
   userCommunities = [],
   userCities = [],
-  isAdmin = false,
+  isAdmin,
 }: TextBatchViewerProps) {
   const theme = useTheme();
   const { logs, loading, error, fetchTextLogs, fetchBatchDetails } =

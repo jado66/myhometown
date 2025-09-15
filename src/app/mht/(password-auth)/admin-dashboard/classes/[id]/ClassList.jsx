@@ -745,6 +745,7 @@ export default function ClassList({
               setShowClassRoll(true);
             }}
             onViewClass={(classObj) => {
+              console.log("Viewing class:", JSON.stringify(classObj));
               setSelectedClass(classObj);
               setShowClassDetails(true);
             }}

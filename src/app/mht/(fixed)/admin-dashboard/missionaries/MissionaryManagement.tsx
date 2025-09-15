@@ -63,7 +63,7 @@ interface Missionary {
   last_name: string;
   email: string;
   contact_number?: string;
-  assignment_status: "Active";
+  assignment_status: "Active" | "Inactive" | "Pending";
   assignment_level?: "State" | "City" | "Community";
   city_id?: string;
   community_id?: string;
@@ -93,6 +93,13 @@ interface FilterState {
   assignmentLevel: "all" | "state" | "city" | "community";
   selectedCityId: string | null;
   selectedCommunityId: string | null;
+  personType?: string; // kept optional for legacy compatibility
+}
+
+interface ImportSummary {
+  success: number;
+  duplicates: string[];
+  failed: { email: string; reason: string }[];
 }
 
 interface TabPanelProps {
@@ -167,6 +174,11 @@ export default function MissionaryManagement() {
     valid: any[];
     errors: string[];
   }>({ valid: [], errors: [] });
+  const [importSummary, setImportSummary] = useState<ImportSummary>({
+    success: 0,
+    duplicates: [],
+    failed: [],
+  });
 
   // CSV parsing and validation logic
   function parseCsv(text: string) {
@@ -332,26 +344,55 @@ export default function MissionaryManagement() {
   // Handler to actually submit valid missionaries to the API
   const handleBulkImportSubmit = async () => {
     if (!importResults.valid.length) return;
-
     setImporting(true);
+    const summary: ImportSummary = { success: 0, duplicates: [], failed: [] };
     try {
-      // You may want to POST to your API endpoint in bulk, or one by one
-      // Here, we'll do one by one for simplicity
       for (const missionary of importResults.valid) {
-        await fetch("/api/database/missionaries", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(missionary),
-        });
-      }
+        try {
+          const res = await fetch("/api/database/missionaries", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(missionary),
+          });
+          if (res.status === 409) {
+            summary.duplicates.push(missionary.email);
+            continue; // skip duplicates
+          }
 
+          if (!res.ok) {
+            const text = await res.text();
+            summary.failed.push({
+              email: missionary.email,
+              reason: text || res.statusText,
+            });
+            continue;
+          }
+          summary.success += 1;
+        } catch (innerErr: any) {
+          summary.failed.push({
+            email: missionary.email,
+            reason: innerErr.message || "Network error",
+          });
+        }
+      }
+      setImportSummary(summary);
       await fetchMissionaries();
-      setBulkImportOpen(false);
-      setImportFile(null);
-      setImportResults({ valid: [], errors: [] });
-      setImportError(null);
+
+      const parts: string[] = [];
+      if (summary.success) parts.push(`${summary.success} imported`);
+      if (summary.duplicates.length)
+        parts.push(`${summary.duplicates.length} duplicate skipped`);
+      if (summary.failed.length) parts.push(`${summary.failed.length} failed`);
+      const message = parts.join(", ");
+      if (summary.failed.length === 0) {
+        toast.success(`Import complete: ${message}`);
+      } else {
+        toast.warn(`Import partial: ${message}`);
+      }
+      // Keep dialog open to show summary
     } catch (err) {
-      setImportError("Error importing missionaries. Please try again.");
+      toast.error("Unexpected error importing missionaries");
+      setImportError("Unexpected error importing missionaries");
     } finally {
       setImporting(false);
     }
@@ -364,8 +405,11 @@ export default function MissionaryManagement() {
     assignmentLevel: "all",
     selectedCityId: null,
     selectedCommunityId: null,
-    personType: "all",
   });
+
+  // Helpful typed lists
+  const cityList = (cities || []) as City[];
+  const communityList = (communities || []) as Community[];
 
   // Sync individual filter states for filtering logic
   const searchTerm = filters.searchTerm;
@@ -404,11 +448,12 @@ export default function MissionaryManagement() {
       (missionary.group || "").toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
-      statusFilter === "all" || missionary.assignment_status === statusFilter;
+      statusFilter === "all" ||
+      missionary.assignment_status.toLowerCase() === statusFilter;
 
     const matchesLevel =
       assignmentLevel === "all" ||
-      missionary.assignment_level === assignmentLevel;
+      missionary.assignment_level?.toLowerCase() === assignmentLevel;
 
     const matchesCity =
       !selectedCityId || missionary.city_id === selectedCityId;
@@ -440,8 +485,8 @@ export default function MissionaryManagement() {
       Phone: m.contact_number || "",
       Status: m.assignment_status,
       "Assignment Level": m.assignment_level || "",
-      City: cities.find((c) => c.id === m.city_id)?.name || "",
-      Community: communities.find((c) => c.id === m.community_id)?.name || "",
+      City: cityList.find((c) => c.id === m.city_id)?.name || "",
+      Community: communityList.find((c) => c.id === m.community_id)?.name || "",
       Group: m.group || "",
       Title: m.title || "",
       "Start Date": m.start_date || "",
@@ -607,8 +652,14 @@ export default function MissionaryManagement() {
                   setImportFile(null);
                   setImportError(null);
                   setImportResults({ valid: [], errors: [] });
+                  setImportSummary({ success: 0, duplicates: [], failed: [] });
                 }}
                 handleImport={handleImportMissionaryCsv}
+                importResults={importResults}
+                importError={importError}
+                onSubmit={handleBulkImportSubmit}
+                importing={importing}
+                importSummary={importSummary}
               />
 
               <Button
@@ -667,7 +718,7 @@ export default function MissionaryManagement() {
                   {
                     label: "State Level",
                     value: filteredMissionaries.filter(
-                      (m) => m.assignment_level === "state"
+                      (m) => m.assignment_level?.toLowerCase() === "state"
                     ).length,
                     color: "secondary.main",
                     icon: <Business sx={{ color: "#fff" }} />,
@@ -675,7 +726,7 @@ export default function MissionaryManagement() {
                   {
                     label: "City Level",
                     value: filteredMissionaries.filter(
-                      (m) => m.assignment_level === "city"
+                      (m) => m.assignment_level?.toLowerCase() === "city"
                     ).length,
                     color: "secondary.main",
                     icon: <Business sx={{ color: "#fff" }} />,
@@ -683,7 +734,7 @@ export default function MissionaryManagement() {
                   {
                     label: "Community Level",
                     value: filteredMissionaries.filter(
-                      (m) => m.assignment_level === "community"
+                      (m) => m.assignment_level?.toLowerCase() === "community"
                     ).length,
                     color: "warning.main",
                     icon: <LocationCity sx={{ color: "#fff" }} />,

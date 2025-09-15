@@ -10,6 +10,7 @@ interface ProfilePictureDialogProps {
   open: boolean;
   onClose: () => void;
   profilePicUrl: string | null;
+  profilePicName?: string | null;
 }
 
 const ProfilePictureDialog: React.FC<ProfilePictureDialogProps> = ({

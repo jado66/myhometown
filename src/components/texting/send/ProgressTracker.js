@@ -208,7 +208,8 @@ const ProgressTracker = ({ sendStatus, progress, onReset, apiResponse }) => {
               carrier, phone status, DO NOT DISTURB settings, etc.
               <br />
               <strong>Failed</strong> - Message could not be processed (i.e.,
-              invalid number, carrier outage or maintenance, etc.)
+              invalid number, carrier outage or maintenance, etc.) or the
+              recipient has opted out of receiving messages from this number.
               <br />
               <strong>Delivery Status</strong> - The delivery status (e.g.,
               delivered, undelivered, etc.) will be reported in the Texting

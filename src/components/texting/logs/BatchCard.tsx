@@ -93,7 +93,8 @@ export const BatchCard = ({
                 color="text.secondary"
                 sx={{ mt: 0.5 }}
               >
-                {moment(batch.created_at).format("MMM DD, YYYY HH:mm")}
+                {moment(batch.created_at).format("MMM DD, YYYY HH:mm")} • Sender
+                ID: {batch.sender_id}
               </Typography>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", mt: -2 }}>

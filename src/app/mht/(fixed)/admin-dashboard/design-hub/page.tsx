@@ -1,20 +1,39 @@
 "use client";
 
-import {
-  flyersCatalogItems,
-  certificatesCatalogItems,
-  signsBannersCatalogItems,
-} from "./catalogData";
 import { useState } from "react";
-import type React from "react";
-import { CatalogItem } from "./catalogData";
 import {
-  renderCatalogItems,
-  renderStarterKitContent,
-  renderSuccessPage,
-} from "./DesignHubComponents";
-import CarouselComponent from "@/components/ui/Carousel";
+  Container,
+  Typography,
+  Box,
+  Tabs,
+  Tab,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  Paper,
+  Alert,
+  AlertTitle,
+  Divider,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { Add, Email, Person, Phone } from "@mui/icons-material";
+import {
+  promotionalItems,
+  myHometownItems,
+  type CatalogItem,
+} from "./catalogData";
+import { ItemDialog } from "./ItemDialog";
+import { ShoppingCart } from "./ShoppingCart";
+import { OrderForm } from "./OrderForm";
+
+// Carousel and LightBox imports
+import CarouselComponent from "@/components/ui/DesignHubCarousel";
 import { LightBox } from "@/components/LightBox";
+
 // Example images for each tab
 const flyersExamples = [
   "/mht/design-hub/Classes Flyer.webp",
@@ -26,410 +45,586 @@ const flyersExamples = [
 ];
 const certificatesExamples = [
   "/mht/design-hub/Certificate.jpeg",
-  // Add more certificate images here if available
+  "/mht/design-hub/Certificate.jpeg",
+  "/mht/design-hub/Certificate.jpeg",
 ];
 const signsBannersExamples = [
   "/mht/design-hub/Banner 1.jpeg",
   "/mht/design-hub/Banner 2.jpeg",
   "/mht/design-hub/Yard Sign.jpeg",
-  "/mht/design-hub/car magnets.webp",
-  "/mht/design-hub/Flags.webp",
-  "/mht/design-hub/Green_TableCloth.webp",
-  "/mht/design-hub/tent.webp",
 ];
-import OrderForm from "./OrderForm";
-import SelectedItemsCart from "./SelectedItemsCart";
-import ExecutiveAccessDialog from "./ExecutiveAccessDialog";
-import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Paper,
-  Divider,
-  Badge,
-  Button,
-} from "@mui/material";
 
-import { Email, LocationCity, Palette } from "@mui/icons-material";
+interface CartItem {
+  id: string;
+  itemTitle: string;
+  itemType: string;
+  purpose: string;
+  theme: string;
+  dueDate: string;
+  englishText: string;
+  spanishText: string;
+  qrCodes?: string;
+  size: string;
+  otherSize?: string;
+}
 
-  const [showDialog, setShowDialog] = useState(true);
-  const [lightBoxImage, setLightBoxImage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("flyers");
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccessPage, setShowSuccessPage] = useState(false);
-  const [submittedOrderData, setSubmittedOrderData] = useState<{
-    items: string[];
-    name: string;
-    email: string;
+// Promotional items are now boolean (single order per catalog item)
+
+export default function DesignHub() {
+  // Renders promotional catalog items as cards
+  const renderPromotionalItems = (items: CatalogItem[]) => (
+    <>
+      <Box sx={{ px: 3, pt: 2, pb: 1, mb: 3, bgcolor: "grey.50" }}>
+        <Typography
+          variant="h5"
+          component="h2"
+          sx={{ fontWeight: "bold", mb: 1 }}
+        >
+          Co-Branded Promotional Materials
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          These promotional material designs feature both your community&apos;s
+          branding and the myHometown logo.
+        </Typography>
+
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mt: 1, fontWeight: "bold" }}
+        >
+          Please ensure to include your city or community name in the Location
+          Type dropdown along with your order.
+        </Typography>
+      </Box>
+      <Grid container spacing={3}>
+        {items.map((item) => {
+          const alreadyAdded = promotionalCartItems.some(
+            (i) => i.id === item.id
+          );
+          return (
+            <Grid item xs={12} sm={6} md={4} key={item.id}>
+              <Card
+                sx={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <Box
+                  sx={{
+                    position: "relative",
+                    width: "100%",
+                    height: 200,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    bgcolor: "white",
+                    borderBottom: 1,
+                    borderColor: "divider",
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={item.image || "/placeholderWhite.svg"}
+                    alt={item.title}
+                    sx={{
+                      maxWidth: "100%",
+                      maxHeight: "100%",
+                      objectFit: "contain",
+                      display: "block",
+                    }}
+                  />
+                </Box>
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography variant="h6" component="h3" gutterBottom>
+                    {item.title}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 2 }}
+                  >
+                    {item.description}
+                  </Typography>
+                  <Button
+                    variant={alreadyAdded ? "outlined" : "contained"}
+                    startIcon={!alreadyAdded ? <Add /> : undefined}
+                    onClick={() =>
+                      !alreadyAdded && handleAddPromotionalItem(item)
+                    }
+                    disabled={alreadyAdded}
+                    fullWidth
+                  >
+                    {alreadyAdded ? "Added" : "Add to Cart"}
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+          );
+        })}
+      </Grid>
+    </>
+  );
+
+  // Renders myHometown catalog items as cards (disabled)
+  const renderMyHometownItems = (items: CatalogItem[]) => (
+    <Box>
+      <Box sx={{ px: 3, pt: 2, pb: 1, bgcolor: "grey.50" }}>
+        <Typography
+          variant="h5"
+          component="h2"
+          sx={{ fontWeight: "bold", mb: 1 }}
+        >
+          myHometown Promotional Materials
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          These promotional materials are pre-designed with the myHometown logo
+          and can be ordered by contacting our preferred vendor,{" "}
+          <strong>Brand Makers</strong>. Below is a sampling of items you can
+          order. Contact Brand Makers directly for a full list.
+        </Typography>
+
+        <Box sx={{ mb: 2 }}>
+          <Button
+            variant="contained"
+            startIcon={<Email />}
+            href="mailto:katie@brandmakers.com?subject=myHometown Swag Order&body=Hi Katie,%0D%0A%0D%0AI would like to put in an order for some myHometown swag.%0D%0A%0D%0AI'd like to order the following:"
+            sx={{ mb: 2 }}
+          >
+            Contact for Order
+          </Button>
+        </Box>
+      </Box>
+
+      <Grid container spacing={3}>
+        {items.map((item) => (
+          <Grid item xs={12} sm={6} md={4} key={item.id}>
+            <Card
+              sx={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <Box
+                sx={{
+                  position: "relative",
+                  width: "100%",
+                  height: 200,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                  bgcolor: "white",
+                  borderBottom: 1,
+                  borderColor: "divider",
+                }}
+              >
+                <Box
+                  component="img"
+                  src={item.image || "/placeholderWhite.svg"}
+                  alt={item.title}
+                  sx={{
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    objectFit: "contain",
+                    display: "block",
+                  }}
+                />
+              </Box>
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Typography variant="h6" component="h3" gutterBottom>
+                  {item.title}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+                >
+                  {item.description}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+  );
+  const [activeTab, setActiveTab] = useState(0);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<{
+    type: "flyers" | "certificates" | "signs-banners";
+    title: string;
   } | null>(null);
-  const [formData, setFormData] = useState({
-    title: "",
-    name: "",
-    email: "",
-    phone: "",
-    locationType: "",
-    community: "",
-    city: "",
-    additionalRequests: "",
-  });
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [promotionalCartItems, setPromotionalCartItems] = useState<
+    CatalogItem[]
+  >([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Removed duplicate untyped allItems declaration
-  const allItems: CatalogItem[] = [
-    ...flyersCatalogItems,
-    ...certificatesCatalogItems,
-    ...signsBannersCatalogItems,
-  ];
+  // For LightBox
+  const [lightBoxImage, setLightBoxImage] = useState<string | null>(null);
+  const handleExampleImageClick = (imgSrc: string) => setLightBoxImage(imgSrc);
+  const closeImageDialog = () => setLightBoxImage(null);
 
-  const handleDialogProceed = () => {
-    setShowDialog(false);
+  // Cart and dialog logic
+  const handleDialogSubmit = (data: any) => {
+    const newItem: CartItem = {
+      id: Date.now().toString(),
+      ...data,
+    };
+    setCartItems((prev) => [...prev, newItem]);
   };
 
-  const handleDialogBack = () => {
-    window.history.back();
+  const handleRemoveCartItem = (id: string) => {
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const getItemCountForCategory = (category: string) => {
-    return selectedItems.filter((itemId) => {
-      const item = allItems.find((item) => item.id === itemId);
-      return item?.category === category;
-    }).length;
+  const handleAddPromotionalItem = (item: CatalogItem) => {
+    setPromotionalCartItems((prev) => {
+      if (prev.some((i) => i.id === item.id)) return prev; // already added
+      return [...prev, item];
+    });
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
-    setActiveTab(newValue);
+  const handleRemovePromotionalItem = (itemId: string) => {
+    setPromotionalCartItems((prev) => prev.filter((i) => i.id !== itemId));
   };
 
-  const handleItemSelection = (itemId: string) => {
-    setSelectedItems((prev) =>
-      prev.includes(itemId)
-        ? prev.filter((id) => id !== itemId)
-        : [...prev, itemId]
+  const handleOrderSubmit = async (orderData: any) => {
+    setIsSubmitting(true);
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // Reset carts after successful submission
+    setCartItems([]);
+    setPromotionalCartItems([]);
+    setIsSubmitting(false);
+
+    alert(
+      "Order submitted successfully! You will receive confirmation within 24 hours."
     );
   };
 
-  const removeFromCart = (itemId: string) => {
-    setSelectedItems((prev) => prev.filter((id) => id !== itemId));
+  const handleAddItem = (type: "flyers" | "certificates" | "signs-banners") => {
+    const categoryName =
+      type === "flyers"
+        ? "Flyer"
+        : type === "certificates"
+        ? "Certificate"
+        : "Sign/Banner";
+    setSelectedItem({ type, title: categoryName });
+    setDialogOpen(true);
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  // ...existing handlers...
 
-  const handleSubmit = async () => {
-    if (selectedItems.length === 0) {
-      alert("Please select at least one item before submitting.");
-      return;
-    }
+  const renderSingleAddButton = (
+    type: "flyers" | "certificates" | "signs-banners",
+    title: string,
+    description: string
+  ) => (
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        mt: 5,
+      }}
+    >
+      <Button
+        variant="contained"
+        size="large"
+        startIcon={<Add />}
+        onClick={() => handleAddItem(type)}
+        sx={{
+          py: 2,
+          px: 4,
+          fontSize: "1.2rem",
+          minWidth: "200px",
+        }}
+      >
+        Add {title}
+      </Button>
+    </Box>
+  );
 
-    setIsSubmitting(true);
-
-    try {
-      // Create email content
-      const locationInformation =
-        formData.locationType === "city"
-          ? `City: ${
-              formData.city.endsWith("City")
-                ? formData.city
-                : `${formData.city} City`
-            }`
-          : formData.locationType === "community"
-          ? `Community: ${
-              formData.community.endsWith("Community")
-                ? formData.community
-                : `${formData.community} Community`
-            }`
-          : "myHometown Utah";
-
-      // Send email using the existing API endpoint
-      const response = await fetch(
-        "/api/communications/send-mail/to-design-hub ",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            subject: `MHT Design Hub Order Request - ${formData.name}`,
-            html: {
-              // Adapting to your existing email format structure
-              firstName: formData.name.split(" ")[0] || formData.name,
-              lastName: formData.name.split(" ").slice(1).join(" ") || "",
-              email: formData.email,
-              phone: formData.phone,
-              title: formData.title,
-              location: locationInformation,
-              message: `Design Hub Order Request:
-
-
-Selected Items (${selectedItems.length}):
-${selectedItems
-  .map((id) => {
-    const item = allItems.find((i) => i.id === id);
-    return `- ${item?.title} (${item?.category})`;
-  })
-  .join("\n")}
-
-${
-  formData.additionalRequests
-    ? `Additional Requests: ${formData.additionalRequests}`
-    : ""
-}
-
-Submitted: ${new Date().toLocaleString()}`,
-            },
-          }),
-        }
-      );
-
-      if (response.ok) {
-        setSubmittedOrderData({
-          items: selectedItems.map((id) => {
-            const item = allItems.find((i) => i.id === id);
-            return item?.title || "";
-          }),
-          name: formData.name,
-          email: formData.email,
-        });
-        setShowSuccessPage(true);
-
-        // Reset form
-        setSelectedItems([]);
-        setFormData({
-          title: "",
-          name: "",
-          email: "",
-          phone: "",
-          locationType: "",
-          community: "",
-          city: "",
-          additionalRequests: "",
-        });
-      } else {
-        throw new Error("Failed to send email");
-      }
-    } catch (error) {
-      console.error("Error submitting order:", error);
-      alert(
-        "There was an error submitting your order. Please try again or contact support."
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleBackToForm = () => {
-    setShowSuccessPage(false);
-    setSubmittedOrderData(null);
-  };
-
-  const selectedItemsData: CatalogItem[] = selectedItems
-    .map((id) => allItems.find((item) => item.id === id))
-    .filter((item): item is CatalogItem => !!item);
-
-  if (showSuccessPage) {
-    return renderSuccessPage(submittedOrderData, handleBackToForm);
-  }
-
-  // Handler for opening LightBox
-  const handleExampleImageClick = (imgSrc: string) => {
-    setLightBoxImage(imgSrc);
-  };
-
-  const closeImageDialog = () => {
-    setLightBoxImage(null);
-  };
+  const hasItems = cartItems.length > 0 || promotionalCartItems.length > 0;
 
   return (
-    <>
-      <ExecutiveAccessDialog
-        open={showDialog}
-        handleDialogBack={handleDialogBack}
-        handleDialogProceed={handleDialogProceed}
-      />
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* LightBox for example images */}
       <LightBox image={lightBoxImage} closeImageDialog={closeImageDialog} />
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        {/* Header Section */}
-        <Box sx={{ p: 4, mb: 2 }}>
-          <Typography
-            variant="h3"
-            component="h1"
-            gutterBottom
-            textAlign="center"
-            sx={{ fontWeight: "bold", mt: 3 }}
-          >
-            MHT Design Hub
-          </Typography>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={6} sx={{ px: 3 }}>
-              <Box
-                component="img"
-                src="/mht/design-hub/placeholder.png"
-                alt="Placeholder Image"
-                sx={{
-                  width: "100%",
-                  height: "300px",
-                  borderRadius: 2,
-                  borderColor: "grey.300",
-                  borderWidth: 1,
-                  borderStyle: "solid",
-                  boxShadow: 2,
-                  objectFit: "cover",
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2 }}>
-                Order Templated Material
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: "medium", mb: 2 }}>
-                Order templated material that's ready to print!
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: "medium", mb: 2 }}>
-                MyHometown and the Brigham Young Design Department have a
-                partnership that allows for your city to utilize these resources
-                and ask for them to be customized for your community needs.
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: "medium", mb: 2 }}>
-                We employ design students who have been informed of our brand
-                standards and know how to make this process as simple as
-                possible for you. This service is independently funded and is at
-                no cost to your community.
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: "medium", mb: 2 }}>
-                Select from the catalog below, fill out the request form and all
-                relevant information, and we'll process your order and send you
-                print-ready files!
-              </Typography>
-            </Grid>
-          </Grid>
-        </Box>
-        <Divider sx={{ mb: 4 }} />
-        <Grid container spacing={4}>
-          {/* Left Column - Catalog Items */}
-          <Grid item xs={12} lg={7}>
-            <Typography
-              variant="h4"
-              component="h2"
-              gutterBottom
-              sx={{ fontWeight: "bold", mb: 3 }}
-            >
-              Select Items From Catalog
-            </Typography>
-            {/* Carousel of examples for each tab */}
 
-            <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
-              <Grid container spacing={2}>
-                <Grid item>
-                  <Button
-                    variant={activeTab === "flyers" ? "contained" : "outlined"}
-                    onClick={() => setActiveTab("flyers")}
-                    sx={{ fontWeight: "bold" }}
-                  >
-                    FLYERS
-                  </Button>
-                </Grid>
-                <Grid item>
-                  <Button
-                    variant={
-                      activeTab === "certificates" ? "contained" : "outlined"
-                    }
-                    onClick={() => setActiveTab("certificates")}
-                    sx={{ fontWeight: "bold" }}
-                  >
-                    CERTIFICATES
-                  </Button>
-                </Grid>
-                <Grid item>
-                  <Button
-                    variant={
-                      activeTab === "signs-banners" ? "contained" : "outlined"
-                    }
-                    onClick={() => setActiveTab("signs-banners")}
-                    sx={{ fontWeight: "bold" }}
-                  >
-                    SIGNS AND BANNERS
-                  </Button>
-                </Grid>
-              </Grid>
-            </Box>
-            <Box sx={{ mb: 3 }}>
-              {activeTab === "flyers" && (
-                <CarouselComponent
-                  images={flyersExamples}
-                  speed={700}
-                  onImageClick={handleExampleImageClick}
-                />
-              )}
-              {activeTab === "certificates" && (
-                <CarouselComponent
-                  images={certificatesExamples}
-                  speed={700}
-                  onImageClick={handleExampleImageClick}
-                />
-              )}
-              {activeTab === "signs-banners" && (
-                <CarouselComponent
-                  images={signsBannersExamples}
-                  speed={700}
-                  onImageClick={handleExampleImageClick}
-                />
-              )}
-            </Box>
-            {activeTab === "flyers" &&
-              renderCatalogItems(
-                flyersCatalogItems,
-                selectedItems,
-                handleItemSelection
-              )}
-            {activeTab === "certificates" &&
-              renderCatalogItems(
-                certificatesCatalogItems,
-                selectedItems,
-                handleItemSelection
-              )}
-            {activeTab === "signs-banners" &&
-              renderCatalogItems(
-                signsBannersCatalogItems,
-                selectedItems,
-                handleItemSelection
-              )}
+      {/* Header Section with placeholder image */}
+      <Box sx={{ p: 4, mb: 2 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={6} sx={{ px: 3 }}>
+            <Box
+              component="img"
+              src="/mht/design-hub/placeholder.png"
+              alt="Placeholder Image"
+              sx={{
+                width: "100%",
+                height: "300px",
+                borderRadius: 2,
+                borderColor: "grey.300",
+                borderWidth: 1,
+                borderStyle: "solid",
+                boxShadow: 2,
+                objectFit: "cover",
+              }}
+            />
           </Grid>
-          {/* Right Column - Shopping Cart and Form */}
-          <Grid item xs={12} lg={5}>
-            <Box sx={{ position: "sticky", top: 20 }}>
-              <SelectedItemsCart
-                selectedItems={selectedItems}
-                selectedItemsData={selectedItemsData}
-                removeFromCart={removeFromCart}
-              />
-              <OrderForm
-                formData={formData}
-                handleInputChange={handleInputChange}
-                handleSubmit={handleSubmit}
-                isSubmitting={isSubmitting}
-                selectedItems={selectedItems}
-              />
-            </Box>
+          <Grid item xs={12} md={6}>
+            <Typography
+              variant="h2"
+              component="h1"
+              gutterBottom
+              sx={{ fontWeight: "bold", mt: 3, mb: 0 }}
+            >
+              MHT Design Hub
+            </Typography>
+
+            <Typography variant="h5">
+              Order designs that are ready to print!
+            </Typography>
+            <Typography
+              variant="h6"
+              color="text.secondary"
+              sx={{ maxWidth: "800px", mx: "auto", mt: 3 }}
+            >
+              MyHometown and the Brigham Young Design Department have a
+              partnership where they will design your marketing and design
+              materials for your city or community needs.
+            </Typography>
+
+            <Typography
+              variant="h6"
+              color="text.secondary"
+              sx={{ maxWidth: "800px", mx: "auto", mt: 2 }}
+            >
+              When your design is created, you will receive a digital template
+              for printing or production, via email.
+            </Typography>
+
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              sx={{ maxWidth: "800px", mx: "auto", mt: 2 }}
+            >
+              Note: This design service is independently funded; therefore,
+              there is no cost to your city/community. The cost of printing or
+              purchasing promotional materials is the responsibility of your
+              city/community.
+            </Typography>
           </Grid>
         </Grid>
-        {/* Contact Information */}
-        <Paper elevation={1} sx={{ mt: 4, p: 3, bgcolor: "grey.50" }}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item>
-              <Email color="primary" />
-            </Grid>
-            <Grid item xs>
-              <Typography variant="body2">
-                Questions? Contact us for more information about our design
-                services.
+      </Box>
+
+      <Grid container spacing={4}>
+        <Grid item xs={12} lg={8}>
+          <Paper sx={{ p: 0 }}>
+            <Box sx={{ px: 3, pt: 3, pb: 1 }}>
+              <Typography
+                variant="h5"
+                component="h2"
+                sx={{ fontWeight: "bold", mb: 1 }}
+              >
+                Custom Design Services
               </Typography>
-            </Grid>
-          </Grid>
-        </Paper>
-      </Container>
-    </>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Create personalized materials for your community
+              </Typography>
+            </Box>
+
+            <Tabs
+              value={activeTab}
+              onChange={(_, newValue) => setActiveTab(newValue)}
+              variant="fullWidth"
+              sx={{ borderBottom: 1, borderColor: "divider" }}
+            >
+              <Tab label="Flyers" />
+              <Tab label="Certificates" />
+              <Tab label="Signs & Banners" />
+              <Tab label="Co-Branded Promotional Materials" />
+              <Tab label="myHometown Promotional Materials" />
+            </Tabs>
+
+            <Box sx={{ p: 3 }}>
+              {/* Carousel for first three tabs */}
+              {activeTab === 0 && (
+                <>
+                  <Box sx={{ px: 3, pt: 2, pb: 1, bgcolor: "grey.50" }}>
+                    <Typography
+                      variant="h5"
+                      component="h2"
+                      sx={{ fontWeight: "bold", mb: 1 }}
+                    >
+                      Flyers
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 1 }}
+                    >
+                      Create custom flyers for your community events and
+                      announcements
+                    </Typography>
+                  </Box>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", textAlign: "center", mt: 3 }}
+                  >
+                    Click to enlarge
+                  </Typography>
+                  <CarouselComponent
+                    images={flyersExamples}
+                    speed={700}
+                    onImageClick={handleExampleImageClick}
+                    isEdit={false}
+                    addCarouselImage={() => {}}
+                    editCarouselImage={() => {}}
+                    removeCarouselImage={() => {}}
+                    noDots
+                    height={350}
+                  />
+                  {/* Click to enlarge image helper text*/}
+
+                  {renderSingleAddButton(
+                    "flyers",
+                    "Flyer",
+                    "Create custom flyers for your community events and announcements"
+                  )}
+                </>
+              )}
+              {activeTab === 1 && (
+                <>
+                  <Box sx={{ px: 3, pt: 2, pb: 1, bgcolor: "grey.50" }}>
+                    <Typography
+                      variant="h5"
+                      component="h2"
+                      sx={{ fontWeight: "bold", mb: 1 }}
+                    >
+                      Certificates
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 1 }}
+                    >
+                      Design certificates for volunteers, achievements, and
+                      recognitions
+                    </Typography>
+                  </Box>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", textAlign: "center", mt: 3 }}
+                  >
+                    Click to enlarge
+                  </Typography>
+                  <CarouselComponent
+                    images={certificatesExamples}
+                    speed={700}
+                    onImageClick={handleExampleImageClick}
+                    isEdit={false}
+                    addCarouselImage={() => {}}
+                    editCarouselImage={() => {}}
+                    removeCarouselImage={() => {}}
+                    noDots
+                    height={150}
+                  />
+
+                  {renderSingleAddButton(
+                    "certificates",
+                    "Certificate",
+                    "Design certificates for volunteers, achievements, and recognitions"
+                  )}
+                </>
+              )}
+              {activeTab === 2 && (
+                <>
+                  <Box sx={{ px: 3, pt: 2, pb: 1, bgcolor: "grey.50" }}>
+                    <Typography
+                      variant="h5"
+                      component="h2"
+                      sx={{ fontWeight: "bold", mb: 1 }}
+                    >
+                      Signs &amp; Banners
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 1 }}
+                    >
+                      Order custom designs for your city or community needs.
+                      Signs and banners must have the MHT logo and can be
+                      co-branded with your community or city logo.
+                    </Typography>
+                  </Box>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", textAlign: "center", mt: 3 }}
+                  >
+                    Click to enlarge
+                  </Typography>
+                  <CarouselComponent
+                    images={signsBannersExamples}
+                    speed={700}
+                    onImageClick={handleExampleImageClick}
+                    isEdit={false}
+                    addCarouselImage={() => {}}
+                    editCarouselImage={() => {}}
+                    removeCarouselImage={() => {}}
+                    noDots
+                    height={180}
+                  />
+
+                  {renderSingleAddButton(
+                    "signs-banners",
+                    "Sign/Banner",
+                    "Order custom designs for signs and banners"
+                  )}
+                </>
+              )}
+              {activeTab === 3 && renderPromotionalItems(promotionalItems)}
+              {activeTab === 4 && renderMyHometownItems(myHometownItems)}
+            </Box>
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} lg={4}>
+          <Box sx={{ position: "sticky", top: 20, space: 2 }}>
+            <ShoppingCart
+              designItems={cartItems}
+              promotionalItems={promotionalCartItems}
+              onRemoveDesignItem={handleRemoveCartItem}
+              onRemovePromotionalItem={handleRemovePromotionalItem}
+            />
+            <Box sx={{ mt: 3 }}>
+              <OrderForm
+                onSubmit={handleOrderSubmit}
+                isSubmitting={isSubmitting}
+                hasItems={hasItems}
+              />
+            </Box>
+          </Box>
+        </Grid>
+      </Grid>
+
+      {selectedItem && (
+        <ItemDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          itemType={selectedItem.type}
+          itemTitle={selectedItem.title}
+          onSubmit={handleDialogSubmit}
+        />
+      )}
+    </Container>
   );
 }

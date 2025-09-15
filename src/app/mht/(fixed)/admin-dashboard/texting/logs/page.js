@@ -2,11 +2,14 @@
 import React, { Suspense } from "react";
 import { Grid, Card } from "@mui/material";
 import { TextBatchViewer } from "@/components/texting/logs/SimplifiedTextLogViewer";
+import { useUser } from "@/contexts/UserProvider";
 
 const TextLogPage = () => {
+  const { user, isAdmin } = useUser();
+
   return (
     <Grid container item sm={12} display="flex" sx={{ position: "relative" }}>
-      <TextBatchViewer />
+      <TextBatchViewer isAdmin={isAdmin || false} />
     </Grid>
   );
 };

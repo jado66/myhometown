@@ -23,9 +23,11 @@ const exampleRows = [
     last_name: "Doe",
     email: "jane.doe@email.com",
     contact_number: "801-555-1234",
+    status: "Active",
     assignment_level: "City",
     city: "Salt Lake City",
     community: "",
+    group: "Group A",
     title: "Sister",
     start_date: "2024-01-01",
     notes: "",
@@ -35,9 +37,11 @@ const exampleRows = [
     last_name: "Smith",
     email: "john.smith@email.com",
     contact_number: "801-555-5678",
+    status: "Pending",
     assignment_level: "Community",
     city: "",
     community: "Dixon",
+    group: "Group B",
     title: "Elder",
     start_date: "2024-02-15",
     notes: "New arrival",
@@ -49,10 +53,11 @@ const csvHeader = [
   "Last Name",
   "Email",
   "Phone",
+  "Status",
   "Assignment Level",
   "City",
   "Community",
-
+  "Group",
   "Title",
   "Start Date",
   "Notes",
@@ -66,11 +71,12 @@ function downloadTemplate() {
       "Doe",
       "jane.doe@email.com",
       "801-555-1234",
+      "Active",
       "City",
       "Salt Lake City",
       "",
-      "Missionary",
-      "Support Staff",
+      "Group A",
+      "Sister",
       "2024-01-01",
       "",
     ].join(",") + "\n";
@@ -80,11 +86,12 @@ function downloadTemplate() {
       "Smith",
       "john.smith@email.com",
       "801-555-5678",
+      "Pending",
       "Community",
-      "Ogden",
-      "West",
-      "Missionary",
-      "Teacher",
+      "",
+      "Dixon",
+      "Group B",
+      "Elder",
       "2024-02-15",
       "New arrival",
     ].join(",") + "\n";
@@ -116,9 +123,18 @@ function downloadTemplate() {
   }
 }
 
-const ImportMissionaryCsvHelpDialog = ({ open, onClose, handleImport }) => (
+const ImportMissionaryCsvHelpDialog = ({
+  open,
+  onClose,
+  handleImport,
+  importResults,
+  importError,
+  onSubmit,
+  importing,
+  importSummary,
+}) => (
   <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-    <DialogTitle>How to Import Missionaries from CSV</DialogTitle>
+    <DialogTitle>Import Missionaries from CSV</DialogTitle>
     <DialogContent>
       <Typography gutterBottom>
         To import missionaries, your CSV file should have the following columns
@@ -139,6 +155,9 @@ const ImportMissionaryCsvHelpDialog = ({ open, onClose, handleImport }) => (
             <b>Phone</b> (required)
           </li>
           <li>
+            <b>Status</b> <i>(required: active, inactive, pending)</i>
+          </li>
+          <li>
             <b>Assignment Level</b> <i>(required: state, city, community)</i>
           </li>
           <li>
@@ -146,6 +165,9 @@ const ImportMissionaryCsvHelpDialog = ({ open, onClose, handleImport }) => (
           </li>
           <li>
             <b>Community</b> (required if Assignment Level is Community)
+          </li>
+          <li>
+            <b>Group</b> (optional)
           </li>
 
           <li>
@@ -204,6 +226,75 @@ const ImportMissionaryCsvHelpDialog = ({ open, onClose, handleImport }) => (
           </li>
         </ul>
       </Typography>
+      {/* Results Section */}
+      {importError && (
+        <Paper sx={{ p: 2, mb: 2, border: "1px solid #f44336" }}>
+          <Typography color="error" variant="subtitle2" gutterBottom>
+            Errors Found
+          </Typography>
+          <Box
+            component="ul"
+            sx={{ pl: 3, m: 0, maxHeight: 160, overflow: "auto" }}
+          >
+            {importResults?.errors?.map((err, i) => (
+              <li key={i}>
+                <Typography variant="caption" color="error">
+                  {err}
+                </Typography>
+              </li>
+            ))}
+          </Box>
+        </Paper>
+      )}
+      {importResults?.valid?.length > 0 && !importError && (
+        <Paper sx={{ p: 2, mb: 2, border: "1px solid #4caf50" }}>
+          <Typography color="success.main" variant="subtitle2" gutterBottom>
+            {importResults.valid.length} rows ready to import
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Click 'Import Rows' to save them.
+          </Typography>
+        </Paper>
+      )}
+      {importSummary &&
+      (importSummary.success ||
+        importSummary.duplicates.length ||
+        importSummary.failed.length) ? (
+        <Paper sx={{ p: 2, mb: 2 }}>
+          <Typography variant="subtitle2" gutterBottom>
+            Import Summary
+          </Typography>
+          <Typography variant="caption" display="block">
+            Success: {importSummary.success}
+          </Typography>
+          {importSummary.duplicates.length > 0 && (
+            <Typography variant="caption" display="block" color="warning.main">
+              Duplicates skipped ({importSummary.duplicates.length}):{" "}
+              {importSummary.duplicates.slice(0, 5).join(", ")}
+              {importSummary.duplicates.length > 5 ? "..." : ""}
+            </Typography>
+          )}
+          {importSummary.failed.length > 0 && (
+            <Box mt={1}>
+              <Typography variant="caption" color="error" display="block">
+                Failed ({importSummary.failed.length}):
+              </Typography>
+              <Box
+                component="ul"
+                sx={{ pl: 3, m: 0, maxHeight: 100, overflow: "auto" }}
+              >
+                {importSummary.failed.slice(0, 8).map((f, i) => (
+                  <li key={i}>
+                    <Typography variant="caption" color="error">
+                      {f.email}: {f.reason}
+                    </Typography>
+                  </li>
+                ))}
+              </Box>
+            </Box>
+          )}
+        </Paper>
+      ) : null}
     </DialogContent>
     <DialogActions>
       <input
@@ -223,6 +314,15 @@ const ImportMissionaryCsvHelpDialog = ({ open, onClose, handleImport }) => (
           Import CSV
         </Button>
       </label>
+      <Button
+        onClick={onSubmit}
+        color="success"
+        variant="contained"
+        size="small"
+        disabled={importing || !importResults?.valid?.length || !!importError}
+      >
+        {importing ? "Importing..." : "Import Rows"}
+      </Button>
       <Button onClick={downloadTemplate} color="primary" variant="outlined">
         Download Template
       </Button>

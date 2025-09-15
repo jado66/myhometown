@@ -150,6 +150,14 @@ const AdminDashboardPages = () => {
                   href: rootUrl + "/admin-dashboard/missionary-hours",
                   requiredPermission: "administrator",
                 },
+                {
+                  title: "Design Hub",
+                  subtitle:
+                    "Create and order custom flyers, certificates, signs, and banners for your community.",
+                  media: "/mht/design-hub/placeholder.png",
+                  href: rootUrl + "/admin-dashboard/design-hub",
+                  requiredPermission: "administrator",
+                },
               ].map((item, i) => (
                 <PermissionGuard
                   requiredPermission={item.requiredPermission}

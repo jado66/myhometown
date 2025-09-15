@@ -1,93 +1,120 @@
-import React from "react";
+"use client";
+
+import type React from "react";
+
+import { useState } from "react";
 import {
-  Grid,
+  Card,
+  CardContent,
+  CardHeader,
+  Typography,
   TextField,
+  Button,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  Button,
-  CircularProgress,
-  Typography,
-  Paper,
+  Box,
 } from "@mui/material";
-import { CatalogItem } from "./catalogData";
 
-interface OrderFormProps {
-  formData: any;
-  handleInputChange: (field: string, value: string) => void;
-  handleSubmit: () => void;
-  isSubmitting: boolean;
-  selectedItems: string[];
+interface OrderFormData {
+  title: string;
+  name: string;
+  email: string;
+  phone: string;
+  locationType: string;
+  community: string;
+  city: string;
+  additionalRequests: string;
 }
 
-export default function OrderForm({
-  formData,
-  handleInputChange,
-  handleSubmit,
+interface OrderFormProps {
+  onSubmit: (data: OrderFormData) => void;
+  isSubmitting: boolean;
+  hasItems: boolean;
+}
+
+export function OrderForm({
+  onSubmit,
   isSubmitting,
-  selectedItems,
+  hasItems,
 }: OrderFormProps) {
+  const [formData, setFormData] = useState<OrderFormData>({
+    title: "",
+    name: "",
+    email: "",
+    phone: "",
+    locationType: "",
+    community: "",
+    city: "",
+    additionalRequests: "",
+  });
+
+  const updateField = (field: keyof OrderFormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  const isFormValid =
+    formData.title &&
+    formData.name &&
+    formData.email &&
+    formData.phone &&
+    formData.locationType &&
+    hasItems;
+
   return (
-    <Paper elevation={2} sx={{ p: 3 }}>
-      <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold" }}>
-        Order Information
-      </Typography>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
+    <Card>
+      <CardHeader>
+        <Typography variant="h6">Order Information</Typography>
+      </CardHeader>
+      <CardContent>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+        >
           <TextField
-            fullWidth
-            label="Title"
-            value={formData.title}
-            onChange={(e) => handleInputChange("title", e.target.value)}
-            variant="outlined"
-            required
-            size="small"
-            placeholder="e.g., Executive Secretary, City Chair, Technology Specialist"
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
             label="Full Name"
             value={formData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
-            variant="outlined"
+            onChange={(e) => updateField("name", e.target.value)}
             required
-            size="small"
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
             fullWidth
+          />
+          <TextField
+            label="MHT Position"
+            value={formData.title}
+            onChange={(e) => updateField("title", e.target.value)}
+            placeholder="e.g., Executive Secretary, City Chair"
+            required
+            fullWidth
+          />
+          <TextField
             label="Email"
             type="email"
             value={formData.email}
-            onChange={(e) => handleInputChange("email", e.target.value)}
-            variant="outlined"
+            onChange={(e) => updateField("email", e.target.value)}
             required
-            size="small"
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
             fullWidth
+          />
+
+          <TextField
             label="Phone Number"
             value={formData.phone}
-            onChange={(e) => handleInputChange("phone", e.target.value)}
-            variant="outlined"
+            onChange={(e) => updateField("phone", e.target.value)}
             required
-            size="small"
+            fullWidth
           />
-        </Grid>
-        <Grid item xs={12}>
-          <FormControl fullWidth required size="small">
+
+          <FormControl fullWidth required>
             <InputLabel>Location Type</InputLabel>
             <Select
               value={formData.locationType}
-              onChange={(e) =>
-                handleInputChange("locationType", e.target.value)
-              }
+              onChange={(e) => updateField("locationType", e.target.value)}
               label="Location Type"
             >
               <MenuItem value="myHometown Utah">myHometown Utah</MenuItem>
@@ -95,80 +122,56 @@ export default function OrderForm({
               <MenuItem value="community">Community</MenuItem>
             </Select>
           </FormControl>
-        </Grid>
-        {formData.locationType === "city" && (
-          <Grid item xs={12}>
+
+          {formData.locationType === "city" && (
             <TextField
-              fullWidth
               label="City Name"
               value={formData.city}
-              onChange={(e) => handleInputChange("city", e.target.value)}
-              variant="outlined"
+              onChange={(e) => updateField("city", e.target.value)}
               required
-              size="small"
-            />
-          </Grid>
-        )}
-        {formData.locationType === "community" && (
-          <Grid item xs={12}>
-            <TextField
               fullWidth
+            />
+          )}
+
+          {formData.locationType === "community" && (
+            <TextField
               label="Community Name"
               value={formData.community}
-              onChange={(e) => handleInputChange("community", e.target.value)}
-              variant="outlined"
+              onChange={(e) => updateField("community", e.target.value)}
               required
-              size="small"
+              fullWidth
             />
-          </Grid>
-        )}
-        <Grid item xs={12}>
+          )}
+
           <TextField
-            fullWidth
-            label="Additional Requests"
+            label="Additional Information"
+            value={formData.additionalRequests}
+            onChange={(e) => updateField("additionalRequests", e.target.value)}
+            placeholder="Any special instructions, quantities, dates, or other relevant information"
             multiline
             rows={3}
-            value={formData.additionalRequests}
-            onChange={(e) =>
-              handleInputChange("additionalRequests", e.target.value)
-            }
-            variant="outlined"
-            helperText="Please include any special instructions, quantities, dates, or other relevant information"
-            size="small"
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={handleSubmit}
             fullWidth
-            sx={{ fontWeight: "bold", py: 1.5 }}
-            disabled={
-              !formData.title ||
-              !formData.name ||
-              !formData.email ||
-              !formData.phone ||
-              !formData.locationType ||
-              selectedItems.length === 0 ||
-              isSubmitting
-            }
+          />
+
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={!isFormValid || isSubmitting}
+            fullWidth
+            size="large"
           >
-            {isSubmitting ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              "SUBMIT ORDER"
-            )}
+            {isSubmitting ? "Submitting..." : "Submit Order"}
           </Button>
-        </Grid>
-      </Grid>
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        sx={{ mt: 2, textAlign: "center" }}
-      >
-        We will confirm receipt of your request within 24hrs
-      </Typography>
-    </Paper>
+
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ textAlign: "center" }}
+          >
+            We will confirm receipt of your request within 24hrs
+          </Typography>
+        </Box>
+      </CardContent>
+    </Card>
   );
 }

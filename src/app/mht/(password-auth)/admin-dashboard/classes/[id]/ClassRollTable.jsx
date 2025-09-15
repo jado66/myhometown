@@ -13,6 +13,7 @@ import {
   Snackbar,
   Alert,
   Checkbox,
+  TableSortLabel,
   Dialog,
   DialogTitle,
   IconButton,
@@ -42,6 +43,7 @@ export default function ClassRollTable({ classData, show, onClose }) {
   const [isDirty, setIsDirty] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [todayDateIndex, setTodayDateIndex] = useState(-1);
+  const [lastNameSort, setLastNameSort] = useState("asc"); // asc | desc
 
   // Transform attendance array to lookup object on component mount or when classData changes
   useEffect(() => {
@@ -499,6 +501,27 @@ export default function ClassRollTable({ classData, show, onClose }) {
   };
 
   const renderDesktopView = () => {
+    // Prepare a sorted list of signups by lastName (desktop only)
+    const sortedSignups = classData.signups
+      .filter((signup) => !signup.isWaitlisted)
+      .slice() // clone
+      .sort((a, b) => {
+        const aLast = (a.lastName || "").toLowerCase();
+        const bLast = (b.lastName || "").toLowerCase();
+        if (aLast < bLast) return lastNameSort === "asc" ? -1 : 1;
+        if (aLast > bLast) return lastNameSort === "asc" ? 1 : -1;
+        // secondary sort by first name for stability
+        const aFirst = (a.firstName || "").toLowerCase();
+        const bFirst = (b.firstName || "").toLowerCase();
+        if (aFirst < bFirst) return -1;
+        if (aFirst > bFirst) return 1;
+        return 0;
+      });
+
+    const toggleLastNameSort = () => {
+      setLastNameSort((prev) => (prev === "asc" ? "desc" : "asc"));
+    };
+
     return (
       <TableContainer
         component={Paper}
@@ -567,7 +590,18 @@ export default function ClassRollTable({ classData, show, onClose }) {
                   }`}
                   rowSpan={2}
                 >
-                  {field.label}
+                  {field.key === "lastName" ? (
+                    <TableSortLabel
+                      active
+                      direction={lastNameSort}
+                      onClick={toggleLastNameSort}
+                      sx={{ userSelect: "none" }}
+                    >
+                      {field.label}
+                    </TableSortLabel>
+                  ) : (
+                    field.label
+                  )}
                 </TableCell>
               ))}
               {dates.map((date) => {
@@ -604,44 +638,42 @@ export default function ClassRollTable({ classData, show, onClose }) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {classData.signups
-              .filter((signup) => !signup.isWaitlisted)
-              .map((signup, index) => (
-                <TableRow key={index}>
-                  {nameFields.map((field, fieldIndex) => (
-                    <TableCell
-                      key={field.key}
-                      className={`sticky-column ${
-                        fieldIndex > 0 ? `sticky-column-${fieldIndex}` : ""
-                      }`}
-                    >
-                      {signup[field.key] || ""}
-                    </TableCell>
-                  ))}
-                  {dates.map((date) => (
-                    <TableCell
-                      key={date}
-                      align="center"
-                      sx={{
-                        ...(date === moment().format("YYYY-MM-DD") && {
-                          bgcolor: "rgba(25, 118, 210, 0.08)",
-                        }),
-                      }}
-                    >
-                      <Checkbox
-                        checked={localAttendance[signup.id]?.[date] || false}
-                        onChange={(e) =>
-                          handleAttendanceChange(
-                            signup.id,
-                            date,
-                            e.target.checked
-                          )
-                        }
-                      />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
+            {sortedSignups.map((signup, index) => (
+              <TableRow key={index}>
+                {nameFields.map((field, fieldIndex) => (
+                  <TableCell
+                    key={field.key}
+                    className={`sticky-column ${
+                      fieldIndex > 0 ? `sticky-column-${fieldIndex}` : ""
+                    }`}
+                  >
+                    {signup[field.key] || ""}
+                  </TableCell>
+                ))}
+                {dates.map((date) => (
+                  <TableCell
+                    key={date}
+                    align="center"
+                    sx={{
+                      ...(date === moment().format("YYYY-MM-DD") && {
+                        bgcolor: "rgba(25, 118, 210, 0.08)",
+                      }),
+                    }}
+                  >
+                    <Checkbox
+                      checked={localAttendance[signup.id]?.[date] || false}
+                      onChange={(e) =>
+                        handleAttendanceChange(
+                          signup.id,
+                          date,
+                          e.target.checked
+                        )
+                      }
+                    />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>

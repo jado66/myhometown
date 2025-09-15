@@ -1,0 +1,180 @@
+"use client";
+
+import { useState } from "react";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Box,
+  Typography,
+} from "@mui/material";
+
+interface ItemDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  itemType: "flyers" | "certificates" | "signs-banners";
+  itemTitle: string;
+  onSubmit: (data: any) => void;
+}
+
+export function ItemDialog({
+  open,
+  onOpenChange,
+  itemType,
+  itemTitle,
+  onSubmit,
+}: ItemDialogProps) {
+  const [formData, setFormData] = useState<any>({
+    purpose: "",
+    theme: "",
+    dueDate: "",
+    englishText: "",
+    spanishText: "",
+    qrCodes: "",
+    size: "",
+    otherSize: "",
+  });
+
+  const handleSubmit = () => {
+    onSubmit({ ...formData, itemTitle, itemType });
+    setFormData({
+      purpose: "",
+      theme: "",
+      dueDate: "",
+      englishText: "",
+      spanishText: "",
+      qrCodes: "",
+      size: "",
+      otherSize: "",
+    });
+    onOpenChange(false);
+  };
+
+  const updateField = (field: string, value: string) => {
+    setFormData((prev: any) => ({ ...prev, [field]: value }));
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={() => onOpenChange(false)}
+      maxWidth="sm"
+      fullWidth
+    >
+      <DialogTitle>Add {itemTitle}</DialogTitle>
+      <DialogContent>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Fill out the details for your {itemType.replace("-", " ")} request.
+        </Typography>
+
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <TextField
+            label="Purpose"
+            value={formData.purpose}
+            onChange={(e) => updateField("purpose", e.target.value)}
+            placeholder="What is this for?"
+            fullWidth
+          />
+
+          <TextField
+            label="Theme"
+            value={formData.theme}
+            onChange={(e) => updateField("theme", e.target.value)}
+            placeholder="Design theme or style"
+            fullWidth
+          />
+
+          <TextField
+            label="Due Date"
+            type="date"
+            value={formData.dueDate}
+            onChange={(e) => updateField("dueDate", e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+          />
+
+          <TextField
+            label="English Text"
+            value={formData.englishText}
+            onChange={(e) => updateField("englishText", e.target.value)}
+            placeholder="English content for the design"
+            multiline
+            rows={3}
+            fullWidth
+          />
+
+          <TextField
+            label="Spanish Translation"
+            value={formData.spanishText}
+            onChange={(e) => updateField("spanishText", e.target.value)}
+            placeholder="Spanish translation of the content"
+            multiline
+            rows={3}
+            fullWidth
+          />
+
+          {(itemType === "flyers" || itemType === "signs-banners") && (
+            <TextField
+              label="QR Codes/URLs"
+              value={formData.qrCodes}
+              onChange={(e) => updateField("qrCodes", e.target.value)}
+              placeholder="Any QR codes or URLs to include"
+              multiline
+              rows={2}
+              fullWidth
+            />
+          )}
+
+          {itemType === "flyers" ? (
+            <FormControl fullWidth>
+              <InputLabel>Size</InputLabel>
+              <Select
+                value={formData.size}
+                onChange={(e) => updateField("size", e.target.value)}
+                label="Size"
+              >
+                <MenuItem value="8.5x11">
+                  8.5" x 11" (for printing and website)
+                </MenuItem>
+                <MenuItem value="poster">Poster Size (24" x 36")</MenuItem>
+                <MenuItem value="door-hanger">Door Hanger</MenuItem>
+                <MenuItem value="other">Other</MenuItem>
+              </Select>
+            </FormControl>
+          ) : (
+            <TextField
+              label="Size"
+              value={formData.size}
+              onChange={(e) => updateField("size", e.target.value)}
+              placeholder="Specify dimensions"
+              fullWidth
+            />
+          )}
+
+          {formData.size === "other" && (
+            <TextField
+              label="Custom Size"
+              value={formData.otherSize}
+              onChange={(e) => updateField("otherSize", e.target.value)}
+              placeholder="Specify custom dimensions"
+              fullWidth
+            />
+          )}
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => onOpenChange(false)}>Cancel</Button>
+        <Button onClick={handleSubmit} variant="contained">
+          Add to Cart
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}

@@ -84,7 +84,8 @@ export function useUserContacts(userId, userCommunities, userCities) {
       if (isDuplicate) {
         return {
           data: null,
-          error: "This phone number already exists in your contacts",
+          error:
+            "A contact with the same first name, last name, and phone already exists",
         };
       }
 
@@ -163,7 +164,8 @@ export function useUserContacts(userId, userCommunities, userCities) {
       if (isDuplicate) {
         return {
           data: null,
-          error: "This phone number already exists in your contacts",
+          error:
+            "A contact with the same first name, last name, and phone already exists",
         };
       }
 
