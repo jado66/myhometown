@@ -26,10 +26,7 @@ export function useTextLogs(
 
   const fetchTextLogs = useCallback(
     async (options = {}) => {
-      if (!user.id) {
-        setLoading(false);
-        return;
-      }
+      const userId = user?.id || "00000000-0000-0000-0000-000000000000";
 
       const {
         limit = 10,
@@ -45,7 +42,7 @@ export function useTextLogs(
       try {
         setLoading(true);
         const result = await fetchAllTextBatches(
-          user.id,
+          userId,
           userCommunities,
           userCities,
           isAdmin,
@@ -69,15 +66,13 @@ export function useTextLogs(
         setLoading(false);
       }
     },
-    [user.id, userCommunities, userCities, isAdmin]
+    [user?.id, userCommunities, userCities, isAdmin]
   );
 
   useEffect(() => {
-    if (user.id) {
-      fetchTextLogs({ page: 1, limit: 10 });
-    }
+    fetchTextLogs({ page: 1, limit: 10 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user.id, isAdmin]);
+  }, [user?.id, isAdmin]);
 
   // If needed, add function to fetch details for a batch (individual logs)
   const fetchBatchDetails = async (batchId) => {

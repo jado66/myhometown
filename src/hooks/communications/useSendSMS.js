@@ -28,8 +28,15 @@ export function useSendSMS(user) {
     async (message, recipients, mediaUrls = [], selectedRecipients = []) => {
       const messageId = uuidv4();
       const owner_type = "user";
-      const owner_id = user?.id;
-      const sender_id = user?.id;
+      const owner_id = user?.id || "00000000-0000-0000-0000-000000000000";
+      const sender_id = user?.id || "00000000-0000-0000-0000-000000000000";
+
+      alert(
+        JSON.stringify({
+          owner_id,
+          sender_id,
+        })
+      );
 
       setSendStatus("sending");
       setProgress({
