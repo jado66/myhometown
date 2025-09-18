@@ -582,8 +582,8 @@ const Form = ({ amountOptions, spanish, isMd }) => {
         <Box sx={{ mb: 2 }}>
           <Alert severity="info">
             For donations over $1000, please contact{" "}
-            <Link href="mailto:csffinance@citiesstrong.org">
-              csffinance@citiesstrong.org
+            <Link href="mailto:info@citiesstrong.org">
+              info@citiesstrong.org
             </Link>
           </Alert>
         </Box>

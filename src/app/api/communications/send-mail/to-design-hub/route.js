@@ -1,5 +1,4 @@
 import { myHometownTransporter } from "@/util/email/nodemailer-transporter";
-import { supabaseServer } from "@/util/supabaseServer";
 
 // Enhanced HTML formatter for Design Hub orders
 const formattedDesignHubHtml = (html) => {
@@ -61,18 +60,71 @@ const formattedDesignHubHtml = (html) => {
         .field-row:last-child {
           border-bottom: none;
         }
-        .items-list {
-          background-color: #f5f5f5;
-          padding: 10px;
-          border-radius: 4px;
+        .cart-section {
+          background-color: white;
+          padding: 15px;
+          margin: 15px 0;
+          border-radius: 8px;
+          border: 1px solid #ddd;
+        }
+        .cart-header {
+          display: flex;
+          align-items: center;
+          margin-bottom: 15px;
+          font-weight: bold;
+          font-size: 1.1em;
+        }
+        .cart-icon {
+          margin-right: 8px;
+        }
+        .cart-item {
+          background-color: #f8f9fa;
+          border: 1px solid #e3e6ea;
+          border-radius: 8px;
+          padding: 15px;
           margin: 10px 0;
         }
-        .item {
-          padding: 8px;
-          margin: 5px 0;
-          background-color: white;
-          border-left: 4px solid #1976d2;
-          border-radius: 4px;
+        .item-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 10px;
+        }
+        .item-title {
+          font-weight: bold;
+          font-size: 1.05em;
+          margin-bottom: 5px;
+        }
+        .item-type {
+          background-color: #e3f2fd;
+          color: #1976d2;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 0.8em;
+          border: 1px solid #bbdefb;
+        }
+        .item-details {
+          font-size: 0.9em;
+          line-height: 1.4;
+        }
+        .item-detail-row {
+          margin-bottom: 6px;
+        }
+        .item-detail-label {
+          font-weight: bold;
+          color: #555;
+          margin-right: 8px;
+        }
+        .section-divider {
+          height: 1px;
+          background-color: #ddd;
+          margin: 20px 0;
+        }
+        .cart-empty {
+          text-align: center;
+          color: #666;
+          font-style: italic;
+          padding: 20px;
         }
         .footer {
           text-align: center;
@@ -88,82 +140,195 @@ const formattedDesignHubHtml = (html) => {
     <body>
       <div class="container">
         <div class="header">
-          <h2>MHT Design Hub Order Request</h2>
+          <h2>🛒 MHT Design Hub Order Request</h2>
         </div>
         
         <div class="section">
           <h3>Contact Information</h3>
           <div class="field-row">
-            <span class="label">Name:</span>
+            <span class="label">Authorized By:</span>
+            <span class="value">${html.authorizedBy}</span>
+          </div>
+          <div class="field-row">
+            <span class="label">Requester Name:</span>
             <span class="value">${html.firstName} ${html.lastName}</span>
           </div>
-           <div class="field-row">
-            <span class="label">Title:</span>
-            <span class="value">${html.title}</span>
-          </div>
           <div class="field-row">
-            <span class="label">Email:</span>
+            <span class="label">Requester Email:</span>
             <span class="value">${html.email}</span>
           </div>
-         
           <div class="field-row">
-            <span class="label">Phone:</span>
+            <span class="label">Requester Phone:</span>
             <span class="value">${html.phone}</span>
           </div>
           <div class="field-row">
-            <span class="label">Group:</span>
+            <span class="label">To Be Designed For:</span>
             <span class="value">${html.location}</span>
           </div>
-          
-        </div>
-        
-        <div class="section">
-          <h3>Order Details</h3>
-          <div style="white-space: pre-line; background-color: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #dee2e6;">
-${html.message}
+           <div class="field-row">
+            <span class="label">ID:</span>
+            <span class="value">${html.idloggedRequest}</span>
           </div>
         </div>
         
+        <div class="cart-section">
+          <div class="cart-header">
+            <span class="cart-icon">🛒</span>
+            Cart (${
+              (html.designItems?.length || 0) +
+              (html.promotionalItems?.length || 0)
+            })
+          </div>
+          
+          ${
+            html.designItems && html.designItems.length > 0
+              ? `
+            <div style="margin-bottom: 20px;">
+              <div class="cart-header" style="font-size: 1em; margin-bottom: 10px;">
+                <span class="cart-icon">📋</span>
+                Design Requests (${html.designItems.length})
+              </div>
+              ${html.designItems
+                .map(
+                  (item) => `
+                <div class="cart-item">
+                  <div class="item-header">
+                    <div>
+                      <div class="item-title">${item.itemTitle}</div>
+                      <span class="item-type">${item.itemType.replace(
+                        "-",
+                        " "
+                      )}</span>
+                    </div>
+                  </div>
+                  <div class="item-details">
+                    <div class="item-detail-row">
+                      <span class="item-detail-label">Purpose:</span>${
+                        item.purpose
+                      }
+                    </div>
+                    <div class="item-detail-row">
+                      <span class="item-detail-label">Theme:</span>${item.theme}
+                    </div>
+                    <div class="item-detail-row">
+                      <span class="item-detail-label">Due Date:</span>${
+                        item.dueDate
+                      }
+                    </div>
+                    <div class="item-detail-row">
+                      <span class="item-detail-label">Size:</span>${
+                        item.size === "other"
+                          ? item.otherSize || "Not specified"
+                          : item.size
+                      }
+                    </div>
+                    ${
+                      item.englishText
+                        ? `
+                      <div class="item-detail-row">
+                        <span class="item-detail-label">English Text:</span>${item.englishText}
+                      </div>
+                    `
+                        : ""
+                    }
+                    ${
+                      item.spanishText
+                        ? `
+                      <div class="item-detail-row">
+                        <span class="item-detail-label">Spanish Text:</span>${item.spanishText}
+                      </div>
+                    `
+                        : ""
+                    }
+                    ${
+                      item.qrCodes
+                        ? `
+                      <div class="item-detail-row">
+                        <span class="item-detail-label">QR Codes:</span>${item.qrCodes}
+                      </div>
+                    `
+                        : ""
+                    }
+                  </div>
+                </div>
+              `
+                )
+                .join("")}
+            </div>
+          `
+              : ""
+          }
+          
+          ${
+            html.designItems &&
+            html.designItems.length > 0 &&
+            html.promotionalItems &&
+            html.promotionalItems.length > 0
+              ? '<div class="section-divider"></div>'
+              : ""
+          }
+          
+          ${
+            html.promotionalItems && html.promotionalItems.length > 0
+              ? `
+            <div>
+              <div class="cart-header" style="font-size: 1em; margin-bottom: 10px;">
+                <span class="cart-icon">📦</span>
+                Promotional Items (${html.promotionalItems.length})
+              </div>
+              ${html.promotionalItems
+                .map(
+                  (item) => `
+                <div class="cart-item">
+                  <div class="item-header">
+                    <div>
+                      <div class="item-title">${item.title}</div>
+                      <span class="item-type">Promotional</span>
+                    </div>
+                  </div>
+                  <div class="item-details">
+                    <div class="item-detail-row">${item.description}</div>
+                  </div>
+                </div>
+              `
+                )
+                .join("")}
+            </div>
+          `
+              : ""
+          }
+          
+          ${
+            (!html.designItems || html.designItems.length === 0) &&
+            (!html.promotionalItems || html.promotionalItems.length === 0)
+              ? `
+            <div class="cart-empty">Cart is empty</div>
+          `
+              : ""
+          }
+        </div>
+        
+        ${
+          html.additionalRequests && html.additionalRequests !== "None"
+            ? `
+          <div class="section">
+            <h3>Additional Information</h3>
+            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #dee2e6;">
+              ${html.additionalRequests}
+            </div>
+          </div>
+        `
+            : ""
+        }
+        
         <div class="footer">
-          <p>This request was submitted on ${new Date().toLocaleString()}</p>
+          <p>This request was submitted on ${html.submittedAt}</p>
           <p>Please respond within 24 hours as promised to the customer.</p>
         </div>
       </div>
     </body>
     </html>
   `;
-};
-
-// Function to parse selected items from the message
-const parseSelectedItemsFromMessage = (message) => {
-  try {
-    // Extract the items section from the message
-    const itemsMatch = message.match(
-      /Selected Items \((\d+)\):\n(.*?)(?:\n\nAdditional Requests:|$)/s
-    );
-    if (!itemsMatch) return [];
-
-    const itemsText = itemsMatch[2];
-    const items = itemsText
-      .split("\n")
-      .filter((line) => line.trim().startsWith("- "))
-      .map((line) => {
-        const match = line.match(/- (.*?) \((.*?)\)/);
-        if (match) {
-          return {
-            title: match[1].trim(),
-            category: match[2].trim(),
-          };
-        }
-        return null;
-      })
-      .filter(Boolean);
-
-    return items;
-  } catch (error) {
-    console.error("Error parsing selected items:", error);
-    return [];
-  }
 };
 
 // Function to extract location information
@@ -197,111 +362,30 @@ const parseLocationInfo = (html) => {
   };
 };
 
-// Function to log request to supabaseServer
-const logRequestToSupabase = async (subject, html, rawRequestData) => {
-  try {
-    const selectedItems = parseSelectedItemsFromMessage(html.message);
-    const { locationType, locationName } = parseLocationInfo(html);
-
-    // Extract additional requests from message
-    const additionalRequestsMatch = html.message.match(
-      /Additional Requests: (.*?)(?:\n\nSubmitted:|$)/s
-    );
-    const additionalRequests = additionalRequestsMatch
-      ? additionalRequestsMatch[1].trim()
-      : null;
-
-    const requestData = {
-      first_name: html.firstName || "",
-      last_name: html.lastName || "",
-      title: html.title || "",
-      email: html.email || "",
-      phone: html.phone || "",
-      location_type: locationType,
-      location_name: locationName,
-      selected_items: selectedItems,
-      additional_requests: additionalRequests,
-      total_items: selectedItems.length,
-      email_sent: false, // Will be updated after email is sent successfully
-      raw_request_data: rawRequestData,
-    };
-
-    const { data, error } = await supabaseServer
-      .from("design_hub_requests")
-      .insert(requestData)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("supabaseServer insert error:", error);
-      return null;
-    }
-
-    console.log("Request logged to supabaseServer:", data.id);
-    return data;
-  } catch (error) {
-    console.error("Error logging to supabaseServer:", error);
-    return null;
-  }
-};
-
-// Function to update email sent status
-const updateEmailSentStatus = async (requestId, success) => {
-  try {
-    const { error } = await supabaseServer
-      .from("design_hub_requests")
-      .update({
-        email_sent: success,
-        email_sent_at: success ? new Date().toISOString() : null,
-      })
-      .eq("id", requestId);
-
-    if (error) {
-      console.error("Error updating email status:", error);
-    }
-  } catch (error) {
-    console.error("Error updating email status:", error);
-  }
-};
-
 export async function POST(request, res) {
   const requestBody = await request.json();
   const { subject, html } = requestBody;
 
-  const recipientEmail = "jado66@gmail.com"; // Testing email for Design Hub
-
-  // Log the request to supabaseServer first
-  const loggedRequest = await logRequestToSupabase(subject, html, requestBody);
+  const recipientEmails = ["kathy.craven@cementation.com", "jado66@gmail.com"];
 
   try {
-    // Choose the appropriate HTML formatter
-    let emailHtml;
-    if (subject && subject.includes("MHT Design Hub Order Request")) {
-      emailHtml = formattedDesignHubHtml(html);
-    } else {
-      emailHtml = formattedHtml(html);
-    }
+    // Use the Design Hub HTML formatter
+    const emailHtml = formattedDesignHubHtml(html);
 
     // Send mail with defined transport object
     let info = await myHometownTransporter.sendMail({
-      to: recipientEmail,
+      to: recipientEmails.join(", "), // Join multiple emails with comma and space
       subject: subject || "Contact Form Submission", // Default subject
       html: emailHtml,
     });
 
     console.log("Message sent: %s", info.messageId);
-    console.log("Sent to: %s", recipientEmail);
-
-    // Update the email sent status in supabaseServer
-    if (loggedRequest) {
-      await updateEmailSentStatus(loggedRequest.id, true);
-    }
+    console.log("Sent to: %s", recipientEmails.join(", "));
 
     return new Response(
       JSON.stringify({
         message: "Email sent successfully",
-        recipient: recipientEmail,
-        requestId: loggedRequest?.id || null,
+        recipients: recipientEmails,
       }),
       {
         status: 200,
@@ -313,17 +397,11 @@ export async function POST(request, res) {
   } catch (error) {
     console.error("Email sending error:", error);
 
-    // Update the email sent status as failed in supabaseServer
-    if (loggedRequest) {
-      await updateEmailSentStatus(loggedRequest.id, false);
-    }
-
     // Send a JSON response with status code 500 (Internal Server Error) if an error occurs
     return new Response(
       JSON.stringify({
         message: "Error sending email",
         error: error.message,
-        requestId: loggedRequest?.id || null,
       }),
       {
         status: 500,

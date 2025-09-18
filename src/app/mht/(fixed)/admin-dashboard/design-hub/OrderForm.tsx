@@ -15,17 +15,23 @@ import {
   Select,
   MenuItem,
   Box,
+  Divider,
 } from "@mui/material";
 
+import CitySelect from "@/components/data-tables/selects/CitySelect";
+import CommunitySelect from "@/components/data-tables/selects/CommunitySelect";
+
 interface OrderFormData {
-  title: string;
   name: string;
   email: string;
   phone: string;
   locationType: string;
   community: string;
+  authorizationType: string;
   city: string;
   additionalRequests: string;
+  communityLabel: string;
+  cityLabel: string;
 }
 
 interface OrderFormProps {
@@ -40,14 +46,16 @@ export function OrderForm({
   hasItems,
 }: OrderFormProps) {
   const [formData, setFormData] = useState<OrderFormData>({
-    title: "",
     name: "",
     email: "",
     phone: "",
     locationType: "",
     community: "",
+    communityLabel: "",
     city: "",
+    cityLabel: "",
     additionalRequests: "",
+    authorizationType: "",
   });
 
   const updateField = (field: keyof OrderFormData, value: string) => {
@@ -60,11 +68,12 @@ export function OrderForm({
   };
 
   const isFormValid =
-    formData.title &&
+    // formData.title &&
     formData.name &&
     formData.email &&
     formData.phone &&
     formData.locationType &&
+    formData.authorizationType &&
     hasItems;
 
   return (
@@ -78,23 +87,48 @@ export function OrderForm({
           onSubmit={handleSubmit}
           sx={{ display: "flex", flexDirection: "column", gap: 3 }}
         >
+          <FormControl fullWidth required>
+            <InputLabel>Authorized By</InputLabel>
+            <Select
+              value={formData.authorizationType}
+              onChange={(e) => updateField("authorizationType", e.target.value)}
+              label="Authorization Type"
+            >
+              <MenuItem value="utah-state-executive">
+                Utah State Executive
+              </MenuItem>
+              <MenuItem value="city-chair">City Chair</MenuItem>
+              <MenuItem value="community-executive-director">
+                Community Executive Director
+              </MenuItem>
+              <MenuItem value="crc-director">CRC Director</MenuItem>
+
+              <MenuItem value="neighborhood-services-director">
+                Neighborhood Services Director
+              </MenuItem>
+            </Select>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mt: 1, mb: 2 }}
+            >
+              Authorization required for this request. Select who authorized
+              this design request.
+            </Typography>
+          </FormControl>
+
+          <Divider />
+
           <TextField
-            label="Full Name"
+            label="Your Full Name"
             value={formData.name}
             onChange={(e) => updateField("name", e.target.value)}
             required
             fullWidth
           />
+
           <TextField
-            label="MHT Position"
-            value={formData.title}
-            onChange={(e) => updateField("title", e.target.value)}
-            placeholder="e.g., Executive Secretary, City Chair"
-            required
-            fullWidth
-          />
-          <TextField
-            label="Email"
+            label="Your Email"
             type="email"
             value={formData.email}
             onChange={(e) => updateField("email", e.target.value)}
@@ -103,7 +137,7 @@ export function OrderForm({
           />
 
           <TextField
-            label="Phone Number"
+            label="Your Phone Number"
             value={formData.phone}
             onChange={(e) => updateField("phone", e.target.value)}
             required
@@ -111,11 +145,23 @@ export function OrderForm({
           />
 
           <FormControl fullWidth required>
-            <InputLabel>Location Type</InputLabel>
+            <InputLabel>To Be Designed For</InputLabel>
             <Select
               value={formData.locationType}
-              onChange={(e) => updateField("locationType", e.target.value)}
-              label="Location Type"
+              onChange={(e) => {
+                const newLocationType = e.target.value;
+                updateField("locationType", newLocationType);
+                // Clear city/community data when switching types
+                if (newLocationType !== "city") {
+                  updateField("city", "");
+                  updateField("cityLabel", "");
+                }
+                if (newLocationType !== "community") {
+                  updateField("community", "");
+                  updateField("communityLabel", "");
+                }
+              }}
+              label="To Be Designed For"
             >
               <MenuItem value="myHometown Utah">myHometown Utah</MenuItem>
               <MenuItem value="city">City</MenuItem>
@@ -124,22 +170,26 @@ export function OrderForm({
           </FormControl>
 
           {formData.locationType === "city" && (
-            <TextField
-              label="City Name"
+            <CitySelect
               value={formData.city}
-              onChange={(e) => updateField("city", e.target.value)}
-              required
-              fullWidth
+              onChange={(value: string) => {
+                updateField("city", value);
+              }}
+              onLabelChange={(label: string) => {
+                updateField("cityLabel", label);
+              }}
             />
           )}
 
           {formData.locationType === "community" && (
-            <TextField
-              label="Community Name"
+            <CommunitySelect
               value={formData.community}
-              onChange={(e) => updateField("community", e.target.value)}
-              required
-              fullWidth
+              onChange={(value: string) => updateField("community", value)}
+              onLabelChange={(label: string) =>
+                updateField("communityLabel", label)
+              }
+              isMulti={false}
+              concatCityName={true}
             />
           )}
 

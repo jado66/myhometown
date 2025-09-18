@@ -5,7 +5,13 @@ import Loading from "@/components/util/Loading";
 import { useUser } from "@/hooks/use-user";
 import useManageCities from "@/hooks/use-manage-cities";
 
-const CitySelect = ({ value, onChange, defaultValue, isMulti = false }) => {
+const CitySelect = ({
+  value,
+  onChange,
+  defaultValue = null,
+  isMulti = false,
+  onLabelChange,
+}) => {
   const { user } = useUser();
   const { cities, loading } = useManageCities(user);
 
@@ -28,6 +34,16 @@ const CitySelect = ({ value, onChange, defaultValue, isMulti = false }) => {
     }));
   })();
 
+  // Handle change to pass both value and label
+  const handleChange = (selected) => {
+    if (onChange) {
+      onChange(selected ? selected.value : null);
+    }
+    if (onLabelChange) {
+      onLabelChange(selected ? selected.label : "");
+    }
+  };
+
   if (loading) {
     return <Loading />;
   }
@@ -39,7 +55,7 @@ const CitySelect = ({ value, onChange, defaultValue, isMulti = false }) => {
         placeholder="Select a City"
         isLoading={loading}
         value={value}
-        onChange={onChange}
+        onChange={handleChange}
         defaultValue={defaultValue}
         direction="up"
         isMulti={isMulti}

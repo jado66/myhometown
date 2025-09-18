@@ -34,7 +34,7 @@ const donorEmailTemplateEN = (data) => {
         </div>
         <div class="footer">
           <p>This is your donation receipt. Please keep it for your records.</p>
-          <p>Contact csffinance@citiesstrong.org for any questions.</p>
+          <p>Contact info@citiesstrong.org for any questions.</p>
         </div>
       </div>
     </body>
@@ -106,7 +106,7 @@ const donorEmailTemplateSP = (data) => {
         </div>
         <div class="footer">
           <p>Este es su recibo de donación. Por favor guárdelo para sus registros.</p>
-          <p>Contacte a csffinance@citiesstrong.org para cualquier pregunta.</p>
+          <p>Contacte a info@citiesstrong.org para cualquier pregunta.</p>
         </div>
       </div>
     </body>
@@ -178,7 +178,7 @@ export async function POST(request) {
 
     // Send email to finance team
     await citiesStrongTransporter.sendMail({
-      to: "csffinance@citiesstrong.org",
+      to: "info@citiesstrong.org",
       subject:
         data.language === "sp"
           ? "Notificación de Nueva Donación"

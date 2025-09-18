@@ -7,7 +7,14 @@ import { useCommunities } from "@/hooks/use-communities";
 import { useUser } from "@/hooks/use-user";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 
-const CommunitySelect = ({ value, onChange, defaultValue, isMulti = true }) => {
+const CommunitySelect = ({
+  value,
+  onChange,
+  defaultValue = null,
+  isMulti = true,
+  concatCityName = false,
+  onLabelChange,
+}) => {
   const { user } = useUser();
   const { communities, loading } = useCommunities(user);
 
@@ -22,7 +29,7 @@ const CommunitySelect = ({ value, onChange, defaultValue, isMulti = true }) => {
       grouped[groupLabel].push({
         // Use a fallback for id - either comm.id, comm._id, or generate one
         value: comm.id || comm._id || `community-${index}`,
-        label: comm.name,
+        label: concatCityName ? `${city} - ${comm.name}` : comm.name,
         city: comm.city,
         state: comm.state,
       });
@@ -55,10 +62,20 @@ const CommunitySelect = ({ value, onChange, defaultValue, isMulti = true }) => {
   const handleChange = (selected) => {
     if (isMulti) {
       // For multi-select, return array of IDs
-      onChange((selected || []).map((opt) => opt.value));
+      if (onChange) {
+        onChange((selected || []).map((opt) => opt.value));
+      }
+      if (onLabelChange) {
+        onLabelChange((selected || []).map((opt) => opt.label));
+      }
     } else {
       // For single select
-      onChange(selected ? selected.value : null);
+      if (onChange) {
+        onChange(selected ? selected.value : null);
+      }
+      if (onLabelChange) {
+        onLabelChange(selected ? selected.label : "");
+      }
     }
   };
 
@@ -68,14 +85,6 @@ const CommunitySelect = ({ value, onChange, defaultValue, isMulti = true }) => {
 
   return (
     <>
-      <JsonViewer
-        data={{
-          value,
-          selectedValues,
-          communitySelectOptions,
-        }}
-      />
-
       <MultiSelect
         options={communitySelectOptions}
         placeholder="Select a Community"

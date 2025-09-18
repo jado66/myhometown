@@ -27,7 +27,7 @@ import {
   type CatalogItem,
 } from "./catalogData";
 import { ItemDialog } from "./ItemDialog";
-import { ShoppingCart } from "./ShoppingCart";
+import { ShoppingCart, type DesignCartItem } from "./ShoppingCart";
 import { OrderForm } from "./OrderForm";
 
 // Carousel and LightBox imports
@@ -251,13 +251,13 @@ export default function DesignHub() {
       </Grid>
     </Box>
   );
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(-1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<{
     type: "flyers" | "certificates" | "signs-banners";
     title: string;
   } | null>(null);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<DesignCartItem[]>([]);
   const [promotionalCartItems, setPromotionalCartItems] = useState<
     CatalogItem[]
   >([]);
@@ -270,7 +270,7 @@ export default function DesignHub() {
 
   // Cart and dialog logic
   const handleDialogSubmit = (data: any) => {
-    const newItem: CartItem = {
+    const newItem: DesignCartItem = {
       id: Date.now().toString(),
       ...data,
     };
@@ -294,17 +294,77 @@ export default function DesignHub() {
 
   const handleOrderSubmit = async (orderData: any) => {
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Reset carts after successful submission
-    setCartItems([]);
-    setPromotionalCartItems([]);
-    setIsSubmitting(false);
+    try {
+      // Prepare location string based on type
+      let locationString = orderData.locationType;
+      if (orderData.locationType === "city" && orderData.cityLabel) {
+        locationString = `City: ${orderData.cityLabel}`;
+      } else if (
+        orderData.locationType === "community" &&
+        orderData.communityLabel
+      ) {
+        locationString = `Community: ${orderData.communityLabel}`;
+      }
 
-    alert(
-      "Order submitted successfully! You will receive confirmation within 24 hours."
-    );
+      const randomThreeDigitID =
+        Math.floor(100 + Math.random() * 900) +
+        "-" +
+        Math.floor(100 + Math.random() * 900); // Two random 3-digit numbers with hyphen
+
+      const emailData = {
+        subject: `MHT Design Hub Order Request ID:${randomThreeDigitID}`,
+        html: {
+          authorizedBy: orderData.authorizationType
+            .replace(/-/g, " ")
+            .replace(/\b\w/g, (l: string) => l.toUpperCase()),
+          id: randomThreeDigitID,
+          firstName: orderData.name.split(" ")[0] || orderData.name,
+          lastName: orderData.name.split(" ").slice(1).join(" ") || "",
+          email: orderData.email,
+          phone: orderData.phone,
+          location: locationString,
+          designItems: cartItems,
+          promotionalItems: promotionalCartItems,
+          additionalRequests: orderData.additionalRequests || "None",
+          submittedAt: new Date().toLocaleString(),
+        },
+      };
+
+      // Send to API
+      const response = await fetch(
+        "/api/communications/send-mail/to-design-hub",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(emailData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("Order submitted successfully:", result);
+
+      // Reset carts after successful submission
+      setCartItems([]);
+      setPromotionalCartItems([]);
+
+      alert(
+        "Order submitted successfully! You will receive confirmation within 24 hours."
+      );
+    } catch (error) {
+      console.error("Error submitting order:", error);
+      alert(
+        "There was an error submitting your order. Please try again or contact support."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleAddItem = (type: "flyers" | "certificates" | "signs-banners") => {
@@ -411,8 +471,8 @@ export default function DesignHub() {
 
             <Typography
               variant="body1"
-              color="text.secondary"
-              sx={{ maxWidth: "800px", mx: "auto", mt: 2 }}
+              color="error"
+              sx={{ maxWidth: "800px", fontWeight: "bold", mx: "auto", mt: 2 }}
             >
               Note: This design service is independently funded; therefore,
               there is no cost to your city/community. The cost of printing or
@@ -454,6 +514,19 @@ export default function DesignHub() {
 
             <Box sx={{ p: 3 }}>
               {/* Carousel for first three tabs */}
+
+              {activeTab === -1 && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h5" sx={{ fontWeight: "bold", mb: 1 }}>
+                    Select a category to get started
+                  </Typography>
+                  <Typography>
+                    Please choose a design category above to view examples and
+                    start your order.
+                  </Typography>
+                </Box>
+              )}
+
               {activeTab === 0 && (
                 <>
                   <Box sx={{ px: 3, pt: 2, pb: 1, bgcolor: "grey.50" }}>

@@ -159,8 +159,8 @@ const Continue = () => {
               }}
             >
               For donations greater than $1000 please contact{" "}
-              <Link href="mailto:csffinance@citiesstrong.org">
-                csffinance@citiesstrong.org
+              <Link href="mailto:info@citiesstrong.org">
+                info@citiesstrong.org
               </Link>
             </Typography>
           </Grid>
