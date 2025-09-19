@@ -4,13 +4,10 @@ import { Grid, Card } from "@mui/material";
 import dynamic from "next/dynamic";
 
 // Dynamically import the BulkMMSMessaging component
-const DesignHub = dynamic(
-  () => import("@/components/texting/send/BulkMmsMessaging"),
-  {
-    loading: () => <p>Loading messaging interface...</p>,
-    ssr: false, // Set to false if the component uses browser-only APIs
-  }
-);
+const DesignHub = dynamic(() => import("./DesignHub"), {
+  loading: () => <p>Loading messaging interface...</p>,
+  ssr: false, // Set to false if the component uses browser-only APIs
+});
 
 const DesignHubPage = () => {
   return (
