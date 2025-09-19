@@ -181,28 +181,29 @@ export function HoursOverview({
           onChange={(e, newValue) => setActiveTab(newValue)}
         >
           <Tab
-            icon={<Analytics />}
-            label="Analytics & Charts"
+            icon={<TableChart />}
+            label="Missionaries & Volunteers Summary"
             iconPosition="start"
           />
           <Tab
-            icon={<TableChart />}
-            label="Missionaries & Volunteers Summary"
+            icon={<Analytics />}
+            label="Analytics & Charts"
             iconPosition="start"
           />
         </Tabs>
       </Box>
 
       {/* Tab Content */}
-      {activeTab === 0 && (
-        <HoursAnalytics
-          missionaries={missionaries}
-          hours={hours}
-          filters={filters}
-        />
+      {activeTab === 1 && (
+        <h4>Analytics Will Coming Soon</h4>
+        // <HoursAnalytics
+        //   missionaries={missionaries}
+        //   hours={hours}
+        //   filters={filters}
+        // />
       )}
 
-      {activeTab === 1 && (
+      {activeTab === 0 && (
         <Box>
           <Typography
             variant="body2"
@@ -269,9 +270,9 @@ export function HoursOverview({
                       <Typography variant="body2" color="text.secondary">
                         {summary.entries} entries
                       </Typography>
-                      <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+                      {/* <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
                         <Chip
-                          label={`Weekly: ${summary.weeklyHours}h`}
+                          label={`${summary.weeklyHours}h`}
                           size="small"
                           color="primary"
                           variant="outlined"
@@ -282,7 +283,7 @@ export function HoursOverview({
                           color="secondary"
                           variant="outlined"
                         />
-                      </Box>
+                      </Box> */}
                     </Box>
                   </Box>
                 </Paper>
