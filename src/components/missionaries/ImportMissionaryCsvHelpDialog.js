@@ -23,13 +23,18 @@ const exampleRows = [
     last_name: "Doe",
     email: "jane.doe@email.com",
     contact_number: "801-555-1234",
-    status: "Active",
-    assignment_level: "City",
+    status: "active",
+    assignment_level: "city",
     city: "Salt Lake City",
     community: "",
     group: "Group A",
     title: "Sister",
     start_date: "2024-01-01",
+    end_date: "2024-12-31",
+    street_address: "123 Main St",
+    address_city: "Salt Lake City",
+    address_state: "UT",
+    zip_code: "84101",
     notes: "",
   },
   {
@@ -37,13 +42,18 @@ const exampleRows = [
     last_name: "Smith",
     email: "john.smith@email.com",
     contact_number: "801-555-5678",
-    status: "Pending",
-    assignment_level: "Community",
+    status: "pending",
+    assignment_level: "community",
     city: "",
     community: "Dixon",
     group: "Group B",
     title: "Elder",
     start_date: "2024-02-15",
+    end_date: "2025-02-14",
+    street_address: "456 Oak Ave",
+    address_city: "Dixon",
+    address_state: "UT",
+    zip_code: "84302",
     notes: "New arrival",
   },
 ];
@@ -60,6 +70,11 @@ const csvHeader = [
   "Group",
   "Title",
   "Start Date",
+  "End Date",
+  "Street Address",
+  "Address City",
+  "Address State",
+  "Zip Code",
   "Notes",
 ];
 
@@ -71,13 +86,18 @@ function downloadTemplate() {
       "Doe",
       "jane.doe@email.com",
       "801-555-1234",
-      "Active",
-      "City",
+      "active",
+      "city",
       "Salt Lake City",
       "",
       "Group A",
-      "Sister",
+      "CRC Director",
       "2024-01-01",
+      "2024-12-31",
+      "123 Main St",
+      "Salt Lake City",
+      "UT",
+      "84101",
       "",
     ].join(",") + "\n";
   const row2 =
@@ -86,13 +106,18 @@ function downloadTemplate() {
       "Smith",
       "john.smith@email.com",
       "801-555-5678",
-      "Pending",
-      "Community",
+      "pending",
+      "community",
       "",
       "Dixon",
-      "Group B",
-      "Elder",
+
+      "Teacher",
       "2024-02-15",
+      "2025-02-14",
+      "456 Oak Ave",
+      "Dixon",
+      "UT",
+      "84302",
       "New arrival",
     ].join(",") + "\n";
   const row3 =
@@ -101,15 +126,21 @@ function downloadTemplate() {
       "Johnson",
       "alice.johnson@email.com",
       "801-555-8765",
-      "State",
+      "active",
+      "state",
       "",
       "",
-      "Missionary",
-      "Volunteer",
+      "State Team",
+      "Coordinator",
       "2024-03-10",
+      "2025-03-09",
+      "789 Pine Rd",
+      "Provo",
+      "UT",
+      "84604",
       "Experienced missionary",
     ].join(",") + "\n";
-  const csv = header + row1 + row2;
+  const csv = header + row1 + row2 + row3;
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   if (link.download !== undefined) {
@@ -134,11 +165,11 @@ const ImportMissionaryCsvHelpDialog = ({
   importSummary,
 }) => (
   <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-    <DialogTitle>Import Missionaries from CSV</DialogTitle>
+    <DialogTitle>Import Missionaries &amp; Volunteers from CSV</DialogTitle>
     <DialogContent>
       <Typography gutterBottom>
-        To import missionaries, your CSV file should have the following columns
-        (case-insensitive):
+        To import missionaries and volunteers, your CSV file should have the
+        following columns (case-insensitive):
       </Typography>
       <Box mb={2}>
         <ul>
@@ -166,15 +197,27 @@ const ImportMissionaryCsvHelpDialog = ({
           <li>
             <b>Community</b> (required if Assignment Level is Community)
           </li>
-          <li>
-            <b>Group</b> (optional)
-          </li>
 
           <li>
             <b>Title</b> (optional)
           </li>
           <li>
             <b>Start Date</b> (required, YYYY-MM-DD)
+          </li>
+          <li>
+            <b>End Date</b> (optional, YYYY-MM-DD)
+          </li>
+          <li>
+            <b>Street Address</b> (required)
+          </li>
+          <li>
+            <b>Address City</b> (required)
+          </li>
+          <li>
+            <b>Address State</b> (required)
+          </li>
+          <li>
+            <b>Zip Code</b> (required)
           </li>
           <li>
             <b>Notes</b> (optional)
@@ -202,11 +245,18 @@ const ImportMissionaryCsvHelpDialog = ({
                 <TableCell sx={{ whiteSpace: "nowrap" }}>
                   {row.contact_number}
                 </TableCell>
+                <TableCell>{row.status}</TableCell>
                 <TableCell>{row.assignment_level}</TableCell>
                 <TableCell sx={{ whiteSpace: "nowrap" }}>{row.city}</TableCell>
                 <TableCell>{row.community}</TableCell>
+
                 <TableCell>{row.title}</TableCell>
                 <TableCell>{row.start_date}</TableCell>
+                <TableCell>{row.end_date}</TableCell>
+                <TableCell>{row.street_address}</TableCell>
+                <TableCell>{row.address_city}</TableCell>
+                <TableCell>{row.address_state}</TableCell>
+                <TableCell>{row.zip_code}</TableCell>
                 <TableCell>{row.notes}</TableCell>
               </TableRow>
             ))}

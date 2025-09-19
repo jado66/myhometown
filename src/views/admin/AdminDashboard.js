@@ -135,7 +135,7 @@ const AdminDashboardPages = () => {
                 },
 
                 {
-                  title: "Missionary Management",
+                  title: "Missionaries & Volunteers Management",
                   subtitle:
                     "Manage your missionaries. Add, remove, or edit missionary information. Log their service hours and track your progress.",
                   media: "/admin-icons/missionary-management.png",
@@ -154,7 +154,7 @@ const AdminDashboardPages = () => {
                   title: "Design Hub",
                   subtitle:
                     "Create and order custom flyers, certificates, signs, and banners for your community.",
-                  media: "/mht/design-hub/placeholder.png",
+                  media: "/design-hub/placeholder.png",
                   href: rootUrl + "/admin-dashboard/design-hub",
                   requiredPermission: "administrator",
                 },

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useParams } from "next/navigation"; // Next.js App Router params
 import {
   Card,
   CardContent,
@@ -66,6 +67,32 @@ export const WhoAreYouComponent = ({
   const { fetchDayOfService } = useDaysOfService();
   const { fetchProjectsByDaysOfServiceId } = useDaysOfServiceProjects();
   const { resetKey } = useClassSignup();
+
+  // Grab params from dynamic route: /[state]/[city]/[community]?...
+  // Support both legacy param names (city) and new suffixed ones (cityQuery, stateQuery, communityQuery)
+  const params = useParams?.();
+  // Reusable formatter for a slug (e.g., "salt-lake-city" -> "Salt Lake City")
+  const formatSlug = (slug, fallback = "") => {
+    if (!slug || typeof slug !== "string") return fallback;
+    return slug
+      .trim()
+      .split("/") // just in case combined
+      .flatMap(part => part.split("-"))
+      .filter(Boolean)
+      .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+      .join(" ");
+  };
+
+  const rawCity = params?.city || params?.cityQuery;
+  const rawState = params?.state || params?.stateQuery;
+  const rawCommunity = params?.community || params?.communityQuery;
+
+  const formattedCity = formatSlug(rawCity, "your city");
+  const formattedState = formatSlug(rawState);
+  const formattedCommunity = formatSlug(rawCommunity);
+
+  // (Optional) expose for debugging
+  // console.debug({ rawState, rawCity, rawCommunity, formattedState, formattedCity, formattedCommunity });
 
   useEffect(() => {
     if (dayOfServiceId) {
@@ -372,7 +399,7 @@ export const WhoAreYouComponent = ({
                   }
                 />
                 <FormHelperText sx={{ ml: 4, mt: 1 }}>
-                  Select this if you are from West Valley City
+                  Select this if you are from {formattedCity}
                 </FormHelperText>
               </Paper>
             </Grid>

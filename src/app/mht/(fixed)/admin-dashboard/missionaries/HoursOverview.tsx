@@ -152,7 +152,7 @@ export function HoursOverview({
             icon: <Schedule sx={{ color: "#fff" }} />,
           },
           {
-            label: "Active Missionaries",
+            label: "Active Missionaries & Volunteers ",
             value: hoursStats.activeMissionaries,
             color: "success.main",
             icon: <Person sx={{ color: "#fff" }} />,
@@ -187,7 +187,7 @@ export function HoursOverview({
           />
           <Tab
             icon={<TableChart />}
-            label="Missionary Summary"
+            label="Missionaries & Volunteers Summary"
             iconPosition="start"
           />
         </Tabs>

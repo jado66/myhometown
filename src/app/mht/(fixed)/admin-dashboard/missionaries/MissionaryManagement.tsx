@@ -63,14 +63,20 @@ interface Missionary {
   last_name: string;
   email: string;
   contact_number?: string;
-  assignment_status: "Active" | "Inactive" | "Pending";
-  assignment_level?: "State" | "City" | "Community";
+  assignment_status: "active" | "inactive" | "pending";
+  assignment_level?: "state" | "city" | "community";
   city_id?: string;
   community_id?: string;
   group?: string;
   title?: string;
   start_date?: string;
+  end_date?: string;
+  calculated_duration?: number;
   notes?: string;
+  street_address?: string;
+  address_city?: string;
+  address_state?: string;
+  zip_code?: string;
 }
 
 interface City {
@@ -236,7 +242,7 @@ export default function MissionaryManagement() {
       }
 
       if (
-        !assignment_level ||
+        assignment_level &&
         !["state", "city", "community"].includes(assignment_level)
       ) {
         errors.push(
@@ -304,6 +310,11 @@ export default function MissionaryManagement() {
           group: row["Group"] || "",
           title: row["Title"] || "",
           start_date: row["Start Date"] || "",
+          end_date: row["End Date"] || "",
+          street_address: row["Street Address"] || "",
+          address_city: row["Address City"] || "",
+          address_state: row["Address State"] || "",
+          zip_code: row["Zip Code"] || "",
           notes: row["Notes"] || "",
         });
       }
@@ -490,6 +501,12 @@ export default function MissionaryManagement() {
       Group: m.group || "",
       Title: m.title || "",
       "Start Date": m.start_date || "",
+      "End Date": m.end_date || "",
+      "Duration (Months)": m.calculated_duration || "",
+      "Street Address": m.street_address || "",
+      "Address City": m.address_city || "",
+      "Address State": m.address_state || "",
+      "Zip Code": m.zip_code || "",
       Notes: m.notes || "",
     }));
     console.log("Exporting CSV with data:", data);
@@ -613,7 +630,14 @@ export default function MissionaryManagement() {
         onClose={handleCancelDelete}
       />
       ;
-      <Box sx={{ backgroundColor: "#f5f5f5", flexGrow: 1, minHeight: "100vh" }}>
+      <Box
+        sx={{
+          backgroundColor: "#f5f5f5",
+          flexGrow: 1,
+          minHeight: "100vh",
+          py: 5,
+        }}
+      >
         {/* Header */}
         <AppBar position="static" color="default" elevation={1}>
           <Toolbar>
@@ -667,7 +691,7 @@ export default function MissionaryManagement() {
                 startIcon={<Add />}
                 onClick={handleCreateNewMissionary}
               >
-                Add Missionary
+                Add Missionary or Volunteer
               </Button>
 
               {/* Missionary Dialog */}
@@ -700,7 +724,7 @@ export default function MissionaryManagement() {
               value={tabValue}
               onChange={(e, newValue) => setTabValue(newValue)}
             >
-              <Tab label="Missionary Table" />
+              <Tab label="Missionaries & Volunteers Table" />
               <Tab label="Hours Overview" />
               <Tab label="Upcoming Releases" />
             </Tabs>
@@ -710,7 +734,7 @@ export default function MissionaryManagement() {
               <AggregateStats
                 cards={[
                   {
-                    label: "Total Missionaries",
+                    label: "Missionaries & Volunteers ",
                     value: filteredMissionaries.length,
                     color: "primary.main",
                     icon: <Group sx={{ color: "#fff" }} />,

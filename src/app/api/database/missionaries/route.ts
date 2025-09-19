@@ -1,6 +1,32 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/util/supabaseServer";
 
+// Helper function to calculate duration in months between start_date and end_date
+function calculateDuration(startDate: string | null, endDate: string | null): number | null {
+  if (!startDate || !endDate) return null;
+  
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+  
+  // Calculate difference in months
+  const yearsDiff = end.getFullYear() - start.getFullYear();
+  const monthsDiff = end.getMonth() - start.getMonth();
+  const daysDiff = end.getDate() - start.getDate();
+  
+  let totalMonths = yearsDiff * 12 + monthsDiff;
+  
+  // Round to nearest month based on days
+  if (daysDiff >= 15) {
+    totalMonths += 1;
+  } else if (daysDiff <= -15) {
+    totalMonths -= 1;
+  }
+  
+  return Math.max(0, totalMonths); // Ensure non-negative
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { data: missionaries, error } = await supabaseServer
@@ -22,7 +48,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ missionaries });
+    // Calculate duration for each missionary
+    const missionariesWithDuration = missionaries?.map(missionary => ({
+      ...missionary,
+      calculated_duration: calculateDuration(missionary.start_date, missionary.end_date)
+    })) || [];
+
+    return NextResponse.json({ missionaries: missionariesWithDuration });
   } catch (error) {
     console.error("Missionaries API error:", error);
     return NextResponse.json(
@@ -48,6 +80,7 @@ export async function POST(request: NextRequest) {
       title,
       group,
       start_date,
+      end_date,
       duration,
       stake_name,
       gender,
@@ -71,35 +104,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!assignment_level) {
-      return NextResponse.json(
-        { error: "Assignment level is required" },
-        { status: 400 }
-      );
-    }
+    // Validate assignment constraints if assignment_level is provided
+    if (assignment_level) {
+      if (assignment_level === "state" && (city_id || community_id)) {
+        return NextResponse.json(
+          { error: "State level assignments cannot have city or community" },
+          { status: 400 }
+        );
+      }
 
-    // Validate assignment constraints
-    if (assignment_level === "state" && (city_id || community_id)) {
-      return NextResponse.json(
-        { error: "State level assignments cannot have city or community" },
-        { status: 400 }
-      );
-    }
+      if (assignment_level === "city" && (!city_id || community_id)) {
+        return NextResponse.json(
+          { error: "City level assignments must have city but not community" },
+          { status: 400 }
+        );
+      }
 
-    if (assignment_level === "city" && (!city_id || community_id)) {
-      return NextResponse.json(
-        { error: "City level assignments must have city but not community" },
-        { status: 400 }
-      );
-    }
-
-    if (assignment_level === "community" && !community_id) {
-      return NextResponse.json(
-        {
-          error: "Community level assignments must have a community",
-        },
-        { status: 400 }
-      );
+      if (assignment_level === "community" && !community_id) {
+        return NextResponse.json(
+          {
+            error: "Community level assignments must have a community",
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Check for existing missionary with the same email
@@ -142,6 +170,7 @@ export async function POST(request: NextRequest) {
         title: title || null,
         group: group || null,
         start_date: start_date || null,
+        end_date: end_date || null,
         duration: duration || null,
         stake_name: stake_name || null,
         gender: gender || null,
@@ -202,6 +231,7 @@ export async function PATCH(request: NextRequest) {
       title,
       group,
       start_date,
+      end_date,
       duration,
       stake_name,
       gender,
@@ -261,6 +291,7 @@ export async function PATCH(request: NextRequest) {
     if (title !== undefined) updateData.title = title || null;
     if (group !== undefined) updateData.group = group || null;
     if (start_date !== undefined) updateData.start_date = start_date || null;
+    if (end_date !== undefined) updateData.end_date = end_date || null;
     if (duration !== undefined) updateData.duration = duration || null;
     if (stake_name !== undefined) updateData.stake_name = stake_name || null;
     if (gender !== undefined) updateData.gender = gender || null;

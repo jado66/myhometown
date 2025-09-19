@@ -24,7 +24,7 @@ export const pages = () => {
           requiredPermission: "communityManagement",
         },
         {
-          title: "Missionary Management",
+          title: "Missionaries & Volunteers",
           href: rootUrl + "/admin-dashboard/missionaries",
           requiredPermission: "missionaryManagement",
         },

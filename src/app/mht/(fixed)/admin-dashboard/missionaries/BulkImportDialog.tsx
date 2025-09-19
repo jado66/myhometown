@@ -266,7 +266,9 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">Bulk Import Missionaries</Typography>
+          <Typography variant="h6">
+            Bulk Missionaries &amp; Volunteers Missionaries
+          </Typography>
           <IconButton onClick={onClose} edge="end">
             <Close />
           </IconButton>
