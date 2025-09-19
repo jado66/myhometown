@@ -39,7 +39,6 @@ import {
 } from "@mui/icons-material";
 import MissionaryLogHoursDialog from "@/components/MissionaryLogHoursDialog";
 import moment, { type Moment } from "moment";
-import { ScrollableWeeks } from "./ScrollableWeeks";
 
 interface DetailedActivity {
   id: string;
@@ -624,6 +623,7 @@ export default function MissionaryDashboard({
         handleSubmit={handleSubmit}
         editingId={editingId}
         resetForm={resetForm}
+        isVolunteer={false}
       />
 
       {/* Delete Confirmation Dialog */}

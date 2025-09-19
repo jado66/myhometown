@@ -77,9 +77,9 @@ export const WhoAreYouComponent = ({
     return slug
       .trim()
       .split("/") // just in case combined
-      .flatMap(part => part.split("-"))
+      .flatMap((part) => part.split("-"))
       .filter(Boolean)
-      .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+      .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
       .join(" ");
   };
 

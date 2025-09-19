@@ -222,8 +222,8 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
         }
         // Always check these custom validations
         if (!formData.group) newErrors.group = "Group is required";
-        if (!formData.profile_picture_url)
-          newErrors.profile_picture_url = "Profile Picture is required";
+        // if (!formData.profile_picture_url)
+        //   newErrors.profile_picture_url = "Profile Picture is required";
         setErrors(newErrors);
       };
       validateOnOpen();
@@ -384,8 +384,8 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
       }
     }
     // Custom required fields
-    if (!submitData.profile_picture_url)
-      missingFields.push("profile_picture_url");
+    // if (!submitData.profile_picture_url)
+    //   missingFields.push("profile_picture_url");
     if (!submitData.group) missingFields.push("group");
     // If any missing, show help alert
     if (missingFields.length > 0) {
@@ -394,7 +394,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
         email: "Email",
         first_name: "First Name",
         last_name: "Last Name",
-        profile_picture_url: "Profile Picture",
+        // profile_picture_url: "Profile Picture",
         city_id: "City",
         community_id: "Community",
         assignment_status: "Assignment Status",

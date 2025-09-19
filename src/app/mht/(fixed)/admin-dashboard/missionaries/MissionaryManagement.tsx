@@ -727,6 +727,7 @@ export default function MissionaryManagement() {
               <Tab label="Missionaries & Volunteers Table" />
               <Tab label="Hours Overview" />
               <Tab label="Upcoming Releases" />
+              <Tab label="Volunteer Applications" />
             </Tabs>
 
             <TabPanel value={tabValue} index={0}>

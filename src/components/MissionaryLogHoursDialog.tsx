@@ -136,17 +136,36 @@ export default function MissionaryLogHoursDialog({
   const periodStart = selectedDate.clone().startOf("month");
   const periodEnd = selectedDate.clone().endOf("month");
 
+  // Ensure we always have one activity object per defined category when the dialog opens.
+  // Previous logic only initialized when activities.length === 0, but the parent provided
+  // an initial placeholder item with an empty category, preventing proper setup and making
+  // the TextFields appear non-editable (updates targeted ids that didn't exist in state).
   React.useEffect(() => {
-    if (activities.length === 0) {
-      const initialActivities = categories.map((cat) => ({
-        id: cat.value,
-        category: cat.value,
-        description: "",
-        hours: "",
-      }));
-      setActivities(initialActivities);
-    }
-  }, [activities.length, setActivities]);
+    if (!open) return; // Only reconcile when dialog is open to avoid unwanted resets.
+    setActivities((prev) => {
+      const byCategory = new Map(prev.map((a) => [a.category, a]));
+      let changed = false;
+      const normalized = categories.map((cat) => {
+        if (byCategory.has(cat.value)) return byCategory.get(cat.value)!;
+        changed = true;
+        return {
+          id: cat.value,
+          category: cat.value,
+          description: "",
+          hours: "",
+        } as DetailedActivity;
+      });
+      // Preserve any extra (legacy) activities whose category isn't in the current list
+      const extras = prev.filter(
+        (a) => !categories.some((c) => c.value === a.category)
+      );
+      if (extras.length) {
+        changed = true;
+        return [...normalized, ...extras];
+      }
+      return changed ? normalized : prev;
+    });
+  }, [open, setActivities]);
 
   return (
     <Dialog
