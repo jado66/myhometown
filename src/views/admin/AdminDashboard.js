@@ -154,7 +154,7 @@ const AdminDashboardPages = () => {
                   title: "Design Hub",
                   subtitle:
                     "Create and order custom flyers, certificates, signs, and banners for your community.",
-                  media: "/design-hub/placeholder.png",
+                  media: "/admin-icons/Design Hub.svg",
                   href: rootUrl + "/admin-dashboard/design-hub",
                   requiredPermission: "administrator",
                 },

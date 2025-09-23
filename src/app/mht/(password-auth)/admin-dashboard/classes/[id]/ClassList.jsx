@@ -118,6 +118,14 @@ const ClassListView = ({ classItem, onTakeAttendance, onViewClass }) => {
                 variant="outlined"
               />
             )}
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<CategoryIcon />}
+              onClick={() => onViewClass(classItem)}
+            >
+              Info
+            </Button>
 
             <Button
               variant="outlined"
@@ -126,15 +134,6 @@ const ClassListView = ({ classItem, onTakeAttendance, onViewClass }) => {
               onClick={() => onTakeAttendance(classItem)}
             >
               Attendance
-            </Button>
-
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<CategoryIcon />}
-              onClick={() => onViewClass(classItem)}
-            >
-              Info
             </Button>
 
             <Tooltip title="Text Students">

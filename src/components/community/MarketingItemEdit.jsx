@@ -1,5 +1,12 @@
 import React from "react";
-import { Grid, TextField, Box, Typography, IconButton } from "@mui/material";
+import {
+  Grid,
+  TextField,
+  Box,
+  Typography,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 const MarketingItemEdit = ({
@@ -11,8 +18,9 @@ const MarketingItemEdit = ({
   openImageDialog,
   UploadImage,
   communityData,
-  onDelete, // New prop to handle deletion
-  showDeleteButton = false, // Only show delete button for items 3 and 4
+  onDelete,
+  showDeleteButton = false,
+  totalMarketingItems = 2, // Add this prop to track total count
 }) => {
   const textFieldStyles = {
     fontFamily: "inherit",
@@ -41,6 +49,18 @@ const MarketingItemEdit = ({
   const headerKey = `marketingHeader${index === 1 ? "" : index}`;
   const imageKey = `marketingImage${index}`;
 
+  // Show delete button if there are more than 2 total marketing items
+  // Any item can be deleted as long as at least 2 remain
+  const canShowDelete = totalMarketingItems > 2;
+
+  const handleDelete = () => {
+    if (totalMarketingItems <= 2) {
+      // This shouldn't happen due to canShowDelete logic, but safety check
+      return;
+    }
+    onDelete(index);
+  };
+
   return (
     <Grid
       item
@@ -50,23 +70,27 @@ const MarketingItemEdit = ({
       flexDirection="column"
       position="relative"
     >
-      {showDeleteButton && (
-        <IconButton
-          onClick={() => onDelete(index)}
-          sx={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            zIndex: 10,
-
-            bgcolor: "rgba(255, 255, 255, 0.7)",
-            "&:hover": {
-              bgcolor: "rgba(255, 255, 255, 0.9)",
-            },
-          }}
-        >
-          <DeleteIcon />
-        </IconButton>
+      {canShowDelete && (
+        <Tooltip title={`Delete marketing item ${index}`}>
+          <IconButton
+            onClick={handleDelete}
+            sx={{
+              position: "absolute",
+              top: { md: 0, xs: marginTop },
+              right: 0,
+              zIndex: 10,
+              bgcolor: "rgba(255, 255, 255, 0.8)",
+              color: "error.main",
+              "&:hover": {
+                bgcolor: "rgba(255, 255, 255, 0.9)",
+                color: "error.dark",
+              },
+            }}
+            size="small"
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
       )}
 
       <TextField

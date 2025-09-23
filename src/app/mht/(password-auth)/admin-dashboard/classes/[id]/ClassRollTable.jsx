@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import moment from "moment";
 import {
   Table,
@@ -36,6 +36,10 @@ export default function ClassRollTable({ classData, show, onClose }) {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
 
+  // Move these refs to the top level of the component
+  const leftTableRef = useRef(null);
+  const rightTableRef = useRef(null);
+
   const [saveTimeout, setSaveTimeout] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [localAttendance, setLocalAttendance] = useState({});
@@ -43,7 +47,7 @@ export default function ClassRollTable({ classData, show, onClose }) {
   const [isDirty, setIsDirty] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [todayDateIndex, setTodayDateIndex] = useState(-1);
-  const [lastNameSort, setLastNameSort] = useState("asc"); // asc | desc
+  const [lastNameSort, setLastNameSort] = useState("asc");
 
   // Transform attendance array to lookup object on component mount or when classData changes
   useEffect(() => {
@@ -522,161 +526,277 @@ export default function ClassRollTable({ classData, show, onClose }) {
       setLastNameSort((prev) => (prev === "asc" ? "desc" : "asc"));
     };
 
+    const handleLeftScroll = (event) => {
+      const scrollTop = event.target.scrollTop;
+      if (rightTableRef.current) {
+        rightTableRef.current.scrollTop = scrollTop;
+      }
+    };
+
+    const handleRightScroll = (event) => {
+      const scrollTop = event.target.scrollTop;
+      if (leftTableRef.current) {
+        leftTableRef.current.scrollTop = scrollTop;
+      }
+    };
+
+    const formatDisplayDate = (date) => {
+      const [year, month, day] = date.split("-");
+      return `${month}/${day}/${year.slice(-2)}`;
+    };
+
+    const namesTableWidth = Math.max(nameFields.length * 150, 300);
+
     return (
-      <TableContainer
-        component={Paper}
+      <Box
         sx={{
           mt: 4,
-          overflowX: "auto",
-          "& .MuiTableCell-root": {
-            whiteSpace: "nowrap",
-          },
+          display: "flex",
+          height: "500px",
+          border: "1px solid #e0e0e0",
+          borderRadius: 1,
+          overflow: "hidden",
         }}
       >
-        <Table
+        <Box
           sx={{
-            minWidth: 650,
-            "& .sticky-column": {
-              position: "sticky",
-              left: 0,
-              background: "white",
-              zIndex: 1,
-              borderRight: "1px solid rgba(224, 224, 224, 1)",
-              "&:after": {
-                content: '""',
-                position: "absolute",
-                right: 0,
-                top: 0,
-                bottom: 0,
-                width: 1,
-              },
-            },
-            "& .sticky-column-1": {
-              left: 200,
-            },
-            "& .sticky-column-2": {
-              left: 400,
-            },
+            flexShrink: 0,
+            borderRight: "2px solid #e0e0e0",
+            width: namesTableWidth,
+            backgroundColor: "#fafafa",
           }}
         >
-          <TableHead>
-            <TableRow>
-              {nameFields.map((field, index) => (
-                <TableCell
-                  key={field.key}
-                  sx={{
-                    minWidth: 200,
-                  }}
-                  className={`sticky-column ${
-                    index > 0 ? `sticky-column-${index}` : ""
-                  }`}
-                ></TableCell>
-              ))}
-              {dates.map((date) => (
-                <TableCell key={date} align="center" sx={{ minWidth: 100 }}>
-                  {moment(date).format("dddd")}
-                </TableCell>
-              ))}
-            </TableRow>
-            <TableRow>
-              {nameFields.map((field, index) => (
-                <TableCell
-                  key={field.key}
-                  sx={{
-                    minWidth: 200,
-                  }}
-                  className={`sticky-column ${
-                    index > 0 ? `sticky-column-${index}` : ""
-                  }`}
-                  rowSpan={2}
-                >
-                  {field.key === "lastName" ? (
-                    <TableSortLabel
-                      active
-                      direction={lastNameSort}
-                      onClick={toggleLastNameSort}
-                      sx={{ userSelect: "none" }}
-                    >
-                      {field.label}
-                    </TableSortLabel>
-                  ) : (
-                    field.label
-                  )}
-                </TableCell>
-              ))}
-              {dates.map((date) => {
-                const [year, month, day] = date.split("-");
-                const isToday = date === moment().format("YYYY-MM-DD");
-                return (
-                  <TableCell
-                    key={date}
-                    align="center"
-                    sx={{
-                      minWidth: 100,
-                      ...(isToday && {
+          <TableContainer
+            ref={leftTableRef}
+            sx={{
+              height: "100%",
+              overflowY: "auto",
+              overflowX: "hidden",
+              "&::-webkit-scrollbar": {
+                width: "8px",
+              },
+              "&::-webkit-scrollbar-track": {
+                background: "#f1f1f1",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                background: "#c1c1c1",
+                borderRadius: "4px",
+              },
+            }}
+            onScroll={handleLeftScroll}
+          >
+            <Table stickyHeader size="small">
+              <TableHead>
+                <TableRow>
+                  {nameFields.map((field) => (
+                    <TableCell
+                      key={field.key}
+                      sx={{
+                        minWidth: 140,
+                        maxWidth: 180,
                         fontWeight: "bold",
-                        bgcolor: "rgba(25, 118, 210, 0.08)",
-                      }),
+                        bgcolor: "grey.100",
+                        borderBottom: "2px solid #e0e0e0",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 100,
+                        height: "60px",
+                      }}
+                    >
+                      {field.key === "lastName" ? (
+                        <TableSortLabel
+                          active
+                          direction={lastNameSort}
+                          onClick={toggleLastNameSort}
+                          sx={{ userSelect: "none" }}
+                        >
+                          {field.label}
+                        </TableSortLabel>
+                      ) : (
+                        field.label
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {sortedSignups.map((signup, index) => (
+                  <TableRow
+                    key={index}
+                    sx={{
+                      "&:nth-of-type(odd)": {
+                        backgroundColor: "#f9f9f9",
+                      },
+                      "&:hover": {
+                        backgroundColor: "#f0f0f0",
+                      },
                     }}
                   >
-                    {`${month}/${day}/${year.slice(-2)}`}
-                    {isToday && (
-                      <Typography
-                        component="span"
+                    {nameFields.map((field) => (
+                      <TableCell
+                        key={field.key}
                         sx={{
-                          ml: 1,
-                          fontSize: "0.75rem",
-                          color: "primary.main",
+                          minWidth: 140,
+                          maxWidth: 180,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          height: "53px",
+                          padding: "8px 16px",
+                          fontWeight: "500",
                         }}
                       >
-                        (Today)
-                      </Typography>
-                    )}
-                  </TableCell>
-                );
-              })}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {sortedSignups.map((signup, index) => (
-              <TableRow key={index}>
-                {nameFields.map((field, fieldIndex) => (
-                  <TableCell
-                    key={field.key}
-                    className={`sticky-column ${
-                      fieldIndex > 0 ? `sticky-column-${fieldIndex}` : ""
-                    }`}
-                  >
-                    {signup[field.key] || ""}
-                  </TableCell>
+                        {signup[field.key] || ""}
+                      </TableCell>
+                    ))}
+                  </TableRow>
                 ))}
-                {dates.map((date) => (
-                  <TableCell
-                    key={date}
-                    align="center"
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+
+        <Box sx={{ flexGrow: 1, overflow: "hidden" }}>
+          <TableContainer
+            ref={rightTableRef}
+            sx={{
+              height: "100%",
+              overflowY: "auto",
+              overflowX: "auto",
+              "&::-webkit-scrollbar": {
+                width: "8px",
+                height: "8px",
+              },
+              "&::-webkit-scrollbar-track": {
+                background: "#f1f1f1",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                background: "#c1c1c1",
+                borderRadius: "4px",
+              },
+              "&::-webkit-scrollbar-corner": {
+                background: "#f1f1f1",
+              },
+            }}
+            onScroll={handleRightScroll}
+          >
+            <Table stickyHeader size="small">
+              <TableHead>
+                <TableRow>
+                  {dates.map((date) => {
+                    const isToday = date === moment().format("YYYY-MM-DD");
+                    return (
+                      <TableCell
+                        key={date}
+                        align="center"
+                        sx={{
+                          minWidth: 100,
+                          maxWidth: 120,
+                          fontWeight: "bold",
+                          bgcolor: isToday
+                            ? "rgba(25, 118, 210, 0.15)"
+                            : "grey.50",
+                          borderBottom: "2px solid #e0e0e0",
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 100,
+                          height: "60px",
+                          padding: "4px",
+                        }}
+                      >
+                        <Box>
+                          <Typography
+                            variant="body2"
+                            sx={{ fontWeight: "bold", fontSize: "0.75rem" }}
+                          >
+                            {moment(date).format("ddd")}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: isToday ? "primary.main" : "text.primary",
+                              fontWeight: isToday ? "bold" : "normal",
+                              fontSize: "0.7rem",
+                            }}
+                          >
+                            {formatDisplayDate(date)}
+                            {isToday && (
+                              <Typography
+                                component="div"
+                                sx={{
+                                  fontSize: "0.6rem",
+                                  color: "primary.main",
+                                  fontWeight: "bold",
+                                  mt: 0.25,
+                                }}
+                              >
+                                Today
+                              </Typography>
+                            )}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {sortedSignups.map((signup, index) => (
+                  <TableRow
+                    key={index}
                     sx={{
-                      ...(date === moment().format("YYYY-MM-DD") && {
-                        bgcolor: "rgba(25, 118, 210, 0.08)",
-                      }),
+                      "&:nth-of-type(odd)": {
+                        backgroundColor: "#f9f9f9",
+                      },
+                      "&:hover": {
+                        backgroundColor: "#f0f0f0",
+                      },
                     }}
                   >
-                    <Checkbox
-                      checked={localAttendance[signup.id]?.[date] || false}
-                      onChange={(e) =>
-                        handleAttendanceChange(
-                          signup.id,
-                          date,
-                          e.target.checked
-                        )
-                      }
-                    />
-                  </TableCell>
+                    {dates.map((date) => {
+                      const isToday = date === moment().format("YYYY-MM-DD");
+                      return (
+                        <TableCell
+                          key={date}
+                          align="center"
+                          sx={{
+                            bgcolor: isToday
+                              ? "rgba(25, 118, 210, 0.08)"
+                              : "inherit",
+                            height: "53px",
+                            padding: "4px",
+                            minWidth: 100,
+                            maxWidth: 120,
+                          }}
+                        >
+                          <Checkbox
+                            checked={
+                              localAttendance[signup.id]?.[date] || false
+                            }
+                            onChange={(e) =>
+                              handleAttendanceChange(
+                                signup.id,
+                                date,
+                                e.target.checked
+                              )
+                            }
+                            sx={{
+                              padding: "4px",
+                              "&:hover": {
+                                backgroundColor: "rgba(25, 118, 210, 0.1)",
+                              },
+                            }}
+                          />
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
                 ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      </Box>
     );
   };
 
@@ -700,7 +820,7 @@ export default function ClassRollTable({ classData, show, onClose }) {
         }}
       >
         <Typography variant="h6" sx={{ mt: 4 }}>
-          Attendance Table
+          Attendance Table 22
         </Typography>
 
         <JsonViewer data={localAttendance} />

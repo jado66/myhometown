@@ -786,40 +786,70 @@ const Page = ({ params }) => {
     });
   };
 
-  const handleDeleteMarketingItem = (index) => {
+  const handleDeleteMarketingItem = (indexToDelete) => {
+    // Prevent deletion if there are only 2 or fewer items
+    if (marketingImageCount <= 2) {
+      toast.error(
+        "Cannot delete marketing item. At least 2 items must remain."
+      );
+      return;
+    }
+
     // Create a confirmation dialog before deleting
     if (
       !window.confirm(
-        `Are you sure you want to delete marketing item ${index}?`
+        `Are you sure you want to delete marketing item ${indexToDelete}?`
       )
     ) {
       return;
     }
 
-    // Create a new content object without the deleted marketing item
-    const updatedContent = { ...communityData.content };
+    setCommunityData((prevData) => {
+      const updatedContent = { ...prevData.content };
 
-    // Delete both the header and image
-    const headerKey = `marketingHeader${index === 1 ? "" : index}`;
-    const imageKey = `marketingImage${index}`;
+      // Remove the deleted item
+      const headerKey = `marketingHeader${
+        indexToDelete === 1 ? "" : indexToDelete
+      }`;
+      const imageKey = `marketingImage${indexToDelete}`;
+      delete updatedContent[headerKey];
+      delete updatedContent[imageKey];
 
-    delete updatedContent[headerKey];
-    delete updatedContent[imageKey];
+      // If we're not deleting the last item, reorder the remaining items
+      if (indexToDelete < marketingImageCount) {
+        // Shift all items after the deleted one forward
+        for (let i = indexToDelete + 1; i <= marketingImageCount; i++) {
+          const currentHeaderKey = `marketingHeader${i === 1 ? "" : i}`;
+          const currentImageKey = `marketingImage${i}`;
+          const newIndex = i - 1;
+          const newHeaderKey = `marketingHeader${
+            newIndex === 1 ? "" : newIndex
+          }`;
+          const newImageKey = `marketingImage${newIndex}`;
 
-    // Update the community data state
-    setCommunityData({
-      ...communityData,
-      content: updatedContent,
+          // Move the content to the new keys
+          if (updatedContent[currentHeaderKey]) {
+            updatedContent[newHeaderKey] = updatedContent[currentHeaderKey];
+            delete updatedContent[currentHeaderKey];
+          }
+          if (updatedContent[currentImageKey]) {
+            updatedContent[newImageKey] = updatedContent[currentImageKey];
+            delete updatedContent[currentImageKey];
+          }
+        }
+      }
+
+      return {
+        ...prevData,
+        content: updatedContent,
+      };
     });
 
-    // Decrease the marketing image count if we're deleting the highest index
-    if (index === marketingImageCount) {
-      setMarketingImageCount(marketingImageCount - 1);
-    }
+    // Decrease the marketing image count
+    setMarketingImageCount((prev) => prev - 1);
 
     toast.success("Marketing item deleted successfully.");
   };
-
   const toggleVolunteerSectionVisibility = (newState) => {
     setCommunityData((prevState) => ({
       ...prevState,
@@ -1116,21 +1146,27 @@ const Page = ({ params }) => {
               content={content}
               handleMarketingHeaderChange={handleMarketingHeaderChange}
               handleChangeMarketingImage={handleChangeMarketingImage}
-              // openImageDialog={openImageDialog}
               UploadImage={UploadImage}
               communityData={communityData}
+              onDelete={handleDeleteMarketingItem}
+              totalMarketingItems={marketingImageCount}
+              showDeleteButton={true} // Can be deleted if more than 2 total
             />
 
+            {/* Marketing Item 2 - Can be deleted when more than 2 total */}
             <MarketingItemEdit
               index={2}
               marginTop={6}
               content={content}
               handleMarketingHeaderChange={handleMarketingHeaderChange}
               handleChangeMarketingImage={handleChangeMarketingImage}
-              // openImageDialog={openImageDialog}
               UploadImage={UploadImage}
               communityData={communityData}
+              onDelete={handleDeleteMarketingItem}
+              totalMarketingItems={marketingImageCount}
+              showDeleteButton={true} // Can be deleted if more than 2 total
             />
+
             <Box
               sx={{
                 height: "40px",
@@ -1139,6 +1175,7 @@ const Page = ({ params }) => {
               }}
             />
 
+            {/* Marketing Item 3 - Optional, can be deleted when more than 2 total */}
             {(content?.marketingImage3 || marketingImageCount >= 3) && (
               <MarketingItemEdit
                 index={3}
@@ -1149,10 +1186,12 @@ const Page = ({ params }) => {
                 UploadImage={UploadImage}
                 communityData={communityData}
                 onDelete={handleDeleteMarketingItem}
-                showDeleteButton={true} // Show delete button for optional items 3-4
+                totalMarketingItems={marketingImageCount}
+                showDeleteButton={true} // This item can be deleted
               />
             )}
 
+            {/* Marketing Item 4 - Optional, can be deleted when more than 2 total */}
             {(content?.marketingImage4 || marketingImageCount >= 4) && (
               <MarketingItemEdit
                 index={4}
@@ -1163,7 +1202,8 @@ const Page = ({ params }) => {
                 UploadImage={UploadImage}
                 communityData={communityData}
                 onDelete={handleDeleteMarketingItem}
-                showDeleteButton={true} // Show delete button for optional items 3-4
+                totalMarketingItems={marketingImageCount}
+                showDeleteButton={true} // This item can be deleted
               />
             )}
           </Grid>
