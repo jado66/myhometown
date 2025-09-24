@@ -13,4 +13,6 @@ export const communityIdMap = {
   "west valley city-north east granger": "66df57faf05bd41ef9493f3e",
   "west valley city-west granger": "66df580bf05bd41ef9493f3f",
   "west valley city-central valley view": "66df581af05bd41ef9493f40",
+  "santaquin-santaquin": "6876c09a2a087f662c17feed",
+  "layton-layton": "6838adb32243dc8160ce207d",
 };

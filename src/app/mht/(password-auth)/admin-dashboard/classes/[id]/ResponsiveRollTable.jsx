@@ -820,7 +820,7 @@ export default function ClassRollTable({ classData, show, onClose }) {
         }}
       >
         <Typography variant="h6" sx={{ mt: 4 }}>
-          Attendance Table 22
+          Attendance Table
         </Typography>
 
         <JsonViewer data={localAttendance} />
