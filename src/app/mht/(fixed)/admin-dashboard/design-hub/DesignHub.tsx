@@ -487,7 +487,7 @@ export default function DesignHub() {
           </DialogTitle>
           <DialogContent>
             <Typography variant="body1" sx={{ mb: 2 }}>
-              This design service is available to voluneteers and missionaries
+              This design service is available to volunteers and missionaries
               authorized by myHometown city and/or community leaders.
             </Typography>
             <Typography variant="body1" sx={{ mb: 3 }}>
