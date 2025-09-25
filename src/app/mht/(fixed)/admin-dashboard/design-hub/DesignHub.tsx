@@ -538,29 +538,31 @@ export default function DesignHub() {
       {/* Header Section with placeholder image */}
       <Box sx={{ p: 4, mb: 2 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={6} sx={{ px: 3 }}>
+          <Grid item xs={12} xl={6}>
             <Box
               component="img"
               src={"/admin-icons/Design Hub.svg"}
               alt="Placeholder Image"
               sx={{
                 width: "100%",
+                maxWidth: "100%",
                 height: "300px",
-                borderRadius: 2,
-                borderColor: "grey.300",
-                borderWidth: 1,
-                borderStyle: "solid",
-                boxShadow: 2,
-                objectFit: "cover",
+
+                objectFit: "contain",
               }}
             />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} xl={6}>
             <Typography
               variant="h2"
               component="h1"
               gutterBottom
-              sx={{ fontWeight: "bold", mt: 3, mb: 0 }}
+              sx={{
+                fontWeight: "bold",
+                mt: 3,
+                mb: 0,
+                textAlign: { xs: "center", xl: "left" },
+              }}
             >
               MyHometown & BYU Design Partnership
             </Typography>
