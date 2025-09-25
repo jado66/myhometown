@@ -38,30 +38,17 @@ interface OrderFormProps {
   onSubmit: (data: OrderFormData) => void;
   isSubmitting: boolean;
   hasItems: boolean;
+  formData: OrderFormData;
+  updateField: (field: keyof OrderFormData, value: string) => void;
 }
 
 export function OrderForm({
   onSubmit,
   isSubmitting,
   hasItems,
+  formData,
+  updateField,
 }: OrderFormProps) {
-  const [formData, setFormData] = useState<OrderFormData>({
-    name: "",
-    email: "",
-    phone: "",
-    locationType: "",
-    community: "",
-    communityLabel: "",
-    city: "",
-    cityLabel: "",
-    additionalRequests: "",
-    authorizationType: "",
-  });
-
-  const updateField = (field: keyof OrderFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);

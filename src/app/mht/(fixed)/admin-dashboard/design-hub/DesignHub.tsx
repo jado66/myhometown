@@ -12,9 +12,19 @@ import {
   CardContent,
   Button,
   Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Alert,
+  AlertTitle,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Add, Email, Person, Phone } from "@mui/icons-material";
+import { Add, Email, Security, Phone } from "@mui/icons-material";
 import {
   promotionalItems,
   myHometownItems,
@@ -23,6 +33,19 @@ import {
 import { ItemDialog } from "./ItemDialog";
 import { ShoppingCart, type DesignCartItem } from "./ShoppingCart";
 import { OrderForm } from "./OrderForm";
+
+interface OrderFormData {
+  name: string;
+  email: string;
+  phone: string;
+  locationType: string;
+  community: string;
+  authorizationType: string;
+  city: string;
+  additionalRequests: string;
+  communityLabel: string;
+  cityLabel: string;
+}
 
 // Carousel and LightBox imports
 import CarouselComponent from "@/components/ui/DesignHubCarousel";
@@ -264,6 +287,9 @@ export default function DesignHub() {
       </Grid>
     </Box>
   );
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [authorizationDialogOpen, setAuthorizationDialogOpen] = useState(true);
+
   const [activeTab, setActiveTab] = useState(-1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<{
@@ -275,6 +301,18 @@ export default function DesignHub() {
     CatalogItem[]
   >([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<OrderFormData>({
+    name: "",
+    email: "",
+    phone: "",
+    locationType: "",
+    community: "",
+    communityLabel: "",
+    city: "",
+    cityLabel: "",
+    additionalRequests: "",
+    authorizationType: "",
+  });
 
   // For LightBox
   const [lightBoxImage, setLightBoxImage] = useState<string | null>(null);
@@ -420,6 +458,78 @@ export default function DesignHub() {
   );
 
   const hasItems = cartItems.length > 0 || promotionalCartItems.length > 0;
+
+  const updateField = (field: keyof OrderFormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleAuthorizationSubmit = () => {
+    if (formData.authorizationType) {
+      setIsAuthorized(true);
+      setAuthorizationDialogOpen(false);
+    }
+  };
+
+  // Don't render the main content until authorized
+  if (!isAuthorized) {
+    return (
+      <>
+        <Dialog
+          open={authorizationDialogOpen}
+          onClose={() => {}} // Prevent closing without authorization
+          maxWidth="sm"
+          fullWidth
+          disableEscapeKeyDown
+        >
+          <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Security color="primary" />
+            Authorization Required
+          </DialogTitle>
+          <DialogContent>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              This design service is available to voluneteers and missionaries
+              authorized by myHometown city and/or community leaders.
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 3 }}>
+              Please confirm your authorization to proceed.
+            </Typography>
+            <FormControl fullWidth required>
+              <InputLabel>Authorized By</InputLabel>
+              <Select
+                value={formData.authorizationType}
+                onChange={(e) =>
+                  updateField("authorizationType", e.target.value)
+                }
+                label="Authorization Type"
+              >
+                <MenuItem value="utah-state-executive">
+                  Utah State Executive
+                </MenuItem>
+                <MenuItem value="city-chair">City Chair</MenuItem>
+                <MenuItem value="community-executive-director">
+                  Community Executive Director
+                </MenuItem>
+                <MenuItem value="crc-director">CRC Director</MenuItem>
+                <MenuItem value="neighborhood-services-director">
+                  Neighborhood Services Director
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={handleAuthorizationSubmit}
+              variant="contained"
+              disabled={!formData.authorizationType}
+              size="large"
+            >
+              Continue to Design Hub
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </>
+    );
+  }
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -660,6 +770,8 @@ export default function DesignHub() {
                 onSubmit={handleOrderSubmit}
                 isSubmitting={isSubmitting}
                 hasItems={hasItems}
+                formData={formData}
+                updateField={updateField}
               />
             </Box>
           </Box>
