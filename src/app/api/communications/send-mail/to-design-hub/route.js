@@ -362,7 +362,11 @@ export async function POST(request, res) {
   const requestBody = await request.json();
   const { subject, html } = requestBody;
 
-  const recipientEmails = ["kathy.craven@cementation.com", "jado66@gmail.com"];
+  const recipientEmails = [
+    "kathy.craven@cementation.com",
+    "canace@me.com",
+    "ostevens@byu.edu",
+  ];
 
   try {
     // Use the Design Hub HTML formatter
