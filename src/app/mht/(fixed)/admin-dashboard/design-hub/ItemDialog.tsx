@@ -19,7 +19,7 @@ import {
 interface ItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  itemType: "flyers" | "certificates" | "signs-banners";
+  itemType: "standard-print-items" | "signs-banners";
   itemTitle: string;
   onSubmit: (data: any) => void;
 }
@@ -120,7 +120,8 @@ export function ItemDialog({
             fullWidth
           />
 
-          {(itemType === "flyers" || itemType === "signs-banners") && (
+          {(itemType === "standard-print-items" ||
+            itemType === "signs-banners") && (
             <TextField
               label="QR Codes/URLs"
               value={formData.qrCodes}
@@ -132,7 +133,7 @@ export function ItemDialog({
             />
           )}
 
-          {itemType === "flyers" ? (
+          {itemType === "standard-print-items" ? (
             <FormControl fullWidth>
               <InputLabel>Size</InputLabel>
               <Select

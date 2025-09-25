@@ -29,23 +29,42 @@ import CarouselComponent from "@/components/ui/DesignHubCarousel";
 import { LightBox } from "@/components/LightBox";
 
 // Example images for each tab
-const flyersExamples = [
+const standardPrintItemsExamples: string[] = [
   "/design-hub/Classes Flyer.webp",
   "/design-hub/ComingSoon-Span.webp",
   "/design-hub/Door Hanger.webp",
   "/design-hub/Flyer Children.webp",
   "/design-hub/Flyer Classes 2.webp",
   "/design-hub/Grand opening Flyer.webp",
+  "/design-hub/Certificate.jpeg",
+  "/design-hub/DoorHanger.jpg",
+  "/design-hub/Layton_Flier.jpg",
+  "/design-hub/MHT_ClassInformationPosters_ESL.jpg",
+  "/design-hub/MHT_ClassInformationPosters_Piano.jpg",
+  "/design-hub/MHT_ClassInformationPosters_Sewing.jpg",
+  "/design-hub/Classroom Signs-01.jpg",
+  "/design-hub/Classroom Signs-02.jpg",
+  "/design-hub/Classroom Signs-03.jpg",
+  "/design-hub/Classroom Signs-04.jpg",
+  "/design-hub/Classroom Signs-05.jpg",
+  "/design-hub/Classroom Signs-06.jpg",
+  "/design-hub/Classroom Signs-07.jpg",
+  "/design-hub/Classroom Signs-08.jpg",
+  "/design-hub/Classroom Signs-09.jpg",
+  "/design-hub/Classroom Signs-10.jpg",
 ];
-const certificatesExamples = [
-  "/design-hub/Certificate.jpeg",
-  "/design-hub/Certificate.jpeg",
-  "/design-hub/Certificate.jpeg",
-];
-const signsBannersExamples = [
+const signsBannersExamples: string[] = [
   "/design-hub/Banner 1.jpeg",
   "/design-hub/Banner 2.jpeg",
   "/design-hub/Yard Sign.jpeg",
+  "/design-hub/Aframe_A Frame Right.jpg",
+  "/design-hub/BlueFlag.jpg",
+  "/design-hub/GreenFlag.jpg",
+  "/design-hub/OrangeFlag.jpg",
+  "/design-hub/YellowFlag.jpg",
+  "/design-hub/Flags.webp",
+  "/design-hub/MHT_Blue_CAT-DRRS34_VG.jpg",
+  "/design-hub/MHT_Green_CAT-DRRS34_VG.jpg",
 ];
 
 interface CartItem {
@@ -74,7 +93,7 @@ export default function DesignHub() {
           component="h2"
           sx={{ fontWeight: "bold", mb: 1 }}
         >
-          Co-Branded Promotional Materials
+          City/Community Co-Branded Promo Materials
         </Typography>
         <Typography variant="body2" color="text.secondary">
           These promotional material designs feature both your community&apos;s
@@ -170,7 +189,7 @@ export default function DesignHub() {
           component="h2"
           sx={{ fontWeight: "bold", mb: 1 }}
         >
-          myHometown Promotional Materials
+          myHometown Promo Materials
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           These promotional materials are pre-designed with the myHometown logo
@@ -248,7 +267,7 @@ export default function DesignHub() {
   const [activeTab, setActiveTab] = useState(-1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<{
-    type: "flyers" | "certificates" | "signs-banners";
+    type: "standard-print-items" | "signs-banners";
     title: string;
   } | null>(null);
   const [cartItems, setCartItems] = useState<DesignCartItem[]>([]);
@@ -361,13 +380,9 @@ export default function DesignHub() {
     }
   };
 
-  const handleAddItem = (type: "flyers" | "certificates" | "signs-banners") => {
+  const handleAddItem = (type: "standard-print-items" | "signs-banners") => {
     const categoryName =
-      type === "flyers"
-        ? "Flyer"
-        : type === "certificates"
-        ? "Certificate"
-        : "Sign/Banner";
+      type === "standard-print-items" ? "Standard Print Item" : "Sign/Banner";
     setSelectedItem({ type, title: categoryName });
     setDialogOpen(true);
   };
@@ -375,7 +390,7 @@ export default function DesignHub() {
   // ...existing handlers...
 
   const renderSingleAddButton = (
-    type: "flyers" | "certificates" | "signs-banners",
+    type: "standard-print-items" | "signs-banners",
     title: string,
     description: string
   ) => (
@@ -417,7 +432,7 @@ export default function DesignHub() {
           <Grid item xs={12} md={6} sx={{ px: 3 }}>
             <Box
               component="img"
-              src="/design-hub/placeholder.png"
+              src={"/admin-icons/Design Hub.svg"}
               alt="Placeholder Image"
               sx={{
                 width: "100%",
@@ -438,20 +453,21 @@ export default function DesignHub() {
               gutterBottom
               sx={{ fontWeight: "bold", mt: 3, mb: 0 }}
             >
-              MHT Design Hub
+              MyHometown & BYU Design Partnership
             </Typography>
 
-            <Typography variant="h5">
+            {/* <Typography variant="h5">
               Order designs that are ready to print!
-            </Typography>
+            </Typography> */}
             <Typography
               variant="h6"
               color="text.secondary"
               sx={{ maxWidth: "800px", mx: "auto", mt: 3 }}
             >
-              MyHometown and the Brigham Young Design Department have a
-              partnership where they will design your marketing and design
-              materials for your city or community needs.
+              Through our partnership with the BYU Design Department, we offer
+              professional marketing and design materials at no cost for the
+              design. This service is independently funded and gives BYU design
+              students a professional learning opportunity.
             </Typography>
 
             <Typography
@@ -459,11 +475,23 @@ export default function DesignHub() {
               color="text.secondary"
               sx={{ maxWidth: "800px", mx: "auto", mt: 2 }}
             >
-              When your design is created, you will receive a digital template
-              for printing or production, via email.
+              You&apos;ll receive print-ready digital files, saving your
+              volunteers time and effort.{" "}
+              <strong>
+                Your community is responsible for printing and/or production
+                costs.
+              </strong>
             </Typography>
-
             <Typography
+              variant="h6"
+              color="text.secondary"
+              sx={{ maxWidth: "800px", mx: "auto", mt: 2 }}
+            >
+              This service lightens the load for volunteers, letting you focus
+              on building connections and community, while we produce designs
+              that are in line with the brand standards of myHometown.
+            </Typography>
+            {/* <Typography
               variant="body1"
               color="error"
               sx={{ maxWidth: "800px", fontWeight: "bold", mx: "auto", mt: 2 }}
@@ -472,7 +500,7 @@ export default function DesignHub() {
               there is no cost to your city/community. The cost of printing or
               purchasing promotional materials is the responsibility of your
               city/community.
-            </Typography>
+            </Typography> */}
           </Grid>
         </Grid>
       </Box>
@@ -499,11 +527,10 @@ export default function DesignHub() {
               variant="fullWidth"
               sx={{ borderBottom: 1, borderColor: "divider" }}
             >
-              <Tab label="Flyers" />
-              <Tab label="Certificates" />
+              <Tab label="Standard Print Items" />
               <Tab label="Signs & Banners" />
-              <Tab label="Co-Branded Promotional Materials" />
-              <Tab label="myHometown Promotional Materials" />
+              <Tab label="City/Community Co-Branded Promo Materials" />
+              <Tab label="myHometown Promo Materials" />
             </Tabs>
 
             <Box sx={{ p: 3 }}>
@@ -529,15 +556,16 @@ export default function DesignHub() {
                       component="h2"
                       sx={{ fontWeight: "bold", mb: 1 }}
                     >
-                      Flyers
+                      Standard Print Items
                     </Typography>
                     <Typography
                       variant="body2"
                       color="text.secondary"
                       sx={{ mb: 1 }}
                     >
-                      Create custom flyers for your community events and
-                      announcements
+                      Create custom flyers, certificates, and other print
+                      materials for your community events, announcements, and
+                      recognitions
                     </Typography>
                   </Box>
                   <Typography
@@ -548,7 +576,7 @@ export default function DesignHub() {
                     Click to enlarge
                   </Typography>
                   <CarouselComponent
-                    images={flyersExamples}
+                    images={standardPrintItemsExamples as any}
                     speed={700}
                     onImageClick={handleExampleImageClick}
                     isEdit={false}
@@ -561,58 +589,13 @@ export default function DesignHub() {
                   {/* Click to enlarge image helper text*/}
 
                   {renderSingleAddButton(
-                    "flyers",
-                    "Flyer",
-                    "Create custom flyers for your community events and announcements"
+                    "standard-print-items",
+                    "Standard Print Item",
+                    "Create custom flyers, certificates, and other print materials for your community"
                   )}
                 </>
               )}
               {activeTab === 1 && (
-                <>
-                  <Box sx={{ px: 3, pt: 2, pb: 1, bgcolor: "grey.50" }}>
-                    <Typography
-                      variant="h5"
-                      component="h2"
-                      sx={{ fontWeight: "bold", mb: 1 }}
-                    >
-                      Certificates
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 1 }}
-                    >
-                      Design certificates for volunteers, achievements, and
-                      recognitions
-                    </Typography>
-                  </Box>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ display: "block", textAlign: "center", mt: 3 }}
-                  >
-                    Click to enlarge
-                  </Typography>
-                  <CarouselComponent
-                    images={certificatesExamples}
-                    speed={700}
-                    onImageClick={handleExampleImageClick}
-                    isEdit={false}
-                    addCarouselImage={() => {}}
-                    editCarouselImage={() => {}}
-                    removeCarouselImage={() => {}}
-                    noDots
-                    height={150}
-                  />
-
-                  {renderSingleAddButton(
-                    "certificates",
-                    "Certificate",
-                    "Design certificates for volunteers, achievements, and recognitions"
-                  )}
-                </>
-              )}
-              {activeTab === 2 && (
                 <>
                   <Box sx={{ px: 3, pt: 2, pb: 1, bgcolor: "grey.50" }}>
                     <Typography
@@ -640,7 +623,7 @@ export default function DesignHub() {
                     Click to enlarge
                   </Typography>
                   <CarouselComponent
-                    images={signsBannersExamples}
+                    images={signsBannersExamples as any}
                     speed={700}
                     onImageClick={handleExampleImageClick}
                     isEdit={false}
@@ -658,8 +641,8 @@ export default function DesignHub() {
                   )}
                 </>
               )}
-              {activeTab === 3 && renderPromotionalItems(promotionalItems)}
-              {activeTab === 4 && renderMyHometownItems(myHometownItems)}
+              {activeTab === 2 && renderPromotionalItems(promotionalItems)}
+              {activeTab === 3 && renderMyHometownItems(myHometownItems)}
             </Box>
           </Paper>
         </Grid>
