@@ -37,24 +37,26 @@ const POSITIONS_BY_LEVEL = {
       "Executive Secretary",
       "Technology Specialist",
       "Event Coordinator",
+      "Special Projects",
     ],
   },
   community: {
     "Community Board": [
       "Community Executive Director",
+
+      "Associate Community Executive Director",
       "Technology Specialist",
     ],
     "Community Resource Center": [
-      "Director",
-      "Associate Director",
+      "CRC Director",
+      "CRC Associate Director",
       "Teacher",
       "Supervisor",
-      "Administrator",
+      "Staff",
     ],
     "Neighborhood Services": [
       "Neighborhood Services Director",
-      "Project Developer",
-      "Resource Couple",
+      "Neighborhood Services Associate Director",
       "Support Staff",
     ],
   },

@@ -33,19 +33,19 @@ const categories = [
     value: "crc",
     label: "Community Resource Center",
     description:
-      "Assisting with local resource center operations, and community support services.",
+      "Log any hours associated with Community Resource Center activities, including meeting, planning, travel, etc.",
   },
   {
     value: "dos",
     label: "Days Of Service",
     description:
-      "Door-to-door visits, street contacting, referral visits, and direct outreach activities",
+      "Log any hours associated with Days Of Service activities, including meeting, planning, travel, etc.",
   },
   {
     value: "administrative",
     label: "Administrative Work",
     description:
-      "Planning, reporting, training, meetings, and organizational tasks",
+      "Only log hours in this category if you are a myHometown Utah, City, or Community Executive.",
   },
 ];
 
@@ -232,7 +232,7 @@ export default function MissionaryLogHoursDialog({
           <Typography variant="h6" sx={{ mb: 2 }}>
             Activity Breakdown
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
             Enter hours for any categories that apply. You don't need to fill in
             all categories to submit.
           </Typography>

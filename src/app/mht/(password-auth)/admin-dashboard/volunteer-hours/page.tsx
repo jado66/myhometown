@@ -147,7 +147,7 @@ export default function MissionaryLogin() {
                 <Typography variant="body2">
                   <strong>
                     If you do not have an account reach out to your Community
-                    Resource Center admin.
+                    Executive Director.
                   </strong>
                 </Typography>
               </Alert>

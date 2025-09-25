@@ -644,7 +644,7 @@ export default function MissionaryManagement() {
             <Person sx={{ mr: 2, color: "primary.main" }} />
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h6" component="h1" fontWeight="bold">
-                MHT Missionary Management
+                MHT Missionary &amp; Volunteer Management
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Manage contacts, assignments, and service records

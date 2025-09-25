@@ -110,7 +110,7 @@ export const promotionalItems: CatalogItem[] = [
     id: "pullup-banners",
     title: "Pull-up Banners",
     description: "Promotional pull-up banners for events and displays",
-    image: "/design-hub/MHT_Blue_CAT-DRRS34_VG.jpg?height=200&width=300",
+    image: "/design-hub/POP-Up_Blue_In_situ.jpeg?height=200&width=300",
     category: "promotional",
   },
   {

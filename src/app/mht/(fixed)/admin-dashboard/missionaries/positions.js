@@ -14,6 +14,7 @@ export const POSITIONS_BY_LEVEL = {
       "Executive Secretary",
       "Technology Specialist",
       "Event Coordinator",
+      "Special Projects",
     ],
   },
   community: {

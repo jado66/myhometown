@@ -80,7 +80,7 @@ const signsBannersExamples: string[] = [
   "/design-hub/Banner 1.jpeg",
   "/design-hub/Banner 2.jpeg",
   "/design-hub/Yard Sign.jpeg",
-  // "/design-hub/Aframe_A Frame Right.jpg",
+  "/design-hub/Aframe.jpeg",
   //
   // "/design-hub/GreenFlag.jpg",
   // "/design-hub/OrangeFlag.jpg",

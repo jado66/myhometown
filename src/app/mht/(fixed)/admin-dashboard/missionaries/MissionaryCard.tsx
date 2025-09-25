@@ -223,13 +223,22 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
             <Avatar
               src={missionary.profile_picture_url}
               alt={fullName}
-              sx={{ width: 56, height: 56, bgcolor: "primary.light" }}
+              sx={{ 
+                width: 56, 
+                height: 56, 
+                bgcolor: missionary.profile_picture_url ? "primary.light" : "warning.light",
+                border: !missionary.profile_picture_url ? "2px solid" : "none",
+                borderColor: !missionary.profile_picture_url ? "warning.main" : "transparent",
+                cursor: "pointer"
+              }}
               onClick={() =>
-                onProfilePictureClick(missionary.profile_picture_url, fullName)
+                onProfilePictureClick?.(missionary.profile_picture_url, fullName)
               }
             >
               {!missionary.profile_picture_url && (
-                <Typography variant="h6">{initials}</Typography>
+                <Typography variant="h6" color={!missionary.profile_picture_url ? "warning.contrastText" : "inherit"}>
+                  {initials}
+                </Typography>
               )}
             </Avatar>
 
@@ -250,13 +259,22 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
                   variant="outlined"
                   sx={{ textTransform: "capitalize" }}
                 />
-                {missionary.title && (
+                {missionary.title ? (
                   <Typography
                     variant="caption"
                     color="text.secondary"
                     fontWeight="medium"
                   >
                     {missionary.title}
+                  </Typography>
+                ) : (
+                  <Typography
+                    variant="caption"
+                    color="warning.main"
+                    fontWeight="medium"
+                    fontStyle="italic"
+                  >
+                    Position not set
                   </Typography>
                 )}
               </Stack>
@@ -303,9 +321,21 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
                 </Tooltip>
               )}
 
-              {/* Error icon if title is missing */}
-              {!missionary.title && (
-                <Tooltip title="Additional Information Required">
+              {/* Error icons for missing information */}
+              {(!missionary.title || 
+                !missionary.contact_number || 
+                !missionary.stake_name || 
+                !missionary.start_date || 
+                !missionary.duration || 
+                !missionary.profile_picture_url) && (
+                <Tooltip title={`Missing: ${[
+                  !missionary.title && "Position",
+                  !missionary.contact_number && "Phone Number", 
+                  !missionary.stake_name && "Home Stake",
+                  !missionary.start_date && "Start Date",
+                  !missionary.duration && "Mission Duration",
+                  !missionary.profile_picture_url && "Profile Picture"
+                ].filter(Boolean).join(", ")} - Please update`}>
                   <IconButton
                     size="small"
                     color="error"
@@ -352,19 +382,25 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
             <Grid item xs={12} sm={6}>
               <IconText
                 icon={<EmailIcon />}
-                text={missionary.email}
+                text={missionary.email || "No email provided"}
                 variant="body2"
-                sx={{ mb: 1 }}
+                sx={{ 
+                  mb: 1,
+                  opacity: missionary.email ? 1 : 0.6,
+                  fontStyle: missionary.email ? 'normal' : 'italic'
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              {missionary.contact_number && (
-                <IconText
-                  icon={<PhoneIcon />}
-                  text={missionary.contact_number}
-                  variant="body2"
-                />
-              )}
+              <IconText
+                icon={<PhoneIcon />}
+                text={missionary.contact_number || "No phone provided"}
+                variant="body2"
+                sx={{
+                  opacity: missionary.contact_number ? 1 : 0.6,
+                  fontStyle: missionary.contact_number ? 'normal' : 'italic'
+                }}
+              />
             </Grid>
             <Grid item xs={12} sm={6}>
               <IconText
@@ -377,20 +413,36 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
 
           {/* Mission Timeline */}
           <Grid container spacing={2} alignItems="center" sx={{ mb: 0.5 }}>
-            {missionary.start_date && (
-              <Grid item>
-                <Typography variant="caption" color="text.secondary">
-                  {`Called: ${formatDate(missionary.start_date)}`}
-                </Typography>
-              </Grid>
-            )}
-            {missionary.duration && (
-              <Grid item>
-                <Typography variant="caption" color="text.secondary">
-                  Duration: {missionary.duration}
-                </Typography>
-              </Grid>
-            )}
+            <Grid item>
+              <Typography 
+                variant="caption" 
+                color="text.secondary"
+                sx={{
+                  opacity: missionary.start_date ? 1 : 0.6,
+                  fontStyle: missionary.start_date ? 'normal' : 'italic'
+                }}
+              >
+                {missionary.start_date 
+                  ? `Called: ${formatDate(missionary.start_date)}`
+                  : "Start date not set"
+                }
+              </Typography>
+            </Grid>
+            <Grid item>
+              <Typography 
+                variant="caption" 
+                color="text.secondary"
+                sx={{
+                  opacity: missionary.duration ? 1 : 0.6,
+                  fontStyle: missionary.duration ? 'normal' : 'italic'
+                }}
+              >
+                {missionary.duration 
+                  ? `Duration: ${missionary.duration}`
+                  : "Duration not set"
+                }
+              </Typography>
+            </Grid>
             {getReleaseDate() && (
               <Grid item>
                 <Typography variant="caption" color="text.secondary">
@@ -537,16 +589,20 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
                 <Typography variant="body2">
                   <strong>Level:</strong> {missionary.assignment_level}
                 </Typography>
-                {missionary.title && (
-                  <Typography variant="body2">
-                    <strong>Title:</strong> {missionary.title}
-                  </Typography>
-                )}
-                {missionary.stake_name && (
-                  <Typography variant="body2">
-                    <strong>Home Stake:</strong> {missionary.stake_name}
-                  </Typography>
-                )}
+                <Typography variant="body2">
+                  <strong>Title:</strong> {missionary.title ? (
+                    <span>{missionary.title}</span>
+                  ) : (
+                    <span style={{color: '#ed6c02', fontStyle: 'italic'}}>Not set</span>
+                  )}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Home Stake:</strong> {missionary.stake_name ? (
+                    <span>{missionary.stake_name}</span>
+                  ) : (
+                    <span style={{color: '#ed6c02', fontStyle: 'italic'}}>Not set</span>
+                  )}
+                </Typography>
               </Stack>
             </Box>
 

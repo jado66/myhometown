@@ -588,7 +588,7 @@ export default function ClassRollTable({ classData, show, onClose }) {
             <Table stickyHeader size="small">
               <TableHead>
                 <TableRow>
-                  {nameFields.map((field) => (
+                  {["First Name", "Last Name"].map((field) => (
                     <TableCell
                       key={field.key}
                       sx={{
@@ -601,6 +601,8 @@ export default function ClassRollTable({ classData, show, onClose }) {
                         top: 0,
                         zIndex: 100,
                         height: "60px",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
                       }}
                     >
                       {field.key === "lastName" ? (
@@ -610,10 +612,10 @@ export default function ClassRollTable({ classData, show, onClose }) {
                           onClick={toggleLastNameSort}
                           sx={{ userSelect: "none" }}
                         >
-                          {field.label}
+                          {field}
                         </TableSortLabel>
                       ) : (
-                        field.label
+                        field
                       )}
                     </TableCell>
                   ))}
