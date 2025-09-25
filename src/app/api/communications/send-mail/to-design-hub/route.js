@@ -165,10 +165,6 @@ const formattedDesignHubHtml = (html) => {
             <span class="label">To Be Designed For:</span>
             <span class="value">${html.location}</span>
           </div>
-           <div class="field-row">
-            <span class="label">ID:</span>
-            <span class="value">${html.idloggedRequest}</span>
-          </div>
         </div>
         
         <div class="cart-section">
