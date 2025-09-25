@@ -80,14 +80,13 @@ const signsBannersExamples: string[] = [
   "/design-hub/Banner 1.jpeg",
   "/design-hub/Banner 2.jpeg",
   "/design-hub/Yard Sign.jpeg",
-  "/design-hub/Aframe_A Frame Right.jpg",
-  "/design-hub/BlueFlag.jpg",
-  "/design-hub/GreenFlag.jpg",
-  "/design-hub/OrangeFlag.jpg",
-  "/design-hub/YellowFlag.jpg",
-  "/design-hub/Flags.webp",
-  "/design-hub/MHT_Blue_CAT-DRRS34_VG.jpg",
-  "/design-hub/MHT_Green_CAT-DRRS34_VG.jpg",
+  // "/design-hub/Aframe_A Frame Right.jpg",
+  //
+  // "/design-hub/GreenFlag.jpg",
+  // "/design-hub/OrangeFlag.jpg",
+  // "/design-hub/YellowFlag.jpg",
+  // "/design-hub/MHT_Blue_CAT-DRRS34_VG.jpg",
+  // "/design-hub/MHT_Green_CAT-DRRS34_VG.jpg",
 ];
 
 interface CartItem {

@@ -89,7 +89,7 @@ export const promotionalItems: CatalogItem[] = [
     id: "flags",
     title: "Flags",
     description: "Custom flags for community events and locations",
-    image: "/design-hub/Flags.webp?height=200&width=300",
+    image: "/design-hub/OrangeFlag.jpg?height=200&width=300",
     category: "promotional",
   },
   {
@@ -104,6 +104,13 @@ export const promotionalItems: CatalogItem[] = [
     title: "Table Cloths",
     description: "Branded table cloths for events and displays",
     image: "/design-hub/Green_TableCloth.webp?height=200&width=300",
+    category: "promotional",
+  },
+  {
+    id: "pullup-banners",
+    title: "Pull-up Banners",
+    description: "Promotional pull-up banners for events and displays",
+    image: "/design-hub/MHT_Blue_CAT-DRRS34_VG.jpg?height=200&width=300",
     category: "promotional",
   },
   {
