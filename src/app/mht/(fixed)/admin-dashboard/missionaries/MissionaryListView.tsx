@@ -221,20 +221,24 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                       </Tooltip>
                     )}
                     {/* Error icon for missing information */}
-                    {(!missionary.title || 
-                      !missionary.contact_number || 
-                      !missionary.stake_name || 
-                      !missionary.start_date || 
-                      !missionary.duration || 
+                    {(!missionary.title ||
+                      !missionary.contact_number ||
+                      !missionary.stake_name ||
+                      !missionary.start_date ||
+                      !missionary.duration ||
                       !missionary.profile_picture_url) && (
-                      <Tooltip title={`Missing: ${[
-                        !missionary.title && "Position",
-                        !missionary.contact_number && "Phone Number", 
-                        !missionary.stake_name && "Home Stake",
-                        !missionary.start_date && "Start Date",
-                        !missionary.duration && "Mission Duration",
-                        !missionary.profile_picture_url && "Profile Picture"
-                      ].filter(Boolean).join(", ")} - Click to update`}>
+                      <Tooltip
+                        title={`Missing: ${[
+                          !missionary.title && "Position",
+                          !missionary.contact_number && "Phone Number",
+                          !missionary.stake_name && "Home Stake",
+                          !missionary.start_date && "Start Date",
+                          !missionary.duration && "Mission Duration",
+                          !missionary.profile_picture_url && "Profile Picture",
+                        ]
+                          .filter(Boolean)
+                          .join(", ")} - Click to update`}
+                      >
                         <IconButton
                           size="small"
                           color="error"
@@ -266,8 +270,12 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                           bgcolor: missionary.profile_picture_url
                             ? "transparent"
                             : "warning.light",
-                          border: !missionary.profile_picture_url ? "2px solid" : "none",
-                          borderColor: !missionary.profile_picture_url ? "warning.main" : "transparent",
+                          border: !missionary.profile_picture_url
+                            ? "2px solid"
+                            : "none",
+                          borderColor: !missionary.profile_picture_url
+                            ? "warning.main"
+                            : "transparent",
                           cursor: onProfilePictureClick ? "pointer" : undefined,
                           boxShadow: onProfilePictureClick ? 2 : undefined,
                           transition: "box-shadow 0.2s",
@@ -336,11 +344,13 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                         <PhoneIcon
                           sx={{ fontSize: 14, color: "text.secondary" }}
                         />
-                        <Typography 
+                        <Typography
                           variant="body2"
                           sx={{
                             opacity: missionary.contact_number ? 1 : 0.6,
-                            fontStyle: missionary.contact_number ? 'normal' : 'italic'
+                            fontStyle: missionary.contact_number
+                              ? "normal"
+                              : "italic",
                           }}
                         >
                           {missionary.contact_number || "No phone"}
@@ -376,13 +386,13 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
 
                   <TableCell>
                     <Box>
-                      <Typography 
-                        variant="body2" 
+                      <Typography
+                        variant="body2"
                         fontWeight="medium"
                         sx={{
                           opacity: missionary.title ? 1 : 0.6,
-                          fontStyle: missionary.title ? 'normal' : 'italic',
-                          color: missionary.title ? 'inherit' : 'warning.main'
+                          fontStyle: missionary.title ? "normal" : "italic",
+                          color: missionary.title ? "inherit" : "warning.main",
                         }}
                       >
                         {missionary.title || "Position not set"}
@@ -445,15 +455,21 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                         gap: 0.5,
                       }}
                     >
-                      <Typography 
+                      <Typography
                         variant="body2"
                         sx={{
                           opacity: missionary.start_date ? 1 : 0.6,
-                          fontStyle: missionary.start_date ? 'normal' : 'italic',
-                          color: missionary.start_date ? 'inherit' : 'warning.main'
+                          fontStyle: missionary.start_date
+                            ? "normal"
+                            : "italic",
+                          color: missionary.start_date
+                            ? "inherit"
+                            : "warning.main",
                         }}
                       >
-                        {missionary.start_date ? formatDate(missionary.start_date) : "Start date not set"}
+                        {missionary.start_date
+                          ? formatDate(missionary.start_date)
+                          : "Start date not set"}
                       </Typography>
                       {missionary.start_date &&
                         missionary.duration &&
@@ -463,8 +479,8 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                           </Typography>
                         )}
                       {(!missionary.start_date || !missionary.duration) && (
-                        <Typography 
-                          variant="caption" 
+                        <Typography
+                          variant="caption"
                           color="warning.main"
                           fontStyle="italic"
                         >
@@ -577,15 +593,20 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                       <PhoneIcon
                         sx={{ fontSize: 16, color: "text.secondary" }}
                       />
-                      <Typography 
+                      <Typography
                         variant="body2"
                         sx={{
                           opacity: selectedMissionary.contact_number ? 1 : 0.6,
-                          fontStyle: selectedMissionary.contact_number ? 'normal' : 'italic',
-                          color: selectedMissionary.contact_number ? 'inherit' : 'warning.main'
+                          fontStyle: selectedMissionary.contact_number
+                            ? "normal"
+                            : "italic",
+                          color: selectedMissionary.contact_number
+                            ? "inherit"
+                            : "warning.main",
                         }}
                       >
-                        {selectedMissionary.contact_number || "No phone provided"}
+                        {selectedMissionary.contact_number ||
+                          "No phone provided"}
                       </Typography>
                     </Box>
                   </Grid>
@@ -646,17 +667,23 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                     {selectedMissionary.assignment_level}
                   </Typography>
                   <Typography variant="body2">
-                    <strong>Title:</strong> {selectedMissionary.title ? (
+                    <strong>Title:</strong>{" "}
+                    {selectedMissionary.title ? (
                       <span>{selectedMissionary.title}</span>
                     ) : (
-                      <span style={{color: '#ed6c02', fontStyle: 'italic'}}>Not set</span>
+                      <span style={{ color: "#ed6c02", fontStyle: "italic" }}>
+                        Not set
+                      </span>
                     )}
                   </Typography>
                   <Typography variant="body2">
-                    <strong>Home Stake:</strong> {selectedMissionary.stake_name ? (
+                    <strong>Home Stake:</strong>{" "}
+                    {selectedMissionary.stake_name ? (
                       <span>{selectedMissionary.stake_name}</span>
                     ) : (
-                      <span style={{color: '#ed6c02', fontStyle: 'italic'}}>Not set</span>
+                      <span style={{ color: "#ed6c02", fontStyle: "italic" }}>
+                        Not set
+                      </span>
                     )}
                   </Typography>
                 </Stack>
@@ -664,33 +691,33 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
 
               {/* Mission Timeline */}
               <Box>
-                <Typography
-                  variant="subtitle1"
-                  fontWeight="bold"
-                  gutterBottom
-                >
+                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                   Mission Timeline
                 </Typography>
                 <Stack spacing={1}>
-                  <Box
-                    sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                  >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                     <CalendarTodayIcon
                       sx={{ fontSize: 16, color: "text.secondary" }}
                     />
                     <Typography variant="body2">
-                      <strong>Called:</strong> {selectedMissionary.start_date ? (
+                      <strong>Called:</strong>{" "}
+                      {selectedMissionary.start_date ? (
                         <span>{formatDate(selectedMissionary.start_date)}</span>
                       ) : (
-                        <span style={{color: '#ed6c02', fontStyle: 'italic'}}>Not set</span>
+                        <span style={{ color: "#ed6c02", fontStyle: "italic" }}>
+                          Not set
+                        </span>
                       )}
                     </Typography>
                   </Box>
                   <Typography variant="body2">
-                    <strong>Duration:</strong> {selectedMissionary.duration ? (
+                    <strong>Duration:</strong>{" "}
+                    {selectedMissionary.duration ? (
                       <span>{selectedMissionary.duration}</span>
                     ) : (
-                      <span style={{color: '#ed6c02', fontStyle: 'italic'}}>Not set</span>
+                      <span style={{ color: "#ed6c02", fontStyle: "italic" }}>
+                        Not set
+                      </span>
                     )}
                   </Typography>
                   {selectedMissionary.start_date &&
