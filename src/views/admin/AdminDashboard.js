@@ -12,6 +12,7 @@ import { useUser } from "@/hooks/use-user";
 import Loading from "@/components/util/Loading";
 import NextLink from "next/link";
 import PermissionGuard from "@/guards/permission-guard";
+import { ShowIfAuthenticatedOnce } from "@/guards/withAuthenticatedOnce";
 import { useRouter } from "next/navigation";
 import DevEnvGuard from "@/guards/dev-env-guard";
 import UserGuard from "@/guards/user-guard";
@@ -150,14 +151,6 @@ const AdminDashboardPages = () => {
                   href: rootUrl + "/admin-dashboard/missionary-hours",
                   requiredPermission: "administrator",
                 },
-                {
-                  title: "Design Hub",
-                  subtitle:
-                    "Create and order custom flyers, certificates, signs, and banners for your community.",
-                  media: "/admin-icons/Design Hub.svg",
-                  href: rootUrl + "/admin-dashboard/design-hub",
-                  requiredPermission: "administrator",
-                },
               ].map((item, i) => (
                 <PermissionGuard
                   requiredPermission={item.requiredPermission}
@@ -167,6 +160,21 @@ const AdminDashboardPages = () => {
                   <AdminDashboardCard item={item} i={i} />
                 </PermissionGuard>
               ))}
+
+              {/* Design Hub (requires prior authentication & administrator permission) */}
+              <ShowIfAuthenticatedOnce>
+                <AdminDashboardCard
+                  item={{
+                    title: "Design Hub",
+                    subtitle:
+                      "Create and order custom flyers, certificates, signs, and banners for your community.",
+                    media: "/admin-icons/Design Hub.svg",
+                    href: rootUrl + "/admin-dashboard/design-hub",
+                    requiredPermission: "administrator",
+                  }}
+                  i={999}
+                />
+              </ShowIfAuthenticatedOnce>
 
               <UserGuard
                 allowedEmails={["jado66@gmail.com", "kcraven10@gmail.com"]}

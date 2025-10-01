@@ -1,128 +1,146 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from "react";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import InputAdornment from "@mui/material/InputAdornment";
-import IconButton from "@mui/material/IconButton";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import Box from "@mui/material/Box";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
+// We will attempt to import useUser. If not wrapped in UserProvider, we'll safely ignore.
+import { useUser } from "@/contexts/UserProvider";
 
-const AuthContext = createContext(null);
+/**
+ * SimpleAuthProvider
+ * Tracks whether the user has authenticated at least once through ANY mechanism:
+ *  - Supabase/UserProvider authentication (authUser present)
+ *  - Simple auth tokens stored in localStorage (cityAuth_, communityAuth_, budgetAccess)
+ *  - Previously recorded flag persisted under localStorage key `hasAuthenticatedOnce`
+ *
+ * Exposes:
+ *  - hasAuthenticatedOnce: boolean
+ *  - markAuthenticated: function to explicitly set the flag (and persist)
+ *  - resetAuthenticated: clears the persisted flag (does NOT remove existing tokens)
+ */
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+const SimpleAuthContext = createContext(null);
+
+export const useSimpleAuth = () => {
+  const ctx = useContext(SimpleAuthContext);
+  if (!ctx) {
+    throw new Error("useSimpleAuth must be used within a SimpleAuthProvider");
   }
-  return context;
+  return ctx;
+};
+
+const LOCAL_STORAGE_KEY = "hasAuthenticatedOnce";
+
+const detectSimpleAuthTokens = () => {
+  if (typeof window === "undefined") return false;
+  try {
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i);
+      if (!key) continue;
+      if (
+        key.startsWith("cityAuth_") ||
+        key.startsWith("communityAuth_") ||
+        key === "budgetAccess"
+      ) {
+        return true;
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+  return false;
 };
 
 export const SimpleAuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [hasAuthenticatedOnce, setHasAuthenticatedOnce] = useState(false);
+  const [checked, setChecked] = useState(false);
 
-  useEffect(() => {
-    const storedAuth = localStorage.getItem("auth");
-    if (storedAuth) {
-      const { timestamp } = JSON.parse(storedAuth);
-      const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
-      if (Date.now() - timestamp < thirtyDaysInMs) {
-        setIsAuthenticated(true);
-      } else {
-        localStorage.removeItem("auth");
-      }
-    }
-  }, []);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (password === "MHT2025!") {
-      setIsAuthenticated(true);
-      localStorage.setItem("auth", JSON.stringify({ timestamp: Date.now() }));
-      setError("");
-    } else {
-      setError("Invalid password");
-    }
-  };
-
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  if (!isAuthenticated) {
-    return (
-      <Dialog
-        open={true}
-        fullScreen
-        PaperProps={{
-          sx: {
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            bgcolor: "background.default",
-            mt: 0,
-          },
-        }}
-      >
-        <DialogContent
-          sx={{
-            maxWidth: 400,
-            width: "100%",
-
-            display: "flex",
-            alignItems: "center",
-            pb: 10,
-          }}
-        >
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ textAlign: "center" }}
-          >
-            <DialogTitle>Authentication Required</DialogTitle>
-            <TextField
-              fullWidth
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              margin="normal"
-              variant="outlined"
-              placeholder="Enter password"
-              error={!!error}
-              helperText={error}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={handleClickShowPassword}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
-              Submit
-            </Button>
-          </Box>
-        </DialogContent>
-      </Dialog>
-    );
+  // Try to access user context; if not available, swallow the error.
+  let userCtx = {};
+  try {
+    userCtx = useUser();
+  } catch (e) {
+    // Not wrapped in UserProvider; that's okay.
   }
 
+  const { authUser } = userCtx || {};
+
+  const markAuthenticated = useCallback(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(LOCAL_STORAGE_KEY, "true");
+    } catch (e) {
+      // ignore storage write errors
+    }
+    setHasAuthenticatedOnce(true);
+  }, []);
+
+  const resetAuthenticated = useCallback(() => {
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.removeItem(LOCAL_STORAGE_KEY);
+      } catch (e) {
+        // ignore
+      }
+    }
+    setHasAuthenticatedOnce(false);
+  }, []);
+
+  // Initial detection
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const already = window.localStorage.getItem(LOCAL_STORAGE_KEY) === "true";
+    const tokensPresent = detectSimpleAuthTokens();
+    const userAuthenticated = !!authUser; // if Supabase session exists
+
+    if (already || tokensPresent || userAuthenticated) {
+      markAuthenticated();
+    }
+    setChecked(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authUser, markAuthenticated]);
+
+  // Listen for storage changes across tabs
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === LOCAL_STORAGE_KEY) {
+        setHasAuthenticatedOnce(e.newValue === "true");
+      }
+      // If other auth tokens get added in another tab, auto-detect
+      if (
+        e.key &&
+        (e.key.startsWith("cityAuth_") ||
+          e.key.startsWith("communityAuth_") ||
+          e.key === "budgetAccess")
+      ) {
+        markAuthenticated();
+      }
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", handler);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("storage", handler);
+      }
+    };
+  }, [markAuthenticated]);
+
+  const value = {
+    hasAuthenticatedOnce,
+    markAuthenticated,
+    resetAuthenticated,
+    // Optionally expose a loading state if consumer cares
+    isDetermining: !checked,
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
+    <SimpleAuthContext.Provider value={value}>
       {children}
-    </AuthContext.Provider>
+    </SimpleAuthContext.Provider>
   );
 };
 

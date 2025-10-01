@@ -12,6 +12,7 @@ import { useUser } from "@/hooks/use-user";
 import Loading from "@/components/util/Loading";
 import NextLink from "next/link";
 import PermissionGuard from "@/guards/permission-guard";
+import { ShowIfAuthenticatedOnce } from "@/guards/withAuthenticatedOnce";
 import { useRouter } from "next/navigation";
 import DevEnvGuard from "@/guards/dev-env-guard";
 import UserGuard from "@/guards/user-guard";
@@ -97,6 +98,20 @@ const AdminDashboardPages = () => {
               ].map((item, i) => (
                 <AdminDashboardCard item={item} i={i} />
               ))}
+
+              {/* Design Hub - only show if they've authenticated previously */}
+              <ShowIfAuthenticatedOnce>
+                <AdminDashboardCard
+                  item={{
+                    title: "Design Hub",
+                    subtitle:
+                      "Create and order custom flyers, certificates, signs, and banners for your community.",
+                    media: "/admin-icons/Design Hub.svg",
+                    href: "/admin-dashboard/design-hub",
+                  }}
+                  i={999}
+                />
+              </ShowIfAuthenticatedOnce>
             </Grid>
           </Box>
         </Container>
