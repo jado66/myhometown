@@ -73,6 +73,7 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
       permissions: 200,
       cities: 200,
       communities: 200,
+      last_active_at: 180,
     })
   );
 
@@ -92,6 +93,7 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
       contact_number: true,
       cities: true,
       communities: true,
+      last_active_at: true,
     })
   );
 
@@ -206,6 +208,42 @@ const UserDataTable = ({ data, onAddClick, onRowClick }) => {
                 />
               ))}
             </Box>
+          );
+        },
+      },
+      {
+        accessorKey: "last_active_at",
+        header: "Last Active",
+        size: columnSizing.last_active_at,
+        Cell: ({ row }) => {
+          const lastLogin = row.original.last_active_at;
+          if (!lastLogin)
+            return (
+              <Typography variant="body2" color="text.secondary">
+                Never
+              </Typography>
+            );
+
+          const date = new Date(lastLogin);
+          const now = new Date();
+          const diffInMs = now - date;
+          const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+          let displayText;
+          if (diffInDays === 0) {
+            displayText = "Today";
+          } else if (diffInDays === 1) {
+            displayText = "Yesterday";
+          } else if (diffInDays < 7) {
+            displayText = `${diffInDays} days ago`;
+          } else {
+            displayText = date.toLocaleDateString();
+          }
+
+          return (
+            <Typography variant="body2" title={date.toLocaleString()}>
+              {displayText}
+            </Typography>
           );
         },
       },

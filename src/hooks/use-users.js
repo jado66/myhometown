@@ -40,14 +40,17 @@ const useUsers = () => {
 
       if (error) throw error;
 
-      const formattedUsers = data.map((user) => ({
-        ...user,
-        id: user.id,
-
-        permissions: user.permissions || initialUserState.permissions,
-        cities: user.cities_details || [],
-        communities: user.communities_details || [],
-      }));
+      // Filter out system user and format the data
+      const formattedUsers = data
+        .filter((user) => user.email !== "system@unauthenticated.local")
+        .map((user) => ({
+          ...user,
+          id: user.id,
+          last_sign_in_at: user.last_sign_in_at,
+          permissions: user.permissions || initialUserState.permissions,
+          cities: user.cities_details || [],
+          communities: user.communities_details || [],
+        }));
 
       setUsers(formattedUsers);
 

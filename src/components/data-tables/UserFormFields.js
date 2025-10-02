@@ -151,6 +151,25 @@ const UserFormFields = ({
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      {!isNewUser && userData?.last_sign_in_at && (
+        <Box
+          sx={{
+            p: 2,
+            bgcolor: "background.default",
+            borderRadius: 1,
+            border: 1,
+            borderColor: "divider",
+          }}
+        >
+          <Typography variant="caption" color="text.secondary">
+            Last Login
+          </Typography>
+          <Typography variant="body2" sx={{ mt: 0.5 }}>
+            {new Date(userData.last_sign_in_at).toLocaleString()}
+          </Typography>
+        </Box>
+      )}
+
       <FormControl fullWidth>
         <TextField
           label="Email"
