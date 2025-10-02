@@ -373,7 +373,7 @@ const MissionaryAssignmentSection: React.FC<
               value={selectedTitle}
               onChange={handleTitleChange}
               isClearable
-              placeholder="Select a title..."
+              placeholder="Select a position..."
               isSearchable
               blurInputOnSelect
               closeMenuOnSelect
@@ -407,7 +407,7 @@ const MissionaryAssignmentSection: React.FC<
           </Grid>
           {errors.group && (
             <Typography color="error" variant="caption" sx={{ ml: 3 }}>
-              Position is recommended. Please select a title if possible.
+              Position is recommended. Please select a position if possible.
             </Typography>
           )}
         </Grid>

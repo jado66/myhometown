@@ -23,42 +23,38 @@ import JsonViewer from "@/components/util/debug/DebugOutput";
 // Title positions organized by level and group
 const POSITIONS_BY_LEVEL = {
   state: {
-    "Executive Board": [
+    "Utah Executive": [
       "Utah Director",
-      "Associate Director",
-      "Special Projects",
-      "Executive Secretary",
+      "Utah Associate Director",
+      "Utah Special Projects",
+      "Utah Executive Secretary",
     ],
   },
   city: {
-    "City Board": [
+    "City Executives": [
       "City Chair",
-      "Associate City Chair",
-      "Executive Secretary",
-      "Technology Specialist",
-      "Event Coordinator",
-      "Special Projects",
+      "City Associate Chair",
+      "City Executive Secretary",
+      "City Technology Specialist",
     ],
   },
   community: {
-    "Community Board": [
+    "Community Executives": [
       "Community Executive Director",
-
-      "Associate Community Executive Director",
-      "Technology Specialist",
+      "Community Associate Executive Director",
+      "CommunityTechnology Specialist",
     ],
     "Community Resource Center": [
       "CRC Director",
       "CRC Associate Director",
-      "Teacher",
-      "Supervisor",
-      "Staff",
+      "CRC Secretary",
     ],
     "Neighborhood Services": [
       "Neighborhood Services Director",
       "Neighborhood Services Associate Director",
-      "Support Staff",
+      "Neighborhood Services Secretary",
     ],
+    "Support Staff": ["Support Staff"],
   },
 };
 
