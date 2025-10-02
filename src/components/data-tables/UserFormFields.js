@@ -11,6 +11,7 @@ import {
   IconButton,
   Tooltip,
 } from "@mui/material";
+import Select from "react-select";
 import CommunitySelect from "./selects/CommunitySelect";
 import CitySelect from "./selects/CitySelect";
 import JsonViewer from "../util/debug/DebugOutput";
@@ -23,21 +24,91 @@ const UserFormFields = ({
   errors = {},
   isNewUser = false,
 }) => {
-  const handlePermissionChange = (permission) => (event) => {
-    const checked = event.target.checked;
-    if (permission === "administrator" && checked) {
-      toast.info(
+  // Define all available permissions
+  const permissionOptions = [
+    {
+      value: "texting",
+      label: "Texting",
+      description: null,
+    },
+    {
+      value: "dos_admin",
+      label: "DOS Admin",
+      description:
+        "Can lock and unlock projects, view budgets, and bypass authentication requirements for DOS projects.",
+    },
+    {
+      value: "content_development",
+      label: "Content Development",
+      description:
+        "Can create and edit content on the site for their assigned cities and communities.",
+    },
+    {
+      value: "missionary_volunteer_management",
+      label: "Missionary & Volunteer Management",
+      description:
+        "Can manage missionary and volunteer hours, view reports, and manage related settings for their assigned cities and communities.",
+    },
+    {
+      value: "classes_admin",
+      label: "Classes Admin",
+      description:
+        "Can manage classes, view reports, and manage related settings for their assigned cities and communities.",
+    },
+    {
+      value: "administrator",
+      label: "Global Administrator",
+      description:
         "This user will have full access to everything on the site as a Global Administrator.",
-        { autoClose: 7000 }
-      );
+    },
+  ];
+
+  const handlePermissionChange = (selectedPermissions) => {
+    // Convert array of permission objects to permissions object
+    const permissionsObj = {};
+
+    if (selectedPermissions && Array.isArray(selectedPermissions)) {
+      selectedPermissions.forEach((perm) => {
+        permissionsObj[perm.value] = true;
+      });
+
+      // Show toast for administrator permission
+      if (selectedPermissions.some((p) => p.value === "administrator")) {
+        const wasAlreadyAdmin = userData?.permissions?.administrator;
+        if (!wasAlreadyAdmin) {
+          toast.info(
+            "This user will have full access to everything on the site as a Global Administrator.",
+            { autoClose: 7000 }
+          );
+        }
+      }
     }
+
     onChange({
       ...userData,
-      permissions: {
-        ...userData?.permissions,
-        [permission]: checked,
-      },
+      permissions: permissionsObj,
     });
+  };
+
+  // Convert current permissions object to array of selected options
+  const selectedPermissions = permissionOptions.filter(
+    (option) => userData?.permissions?.[option.value] === true
+  );
+
+  // Handle Select All functionality
+  const handleSelectAll = () => {
+    const allPermissions = {};
+    permissionOptions.forEach((perm) => {
+      allPermissions[perm.value] = true;
+    });
+    onChange({
+      ...userData,
+      permissions: allPermissions,
+    });
+    toast.info(
+      "All permissions granted, including Global Administrator access.",
+      { autoClose: 5000 }
+    );
   };
 
   const handleCityChange = (selectedCity) => {
@@ -137,51 +208,72 @@ const UserFormFields = ({
       </FormControl>
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          Permissions
-        </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={4}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={userData?.permissions?.texting || false}
-                  onChange={handlePermissionChange("texting")}
-                />
-              }
-              label="Texting"
-            />
-          </Grid>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 1,
+          }}
+        >
+          <Typography variant="h6">Permissions</Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: "primary.main",
+              cursor: "pointer",
+              textDecoration: "underline",
+              "&:hover": {
+                color: "primary.dark",
+              },
+            }}
+            onClick={handleSelectAll}
+          >
+            Select All
+          </Typography>
+        </Box>
 
-          <Grid item xs={12} sm={4}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={userData?.permissions?.dos_admin || false}
-                  onChange={handlePermissionChange("dos_admin")}
-                />
-              }
-              label="DOS Admin"
-            />
-            <IconButton size="small">
-              <Tooltip title="Can lock and unlock projects & view Budgets">
-                <Info />
-              </Tooltip>
-            </IconButton>
-          </Grid>
+        <Select
+          closeMenuOnSelect={false}
+          options={permissionOptions}
+          value={selectedPermissions}
+          onChange={handlePermissionChange}
+          placeholder="Select permissions..."
+          isMulti={true}
+          className="basic-multi-select"
+          classNamePrefix="select"
+          isClearable={true}
+          isSearchable
+          styles={{
+            menu: (provided) => ({
+              ...provided,
+              zIndex: 9999,
+            }),
+          }}
+        />
 
-          <Grid item xs={12} sm={4}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={userData?.permissions?.administrator || false}
-                  onChange={handlePermissionChange("administrator")}
-                />
-              }
-              label="Global Administrator"
-            />
-          </Grid>
-        </Grid>
+        {selectedPermissions.length > 0 && (
+          <Box
+            sx={{ mt: 1, display: "flex", flexDirection: "column", gap: 0.5 }}
+          >
+            {selectedPermissions.map((perm) =>
+              perm.description ? (
+                <Box
+                  key={perm.value}
+                  sx={{ display: "flex", alignItems: "flex-start", gap: 0.5 }}
+                >
+                  <Info sx={{ fontSize: 16, color: "info.main", mt: 0.25 }} />
+                  <Typography variant="caption" color="text.secondary">
+                    <strong>{perm.label}:</strong> {perm.description}
+                  </Typography>
+                </Box>
+              ) : null
+            )}
+          </Box>
+        )}
+        {errors.permissions && (
+          <FormHelperText error>{errors.permissions}</FormHelperText>
+        )}
       </Box>
 
       <FormControl fullWidth>

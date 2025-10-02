@@ -199,12 +199,14 @@ const formattedDesignHubHtml = (html) => {
                   </div>
                   <div class="item-details">
                     <div class="item-detail-row">
-                      <span class="item-detail-label">Purpose:</span>${
+                      <span class="item-detail-label">Purpose: </span>${
                         item.purpose
                       }
                     </div>
                     <div class="item-detail-row">
-                      <span class="item-detail-label">Theme:</span>${item.theme}
+                      <span class="item-detail-label">Theme: </span>${
+                        item.theme
+                      }
                     </div>
                     <div class="item-detail-row">
                       <span class="item-detail-label">Due Date:</span>${
@@ -212,7 +214,7 @@ const formattedDesignHubHtml = (html) => {
                       }
                     </div>
                     <div class="item-detail-row">
-                      <span class="item-detail-label">Size:</span>${
+                      <span class="item-detail-label">Size: </span>${
                         item.size === "other"
                           ? item.otherSize || "Not specified"
                           : item.size
@@ -222,7 +224,7 @@ const formattedDesignHubHtml = (html) => {
                       item.englishText
                         ? `
                       <div class="item-detail-row">
-                        <span class="item-detail-label">English Text:</span>${item.englishText}
+                        <span class="item-detail-label">English Text: </span>${item.englishText}
                       </div>
                     `
                         : ""
@@ -231,7 +233,7 @@ const formattedDesignHubHtml = (html) => {
                       item.spanishText
                         ? `
                       <div class="item-detail-row">
-                        <span class="item-detail-label">Spanish Text:</span>${item.spanishText}
+                        <span class="item-detail-label">Spanish Text: </span>${item.spanishText}
                       </div>
                     `
                         : ""
@@ -240,7 +242,7 @@ const formattedDesignHubHtml = (html) => {
                       item.qrCodes
                         ? `
                       <div class="item-detail-row">
-                        <span class="item-detail-label">QR Codes:</span>${item.qrCodes}
+                        <span class="item-detail-label">QR Codes: </span>${item.qrCodes}
                       </div>
                     `
                         : ""
