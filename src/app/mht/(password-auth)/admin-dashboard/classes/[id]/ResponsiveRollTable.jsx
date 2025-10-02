@@ -226,6 +226,7 @@ export default function ClassRollTable({ classData, show, onClose }) {
   };
 
   const formatDisplayDate = (date) => {
+    if (!date) return "";
     const [year, month, day] = date.split("-");
     return `${month}/${day}/${year.slice(-2)} (${moment(date).format("ddd")})`;
   };
@@ -541,6 +542,7 @@ export default function ClassRollTable({ classData, show, onClose }) {
     };
 
     const formatDisplayDate = (date) => {
+      if (!date) return "";
       const [year, month, day] = date.split("-");
       return `${month}/${day}/${year.slice(-2)}`;
     };

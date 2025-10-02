@@ -244,6 +244,7 @@ export default function BulkMMSMessaging() {
   const handleLoadClassFromUrl = async (classId) => {
     try {
       const classData = await getClass(classId);
+      console.log("Class data schema:", classData);
       if (
         !classData ||
         !classData.signups ||
@@ -259,12 +260,12 @@ export default function BulkMMSMessaging() {
         .filter((signup) => !signup.isWaitlisted)
         .map((signup) => ({
           value: signup.phone,
-          label: `${signup.first_name || ""} ${signup.last_name || ""} (${
+          label: `${signup.firstName || ""} ${signup.lastName || ""} (${
             signup.phone
           })`.trim(),
           contactId: signup.id || null,
-          firstName: signup.first_name || "",
-          lastName: signup.last_name || "",
+          firstName: signup.firstName || "",
+          lastName: signup.lastName || "",
           phone: signup.phone,
           email: signup.email || "",
           groups: [],

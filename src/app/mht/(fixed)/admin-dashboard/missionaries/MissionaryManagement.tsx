@@ -71,12 +71,13 @@ interface Missionary {
   title?: string;
   start_date?: string;
   end_date?: string;
-  calculated_duration?: number;
+  duration?: string;
   notes?: string;
   street_address?: string;
   address_city?: string;
   address_state?: string;
   zip_code?: string;
+  stake_name?: string;
 }
 
 interface City {
@@ -224,6 +225,13 @@ export default function MissionaryManagement() {
       const cityName = row["City"] || "";
       const communityName = row["Community"] || "";
 
+      // Skip completely empty rows
+      const isEmptyRow =
+        !first_name && !last_name && !email && !assignment_status;
+      if (isEmptyRow) {
+        return; // Skip this row silently
+      }
+
       // Validate required fields
       if (!first_name) errors.push(`Row ${rowNum}: First Name is required.`);
       if (!last_name) errors.push(`Row ${rowNum}: Last Name is required.`);
@@ -298,6 +306,29 @@ export default function MissionaryManagement() {
         errors.length === 0 ||
         errors.filter((e) => e.startsWith(`Row ${rowNum}:`)).length === 0
       ) {
+        // Calculate duration if start_date and end_date are provided
+        const start_date = row["Start Date"] || "";
+        const end_date = row["End Date"] || "";
+        let duration = row["Duration"] || ""; // First check if duration is provided in CSV
+
+        // If duration not provided but dates are, calculate it
+        if (!duration && start_date && end_date) {
+          try {
+            const startDate = new Date(start_date);
+            const endDate = new Date(end_date);
+            if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+              const diffTime = Math.abs(
+                endDate.getTime() - startDate.getTime()
+              );
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              const months = Math.round(diffDays / 30.44);
+              duration = `${months} months`;
+            }
+          } catch (e) {
+            // If date parsing fails, leave duration as is
+          }
+        }
+
         valid.push({
           first_name,
           last_name,
@@ -309,12 +340,14 @@ export default function MissionaryManagement() {
           community_id,
           group: row["Group"] || "",
           title: row["Title"] || "",
-          start_date: row["Start Date"] || "",
-          end_date: row["End Date"] || "",
+          start_date,
+          end_date,
+          duration,
           street_address: row["Street Address"] || "",
           address_city: row["Address City"] || "",
           address_state: row["Address State"] || "",
           zip_code: row["Zip Code"] || "",
+          stake_name: row["Stake Name"] || "",
           notes: row["Notes"] || "",
         });
       }
@@ -502,11 +535,12 @@ export default function MissionaryManagement() {
       Title: m.title || "",
       "Start Date": m.start_date || "",
       "End Date": m.end_date || "",
-      "Duration (Months)": m.calculated_duration || "",
+      Duration: m.duration || "",
       "Street Address": m.street_address || "",
       "Address City": m.address_city || "",
       "Address State": m.address_state || "",
       "Zip Code": m.zip_code || "",
+      "Stake Name": m.stake_name || "",
       Notes: m.notes || "",
     }));
     console.log("Exporting CSV with data:", data);
