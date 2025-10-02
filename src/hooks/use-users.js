@@ -280,14 +280,16 @@ const useUsers = () => {
           let allCommunityDetails = u.communities_details || [];
           // If the user had no previous details, fallback to array of IDs
           let newCommunitiesDetails = Array.isArray(allCommunityDetails)
-            ? allCommunityDetails.filter((comm) => userData.communities.includes(comm.id))
+            ? allCommunityDetails.filter((comm) =>
+                userData.communities.includes(comm.id)
+              )
             : [];
           // If we have fewer than selected, fallback to IDs as objects
           if (newCommunitiesDetails.length !== userData.communities.length) {
             // Add any missing as {id: id}
-            const missing = userData.communities.filter(
-              (id) => !newCommunitiesDetails.some((c) => c.id === id)
-            ).map((id) => ({ id }));
+            const missing = userData.communities
+              .filter((id) => !newCommunitiesDetails.some((c) => c.id === id))
+              .map((id) => ({ id }));
             newCommunitiesDetails = [...newCommunitiesDetails, ...missing];
           }
           return {
@@ -295,7 +297,10 @@ const useUsers = () => {
             id: data.id,
             cities: userData.cities,
             communities: userData.communities,
-            cities_details: userData.cities.map((c) => ({ ...c, state: "Utah" })),
+            cities_details: userData.cities.map((c) => ({
+              ...c,
+              state: "Utah",
+            })),
             communities_details: newCommunitiesDetails,
           };
         })

@@ -447,7 +447,7 @@ export default function DesignHub() {
         sx={{
           py: 2,
           px: 4,
-          fontSize: "1.2rem",
+          fontSize: "1.1.5rem",
           minWidth: "200px",
         }}
       >
@@ -638,10 +638,22 @@ export default function DesignHub() {
               variant="fullWidth"
               sx={{ borderBottom: 1, borderColor: "divider" }}
             >
-              <Tab label="Standard Print Items" />
-              <Tab label="Signs & Banners" />
-              <Tab label="City/Community Co-Branded Promo Materials" />
-              <Tab label="myHometown Promo Materials" />
+              <Tab
+                label="Standard Print Items"
+                sx={{ fontSize: { xs: "1rem", sm: "1.5", md: "1.5rem" } }}
+              />
+              <Tab
+                label="Signs & Banners"
+                sx={{ fontSize: { xs: "1rem", sm: "1.5", md: "1.5rem" } }}
+              />
+              <Tab
+                label="City/Community Co-Branded Promo Materials"
+                sx={{ fontSize: { xs: "1rem", sm: "1.5", md: "1.5rem" } }}
+              />
+              <Tab
+                label="myHometown Promo Materials"
+                sx={{ fontSize: { xs: "1rem", sm: "1.5", md: "1.5rem" } }}
+              />
             </Tabs>
 
             <Box sx={{ p: 3 }}>
