@@ -31,10 +31,10 @@ export default function ClassPage({ params }) {
   useEffect(() => {
     if (isLoading) return;
 
-    const hasAuth = isAuthenticated(params.id) || isAdmin;
-    if (!hasAuth) {
-      router.push(process.env.NEXT_PUBLIC_DOMAIN + "/admin-dashboard/classes");
-    }
+    // const hasAuth = isAuthenticated(params.id) || isAdmin;
+    // if (!hasAuth) {
+    //   router.push(process.env.NEXT_PUBLIC_DOMAIN + "/admin-dashboard/classes");
+    // }
 
     const fetchData = async () => {
       try {

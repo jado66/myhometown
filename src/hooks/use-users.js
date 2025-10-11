@@ -9,11 +9,12 @@ const initialUserState = {
   lastName: "",
   contactNumber: "",
   permissions: {
-    administrator: false,
-    cityManagement: false,
-    communityManagement: false,
     texting: false,
-    classManagement: false,
+    administrator: false,
+    dos_admin: false,
+    content_development: false,
+    missionary_volunteer_management: false,
+    classes_admin: false,
   },
   cities: [],
   communities: [],
@@ -107,6 +108,16 @@ const useUsers = () => {
       console.log("User auth created with ID:", invitedUser.id);
       console.log("User record created:", !!userRecord);
 
+      // Ensure cities and communities are arrays of IDs
+      const cityIds = Array.isArray(userData.cities)
+        ? userData.cities.map((c) => (typeof c === "object" && c.id ? c.id : c))
+        : [];
+      const communityIds = Array.isArray(userData.communities)
+        ? userData.communities.map((c) =>
+            typeof c === "object" && c.id ? c.id : c
+          )
+        : [];
+
       // Create user record if API didn't create it
       let finalUserRecord = userRecord;
       if (!userRecord) {
@@ -122,8 +133,8 @@ const useUsers = () => {
               last_name: userData.last_name,
               contact_number: userData.contact_number,
               permissions: userData.permissions,
-              cities: userData.cities?.map((c) => c.id) || [],
-              communities: userData.communities?.map((c) => c.id) || [],
+              cities: cityIds,
+              communities: communityIds,
             },
           ])
           .select()
@@ -140,8 +151,8 @@ const useUsers = () => {
                 last_name: userData.last_name,
                 contact_number: userData.contact_number,
                 permissions: userData.permissions,
-                cities: userData.cities?.map((c) => c.id) || [],
-                communities: userData.communities?.map((c) => c.id) || [],
+                cities: cityIds,
+                communities: communityIds,
               })
               .eq("id", invitedUser.id)
               .select()
@@ -167,13 +178,13 @@ const useUsers = () => {
       const newUser = {
         ...finalUserRecord,
         id: finalUserRecord.id,
-        cities: userData.cities || [],
-        communities: userData.communities || [],
-        cities_details: (userData.cities || []).map((c) => ({
-          ...c,
+        cities: cityIds,
+        communities: communityIds,
+        cities_details: cityIds.map((id) => ({
+          id,
           state: "Utah",
         })),
-        communities_details: userData.communities || [],
+        communities_details: communityIds.map((id) => ({ id })),
       };
 
       setUsers((prevUsers) => [...prevUsers, newUser]);
@@ -243,12 +254,41 @@ const useUsers = () => {
     try {
       console.log("Editing user with ID:", userData.id);
 
-      // Format the permissions object to ensure boolean values
       const formattedPermissions = {
         texting: userData.permissions?.texting === true,
         administrator: userData.permissions?.administrator === true,
         dos_admin: userData.permissions?.dos_admin === true,
+        content_development: userData.permissions?.content_development === true,
+        missionary_volunteer_management:
+          userData.permissions?.missionary_volunteer_management === true,
+        classes_admin: userData.permissions?.classes_admin === true,
       };
+
+      // Ensure cities is an array of IDs
+      let cityIds = [];
+      if (Array.isArray(userData.cities)) {
+        cityIds = userData.cities.map((c) => {
+          // If c is an object with id property, extract id
+          if (typeof c === "object" && c !== null && c.id) {
+            return c.id;
+          }
+          // If c is already a string ID, use it
+          return c;
+        });
+      }
+
+      // Ensure communities is an array of IDs
+      let communityIds = [];
+      if (Array.isArray(userData.communities)) {
+        communityIds = userData.communities.map((c) => {
+          // If c is an object with id property, extract id
+          if (typeof c === "object" && c !== null && c.id) {
+            return c.id;
+          }
+          // If c is already a string ID, use it
+          return c;
+        });
+      }
 
       // Update the user in the database
       const { data, error } = await supabase
@@ -258,8 +298,8 @@ const useUsers = () => {
           last_name: userData.last_name,
           contact_number: userData.contact_number,
           permissions: formattedPermissions, // Use formatted permissions
-          cities: userData.cities.map((c) => c.id), // Use the provided cities
-          communities: userData.communities, // Now an array of IDs
+          cities: cityIds, // Array of city IDs
+          communities: communityIds, // Array of community IDs
         })
         .eq("id", userData.id) // Ensure this matches the database `id`
         .select() // Select the updated row
@@ -272,36 +312,34 @@ const useUsers = () => {
 
       if (error) throw error;
 
-      // Update the local state with the updated user data
+      // Fetch the updated user with full details from the view
+      const { data: updatedUserWithDetails, error: fetchError } = await supabase
+        .from("users_with_details")
+        .select(
+          `
+          *,
+          cities_details,
+          communities_details
+        `
+        )
+        .eq("id", userData.id)
+        .single();
+
+      if (fetchError) {
+        console.error("Error fetching updated user details:", fetchError);
+        throw fetchError;
+      }
+
+      // Update the local state with the fully detailed user data
       setUsers((prevUsers) =>
         prevUsers.map((u) => {
           if (u.id !== userData.id) return u;
-          // Find the full community objects for the selected IDs
-          let allCommunityDetails = u.communities_details || [];
-          // If the user had no previous details, fallback to array of IDs
-          let newCommunitiesDetails = Array.isArray(allCommunityDetails)
-            ? allCommunityDetails.filter((comm) =>
-                userData.communities.includes(comm.id)
-              )
-            : [];
-          // If we have fewer than selected, fallback to IDs as objects
-          if (newCommunitiesDetails.length !== userData.communities.length) {
-            // Add any missing as {id: id}
-            const missing = userData.communities
-              .filter((id) => !newCommunitiesDetails.some((c) => c.id === id))
-              .map((id) => ({ id }));
-            newCommunitiesDetails = [...newCommunitiesDetails, ...missing];
-          }
+
           return {
-            ...data,
-            id: data.id,
-            cities: userData.cities,
-            communities: userData.communities,
-            cities_details: userData.cities.map((c) => ({
-              ...c,
-              state: "Utah",
-            })),
-            communities_details: newCommunitiesDetails,
+            ...updatedUserWithDetails,
+            id: updatedUserWithDetails.id,
+            cities: updatedUserWithDetails.cities_details || [],
+            communities: updatedUserWithDetails.communities_details || [],
           };
         })
       );

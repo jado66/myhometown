@@ -167,6 +167,21 @@ const formattedDesignHubHtml = (html) => {
           </div>
         </div>
         
+        ${
+          html.designItems &&
+          html.designItems.some((item) => item.hasAttachments)
+            ? `
+          <div class="section" style="background-color: #fff3cd; border: 2px solid #ffeaa7;">
+            <h3 style="color: #856404; margin-top: 0;">⚠️ IMPORTANT: Additional Attachments Required</h3>
+            <div style="color: #856404; font-weight: bold;">
+              <p>One or more items in this order requires additional attachments from the requestor. </p>
+              <p><strong>Please follow up with the requestor via email (${html.email}) to collect these materials before starting the design work.</strong></p>
+            </div>
+          </div>
+        `
+            : ""
+        }
+        
         <div class="cart-section">
           <div class="cart-header">
             <span class="cart-icon">🛒</span>
@@ -239,10 +254,11 @@ const formattedDesignHubHtml = (html) => {
                         : ""
                     }
                     ${
-                      item.qrCodes
+                      item.hasAttachments
                         ? `
-                      <div class="item-detail-row">
-                        <span class="item-detail-label">QR Codes: </span>${item.qrCodes}
+                      <div class="item-detail-row" style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 8px; border-radius: 4px; margin-top: 8px;">
+                        <span class="item-detail-label" style="color: #856404; font-weight: bold;">⚠️ ATTACHMENTS REQUIRED: </span>
+                        <span style="color: #856404; font-weight: bold;">The requestor has additional attachments (QR codes, images, logos, etc.) that need to be collected via email. Please follow up with them to obtain these materials.</span>
                       </div>
                     `
                         : ""

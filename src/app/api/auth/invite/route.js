@@ -202,6 +202,16 @@ export async function POST(request) {
     if (userData) {
       console.log("🆕 Creating user record immediately...");
 
+      // Ensure cities and communities are arrays of IDs
+      const cityIds = Array.isArray(userData.cities)
+        ? userData.cities.map((c) => (typeof c === "object" && c.id ? c.id : c))
+        : [];
+      const communityIds = Array.isArray(userData.communities)
+        ? userData.communities.map((c) =>
+            typeof c === "object" && c.id ? c.id : c
+          )
+        : [];
+
       try {
         const { data: insertedUser, error: userError } = await supabaseServer
           .from("users")
@@ -213,8 +223,8 @@ export async function POST(request) {
               last_name: lastName,
               contact_number: userData.contact_number || null,
               permissions: userData.permissions || {},
-              cities: userData.cities?.map((c) => c.id) || [],
-              communities: userData.communities?.map((c) => c.id) || [],
+              cities: cityIds,
+              communities: communityIds,
             },
           ])
           .select()
@@ -233,8 +243,8 @@ export async function POST(request) {
                   last_name: lastName,
                   contact_number: userData.contact_number || null,
                   permissions: userData.permissions || {},
-                  cities: userData.cities?.map((c) => c.id) || [],
-                  communities: userData.communities?.map((c) => c.id) || [],
+                  cities: cityIds,
+                  communities: communityIds,
                 })
                 .eq("id", authUser.id)
                 .select()

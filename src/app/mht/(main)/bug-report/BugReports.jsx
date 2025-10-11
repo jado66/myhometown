@@ -143,7 +143,7 @@ export default function BugReportForm() {
           />
         </Box>
 
-        <Box>
+        {/* <Box>
           <Typography
             component="label"
             htmlFor="image"
@@ -196,7 +196,7 @@ export default function BugReportForm() {
               Selected file: {image.name}
             </Typography>
           )}
-        </Box>
+        </Box> */}
 
         <Button
           type="submit"

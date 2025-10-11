@@ -101,7 +101,7 @@ const AdminDashboardPages = () => {
                     "Manage your cities. Add, remove, or edit city information.",
                   media: "/admin-icons/City Management.svg",
                   href: rootUrl + "/admin-dashboard/cities",
-                  // requiredPermission: "cityManagement",
+                  requiredPermission: "content_development",
                 },
                 {
                   title: "Community Management",
@@ -109,7 +109,7 @@ const AdminDashboardPages = () => {
                     "Manage your communities. Add, remove, or edit community information.",
                   media: "/admin-icons/Community Management.svg",
                   href: rootUrl + "/admin-dashboard/communities",
-                  // requiredPermission: "communityManagement",
+                  requiredPermission: "content_development",
                 },
                 {
                   title: "Classes and Rolls",
@@ -141,7 +141,7 @@ const AdminDashboardPages = () => {
                     "Manage your missionaries. Add, remove, or edit missionary information. Log their service hours and track your progress.",
                   media: "/admin-icons/missionary-management.png",
                   href: rootUrl + "/admin-dashboard/missionaries",
-                  requiredPermission: "administrator",
+                  requiredPermission: "missionary_volunteer_management",
                 },
                 {
                   title: "Missionary Logs",

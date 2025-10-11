@@ -30,7 +30,7 @@ export interface DesignCartItem {
   dueDate: string;
   englishText: string;
   spanishText: string;
-  qrCodes?: string;
+  hasAttachments?: boolean;
   size: string;
   otherSize?: string;
 }
@@ -160,6 +160,11 @@ export function ShoppingCart({
                             <strong>Esp:</strong>{" "}
                             {item.spanishText.substring(0, 40)}
                             {item.spanishText.length > 40 ? "…" : ""}
+                          </div>
+                        )}
+                        {item.hasAttachments && (
+                          <div>
+                            <strong>Has Attachments:</strong> Yes
                           </div>
                         )}
                       </Box>

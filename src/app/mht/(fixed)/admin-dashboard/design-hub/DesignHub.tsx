@@ -98,7 +98,7 @@ interface CartItem {
   dueDate: string;
   englishText: string;
   spanishText: string;
-  qrCodes?: string;
+  hasAttachments?: boolean;
   size: string;
   otherSize?: string;
 }

@@ -3,7 +3,10 @@ import PropTypes from "prop-types";
 
 const checkPermission = (requiredPermission, userPermissions, user) => {
   if (!requiredPermission) return true;
+
   if (!userPermissions) return false;
+
+  if (requiredPermission === "any") return true;
 
   // Handle OR conditions
   if (

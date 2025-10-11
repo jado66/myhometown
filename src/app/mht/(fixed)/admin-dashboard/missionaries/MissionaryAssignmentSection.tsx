@@ -294,6 +294,27 @@ const MissionaryAssignmentSection: React.FC<
         </Grid>
         <Box sx={{ flexGrow: 1, minHeight: 6 }} />
         <Grid container spacing={2} sx={{ mb: 2 }}>
+          {formData.assignment_level === "state" && (
+            <Grid item xs={12} md={4}>
+              <Typography
+                variant="body2"
+                sx={{ mb: 1, fontWeight: 500 }}
+                color="#318D43"
+              >
+                State Assignment
+              </Typography>
+              <TextField
+                select
+                fullWidth
+                size="small"
+                value="Utah"
+                disabled
+                InputLabelProps={{ shrink: true }}
+              >
+                <MenuItem value="Utah">Utah</MenuItem>
+              </TextField>
+            </Grid>
+          )}
           {formData.assignment_level === "city" && (
             <Grid item xs={12} md={4}>
               <Typography

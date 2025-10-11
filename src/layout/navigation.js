@@ -5,8 +5,7 @@ export const pages = () => {
     {
       title: "Management",
       id: "landing-pages",
-      requiredPermission:
-        "administrator || cityManagement || communityManagement",
+      requiredPermission: "administrator || content_development",
       pages: [
         {
           title: "User Management",
@@ -16,17 +15,17 @@ export const pages = () => {
         {
           title: "City Management",
           href: rootUrl + "/admin-dashboard/cities",
-          requiredPermission: "cityManagement",
+          requiredPermission: "content_development",
         },
         {
           title: "Community Management",
           href: rootUrl + "/admin-dashboard/communities",
-          requiredPermission: "communityManagement",
+          requiredPermission: "content_development",
         },
         {
           title: "Missionaries & Volunteers",
           href: rootUrl + "/admin-dashboard/missionaries",
-          requiredPermission: "missionaryManagement",
+          requiredPermission: "missionary_volunteer_management",
         },
       ],
     },
@@ -92,14 +91,17 @@ export const pages = () => {
     {
       title: "Support",
       id: "support-pages",
+      requiredPermission: "any",
       pages: [
         {
           title: "Bug Report",
           href: rootUrl + "/bug-report",
+          requiredPermission: "any",
         },
         {
           title: "Request a Feature",
           href: rootUrl + "/feature-request",
+          requiredPermission: "any",
         },
       ],
     },

@@ -31,13 +31,6 @@ export function useSendSMS(user) {
       const owner_id = user?.id || "00000000-0000-0000-0000-000000000000";
       const sender_id = user?.id || "00000000-0000-0000-0000-000000000000";
 
-      alert(
-        JSON.stringify({
-          owner_id,
-          sender_id,
-        })
-      );
-
       setSendStatus("sending");
       setProgress({
         total: recipients.length,

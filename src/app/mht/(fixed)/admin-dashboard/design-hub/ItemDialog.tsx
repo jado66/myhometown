@@ -14,6 +14,8 @@ import {
   MenuItem,
   Box,
   Typography,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 
 interface ItemDialogProps {
@@ -37,7 +39,7 @@ export function ItemDialog({
     dueDate: "",
     englishText: "",
     spanishText: "",
-    qrCodes: "",
+    hasAttachments: false,
     size: "",
     otherSize: "",
   });
@@ -50,14 +52,14 @@ export function ItemDialog({
       dueDate: "",
       englishText: "",
       spanishText: "",
-      qrCodes: "",
+      hasAttachments: false,
       size: "",
       otherSize: "",
     });
     onOpenChange(false);
   };
 
-  const updateField = (field: string, value: string) => {
+  const updateField = (field: string, value: string | boolean) => {
     setFormData((prev: any) => ({ ...prev, [field]: value }));
   };
 
@@ -120,19 +122,6 @@ export function ItemDialog({
             fullWidth
           />
 
-          {(itemType === "standard-print-items" ||
-            itemType === "signs-banners") && (
-            <TextField
-              label="QR Codes/URLs"
-              value={formData.qrCodes}
-              onChange={(e) => updateField("qrCodes", e.target.value)}
-              placeholder="Any QR codes or URLs to include"
-              multiline
-              rows={2}
-              fullWidth
-            />
-          )}
-
           {itemType === "standard-print-items" ? (
             <FormControl fullWidth>
               <InputLabel>Size</InputLabel>
@@ -168,6 +157,30 @@ export function ItemDialog({
               fullWidth
             />
           )}
+
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={formData.hasAttachments}
+                onChange={(e) =>
+                  updateField("hasAttachments", e.target.checked)
+                }
+                color="primary"
+              />
+            }
+            label="I have additional attachments for this design"
+            sx={{ mt: 1 }}
+          />
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ ml: 4, mt: -1 }}
+          >
+            Additional attachments may include: QR codes, reference images,
+            specific design elements, or other supporting materials. The Design
+            Hub team will follow up with you via email to collect these
+            materials.
+          </Typography>
         </Box>
       </DialogContent>
       <DialogActions>
