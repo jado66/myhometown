@@ -76,6 +76,26 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
   isUpcomingView = false,
   onProfilePictureClick,
 }) => {
+  // Address helpers
+  const buildFullAddress = (m: any) => {
+    const street = m.street_address?.trim();
+    const city = m.address_city?.trim();
+    const state = m.address_state?.trim();
+    const zip = m.zip_code?.trim();
+    if (street && city && state && zip)
+      return `${street}, ${city}, ${state} ${zip}`;
+    const parts = [street, city, state, zip].filter(Boolean);
+    return parts.length ? parts.join(", ") : "Address not set";
+  };
+
+  const getMissingAddressParts = (m: any): string[] => {
+    const missing: string[] = [];
+    if (!m.street_address) missing.push("Street Address");
+    if (!m.address_city) missing.push("City");
+    if (!m.address_state) missing.push("State");
+    if (!m.zip_code) missing.push("Zip Code");
+    return missing;
+  };
   // Calculate hours for a specific missionary
   const getHoursData = (missionaryId: string) => {
     console.log("List - Hours data:", hours); // Debug log
@@ -185,6 +205,8 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
     });
   };
 
+  const showNoHoursWarning = false;
+
   return (
     <>
       <TableContainer component={Paper} sx={{ mt: 2 }}>
@@ -213,7 +235,7 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                   {/* Error/Warning column */}
                   <TableCell sx={{ width: 56 }}>
                     {/* Error icon if no hours entries */}
-                    {!hoursData.hasEntries && (
+                    {!hoursData.hasEntries && showNoHoursWarning && (
                       <Tooltip title="No hours logged this month">
                         <IconButton size="small" color="warning" tabIndex={-1}>
                           <Warning />
@@ -226,7 +248,9 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                       !missionary.stake_name ||
                       !missionary.start_date ||
                       !missionary.duration ||
-                      !missionary.profile_picture_url) && (
+                      !missionary.profile_picture_url ||
+                      !missionary.gender ||
+                      getMissingAddressParts(missionary).length > 0) && (
                       <Tooltip
                         title={`Missing: ${[
                           !missionary.title && "Position",
@@ -235,6 +259,8 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                           !missionary.start_date && "Start Date",
                           !missionary.duration && "Mission Duration",
                           !missionary.profile_picture_url && "Profile Picture",
+                          !missionary.gender && "Gender",
+                          ...getMissingAddressParts(missionary),
                         ]
                           .filter(Boolean)
                           .join(", ")} - Click to update`}
@@ -360,7 +386,7 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                   </TableCell>
                   <TableCell>
                     <Box>
-                      {missionary.title && (
+                      {missionary.person_type && (
                         <Typography
                           variant="body2"
                           fontWeight="medium"
@@ -621,6 +647,42 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                         {getLocationDisplay(selectedMissionary)}
                       </Typography>
                     </Box>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Tooltip
+                      title={
+                        getMissingAddressParts(selectedMissionary).length
+                          ? `Missing: ${getMissingAddressParts(
+                              selectedMissionary
+                            ).join(", ")}`
+                          : "Physical address"
+                      }
+                    >
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                      >
+                        <LocationOnIcon
+                          sx={{ fontSize: 16, color: "text.secondary" }}
+                        />
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            opacity: getMissingAddressParts(selectedMissionary)
+                              .length
+                              ? 0.7
+                              : 1,
+                            fontStyle: getMissingAddressParts(
+                              selectedMissionary
+                            ).length
+                              ? "italic"
+                              : "normal",
+                          }}
+                          noWrap
+                        >
+                          {buildFullAddress(selectedMissionary)}
+                        </Typography>
+                      </Box>
+                    </Tooltip>
                   </Grid>
                 </Grid>
               </Box>

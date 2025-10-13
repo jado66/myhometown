@@ -55,12 +55,14 @@ const IconText: React.FC<{
   sx?: any;
 }> = ({ icon, text, variant = "body2", sx }) => (
   <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, ...sx }}>
-    {React.cloneElement(icon as React.ReactElement, {
-      sx: {
-        fontSize: variant === "caption" ? 14 : 16,
-        color: "text.secondary",
-      },
-    })}
+    {React.isValidElement(icon)
+      ? React.cloneElement(icon as React.ReactElement<any>, {
+          sx: {
+            fontSize: variant === "caption" ? 14 : 16,
+            color: "text.secondary",
+          },
+        })
+      : icon}
     <Typography
       variant={variant}
       color={variant === "caption" ? "text.secondary" : "inherit"}
@@ -209,6 +211,41 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
     missionary.last_name?.[0] || ""
   }`;
 
+  const showNoHoursWarning = false; // Set to true to show warning for no hours
+
+  // Address helpers
+  const fullAddress = React.useMemo(() => {
+    const street = missionary.street_address?.trim();
+    const city = missionary.address_city?.trim();
+    const state = missionary.address_state?.trim();
+    const zip = missionary.zip_code?.trim();
+    if (street && city && state && zip) {
+      return `${street}, ${city}, ${state} ${zip}`;
+    }
+    // If any part is missing, build what we have
+    const parts = [street, city, state, zip].filter(Boolean);
+    return parts.length ? parts.join(", ") : "Address not set";
+  }, [
+    missionary.street_address,
+    missionary.address_city,
+    missionary.address_state,
+    missionary.zip_code,
+  ]);
+
+  const missingAddressParts: string[] = React.useMemo(() => {
+    const missing: string[] = [];
+    if (!missionary.street_address) missing.push("Street Address");
+    if (!missionary.address_city) missing.push("City");
+    if (!missionary.address_state) missing.push("State");
+    if (!missionary.zip_code) missing.push("Zip Code");
+    return missing;
+  }, [
+    missionary.street_address,
+    missionary.address_city,
+    missionary.address_state,
+    missionary.zip_code,
+  ]);
+
   return (
     <>
       <Card sx={{ height: "100%", position: "relative" }}>
@@ -327,7 +364,7 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
               )}
 
               {/* Error icon if no hours entries */}
-              {!hoursData.hasEntries && (
+              {!hoursData.hasEntries && showNoHoursWarning && (
                 <Tooltip title="No hours logged this month">
                   <IconButton size="small" color="warning">
                     <Warning color="warning" fontSize="small" />
@@ -341,7 +378,9 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
                 !missionary.stake_name ||
                 !missionary.start_date ||
                 !missionary.duration ||
-                !missionary.profile_picture_url) && (
+                !missionary.profile_picture_url ||
+                !missionary.gender ||
+                missingAddressParts.length > 0) && (
                 <Tooltip
                   title={`Missing: ${[
                     !missionary.title && "Position",
@@ -350,6 +389,8 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
                     !missionary.start_date && "Start Date",
                     !missionary.duration && "Mission Duration",
                     !missionary.profile_picture_url && "Profile Picture",
+                    !missionary.gender && "Gender",
+                    ...missingAddressParts,
                   ]
                     .filter(Boolean)
                     .join(", ")} - Please update`}
@@ -420,6 +461,7 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
                 }}
               />
             </Grid>
+
             <Grid item xs={12} sm={6}>
               <IconText
                 icon={<LocationOnIcon />}
@@ -564,6 +606,28 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
                     icon={<LocationOnIcon />}
                     text={getLocationDisplay()}
                   />
+                </Grid>
+                <Grid item xs={12}>
+                  <Tooltip
+                    title={
+                      missingAddressParts.length
+                        ? `Missing: ${missingAddressParts.join(", ")}`
+                        : "Physical address"
+                    }
+                  >
+                    <Box>
+                      <IconText
+                        icon={<LocationOnIcon />}
+                        text={fullAddress}
+                        sx={{
+                          opacity: missingAddressParts.length ? 0.7 : 1,
+                          fontStyle: missingAddressParts.length
+                            ? "italic"
+                            : "normal",
+                        }}
+                      />
+                    </Box>
+                  </Tooltip>
                 </Grid>
               </Grid>
             </Box>

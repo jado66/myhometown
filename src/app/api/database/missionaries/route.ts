@@ -2,28 +2,31 @@ import { type NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/util/supabaseServer";
 
 // Helper function to calculate duration in months between start_date and end_date
-function calculateDuration(startDate: string | null, endDate: string | null): number | null {
+function calculateDuration(
+  startDate: string | null,
+  endDate: string | null
+): number | null {
   if (!startDate || !endDate) return null;
-  
+
   const start = new Date(startDate);
   const end = new Date(endDate);
-  
+
   if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
-  
+
   // Calculate difference in months
   const yearsDiff = end.getFullYear() - start.getFullYear();
   const monthsDiff = end.getMonth() - start.getMonth();
   const daysDiff = end.getDate() - start.getDate();
-  
+
   let totalMonths = yearsDiff * 12 + monthsDiff;
-  
+
   // Round to nearest month based on days
   if (daysDiff >= 15) {
     totalMonths += 1;
   } else if (daysDiff <= -15) {
     totalMonths -= 1;
   }
-  
+
   return Math.max(0, totalMonths); // Ensure non-negative
 }
 
@@ -49,10 +52,17 @@ export async function GET(request: NextRequest) {
     }
 
     // Calculate duration for each missionary
-    const missionariesWithDuration = missionaries?.map(missionary => ({
-      ...missionary,
-      calculated_duration: calculateDuration(missionary.start_date, missionary.end_date)
-    })) || [];
+    const missionariesWithDuration =
+      missionaries?.map((missionary) => ({
+        ...missionary,
+        // Provide unified `type` field (new column) while remaining backward compatible.
+        type:
+          (missionary as any).type || (missionary as any).person_type || null,
+        calculated_duration: calculateDuration(
+          missionary.start_date,
+          missionary.end_date
+        ),
+      })) || [];
 
     return NextResponse.json({ missionaries: missionariesWithDuration });
   } catch (error) {
@@ -77,7 +87,7 @@ export async function POST(request: NextRequest) {
       assignment_level,
       contact_number,
       notes,
-      title,
+      title, // NOTE: changed from 'position' to 'title' to align with client form field
       group,
       start_date,
       end_date,
@@ -93,6 +103,7 @@ export async function POST(request: NextRequest) {
       address_state,
       zip_code,
       position_detail,
+      type, // NEW: optional new column replacing/aliasing person_type
     } = body;
 
     console.log(JSON.stringify(body, null, 2));
@@ -167,7 +178,7 @@ export async function POST(request: NextRequest) {
         assignment_level,
         contact_number: contact_number || null,
         notes: notes || "",
-        title: title || null,
+        title: title || null, // now correctly persisting the provided title
         group: group || null,
         start_date: start_date || null,
         end_date: end_date || null,
@@ -179,7 +190,9 @@ export async function POST(request: NextRequest) {
         last_login: last_login || null,
         street_address: street_address || null,
         address_city: address_city || null,
-        person_type: person_type || null,
+        // Persist both for now to ease migration; prefer new `type` if provided.
+        person_type: person_type || type || null,
+        type: type || person_type || null,
         address_state: address_state || null,
         zip_code: zip_code || null,
         position_detail: position_detail || null,
@@ -244,6 +257,7 @@ export async function PATCH(request: NextRequest) {
       zip_code,
       person_type,
       position_detail,
+      type, // NEW: optional new column replacing/aliasing person_type
     } = body;
 
     // Validate assignment constraints if assignment_level is provided
@@ -308,6 +322,7 @@ export async function PATCH(request: NextRequest) {
       updateData.address_state = address_state || null;
     if (zip_code !== undefined) updateData.zip_code = zip_code || null;
     if (person_type !== undefined) updateData.person_type = person_type || null;
+    if (type !== undefined) updateData.type = type || person_type || null;
     if (position_detail !== undefined)
       updateData.position_detail = position_detail || null;
 

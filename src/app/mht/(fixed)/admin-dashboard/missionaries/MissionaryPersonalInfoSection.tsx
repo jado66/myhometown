@@ -63,7 +63,9 @@ const MissionaryPersonalInfoSection: React.FC<
                   : "grey.300",
               }}
             >
-              {errors.profile_picture_url && <Help color="white" />}
+              {errors.profile_picture_url && (
+                <Help color="error" sx={{ color: "#fff" }} />
+              )}
 
               {!formData.profile_picture_url && !errors.profile_picture_url && (
                 <PersonIcon sx={{ fontSize: 40 }} />
@@ -124,20 +126,41 @@ const MissionaryPersonalInfoSection: React.FC<
               justifyContent: "center",
             }}
           >
-            {["female", "male"].map((gender) => (
-              <Button
-                key={gender}
-                variant={formData.gender === gender ? "contained" : "text"}
-                onClick={() =>
-                  setFormData((prev: any) => ({ ...prev, gender }))
-                }
-                size="medium"
-                sx={{ textTransform: "capitalize" }}
-                fullWidth
-              >
-                {gender}
-              </Button>
-            ))}
+            {["female", "male"].map((gender) => {
+              const isSelected = formData.gender === gender;
+              const noSelectionYet = !formData.gender; // both red when none selected
+              return (
+                <Button
+                  key={gender}
+                  color={
+                    noSelectionYet
+                      ? "error"
+                      : isSelected
+                      ? "primary"
+                      : "inherit"
+                  }
+                  variant={
+                    isSelected
+                      ? "contained"
+                      : noSelectionYet
+                      ? "outlined"
+                      : "outlined"
+                  }
+                  onClick={() =>
+                    setFormData((prev: any) => ({
+                      ...prev,
+                      gender: prev.gender === gender ? "" : gender, // toggle to null/empty
+                    }))
+                  }
+                  size="medium"
+                  sx={{ textTransform: "capitalize" }}
+                  fullWidth
+                  aria-pressed={isSelected}
+                >
+                  {gender}
+                </Button>
+              );
+            })}
           </Box>
         </Grid>
         <Grid item xs={12} sm={8} md={8}>

@@ -17,64 +17,23 @@ import {
 } from "@mui/material";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 
-const exampleRows = [
-  {
-    first_name: "Jane",
-    last_name: "Doe",
-    email: "jane.doe@email.com",
-    contact_number: "801-555-1234",
-    status: "active",
-    assignment_level: "city",
-    city: "Salt Lake City",
-    community: "",
-    group: "Group A",
-    title: "Sister",
-    start_date: "2024-01-01",
-    end_date: "2024-12-31",
-    street_address: "123 Main St",
-    address_city: "Salt Lake City",
-    address_state: "UT",
-    zip_code: "84101",
-    notes: "",
-  },
-  {
-    first_name: "John",
-    last_name: "Smith",
-    email: "john.smith@email.com",
-    contact_number: "801-555-5678",
-    status: "pending",
-    assignment_level: "community",
-    city: "",
-    community: "Dixon",
-    group: "Group B",
-    title: "Elder",
-    start_date: "2024-02-15",
-    end_date: "2025-02-14",
-    street_address: "456 Oak Ave",
-    address_city: "Dixon",
-    address_state: "UT",
-    zip_code: "84302",
-    notes: "New arrival",
-  },
-];
-
 const csvHeader = [
   "First Name",
   "Last Name",
   "Email",
   "Phone",
   "Status",
-  "Assignment Level",
-  "City",
-  "Community",
-  "Group",
-  "Title",
+  "Level",
+  "Assignment",
+  "Position",
+  "Position Detail",
   "Start Date",
   "End Date",
   "Street Address",
-  "Address City",
-  "Address State",
+  "City",
+  "State",
   "Zip Code",
+  "Home Stake",
   "Notes",
 ];
 
@@ -82,65 +41,46 @@ function downloadTemplate() {
   const header = csvHeader.join(",") + "\n";
   const row1 =
     [
+      "Missionary",
       "Jane",
       "Doe",
       "jane.doe@email.com",
-      "801-555-1234",
-      "active",
-      "city",
-      "Salt Lake City",
-      "",
-      "Group A",
-      "CRC Director",
-      "2024-01-01",
-      "2024-12-31",
+      "123-456-7890",
+      "Active",
+      "Community",
+      "Granger West",
+      "Support Staff",
+      "Service Missionary",
+      "01-01-2024",
+      "12-31-2024",
       "123 Main St",
       "Salt Lake City",
       "UT",
       "84101",
-      "",
+      "Salt Lake 1st Stake",
     ].join(",") + "\n";
   const row2 =
     [
+      "Volunteer",
       "John",
       "Smith",
       "john.smith@email.com",
       "801-555-5678",
-      "pending",
-      "community",
-      "",
+      "Pending",
+      "Community",
       "Dixon",
-
+      "Support Staff",
       "Teacher",
-      "2024-02-15",
-      "2025-02-14",
+      "02-15-2024",
+      "02-14-2025",
       "456 Oak Ave",
-      "Dixon",
+      "Orem",
       "UT",
       "84302",
-      "New arrival",
-    ].join(",") + "\n";
-  const row3 =
-    [
-      "Alice",
-      "Johnson",
-      "alice.johnson@email.com",
-      "801-555-8765",
-      "active",
-      "state",
       "",
-      "",
-      "State Team",
-      "Coordinator",
-      "2024-03-10",
-      "2025-03-09",
-      "789 Pine Rd",
-      "Provo",
-      "UT",
-      "84604",
-      "Experienced missionary",
     ].join(",") + "\n";
-  const csv = header + row1 + row2 + row3;
+
+  const csv = header + row1 + row2;
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   if (link.download !== undefined) {
@@ -174,95 +114,63 @@ const ImportMissionaryCsvHelpDialog = ({
       <Box mb={2}>
         <ul>
           <li>
-            <b>First Name</b> <i>(required)</i>
+            <b>Type *</b> <i>(Missionary or Volunteer)</i>
           </li>
           <li>
-            <b>Last Name</b> <i>(required)</i>
+            <b>First Name *</b>
           </li>
           <li>
-            <b>Email</b> <i>(required, must be unique)</i>
+            <b>Last Name *</b>
           </li>
           <li>
-            <b>Phone</b> (required)
+            <b>Email *</b>
           </li>
           <li>
-            <b>Status</b> <i>(required: active, inactive, pending)</i>
+            <b>Phone *</b>
           </li>
           <li>
-            <b>Assignment Level</b> <i>(required: state, city, community)</i>
+            <b>Status *</b> <i>(Active, Inactive, Pending)</i>
           </li>
           <li>
-            <b>City</b> (required if Assignment Level is City)
+            <b>Level *</b> <i>(State, City, Community)</i>
           </li>
           <li>
-            <b>Community</b> (required if Assignment Level is Community)
+            <b>Assignment *</b>
+          </li>
+          <li>
+            <b>Position *</b>
+          </li>
+          <li>
+            <b>Position Detail </b> (Optional)
           </li>
 
           <li>
-            <b>Title</b> (optional)
+            <b>Start Date *</b> (MM-DD-YYYY)
           </li>
           <li>
-            <b>Start Date</b> (required, YYYY-MM-DD)
+            <b>End Date *</b> (optional, MM-DD-YYYY)
           </li>
           <li>
-            <b>End Date</b> (optional, YYYY-MM-DD)
+            <b>Street Address *</b>
           </li>
           <li>
-            <b>Street Address</b> (required)
+            <b>City *</b>
           </li>
           <li>
-            <b>Address City</b> (required)
+            <b>State *</b>
           </li>
           <li>
-            <b>Address State</b> (required)
+            <b>Zip Code *</b>
           </li>
           <li>
-            <b>Zip Code</b> (required)
+            <b>Home Stake </b> (for missionaries only)
           </li>
           <li>
             <b>Notes</b> (optional)
           </li>
         </ul>
       </Box>
-      <Typography gutterBottom>Example:</Typography>
-      <TableContainer component={Paper} sx={{ mb: 2 }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              {csvHeader.map((header) => (
-                <TableCell key={header}>
-                  <b>{header}</b>
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {exampleRows.map((row, idx) => (
-              <TableRow key={idx}>
-                <TableCell>{row.first_name}</TableCell>
-                <TableCell>{row.last_name}</TableCell>
-                <TableCell>{row.email}</TableCell>
-                <TableCell sx={{ whiteSpace: "nowrap" }}>
-                  {row.contact_number}
-                </TableCell>
-                <TableCell>{row.status}</TableCell>
-                <TableCell>{row.assignment_level}</TableCell>
-                <TableCell sx={{ whiteSpace: "nowrap" }}>{row.city}</TableCell>
-                <TableCell>{row.community}</TableCell>
 
-                <TableCell>{row.title}</TableCell>
-                <TableCell>{row.start_date}</TableCell>
-                <TableCell>{row.end_date}</TableCell>
-                <TableCell>{row.street_address}</TableCell>
-                <TableCell>{row.address_city}</TableCell>
-                <TableCell>{row.address_state}</TableCell>
-                <TableCell>{row.zip_code}</TableCell>
-                <TableCell>{row.notes}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
       <Typography gutterBottom>
         <b>Tips:</b>
         <ul>
@@ -271,8 +179,9 @@ const ImportMissionaryCsvHelpDialog = ({
           </li>
           <li>Phone numbers will be normalized automatically.</li>
           <li>
-            Assignment Level, City, and Community should match your system's
-            values.
+            State, Cities and Communities must exist in our database. The
+            downloadable template will contain all of the cities and communities
+            values you may use.
           </li>
         </ul>
       </Typography>

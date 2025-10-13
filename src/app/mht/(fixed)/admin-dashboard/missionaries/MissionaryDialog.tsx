@@ -21,7 +21,7 @@ import MissionaryNotesSection from "./MissionaryNotesSection";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 
 // Title positions organized by level and group
-const POSITIONS_BY_LEVEL = {
+const POSITIONS_BY_LEVEL: Record<string, Record<string, string[]>> = {
   state: {
     "Utah Executive": [
       "Utah Director",
@@ -57,6 +57,8 @@ const POSITIONS_BY_LEVEL = {
     "Support Staff": ["Support Staff"],
   },
 };
+
+type AssignmentLevel = "state" | "city" | "community";
 
 interface MissionaryDialogProps {
   open: boolean;
@@ -114,6 +116,31 @@ const missionarySchema = yup.object().shape({
   notes: yup.string().notRequired(),
 });
 
+interface MissionaryFormData {
+  person_type: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  profile_picture_url: string;
+  city_id: string;
+  community_id: string;
+  assignment_status: string;
+  assignment_level: AssignmentLevel | string; // allow unknown future levels gracefully
+  contact_number: string;
+  notes: string;
+  group: string;
+  title: string;
+  start_date: string;
+  duration: string;
+  stake_name: string;
+  gender: string | null;
+  street_address: string;
+  address_city: string;
+  address_state: string;
+  zip_code: string;
+  position_detail: string;
+}
+
 const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
   open,
   onClose,
@@ -123,7 +150,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
   communities,
   user = {},
 }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<MissionaryFormData>({
     person_type: "missionary",
     email: "",
     first_name: "",
@@ -140,12 +167,13 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
     start_date: "",
     duration: "",
     stake_name: "",
-    gender: "female",
+    gender: null,
     // Address fields
     street_address: "",
     address_city: "",
     address_state: "",
     zip_code: "",
+    position_detail: "",
   });
 
   const isAdmin = user?.permissions?.administrator || false;
@@ -156,7 +184,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
 
   // Initialize image upload hook
-  const { uploadProcessedImage, loading: uploadLoading } = useImageUpload(
+  const { uploadProcessedImage, uploading: uploadLoading } = useImageUpload(
     (url: string) =>
       setFormData((prev) => ({ ...prev, profile_picture_url: url }))
   );
@@ -180,7 +208,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
         start_date: missionary.start_date || "",
         duration: missionary.duration || "",
         stake_name: missionary.stake_name || "",
-        gender: missionary.gender || "female",
+        gender: missionary.gender || "",
         street_address: missionary.street_address || "",
         address_city: missionary.address_city || "",
         address_state: missionary.address_state || "",
@@ -261,7 +289,9 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
 
   // Get title options for react-select
   const getTitleOptions = () => {
-    const positions = POSITIONS_BY_LEVEL[formData.assignment_level] || {};
+    const positions = (POSITIONS_BY_LEVEL[
+      formData.assignment_level as keyof typeof POSITIONS_BY_LEVEL
+    ] || {}) as Record<string, string[]>;
     const options: {
       label: string;
       options: { value: string; label: string; group: string }[];
@@ -269,7 +299,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
     Object.entries(positions).forEach(([group, titles]) => {
       options.push({
         label: group,
-        options: titles.map((title) => ({
+        options: (titles || []).map((title: string) => ({
           value: title,
           label: title,
           group: group,
@@ -360,7 +390,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
     e.preventDefault();
 
     setErrors({});
-    let submitData = { ...formData };
+    let submitData: MissionaryFormData = { ...formData };
     if (submitData.assignment_level === "state") {
       submitData.city_id = "";
       submitData.community_id = "";
@@ -411,22 +441,19 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
         position_detail: "Position Detail",
         notes: "Notes",
       };
-      const missingLabels = missingFields.map((f) => fieldNames[f] || f);
-      alert(
-        "Please complete all required fields before saving:\n\n" +
-          missingLabels.join("\n")
-      );
-      // Set errors for UI
+      // Non-blocking: mark errors but allow save anyway
       const newErrors: { [key: string]: string } = {};
       missingFields.forEach((f) => {
-        newErrors[f] = `${fieldNames[f] || f} is required`;
+        newErrors[f] = `${fieldNames[f] || f} is missing `;
       });
       setErrors(newErrors);
+      // Proceed to save as incomplete (draft-like) without blocking
+      onSave({ ...submitData, is_incomplete: true });
       return;
     }
-    // If all required fields are present, proceed
+    // If all required fields are present, proceed with a clean error state
     setErrors({});
-    onSave(submitData);
+    onSave({ ...submitData, is_incomplete: false });
   };
 
   const calculateEndDate = (startDate: string, duration: string) => {
@@ -524,7 +551,6 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
               <MissionaryNotesSection
                 formData={formData}
                 setFormData={setFormData}
-                errors={errors}
               />
             </Grid>
           </Box>

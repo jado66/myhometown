@@ -24,6 +24,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Divider,
+  TablePagination,
 } from "@mui/material";
 import {
   Add,
@@ -56,29 +57,7 @@ import ProfilePictureDialog from "./ProfilePictureDialog";
 import { toast } from "react-toastify";
 import PermissionGuard from "@/guards/permission-guard";
 
-// Mock data types
-interface Missionary {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  contact_number?: string;
-  assignment_status: "active" | "inactive" | "pending";
-  assignment_level?: "state" | "city" | "community";
-  city_id?: string;
-  community_id?: string;
-  group?: string;
-  title?: string;
-  start_date?: string;
-  end_date?: string;
-  duration?: string;
-  notes?: string;
-  street_address?: string;
-  address_city?: string;
-  address_state?: string;
-  zip_code?: string;
-  stake_name?: string;
-}
+// NOTE: Using loosely typed missionary records to avoid conflicts with existing global Missionary type.
 
 interface City {
   _id: string;
@@ -100,7 +79,7 @@ interface FilterState {
   assignmentLevel: "all" | "state" | "city" | "community";
   selectedCityId: string | null;
   selectedCommunityId: string | null;
-  personType?: string; // kept optional for legacy compatibility
+  personType: "all" | "missionary" | "volunteer";
 }
 
 interface ImportSummary {
@@ -128,7 +107,7 @@ type ViewMode = "card" | "list";
 
 // Back to:
 export default function MissionaryManagement() {
-  const [missionaries, setMissionaries] = useState<Missionary[] | null>(null);
+  const [missionaries, setMissionaries] = useState<any[] | null>(null);
   const { user } = useUser();
   const { cities } = useManageCities(user);
   const { communities } = useCommunities(user);
@@ -168,9 +147,9 @@ export default function MissionaryManagement() {
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedMissionary, setSelectedMissionary] = useState<
-    Missionary | undefined
-  >(undefined);
+  const [selectedMissionary, setSelectedMissionary] = useState<any | undefined>(
+    undefined
+  );
 
   // Bulk import dialog state
   const [bulkImportOpen, setBulkImportOpen] = useState(false);
@@ -213,24 +192,66 @@ export default function MissionaryManagement() {
     const valid: any[] = [];
     const emailSet = new Set<string>();
 
+    // Helper: case-insensitive trim compare
+    const ciEquals = (a: string, b: string) =>
+      a.trim().toLowerCase() === b.trim().toLowerCase();
+
     rows.forEach((row, idx) => {
       const rowNum = idx + 2; // 1-based, +1 for header
+      // Determine if this is the new format (has Level column)
+      const isNewFormat = Object.prototype.hasOwnProperty.call(row, "Level");
 
-      // Required fields
+      // Required fields (support both old & new headers)
       const first_name = row["First Name"] || "";
       const last_name = row["Last Name"] || "";
       const email = row["Email"] || "";
-      const assignment_status = (row["Status"] || "").toLowerCase();
-      const assignment_level = (row["Assignment Level"] || "").toLowerCase();
-      const cityName = row["City"] || "";
-      const communityName = row["Community"] || "";
+      const assignment_status_raw = (row["Status"] || "").toLowerCase();
+      const assignment_status = assignment_status_raw
+        ? assignment_status_raw // keep raw lowercase internally; UI can format later
+        : "";
+      const assignment_level_raw = (
+        row["Level"] ||
+        row["Assignment Level"] ||
+        ""
+      ).toLowerCase();
+      const assignment_level = assignment_level_raw
+        ? assignment_level_raw // keep raw lowercase internally
+        : "";
+
+      // Person type mapping (new column). Accept "missionary" or "volunteer" only.
+      const person_type_raw = (
+        row["Type"] || // preferred header
+        row["Person Type"] || // fallback header name
+        "missionary"
+      ) // default if omitted
+        .toLowerCase()
+        .trim();
+      if (
+        person_type_raw &&
+        !["missionary", "volunteer"].includes(person_type_raw)
+      ) {
+        errors.push(
+          `Row ${rowNum}: Type must be one of missionary, volunteer.`
+        );
+      }
+
+      // Assignment name (new format) or legacy City/Community columns
+      let assignmentName = row["Assignment"] || "";
+      const legacyCityName = row["City"] || "";
+      const legacyCommunityName = row["Community"] || "";
+
+      // For legacy format, infer assignmentName from City/Community columns
+      if (!assignmentName) {
+        if (assignment_level === "city" && legacyCityName)
+          assignmentName = legacyCityName;
+        else if (assignment_level === "community" && legacyCommunityName)
+          assignmentName = legacyCommunityName;
+      }
 
       // Skip completely empty rows
       const isEmptyRow =
         !first_name && !last_name && !email && !assignment_status;
-      if (isEmptyRow) {
-        return; // Skip this row silently
-      }
+      if (isEmptyRow) return;
 
       // Validate required fields
       if (!first_name) errors.push(`Row ${rowNum}: First Name is required.`);
@@ -241,8 +262,8 @@ export default function MissionaryManagement() {
       if (email) emailSet.add(email);
 
       if (
-        !assignment_status ||
-        !["active", "inactive", "pending"].includes(assignment_status)
+        !assignment_status_raw ||
+        !["active", "inactive", "pending"].includes(assignment_status_raw)
       ) {
         errors.push(
           `Row ${rowNum}: Status must be one of active, inactive, pending.`
@@ -250,68 +271,131 @@ export default function MissionaryManagement() {
       }
 
       if (
-        assignment_level &&
-        !["state", "city", "community"].includes(assignment_level)
+        assignment_level_raw &&
+        !["state", "city", "community"].includes(assignment_level_raw)
       ) {
         errors.push(
-          `Row ${rowNum}: Assignment Level must be one of state, city, community.`
+          `Row ${rowNum}: Level must be one of state, city, community.`
         );
       }
 
-      // Assignment logic
-      let city_id = null,
-        community_id = null;
-      if (assignment_level === "city") {
-        if (!cityName)
+      // Assignment resolution (populate IDs based on provided names)
+      let city_id: string | null = null;
+      let community_id: string | null = null;
+      if (assignment_level_raw === "city") {
+        if (!assignmentName) {
           errors.push(
-            `Row ${rowNum}: City is required for Assignment Level 'city'.`
+            `Row ${rowNum}: Assignment (City name) is required for Level 'city'.`
           );
-        const city = cities.find(
-          (c) => c.name.toLowerCase() === cityName.toLowerCase()
-        );
-        if (!city) errors.push(`Row ${rowNum}: City '${cityName}' not found.`);
-        else city_id = city.id;
-        if (communityName)
+        } else {
+          const city = cities.find((c) => ciEquals(c.name, assignmentName));
+          if (!city) {
+            errors.push(`Row ${rowNum}: City '${assignmentName}' not found.`);
+          } else {
+            city_id = city.id;
+          }
+        }
+      } else if (assignment_level_raw === "community") {
+        if (!assignmentName) {
           errors.push(
-            `Row ${rowNum}: Community must be blank for Assignment Level 'city'.`
+            `Row ${rowNum}: Assignment (Community name) is required for Level 'community'.`
           );
-      } else if (assignment_level === "community") {
-        if (!communityName)
+        } else {
+          // Find all communities matching the given name (case-insensitive)
+          const matchingCommunities = communities.filter((c) =>
+            ciEquals(c.name, assignmentName)
+          );
+          if (matchingCommunities.length === 0) {
+            // Fallback: attempt fuzzy (includes) match if no exact match
+            const fuzzy = communities.filter((c) =>
+              c.name.toLowerCase().includes(assignmentName.toLowerCase())
+            );
+            if (fuzzy.length === 1) {
+              community_id = fuzzy[0].id;
+              city_id = fuzzy[0].city;
+              console.debug(
+                `CSV import row ${rowNum}: Resolved community '${assignmentName}' via fuzzy match to '${fuzzy[0].name}'.`
+              );
+            } else if (fuzzy.length > 1) {
+              errors.push(
+                `Row ${rowNum}: Community '${assignmentName}' has multiple fuzzy matches (${fuzzy
+                  .map((c) => c.name)
+                  .join(
+                    ", "
+                  )}). Provide an Assignment City column to disambiguate.`
+              );
+            } else {
+              errors.push(
+                `Row ${rowNum}: Community '${assignmentName}' not found.`
+              );
+            }
+          } else if (matchingCommunities.length === 1) {
+            community_id = matchingCommunities[0].id;
+            // Also derive city_id automatically from community
+            city_id = matchingCommunities[0].city;
+          } else {
+            // Attempt disambiguation using a City column (if present) or Address City
+            const possibleCityName = (
+              row["Assignment City"] ||
+              row["City"] ||
+              ""
+            ).trim();
+            if (possibleCityName) {
+              // c.city holds a city ID; we must map ID -> city object -> name for comparison.
+              const narrowed = matchingCommunities.filter((c) => {
+                const cityObj = cities.find((city) => city.id === c.city);
+                return cityObj
+                  ? ciEquals(cityObj.name, possibleCityName)
+                  : false;
+              });
+              if (narrowed.length === 1) {
+                community_id = narrowed[0].id;
+                city_id = narrowed[0].city;
+              } else if (narrowed.length === 0) {
+                errors.push(
+                  `Row ${rowNum}: Community '${assignmentName}' found in other cities but not in '${possibleCityName}'.`
+                );
+              } else {
+                errors.push(
+                  `Row ${rowNum}: Ambiguous community '${assignmentName}' in multiple cities. Provide an Assignment City column to disambiguate.`
+                );
+              }
+            } else {
+              errors.push(
+                `Row ${rowNum}: Community '${assignmentName}' exists in multiple cities. Add an 'Assignment City' column with the city name to disambiguate.`
+              );
+            }
+          }
+        }
+      } else if (assignment_level_raw === "state") {
+        // For state level we now REQUIRE the Assignment column to be 'Utah'
+        // (case-insensitive). Any other value (including blank) is invalid.
+        if (!assignmentName || assignmentName.toLowerCase() !== "utah") {
           errors.push(
-            `Row ${rowNum}: Community is required for Assignment Level 'community'.`
+            `Row ${rowNum}: Assignment must be 'Utah' for Level 'state'.`
           );
-        const community = communities.find(
-          (c) => c.name.toLowerCase() === communityName.toLowerCase()
-        );
-        if (!community)
-          errors.push(`Row ${rowNum}: Community '${communityName}' not found.`);
-        else community_id = community.id;
-        if (cityName)
-          errors.push(
-            `Row ${rowNum}: City must be blank for Assignment Level 'community'.`
-          );
-      } else if (assignment_level === "state") {
-        if (cityName)
-          errors.push(
-            `Row ${rowNum}: City must be blank for Assignment Level 'state'.`
-          );
-        if (communityName)
-          errors.push(
-            `Row ${rowNum}: Community must be blank for Assignment Level 'state'.`
-          );
+        }
       }
 
-      // If no errors for this row, map to DB fields
+      // If no row-specific errors, map to DB fields
+      const rowErrors = errors.filter((e) => e.startsWith(`Row ${rowNum}:`));
+      // Additional safeguard: if community level but we failed to resolve community_id, flag an error
       if (
-        errors.length === 0 ||
-        errors.filter((e) => e.startsWith(`Row ${rowNum}:`)).length === 0
+        rowErrors.length === 0 &&
+        assignment_level_raw === "community" &&
+        !community_id
       ) {
-        // Calculate duration if start_date and end_date are provided
+        errors.push(
+          `Row ${rowNum}: Could not resolve community '${assignmentName}'.`
+        );
+      }
+      const finalRowErrors = errors.filter((e) =>
+        e.startsWith(`Row ${rowNum}:`)
+      );
+      if (finalRowErrors.length === 0) {
         const start_date = row["Start Date"] || "";
         const end_date = row["End Date"] || "";
-        let duration = row["Duration"] || ""; // First check if duration is provided in CSV
-
-        // If duration not provided but dates are, calculate it
+        let duration = row["Duration"] || ""; // legacy support
         if (!duration && start_date && end_date) {
           try {
             const startDate = new Date(start_date);
@@ -324,10 +408,17 @@ export default function MissionaryManagement() {
               const months = Math.round(diffDays / 30.44);
               duration = `${months} months`;
             }
-          } catch (e) {
-            // If date parsing fails, leave duration as is
-          }
+          } catch {}
         }
+
+        // Address fields: new format uses City/State for address; legacy uses Address City/Address State
+        const address_city = isNewFormat
+          ? row["City"] || ""
+          : row["Address City"] || "";
+        const address_state = isNewFormat
+          ? row["State"] || ""
+          : row["Address State"] || "";
+        const stake_name = row["Home Stake"] || row["Stake Name"] || "";
 
         valid.push({
           first_name,
@@ -338,17 +429,20 @@ export default function MissionaryManagement() {
           assignment_level,
           city_id,
           community_id,
+          // Position column should map to the database 'title' field; keep group strictly from 'Group'
           group: row["Group"] || "",
-          title: row["Title"] || "",
+          title:
+            row["Position"] || row["Title"] || row["Position Detail"] || "",
           start_date,
           end_date,
           duration,
           street_address: row["Street Address"] || "",
-          address_city: row["Address City"] || "",
-          address_state: row["Address State"] || "",
+          address_city,
+          address_state,
           zip_code: row["Zip Code"] || "",
-          stake_name: row["Stake Name"] || "",
+          stake_name,
           notes: row["Notes"] || "",
+          person_type: person_type_raw || "missionary",
         });
       }
     });
@@ -367,6 +461,7 @@ export default function MissionaryManagement() {
 
     if (!file) return;
 
+    // Read CSV text
     const text = await file.text();
     const { header, rows } = parseCsv(text);
 
@@ -375,50 +470,110 @@ export default function MissionaryManagement() {
       return;
     }
 
-    const results = validateAndMapRows(rows, cities, communities);
-    setImportResults(results);
+    // Fetch ALL cities & communities directly from Supabase (not limited by current hooks)
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      if (!supabaseUrl || !anonKey) {
+        setImportError("Missing Supabase environment variables.");
+        return;
+      }
 
-    if (results.errors.length > 0) {
-      setImportError("Some rows have errors. Please fix them and re-upload.");
-    } else {
-      setImportError(null);
+      const headers = {
+        apikey: anonKey,
+        Authorization: `Bearer ${anonKey}`,
+      } as Record<string, string>;
+
+      const [citiesResp, communitiesResp] = await Promise.all([
+        fetch(
+          `${supabaseUrl}/rest/v1/cities?select=id,name,state,country&order=name`,
+          { headers }
+        ),
+        fetch(
+          `${supabaseUrl}/rest/v1/communities?select=id,name,city_id,state,country&order=name`,
+          { headers }
+        ),
+      ]);
+
+      if (!citiesResp.ok || !communitiesResp.ok) {
+        setImportError("Failed to fetch locations from database.");
+        return;
+      }
+
+      const rawCities = await citiesResp.json();
+      const rawCommunities = await communitiesResp.json();
+
+      // Normalize to existing shapes expected by validateAndMapRows
+      const allCities: City[] = (rawCities || []).map((c: any) => ({
+        _id: c.id,
+        id: c.id,
+        name: c.name,
+        state: c.state,
+      }));
+
+      const allCommunities: Community[] = (rawCommunities || []).map(
+        (c: any) => ({
+          _id: c.id,
+          id: c.id,
+          name: c.name,
+          city: c.city_id, // match existing interface (city holds city id)
+        })
+      );
+
+      const results = validateAndMapRows(rows, allCities, allCommunities);
+      setImportResults(results);
+
+      if (results.errors.length > 0) {
+        setImportError("Some rows have errors. Please fix them and re-upload.");
+      } else {
+        setImportError(null);
+      }
+    } catch (err: any) {
+      console.error("Bulk import: location fetch/validation error", err);
+      setImportError(
+        err?.message || "Unexpected error fetching locations for validation."
+      );
     }
   };
 
   // Handler to actually submit valid missionaries to the API
   const handleBulkImportSubmit = async () => {
     if (!importResults.valid.length) return;
-    setImporting(true);
-    const summary: ImportSummary = { success: 0, duplicates: [], failed: [] };
-    try {
-      for (const missionary of importResults.valid) {
-        try {
-          const res = await fetch("/api/database/missionaries", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(missionary),
-          });
-          if (res.status === 409) {
-            summary.duplicates.push(missionary.email);
-            continue; // skip duplicates
-          }
 
-          if (!res.ok) {
-            const text = await res.text();
-            summary.failed.push({
-              email: missionary.email,
-              reason: text || res.statusText,
-            });
-            continue;
-          }
-          summary.success += 1;
-        } catch (innerErr: any) {
-          summary.failed.push({
-            email: missionary.email,
-            reason: innerErr.message || "Network error",
-          });
-        }
+    setImporting(true);
+
+    const summary: ImportSummary = { success: 0, duplicates: [], failed: [] };
+
+    try {
+      // New bulk API endpoint usage
+      const res = await fetch("/api/database/missionaries/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ missionaries: importResults.valid }),
+      });
+
+      if (!res.ok) {
+        let reason = res.statusText;
+        try {
+          reason = await res.text();
+        } catch {}
+        toast.error(`Bulk import failed: ${reason}`);
+        setImportError(`Bulk import failed: ${reason}`);
+        return;
       }
+
+      const result = await res.json();
+      summary.success = result?.summary?.inserted || 0;
+      summary.duplicates = result?.duplicates || [];
+      if (Array.isArray(result?.invalid)) {
+        result.invalid.forEach((inv: any) => {
+          summary.failed.push({
+            email: inv.email || `index-${inv.index}`,
+            reason: (inv.errors || []).join("; "),
+          });
+        });
+      }
+
       setImportSummary(summary);
       await fetchMissionaries();
 
@@ -430,13 +585,17 @@ export default function MissionaryManagement() {
       const message = parts.join(", ");
       if (summary.failed.length === 0) {
         toast.success(`Import complete: ${message}`);
-      } else {
+      } else if (summary.success) {
         toast.warn(`Import partial: ${message}`);
+      } else {
+        toast.error(`Import failed: ${message || "No rows imported"}`);
       }
-      // Keep dialog open to show summary
     } catch (err) {
+      console.error("Bulk import unexpected error", err);
       toast.error("Unexpected error importing missionaries");
-      setImportError("Unexpected error importing missionaries");
+      setImportError(
+        (err as any)?.message || "Unexpected error importing missionaries"
+      );
     } finally {
       setImporting(false);
     }
@@ -449,7 +608,24 @@ export default function MissionaryManagement() {
     assignmentLevel: "all",
     selectedCityId: null,
     selectedCommunityId: null,
+    personType: "all",
   });
+
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
+
+  const handleChangePage = (_: any, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newSize = parseInt(event.target.value, 10);
+    setRowsPerPage(newSize);
+    setPage(0);
+  };
 
   // Helpful typed lists
   const cityList = (cities || []) as City[];
@@ -493,11 +669,12 @@ export default function MissionaryManagement() {
 
     const matchesStatus =
       statusFilter === "all" ||
-      missionary.assignment_status.toLowerCase() === statusFilter;
+      missionary.assignment_status.toLowerCase() === statusFilter.toLowerCase();
 
     const matchesLevel =
       assignmentLevel === "all" ||
-      missionary.assignment_level?.toLowerCase() === assignmentLevel;
+      missionary.assignment_level?.toLowerCase() ===
+        assignmentLevel.toLowerCase();
 
     const matchesCity =
       !selectedCityId || missionary.city_id === selectedCityId;
@@ -514,6 +691,31 @@ export default function MissionaryManagement() {
     );
   });
 
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(0);
+  }, [
+    searchTerm,
+    statusFilter,
+    assignmentLevel,
+    selectedCityId,
+    selectedCommunityId,
+  ]);
+
+  // Ensure page is not out of bounds after filtering
+  useEffect(() => {
+    const maxPage = Math.max(
+      0,
+      Math.ceil(filteredMissionaries.length / rowsPerPage) - 1
+    );
+    if (page > maxPage) setPage(maxPage);
+  }, [filteredMissionaries.length, rowsPerPage, page]);
+
+  const paginatedMissionaries = filteredMissionaries.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
   // Fetch missionary hours
   const {
     hours,
@@ -522,28 +724,95 @@ export default function MissionaryManagement() {
   } = useMissionaryHours();
 
   const handleExportCSV = () => {
-    const data = filteredMissionaries.map((m) => ({
-      "First Name": m.first_name,
-      "Last Name": m.last_name,
-      Email: m.email,
-      Phone: m.contact_number || "",
-      Status: m.assignment_status,
-      "Assignment Level": m.assignment_level || "",
-      City: cityList.find((c) => c.id === m.city_id)?.name || "",
-      Community: communityList.find((c) => c.id === m.community_id)?.name || "",
-      Group: m.group || "",
-      Title: m.title || "",
-      "Start Date": m.start_date || "",
-      "End Date": m.end_date || "",
-      Duration: m.duration || "",
-      "Street Address": m.street_address || "",
-      "Address City": m.address_city || "",
-      "Address State": m.address_state || "",
-      "Zip Code": m.zip_code || "",
-      "Stake Name": m.stake_name || "",
-      Notes: m.notes || "",
-    }));
-    console.log("Exporting CSV with data:", data);
+    // New unified export format matching updated import template
+    const header = [
+      "First Name",
+      "Last Name",
+      "Email",
+      "Phone",
+      "Status",
+      "Level",
+      "Assignment",
+      "Type", // include for round-trip consistency
+      "Position",
+      "Position Detail",
+      "Start Date",
+      "End Date",
+      "Street Address",
+      "City",
+      "State",
+      "Zip Code",
+      "Home Stake",
+      "Notes",
+    ];
+    const rows = filteredMissionaries.map((m) => {
+      let assignment = "";
+      if (m.assignment_level?.toLowerCase() === "city") {
+        assignment = cityList.find((c) => c.id === m.city_id)?.name || "";
+      } else if (m.assignment_level?.toLowerCase() === "community") {
+        assignment =
+          communityList.find((c) => c.id === m.community_id)?.name || "";
+      } else if (m.assignment_level?.toLowerCase() === "state") {
+        // Export rule: state-level missionaries must have 'Utah' in Assignment per new business rule
+        assignment = "Utah";
+      }
+      return {
+        "First Name": m.first_name,
+        "Last Name": m.last_name,
+        Email: m.email,
+        Phone: m.contact_number || "",
+        Status: m.assignment_status,
+        Level: m.assignment_level || "",
+        Assignment: assignment,
+        Type: m.person_type || "missionary",
+        // Updated mapping: Position now reflects missionary.title; Position Detail reflects position_detail
+        Position: m.title || "",
+        "Position Detail": m.position_detail || "",
+        "Start Date": m.start_date || "",
+        "End Date": m.end_date || "",
+        "Street Address": m.street_address || "",
+        City: m.address_city || "",
+        State: m.address_state || "",
+        "Zip Code": m.zip_code || "",
+        "Home Stake": m.stake_name || "",
+        Notes: m.notes || "",
+      };
+    });
+
+    // CSV escaping
+    const escapeCsv = (val: any) => {
+      if (val === null || val === undefined) return "";
+      const str = String(val);
+      if (/[",\n]/.test(str)) {
+        return '"' + str.replace(/"/g, '""') + '"';
+      }
+      return str;
+    };
+
+    const csvContent = [
+      header.join(","),
+      ...rows.map((row) =>
+        header.map((h) => escapeCsv((row as any)[h])).join(",")
+      ),
+    ].join("\r\n");
+
+    try {
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `missionaries_export_${new Date()
+        .toISOString()
+        .slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("CSV exported successfully");
+    } catch (err) {
+      console.error("Error exporting CSV", err);
+      toast.error("Failed to export CSV");
+    }
   };
 
   // Open dialog for add or edit
@@ -554,7 +823,7 @@ export default function MissionaryManagement() {
     setDialogOpen(true);
   };
 
-  const handleOpenDialog = (missionary?: Missionary) => {
+  const handleOpenDialog = (missionary?: any) => {
     console.log(JSON.stringify(missionary, null, 2));
     setSelectedMissionary(missionary);
     setDialogOpen(true);
@@ -569,6 +838,21 @@ export default function MissionaryManagement() {
   const handleSaveMissionary = async (formData: any) => {
     // If editing, update; if adding, create
     try {
+      // Normalize status & level to lowercase to satisfy DB CHECK constraints
+      if (formData.assignment_status) {
+        formData.assignment_status = String(
+          formData.assignment_status
+        ).toLowerCase();
+      }
+      if (formData.assignment_level) {
+        formData.assignment_level = String(
+          formData.assignment_level
+        ).toLowerCase();
+      }
+      // Enforce Utah for state assignment automatically if user selected state level
+      if (formData.assignment_level === "state") {
+        formData.assignment = "Utah"; // for potential future API use if server expects it
+      }
       let method = "POST";
       let url = "/api/database/missionaries";
       if (selectedMissionary && selectedMissionary.id) {
@@ -593,10 +877,11 @@ export default function MissionaryManagement() {
 
   // State for delete confirmation dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [missionaryToDelete, setMissionaryToDelete] =
-    useState<Missionary | null>(null);
+  const [missionaryToDelete, setMissionaryToDelete] = useState<any | null>(
+    null
+  );
 
-  const handleDeleteMissionary = (missionary: Missionary) => {
+  const handleDeleteMissionary = (missionary: any) => {
     setMissionaryToDelete(missionary);
     setDeleteDialogOpen(true);
   };
@@ -663,7 +948,7 @@ export default function MissionaryManagement() {
         onCancel={handleCancelDelete}
         onClose={handleCancelDelete}
       />
-      ;
+
       <Box
         sx={{
           backgroundColor: "#f5f5f5",
@@ -837,7 +1122,7 @@ export default function MissionaryManagement() {
               {/* Missionary Cards or List */}
               {viewMode === "card" ? (
                 <Grid container spacing={3}>
-                  {filteredMissionaries.map((missionary) => (
+                  {paginatedMissionaries.map((missionary) => (
                     <Grid item xs={12} lg={6} key={missionary.id}>
                       <MissionaryCard
                         missionary={missionary}
@@ -853,7 +1138,7 @@ export default function MissionaryManagement() {
                 </Grid>
               ) : (
                 <MissionaryListView
-                  missionaries={filteredMissionaries}
+                  missionaries={paginatedMissionaries}
                   cities={cities}
                   communities={communities}
                   hours={hours}
@@ -861,6 +1146,22 @@ export default function MissionaryManagement() {
                   onDelete={handleDeleteMissionary}
                   onProfilePictureClick={handleProfilePictureClick}
                 />
+              )}
+
+              {/* Pagination Controls */}
+              {filteredMissionaries.length > 0 && (
+                <Box sx={{ mt: 3 }}>
+                  <TablePagination
+                    component="div"
+                    count={filteredMissionaries.length}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    rowsPerPage={rowsPerPage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    rowsPerPageOptions={[10, 25, 50, 100]}
+                    labelRowsPerPage="Rows per page"
+                  />
+                </Box>
               )}
 
               {filteredMissionaries.length === 0 && (
@@ -891,7 +1192,6 @@ export default function MissionaryManagement() {
                 missionaries={filteredMissionaries}
                 cities={cities}
                 communities={communities}
-                hours={hours}
                 viewMode={viewMode}
                 onViewModeChange={handleViewModeChange}
                 onEdit={handleOpenDialog}

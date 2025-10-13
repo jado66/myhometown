@@ -426,11 +426,6 @@ const MissionaryAssignmentSection: React.FC<
               helperText={errors.position_detail}
             />
           </Grid>
-          {errors.group && (
-            <Typography color="error" variant="caption" sx={{ ml: 3 }}>
-              Position is recommended. Please select a position if possible.
-            </Typography>
-          )}
         </Grid>
 
         <Grid container spacing={2}>

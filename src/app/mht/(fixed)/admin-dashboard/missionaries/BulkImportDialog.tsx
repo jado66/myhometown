@@ -158,7 +158,7 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
       // Default values
       missionary.assignment_status = "active";
       missionary.assignment_level = missionary.assignment_level || "state";
-      missionary.gender = missionary.gender || "female";
+      missionary.gender = missionary.gender || "";
 
       return missionary;
     });
@@ -200,7 +200,7 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
       // Default values
       missionary.assignment_status = "active";
       missionary.assignment_level = missionary.assignment_level || "state";
-      missionary.gender = missionary.gender || "female";
+      missionary.gender = missionary.gender || "";
 
       return missionary;
     });
