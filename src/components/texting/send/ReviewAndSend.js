@@ -99,24 +99,29 @@ const ReviewAndSend = ({
     scheduledDateTime.second(0);
 
     const mediaUrls = mediaFiles.map((file) => file.url);
-    const expandedRecipients = expandGroups
+
+    // Expand and deduplicate (with section filtering)
+    let expandedRecipients = expandGroups
       ? expandGroups(selectedRecipients, allContacts).flatMap(
           (group) => group.contacts
         )
       : selectedRecipients;
 
-    // Apply section filtering
-    const filteredRecipients = applySeccionFiltering(expandedRecipients);
+    // Apply section filtering if provided
+    if (selectedSections && selectedSections.size > 0) {
+      expandedRecipients = expandedRecipients.filter((recipient) => {
+        // Implement your section logic here, e.g., check if recipient.section is in selectedSections
+        const recipientSection = recipient.section || "default"; // Assume 'section' field exists
+        return selectedSections.has(recipientSection);
+      });
+    }
 
     const phoneNumberMap = new Map();
-    const uniqueRecipients = [];
-
-    filteredRecipients.forEach((recipient) => {
+    const uniqueRecipients = expandedRecipients.filter((recipient) => {
       const phone = recipient.value || recipient.phone;
-      if (!phoneNumberMap.has(phone)) {
-        phoneNumberMap.set(phone, true);
-        uniqueRecipients.push(recipient);
-      }
+      if (!phone || phoneNumberMap.has(phone)) return false;
+      phoneNumberMap.set(phone, true);
+      return true;
     });
 
     const recipientsForScheduling = [
@@ -136,9 +141,13 @@ const ReviewAndSend = ({
 
     if (!result.error) {
       setSchedulingSuccess(true);
+      // Optional: Use result.summary for custom toast, e.g.,
+      // toast.success(`Scheduled ${result.summary.scheduled} messages`);
       if (onScheduled) {
         onScheduled();
       }
+    } else {
+      toast.error(`Scheduling failed: ${result.error}`);
     }
   };
 

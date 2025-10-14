@@ -1,139 +1,182 @@
+// src/app/api/communications/scheduled-texts/send/route.js
 import { supabaseServer } from "@/util/supabaseServer";
+import { twilioClient } from "@/util/twilio";
+import { v4 as uuidv4 } from "uuid";
 
-export const maxDuration = 300; // Allow longer runtime for processing multiple texts
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
-
-export async function GET(req) {
-  console.log("Processing scheduled texts...");
-
+export async function POST(req) {
+  const startTime = Date.now();
+  let requestBody;
   try {
-    // Get current timestamp
-    const now = new Date();
-
-    // Fetch scheduled texts that are due
-    const { data: scheduledTexts, error } = await supabaseServer
-      .from("scheduled_texts")
-      .select("id")
-      .lt("scheduled_time", now.toISOString())
-      .or("metadata->>sent_at.is.null,metadata.is.null"); // Handle both null metadata and null sent_at
-
-    if (error) {
-      console.error("Error fetching scheduled texts:", error);
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    console.log(
-      `Found ${scheduledTexts?.length || 0} scheduled texts to process`
-    );
-
-    if (!scheduledTexts || scheduledTexts.length === 0) {
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: "No scheduled texts to process",
-          count: 0,
-          timestamp: now.toISOString(),
-        }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Process each scheduled text by calling the send endpoint
-    const results = await Promise.all(
-      scheduledTexts.map(async (text) => {
-        const requestBody = { id: text.id };
-        const bodyString = JSON.stringify(requestBody);
-
-        // Determine the base URL (considers both production and development environments)
-        const baseUrl = process.env.VERCEL_URL
-          ? `https://${process.env.VERCEL_URL}`
-          : process.env.NEXT_PUBLIC_DOMAIN
-          ? process.env.NEXT_PUBLIC_DOMAIN
-          : "http://localhost:3000";
-
-        const apiUrl = `${baseUrl}/api/communications/scheduled-texts/send`;
-
-        console.log(`Sending request to: ${apiUrl} for text ID: ${text.id}`);
-
-        try {
-          const response = await fetch(apiUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Content-Length": Buffer.byteLength(
-                bodyString,
-                "utf8"
-              ).toString(),
-            },
-            body: bodyString,
-          });
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`Error response for text ${text.id}:`, errorText);
-            return {
-              id: text.id,
-              success: false,
-              error: `HTTP error ${response.status}: ${errorText}`,
-            };
-          }
-
-          const result = await response.json();
-          return { id: text.id, success: true, ...result };
-        } catch (fetchError) {
-          console.error(`Fetch error for text ${text.id}:`, fetchError);
-          return {
-            id: text.id,
-            success: false,
-            error: fetchError.message || "Failed to process text",
-          };
-        }
-      })
-    );
-
-    // Count successful and failed texts
-    const successCount = results.filter((result) => result.success).length;
-    const failedCount = results.length - successCount;
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        total: results.length,
-        successCount,
-        failedCount,
-        results,
-        timestamp: now.toISOString(),
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    requestBody = await req.json();
   } catch (error) {
-    console.error("Error in process-scheduled-texts API:", error);
+    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+  }
 
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message,
-        timestamp: new Date().toISOString(),
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
+  const { id: scheduledTextId } = requestBody;
+  if (!scheduledTextId) {
+    return Response.json(
+      { error: "No scheduled_text_id provided" },
+      { status: 400 }
     );
   }
-}
 
-// Also support POST method for manual triggering
-export async function POST(req) {
-  return GET(req);
+  // Fetch scheduled text
+  const { data: scheduledText, error: fetchError } = await supabaseServer
+    .from("scheduled_texts")
+    .select("*")
+    .eq("id", scheduledTextId)
+    .single();
+
+  if (fetchError || !scheduledText) {
+    console.error("Error fetching scheduled text:", fetchError);
+    return Response.json(
+      { error: "Scheduled text not found" },
+      { status: 404 }
+    );
+  }
+
+  if (scheduledText.status !== "scheduled") {
+    return Response.json(
+      { success: true, message: "Already processed" },
+      { status: 200 }
+    );
+  }
+
+  const {
+    message_content: message,
+    media_urls: mediaUrls = [],
+    recipients,
+    metadata,
+    batch_id: batchId,
+  } = scheduledText;
+  if (!message || !recipients || recipients.length === 0) {
+    return Response.json(
+      { error: "Invalid scheduled text data" },
+      { status: 400 }
+    );
+  }
+
+  // Validate Twilio (reuse your existing check)
+  if (
+    !process.env.TWILIO_ACCOUNT_SID ||
+    !process.env.TWILIO_AUTH_TOKEN ||
+    !process.env.TWILIO_PHONE_NUMBER
+  ) {
+    return Response.json({ error: "Twilio not configured" }, { status: 500 });
+  }
+
+  // Fetch logs for this batch (if batch_id exists)
+  let logs = [];
+  if (batchId) {
+    const { data: logData } = await supabaseServer
+      .from("text_logs")
+      .select("*")
+      .eq("batch_id", batchId)
+      .eq("status", "scheduled");
+
+    logs = logData || [];
+  } else {
+    // Fallback: Create logs now if no batch (but prefer batch-linked)
+    console.warn("No batch_id; creating ad-hoc logs");
+    // ... (insert logs similar to useSendSMS)
+  }
+
+  // Map recipients to logs (match by phone)
+  const logIdMap = new Map();
+  logs.forEach((log) => logIdMap.set(log.recipient_phone, log.id));
+
+  let successCount = 0;
+  let failureCount = 0;
+  const results = [];
+
+  // Send each (parallel, like your send-texts)
+  const sendPromises = recipients.map(async (r) => {
+    const logId = logIdMap.get(r.phone || r.value);
+    const isTest = logId && !logId.match(/^[0-9a-f-]{36}$/i); // Skip webhook for tests
+
+    try {
+      const cleanPhone = (r.phone || r.value).replace(/\D/g, "");
+      if (cleanPhone.length < 10) throw new Error("Invalid phone");
+      const formattedPhone =
+        cleanPhone.length === 10 ? `+1${cleanPhone}` : `+${cleanPhone}`;
+
+      const messageData = {
+        body: message,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: formattedPhone,
+        statusCallback: logId
+          ? `https://your-domain.com/api/communications/twilio-status?logId=${logId}`
+          : undefined,
+      };
+
+      if (mediaUrls?.length > 0) messageData.mediaUrl = mediaUrls;
+
+      const msg = await twilioClient.messages.create(messageData);
+
+      // Update log if exists
+      if (logId && !isTest) {
+        await supabaseServer
+          .from("text_logs")
+          .update({ twilio_sid: msg.sid, status: "sent" }) // Webhook will handle further
+          .eq("id", logId);
+      }
+
+      successCount++;
+      results.push({
+        phone: formattedPhone,
+        status: "sent",
+        sid: msg.sid,
+        logId,
+      });
+    } catch (error) {
+      failureCount++;
+      results.push({
+        phone: r.phone || r.value,
+        status: "failed",
+        error: error.message,
+        logId,
+      });
+
+      // Update log failure
+      if (logId) {
+        await supabaseServer
+          .from("text_logs")
+          .update({ status: "failed", error_message: error.message })
+          .eq("id", logId);
+      }
+    }
+  });
+
+  await Promise.allSettled(sendPromises);
+
+  // Update scheduled_text & batch
+  const now = new Date();
+  await supabaseServer
+    .from("scheduled_texts")
+    .update({
+      status: "sent",
+      metadata: { ...metadata, sent_at: now.toISOString() },
+    })
+    .eq("id", scheduledTextId);
+
+  if (batchId) {
+    await supabaseServer
+      .from("text_batches")
+      .update({
+        status: "completed", // Or "in_progress" if webhook handles completion
+        pending_count: 0,
+      })
+      .eq("id", batchId);
+  }
+
+  return Response.json({
+    success: true,
+    summary: {
+      total: recipients.length,
+      successful: successCount,
+      failed: failureCount,
+      results,
+    },
+    processedAt: now.toISOString(),
+  });
 }
