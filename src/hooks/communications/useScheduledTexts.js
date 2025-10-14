@@ -92,7 +92,9 @@ export function useScheduledTexts() {
           .single();
 
         if (batchError) {
-          throw new Error("Failed to create scheduled batch: " + batchError.message);
+          throw new Error(
+            "Failed to create scheduled batch: " + batchError.message
+          );
         }
 
         // Step 2: Create logs (status: "scheduled")
@@ -117,11 +119,13 @@ export function useScheduledTexts() {
           .insert(scheduledLogs);
 
         if (logError) {
-          throw new Error("Failed to log scheduled messages: " + logError.message);
+          throw new Error(
+            "Failed to log scheduled messages: " + logError.message
+          );
         }
 
         // Step 3: Create scheduled_texts entry (for cron) + link batch_id
-        const { error: scheduledError } = await supabase
+        const { data: scheduledText, error: scheduledError } = await supabase
           .from("scheduled_texts")
           .insert({
             message_content: message,
@@ -134,16 +138,22 @@ export function useScheduledTexts() {
           });
 
         if (scheduledError) {
-          throw new Error("Failed to create scheduled entry: " + scheduledError.message);
+          throw new Error(
+            "Failed to create scheduled entry: " + scheduledError.message
+          );
         }
 
-        toast.success(`Scheduled ${uniqueRecipients.length} messages for ${scheduledDate.toLocaleString()}`);
+        toast.success(
+          `Scheduled ${
+            uniqueRecipients.length
+          } messages for ${scheduledDate.toLocaleString()}`
+        );
         setLoading(false);
 
         return {
           success: true,
           batchId: batch.id,
-          scheduledTextId: /* last inserted ID if needed */,
+          scheduledTextId: scheduledText.id, // Change if you return the actual scheduled_texts ID
           summary: {
             total: uniqueRecipients.length,
             scheduled: uniqueRecipients.length,
