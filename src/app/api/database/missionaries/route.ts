@@ -190,9 +190,8 @@ export async function POST(request: NextRequest) {
         last_login: last_login || null,
         street_address: street_address || null,
         address_city: address_city || null,
-        // Persist both for now to ease migration; prefer new `type` if provided.
+        // Use person_type (the actual DB column name)
         person_type: person_type || type || null,
-        type: type || person_type || null,
         address_state: address_state || null,
         zip_code: zip_code || null,
         position_detail: position_detail || null,
@@ -321,8 +320,9 @@ export async function PATCH(request: NextRequest) {
     if (address_state !== undefined)
       updateData.address_state = address_state || null;
     if (zip_code !== undefined) updateData.zip_code = zip_code || null;
-    if (person_type !== undefined) updateData.person_type = person_type || null;
-    if (type !== undefined) updateData.type = type || person_type || null;
+    // Use person_type (the actual DB column name)
+    if (person_type !== undefined || type !== undefined) 
+      updateData.person_type = person_type || type || null;
     if (position_detail !== undefined)
       updateData.position_detail = position_detail || null;
 

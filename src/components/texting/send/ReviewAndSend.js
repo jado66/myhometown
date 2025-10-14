@@ -276,6 +276,7 @@ const ReviewAndSend = ({
               value="schedule"
               control={<Radio />}
               label="Schedule for Later"
+              disabled
             />
           </RadioGroup>
         </FormControl>

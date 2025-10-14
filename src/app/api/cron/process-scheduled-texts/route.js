@@ -229,9 +229,12 @@ export async function POST(req) {
   }
 
   const result = await processScheduledText(scheduledTextId);
-  
+
   if (!result.success) {
-    return Response.json({ error: result.error }, { status: result.error === "Scheduled text not found" ? 404 : 500 });
+    return Response.json(
+      { error: result.error },
+      { status: result.error === "Scheduled text not found" ? 404 : 500 }
+    );
   }
 
   return Response.json(result);

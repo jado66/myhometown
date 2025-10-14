@@ -216,7 +216,7 @@ export default function ScheduledTextsPage() {
               No Scheduled Messages
             </Typography>
             <Typography variant="body1" color="text.secondary" mb={3}>
-              You haven't scheduled any messages for future delivery.
+              You haven&apos;t scheduled any messages for future delivery.
             </Typography>
             <Button
               variant="contained"
