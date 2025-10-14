@@ -3,6 +3,75 @@ import { supabaseServer } from "@/util/supabaseServer";
 import { twilioClient } from "@/util/twilio";
 import { v4 as uuidv4 } from "uuid";
 
+// GET handler for Vercel Cron jobs and manual triggers
+export async function GET(req) {
+  const { searchParams } = new URL(req.url);
+  const isManual = searchParams.get("manual") === "true";
+
+  try {
+    // Fetch all scheduled texts that are due
+    const now = new Date();
+    const { data: scheduledTexts, error: fetchError } = await supabaseServer
+      .from("scheduled_texts")
+      .select("*")
+      .eq("status", "scheduled")
+      .lte("scheduled_time", now.toISOString());
+
+    if (fetchError) {
+      console.error("Error fetching scheduled texts:", fetchError);
+      return Response.json(
+        { error: "Failed to fetch scheduled texts" },
+        { status: 500 }
+      );
+    }
+
+    if (!scheduledTexts || scheduledTexts.length === 0) {
+      return Response.json({
+        success: true,
+        message: "No scheduled texts to process",
+        processed: 0,
+      });
+    }
+
+    // Process each scheduled text
+    const results = [];
+    for (const text of scheduledTexts) {
+      try {
+        // Call the POST handler for each text
+        const response = await fetch(
+          `${
+            process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+          }/api/cron/process-scheduled-texts`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: text.id }),
+          }
+        );
+
+        const result = await response.json();
+        results.push({ id: text.id, success: result.success });
+      } catch (error) {
+        console.error(`Error processing scheduled text ${text.id}:`, error);
+        results.push({ id: text.id, success: false, error: error.message });
+      }
+    }
+
+    return Response.json({
+      success: true,
+      processed: scheduledTexts.length,
+      results,
+      isManual,
+    });
+  } catch (error) {
+    console.error("Error in GET handler:", error);
+    return Response.json(
+      { error: "Internal server error", details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(req) {
   const startTime = Date.now();
   let requestBody;

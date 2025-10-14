@@ -20,6 +20,7 @@ export function useScheduledTexts() {
   const scheduleText = useCallback(
     async (message, recipients, scheduledDate, mediaUrls = [], user) => {
       const messageId = uuidv4();
+
       const owner_type = "user";
       const owner_id = user?.id || "00000000-0000-0000-0000-000000000000";
       const sender_id = user?.id || "00000000-0000-0000-0000-000000000000";
@@ -128,6 +129,7 @@ export function useScheduledTexts() {
         const { data: scheduledText, error: scheduledError } = await supabase
           .from("scheduled_texts")
           .insert({
+            user_id: sender_id, // Required: user who scheduled the text
             message_content: message,
             media_urls: mediaUrls,
             recipients: uniqueRecipients, // Store as JSON array
@@ -135,7 +137,9 @@ export function useScheduledTexts() {
             status: "scheduled",
             metadata: { ...metadata, batch_id: batch.id }, // Link for send endpoint
             batch_id: batch.id, // Direct FK if you added it
-          });
+          })
+          .select()
+          .single();
 
         if (scheduledError) {
           throw new Error(
