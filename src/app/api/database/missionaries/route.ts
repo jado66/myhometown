@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
     if (existing) {
       return NextResponse.json(
         {
-          error: "A missionary with this email already exists.",
+          error: "A missionary or volunteer with this email already exists.",
           id: existing.id,
         },
         { status: 409 }
@@ -281,6 +281,34 @@ export async function PATCH(request: NextRequest) {
             error: "Community level assignments must have a community",
           },
           { status: 400 }
+        );
+      }
+    }
+
+    // Check for duplicate email if email is being updated
+    if (email !== undefined) {
+      const { data: existing, error: existingError } = await supabaseServer
+        .from("missionaries")
+        .select("id")
+        .eq("email", email)
+        .neq("id", id)
+        .maybeSingle();
+
+      if (existingError) {
+        console.error("Error checking for existing missionary:", existingError);
+        return NextResponse.json(
+          { error: "Error checking for existing missionary" },
+          { status: 500 }
+        );
+      }
+
+      if (existing) {
+        return NextResponse.json(
+          {
+            error: "A missionary or volunteer with this email already exists.",
+            id: existing.id,
+          },
+          { status: 409 }
         );
       }
     }

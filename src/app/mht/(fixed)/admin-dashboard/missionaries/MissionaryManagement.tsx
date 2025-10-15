@@ -866,12 +866,23 @@ export default function MissionaryManagement() {
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) throw new Error("Failed to save missionary");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to save missionary" }));
+        
+        if (response.status === 409) {
+          toast.error(errorData.error || "A missionary or volunteer with this email already exists.");
+        } else {
+          toast.error(errorData.error || "Failed to save missionary");
+        }
+        return;
+      }
 
       await fetchMissionaries();
+      toast.success(`Missionary ${selectedMissionary ? "updated" : "created"} successfully`);
       handleCloseDialog();
     } catch (err) {
-      alert("Error saving missionary");
+      console.error("Error saving missionary:", err);
+      toast.error("Error saving missionary");
     }
   };
 
