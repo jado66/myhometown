@@ -37,8 +37,7 @@ export async function GET(request: NextRequest) {
       .select(
         `
         *,
-        cities (name, state, country),
-        communities (name)
+        cities:city_id (name, state, country)
       `
       )
       .order("created_at", { ascending: false });
