@@ -55,75 +55,76 @@ export const CityIdToPasswordHash = {
 };
 
 export const CommunityIdToPasswordHash = {
+  // Old MongoDB IDs mapped to new UUIDs for backwards compatibility
   "67411c5795464500ae7aab25": {
     name: "Dev - Dev",
     password: "1234",
   },
-  "66a811814800d08c300d88fd": {
+  "a78e8c7c-eca4-4f13-b6c8-e5603d1c36da": {
     name: "Orem - Geneva Heights",
     password: "8631",
   },
-  "fb34e335-5cc6-4e6c-b5fc-2b64588fe921": {
+  "a6c19a50-7fc3-4759-b386-6ebdeca3ed9e": {
     name: "Orem - Sharon Park",
     password: "9013",
   },
-  "66df56bef05bd41ef9493f33": {
+  "b3381b98-e44f-4f1f-b067-04e575c515ca": {
     name: "Provo - Pioneer Park",
     password: "0155",
   },
-  "66df56e6f05bd41ef9493f34": {
+  "7c446e80-323d-4268-b595-6945e915330f": {
     name: "Provo - Dixon",
     password: "1823",
   },
-  "66df5707f05bd41ef9493f35": {
+  "7c8731bc-1aee-406a-9847-7dc1e5255587": {
     name: "Provo - South Freedom",
     password: "5815",
   },
-  "66df577bf05bd41ef9493f37": {
+  "0806b0f4-9d56-4c1f-b976-ee04f60af194": {
     name: "Ogden - North",
     password: "1809",
   },
-  "66df5790f05bd41ef9493f38": {
+  "bf4a7d58-b880-4c18-b923-6c89e2597c71": {
     name: "Ogden - South",
     password: "0217",
   },
-  "66df57a2f05bd41ef9493f39": {
+  "0bdf52a4-2efa-465b-a3b1-5ec4d1701967": {
     name: "Ogden - West",
     password: "9803",
   },
-  "66df57b3f05bd41ef9493f3a": {
+  "995c1860-9d5b-472f-a206-1c2dd40947bd": {
     name: "Salt Lake City - Central",
     password: "4217",
   },
-  "66df57c2f05bd41ef9493f3b": {
+  "af0df8f5-dab7-47e4-aafc-9247fee6f29d": {
     name: "Salt Lake City - Northwest",
     password: "8159",
   },
-  "66df57d1f05bd41ef9493f3c": {
+  "5de22b0b-5dc8-4d72-b424-95b0d1c94fcc": {
     name: "Salt Lake City - Westside",
     password: "6817",
   },
-  "66df57e6f05bd41ef9493f3d": {
+  "252cd4b1-830c-4cdb-913f-a1460f218616": {
     name: "West Valley City - Central Granger",
     password: "1037",
   },
-  "6838adb32243dc8160ce207d": {
+  "7d059ebc-78ee-4b47-97ab-276ae480b8de": {
     name: "Layton - Layton",
     password: "9786",
   },
-  "66df57faf05bd41ef9493f3e": {
+  "4687e12e-497f-40a2-ab1b-ab455f250fce": {
     name: "West Valley City - North East Granger",
     password: "6324",
   },
-  "66df580bf05bd41ef9493f3f": {
+  "2bc57e19-0c73-4781-9fc6-ef26fc729847": {
     name: "West Valley City - West Granger",
     password: "7771",
   },
-  "66df581af05bd41ef9493f40": {
+  "0076ad61-e165-4cd0-b6af-f4a30af2510c": {
     name: "West Valley City - Central Valley View",
     password: "1037",
   },
-  "6876c09a2a087f662c17feed": {
+  "724b1aa6-0950-40ba-9453-cdd80085c5d4": {
     name: "Santaquin - Santaquin",
     password: "9433",
   },
@@ -179,7 +180,7 @@ export const authenticateCommunity = (
     }
   }
 
-  if (CommunityIdToPasswordHash[communityId].password === password) {
+  if (CommunityIdToPasswordHash[communityId]?.password === password) {
     const token = generateAuthToken(communityId, isDaysOfService);
     const localStorageKey = isDaysOfService
       ? `communityAuth_${communityId}_daysOfService`
