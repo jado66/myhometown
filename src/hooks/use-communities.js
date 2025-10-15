@@ -98,13 +98,15 @@ export function useCommunities(userfilter, forDropDownCommunityMenu = false) {
       try {
         const { data: citiesData, error } = await supabase
           .from("communities")
-          .select(`
+          .select(
+            `
             *,
             cities!communities_city_id_fkey (
               city_name:name
             )
-          `)
-          .in('id', ids);
+          `
+          )
+          .in("id", ids);
 
         if (error) {
           throw error;
