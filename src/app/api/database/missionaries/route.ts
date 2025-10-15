@@ -321,7 +321,7 @@ export async function PATCH(request: NextRequest) {
       updateData.address_state = address_state || null;
     if (zip_code !== undefined) updateData.zip_code = zip_code || null;
     // Use person_type (the actual DB column name)
-    if (person_type !== undefined || type !== undefined) 
+    if (person_type !== undefined || type !== undefined)
       updateData.person_type = person_type || type || null;
     if (position_detail !== undefined)
       updateData.position_detail = position_detail || null;

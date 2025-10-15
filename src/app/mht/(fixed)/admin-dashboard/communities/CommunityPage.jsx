@@ -124,6 +124,8 @@ export default function Management() {
     }
   }, [user]);
 
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+
   if (!hasLoaded) {
     return (
       <Box
@@ -135,42 +137,6 @@ export default function Management() {
       </Box>
     );
   }
-
-  const goToViewCommunity = (community) => {
-    // alert(JSON.stringify(community, null, 4));
-
-    const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
-
-    router.push(
-      rootUrl +
-        `/${community.state
-          .toLowerCase()
-          .replaceAll(/\s/g, "-")}/${community.city
-          .toLowerCase()
-          .replaceAll(/\s/g, "-")}/${community.name
-          .toLowerCase()
-          .replaceAll(/\s/g, "-")}
-        `
-    );
-  };
-
-  const goToEditCommunity = (community) => {
-    // alert(JSON.stringify(community, null, 4));
-
-    const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
-
-    router.push(
-      rootUrl +
-        `/edit/${community.state
-          .toLowerCase()
-          .replaceAll(/\s/g, "-")}/${community.city
-          .toLowerCase()
-          .replaceAll(/\s/g, "-")}/${community.name
-          .toLowerCase()
-          .replaceAll(/\s/g, "-")}
-        `
-    );
-  };
 
   return (
     <Grid container item sm={12} display="flex" sx={{ position: "relative" }}>
@@ -255,30 +221,39 @@ export default function Management() {
           communities.length > 0 &&
           hasLoaded && (
             <Box display="flex" justifyContent="center" width="100%">
-              {communities.map((community, i) => (
-                <Grid item xs={12} sm={6} md={4} key={i} mx={2}>
-                  <Box
-                    display={"block"}
-                    width={"100%"}
-                    height={"100%"}
-                    sx={{
-                      textDecoration: "none",
-                      transition: "all .2s ease-in-out",
-                      "&:hover": {
-                        transform: `translateY(-${theme.spacing(1 / 2)})`,
-                      },
-                      cursor: "pointer",
-                    }}
-                  >
+              {communities.map((community, i) => {
+                const cityUrl = community.city_name
+                  ? community.city_name.toLowerCase().replaceAll(/\s/g, "-")
+                  : "unknown-city";
+
+                const communityUrl = community.name
+                  ? community.name.toLowerCase().replaceAll(/\s/g, "-")
+                  : "unknown-community";
+
+                return (
+                  <Grid item xs={12} sm={6} md={4} key={i} mx={2}>
                     <Box
-                      component={Card}
+                      display={"block"}
                       width={"100%"}
                       height={"100%"}
-                      data-aos={"fade-up"}
-                      borderRadius={3}
-                      onClick={() => goToEditCommunity(community)}
+                      sx={{
+                        textDecoration: "none",
+                        transition: "all .2s ease-in-out",
+                        "&:hover": {
+                          transform: `translateY(-${theme.spacing(1 / 2)})`,
+                        },
+                        cursor: "pointer",
+                      }}
                     >
-                      <CardMedia
+                      <Box
+                        component={Card}
+                        width={"100%"}
+                        height={"100%"}
+                        data-aos={"fade-up"}
+                        borderRadius={3}
+                        onClick={() => goToEditCommunity(community)}
+                      >
+                        {/* <CardMedia
                         image={
                           community?.content?.galleryPhotos["1"].src ||
                           fakeCommunityImages[i]
@@ -287,38 +262,46 @@ export default function Management() {
                         sx={{
                           height: 140,
                         }}
-                      />
-                      <Box component={CardContent}>
+                      /> */}
+                        <Box component={CardContent}>
+                          <Box
+                            component={Typography}
+                            variant={"h6"}
+                            gutterBottom
+                            fontWeight={500}
+                            align={"left"}
+                          >
+                            {community.name}
+                          </Box>
+                        </Box>
                         <Box
-                          component={Typography}
-                          variant={"h6"}
-                          gutterBottom
-                          fontWeight={500}
-                          align={"left"}
+                          component={CardActions}
+                          justifyContent={"flex-end"}
                         >
-                          {community.name}
+                          <Link
+                            href={rootUrl + `/utah/${cityUrl}/${communityUrl}`}
+                            passHref
+                          >
+                            <Button size="small" component="a">
+                              View Community Page
+                            </Button>
+                          </Link>
+                          <Link
+                            href={
+                              rootUrl + `/edit/utah/${cityUrl}/${communityUrl}`
+                            }
+                            passHref
+                          >
+                            <Button size="small" component="a">
+                              Edit Community Page
+                            </Button>
+                          </Link>
                         </Box>
                       </Box>
-                      <Box component={CardActions} justifyContent={"flex-end"}>
-                        <Button
-                          size="small"
-                          href=""
-                          onClick={goToViewCommunity}
-                        >
-                          View Community Page
-                        </Button>
-                        <Button
-                          size="small"
-                          href=""
-                          onClick={goToEditCommunity}
-                        >
-                          Edit Community Page
-                        </Button>
-                      </Box>
                     </Box>
-                  </Box>
-                </Grid>
-              ))}
+                  </Grid>
+                );
+              })}
             </Box>
           )}
 

@@ -96,15 +96,30 @@ export function useCommunities(userfilter, forDropDownCommunityMenu = false) {
 
     async function fetchCommunitiesByIds(ids) {
       try {
-        const res = await fetch(`/api/database/communities/fetchByIds`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(ids),
+        const { data: citiesData, error } = await supabase
+          .from("communities")
+          .select(`
+            *,
+            cities!communities_city_id_fkey (
+              city_name:name
+            )
+          `)
+          .in('id', ids);
+
+        if (error) {
+          throw error;
+        }
+
+        // Remove the nested cities object and flatten the city_name
+        const flattenedData = citiesData?.map((community) => {
+          const { cities, ...rest } = community;
+          return {
+            ...rest,
+            city_name: cities?.city_name,
+          };
         });
-        const data = await res.json();
-        setCommunities(data);
+
+        setCommunities(flattenedData || []);
         setHasLoaded(true);
       } catch (e) {
         console.error("Error occurred while fetching communities", e);
