@@ -25,7 +25,6 @@ import {
 
 import { useUser } from "@/hooks/use-user";
 import Loading from "@/components/util/Loading";
-import { useCommunities } from "@/hooks/use-communities";
 import {
   authenticateCommunity,
   CityIdToPasswordHash,
@@ -34,6 +33,8 @@ import {
 } from "@/util/auth/simpleAuth";
 import { ExpandMore, Visibility, VisibilityOff } from "@mui/icons-material";
 import { toast } from "react-toastify";
+import { useCommunitiesSupabase } from "@/hooks/use-communities-supabase";
+import JsonViewer from "../util/debug/DebugOutput";
 
 const CommunitySelectionPage = ({ type = "classes" }) => {
   const searchParams = useSearchParams();
@@ -49,7 +50,6 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
 
   const city = searchParams.get("city");
 
-  const [communities, setCommunities] = useState([]);
   const { user, isAdmin } = useUser();
 
   const route = type === "classes" ? "classes" : "days-of-service";
@@ -59,47 +59,40 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
     communities: allCommunities,
     fetchCommunitiesByCity,
     hasLoaded,
-  } = useCommunities(null, true);
+  } = useCommunitiesSupabase(null, true); // returns ALL communities because forDropDownCommunityMenu = true
+
+  // If non-admin and a city is chosen, we'll narrow client-side (or could refetch by city)
+  const displayCommunities = useMemo(() => {
+    if (!allCommunities || allCommunities.length === 0) return [];
+    if (!city || isAdmin) return allCommunities;
+    const normalized = city.replace(/-/g, " ").toLowerCase();
+    return allCommunities.filter(
+      (c) => (c.city || c.city_name || "").toLowerCase() === normalized
+    );
+  }, [allCommunities, city, isAdmin]);
 
   // Group and filter communities by city
   const groupedCommunities = useMemo(() => {
-    if (!communities || !Array.isArray(communities)) {
-      return {};
-    }
-
-    const filtered = communities.filter(
-      (community) =>
-        community.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        community.city.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
+    if (!displayCommunities || !Array.isArray(displayCommunities)) return {};
+    const term = searchTerm.toLowerCase();
+    const filtered = displayCommunities.filter((community) => {
+      const name = community.name?.toLowerCase() || "";
+      const cityVal = (
+        community.city ||
+        community.city_name ||
+        ""
+      ).toLowerCase();
+      return name.includes(term) || cityVal.includes(term);
+    });
     return filtered.reduce((acc, community) => {
-      const city = community.city || "Other";
-      if (!acc[city]) {
-        acc[city] = [];
-      }
-      acc[city].push(community);
+      const cityKey = community.city || community.city_name || "Other";
+      if (!acc[cityKey]) acc[cityKey] = [];
+      acc[cityKey].push(community);
       return acc;
     }, {});
-  }, [communities, searchTerm]);
-
-  useEffect(() => {
-    const fetchCommunities = async () => {
-      if (user && isAdmin) {
-        setCommunities(allCommunities);
-      } else {
-        if (!city) {
-          return;
-        }
-
-        const communities = await fetchCommunitiesByCity(city);
-
-        setCommunities(communities || []);
-      }
-    };
-
-    fetchCommunities();
-  }, [allCommunities, user, city, authenticated]);
+  }, [displayCommunities, searchTerm]);
+  // Trigger auth-based refresh if needed (keep dependency for future logic)
+  useEffect(() => {}, [authenticated]);
 
   const handleCityClick = (city) => {
     router.push(
@@ -115,10 +108,11 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
   const handleCommunityClick = (community) => {
     const isDaysOfService = type === "days-of-service";
 
-    if (isAuthenticated(community._id, false, isDaysOfService)) {
+    const legacyId = community._id || community.id;
+
+    if (isAuthenticated(legacyId, false, isDaysOfService)) {
       router.push(
-        process.env.NEXT_PUBLIC_DOMAIN +
-          `/admin-dashboard/${route}/${community._id}`
+        process.env.NEXT_PUBLIC_DOMAIN + `/admin-dashboard/${route}/${legacyId}`
       );
     } else {
       setSelectedCommunity(community);
@@ -132,16 +126,14 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
   const handleAuthSubmit = () => {
     const isDaysOfService = type === "days-of-service";
 
-    if (
-      authenticateCommunity(selectedCommunity._id, password, isDaysOfService)
-    ) {
+    const legacyId = selectedCommunity._id || selectedCommunity.id;
+    if (authenticateCommunity(legacyId, password, isDaysOfService)) {
       setShowAuthDialog(false);
       setPassword("");
       setAuthenticated(city);
 
       router.push(
-        process.env.NEXT_PUBLIC_DOMAIN +
-          `/admin-dashboard/${route}/${selectedCommunity._id}`
+        process.env.NEXT_PUBLIC_DOMAIN + `/admin-dashboard/${route}/${legacyId}`
       );
     } else {
       setAuthError("Incorrect password");
@@ -149,9 +141,7 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
     }
   };
 
-  if (!hasLoaded) {
-    <Loading />;
-  }
+  if (!hasLoaded) return <Loading />;
 
   return (
     <>
@@ -165,7 +155,7 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
           Select a City to View {type.replace(/-/g, " ")}
         </Typography>
 
-        {/* <JsonViewer data={{ user, groupedCommunities, authenticated }} /> */}
+        <JsonViewer data={{ user, groupedCommunities, authenticated }} />
 
         {(groupedCommunities && Object.keys(groupedCommunities).length) > 0 ? (
           Object.entries(groupedCommunities).map(([city, cityCommunities]) => (
@@ -190,7 +180,7 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
                     md={4}
                     lg={3}
                     xl={2.4}
-                    key={community._id}
+                    key={community._id || community.id}
                   >
                     <CommunityCard
                       community={community}
