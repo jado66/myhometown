@@ -12,6 +12,7 @@ import {
   Box,
 } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import Link from "next/link";
 
 import { styled } from "@mui/system";
 import ProviderWrapper from "@/contexts/ProviderWrapper";
@@ -83,7 +84,7 @@ const Page = () => {
             item
             xs={12}
             sx={{
-              padding: 4,
+              px: 4,
               pt: 0,
               display: "flex",
               flexDirection: "column",
@@ -100,6 +101,26 @@ const Page = () => {
               >
                 Learn More
               </ButtonStyled> */}
+          </Grid>
+
+          <Grid item xs={12} sx={{ px: 8 }}>
+            <Button
+              component={Link}
+              href="/donate"
+              variant="contained"
+              fullWidth
+              size="large"
+              sx={{
+                fontSize: "2.5rem",
+                py: 3,
+                mb: 8,
+
+                fontWeight: "bold",
+                borderRadius: 0,
+              }}
+            >
+              Make a Donation
+            </Button>
           </Grid>
 
           <Grid

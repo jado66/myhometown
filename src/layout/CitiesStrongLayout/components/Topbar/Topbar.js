@@ -5,7 +5,7 @@ import Link from "@mui/material/Link";
 import CitiesStrongLogo from "@/assets/svg/logos/CitiesStrong";
 import CitiesStrongShield from "@/assets/svg/logos/CititesStrongShield";
 import CitiesStrongShieldIcon from "@/assets/svg/logos/CitiesStrongShieldIcon";
-import { IconButton, Typography, useMediaQuery } from "@mui/material";
+import { IconButton, Typography, useMediaQuery, Button } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 
 const Topbar = ({ onSidebarOpen, theme }) => {
@@ -131,14 +131,24 @@ const Topbar = ({ onSidebarOpen, theme }) => {
             </Link>
           </Box>
           <Box marginX={2}>
-            <Link
-              underline="none"
+            <Button
               component="a"
               href={rootUrl + "/donate"}
-              color={theme.palette.primary.contrastText}
+              variant="contained"
+              sx={{
+                backgroundColor: theme.palette.primary.main,
+                color: "white",
+                fontWeight: "bold",
+                fontSize: 16,
+                border: "3px solid #ffffffff",
+
+                textTransform: "none",
+                borderRadius: 2,
+                px: 3,
+              }}
             >
               Donate
-            </Link>
+            </Button>
           </Box>
         </Box>
       </Box>

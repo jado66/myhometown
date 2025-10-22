@@ -19,7 +19,7 @@ export const citiesStrongLight = {
     orange: "#DC5331",
     blue: "#286AA4",
     light: "#2196f3",
-    dark: "#0d47a1",
+    dark: "#1a6d40ff",
     contrastText: "#fff",
   },
   secondary: {
