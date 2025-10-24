@@ -103,7 +103,11 @@ const Page = () => {
               </ButtonStyled> */}
           </Grid>
 
-          <Grid item xs={12} sx={{ px: { xs: 4, md: 8 }, mt: 8 }}>
+          <Grid
+            item
+            xs={12}
+            sx={{ px: { xs: 4, md: 8 }, mt: { xs: 8, md: 0 } }}
+          >
             <Button
               component={Link}
               href="/donate"
