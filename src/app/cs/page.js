@@ -103,7 +103,7 @@ const Page = () => {
               </ButtonStyled> */}
           </Grid>
 
-          <Grid item xs={12} sx={{ px: 8 }}>
+          <Grid item xs={12} sx={{ px: { xs: 4, md: 8 }, mt: 8 }}>
             <Button
               component={Link}
               href="/donate"
@@ -111,7 +111,11 @@ const Page = () => {
               fullWidth
               size="large"
               sx={{
-                fontSize: "2.5rem",
+                fontSize: {
+                  xs: "2rem",
+                  md: "2.5rem",
+                },
+
                 py: 3,
                 mb: 8,
 
