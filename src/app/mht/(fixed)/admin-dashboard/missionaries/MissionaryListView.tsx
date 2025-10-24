@@ -245,7 +245,8 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                     {/* Error icon for missing information */}
                     {(!missionary.title ||
                       !missionary.contact_number ||
-                      !missionary.stake_name ||
+                      (!missionary.stake_name &&
+                        missionary.person_type !== "volunteer") ||
                       !missionary.start_date ||
                       !missionary.duration ||
                       !missionary.profile_picture_url ||
@@ -255,7 +256,9 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                         title={`Missing: ${[
                           !missionary.title && "Position",
                           !missionary.contact_number && "Phone Number",
-                          !missionary.stake_name && "Home Stake",
+                          !missionary.stake_name &&
+                            missionary.person_type !== "volunteer" &&
+                            "Home Stake",
                           !missionary.start_date && "Start Date",
                           !missionary.duration && "Mission Duration",
                           !missionary.profile_picture_url && "Profile Picture",

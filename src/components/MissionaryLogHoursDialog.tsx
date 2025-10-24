@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { type ReactNode } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -28,12 +28,18 @@ interface DetailedActivity {
   hours: string;
 }
 
-const categories = [
+interface Category {
+  value: string;
+  label: string;
+  description: string | ReactNode;
+}
+
+const categories: Category[] = [
   {
     value: "crc",
     label: "Community Resource Center",
     description:
-      "Log any hours associated with Community Resource Center activities, including meeting, planning, travel, etc.",
+      "Log any hours associated with Community Resource Center activities, including tutoring, meetings, planning, travel, etc.",
   },
   {
     value: "dos",
@@ -44,8 +50,12 @@ const categories = [
   {
     value: "administrative",
     label: "Administrative Work",
-    description:
-      "Only log hours in this category if you are a myHometown Utah, City, or Community Executive.",
+    description: (
+      <>
+        <strong>ONLY</strong> log hours in this category if you are a myHometown
+        Utah, City, or Community Executive.
+      </>
+    ),
   },
 ];
 
@@ -89,8 +99,8 @@ interface MissionaryLogHoursDialogProps {
   setEntryMethod: (m: "weekly" | "monthly") => void;
   selectedDate: Moment;
   setSelectedDate: (d: Moment) => void;
-  totalHours: string;
-  setTotalHours: (h: string) => void;
+  totalHours: string; // Keep for compatibility but not used for input
+  setTotalHours: (h: string) => void; // Keep for compatibility
   activities: DetailedActivity[];
   setActivities: (a: DetailedActivity[]) => void;
   addActivity: () => void;
@@ -193,11 +203,11 @@ export default function MissionaryLogHoursDialog({
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <Box sx={{ pt: 2 }}>
+        <Box sx={{ pt: 1 }}>
           {/* Period Selection */}
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+          <Grid container spacing={2} sx={{ mb: 2 }}>
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" sx={{ mb: 0, fontWeight: 500 }}>
                 Select Month
               </Typography>
               <ThemedReactSelect
@@ -212,89 +222,113 @@ export default function MissionaryLogHoursDialog({
                 height={56}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                Total Hours
-              </Typography>
-              <TextField
-                fullWidth
-                type="number"
-                value={totalHours}
-                onChange={(e) => setTotalHours(e.target.value)}
-                inputProps={{ step: "0.25", min: "0" }}
-              />
-            </Grid>
           </Grid>
 
-          <Divider sx={{ my: 2 }} />
-
           {/* Activity Breakdown */}
-          <Typography variant="h6" sx={{ mb: 2 }}>
+          <Typography variant="h6" sx={{ mb: 1, mt: 2 }}>
             Activity Breakdown
           </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
-            Enter hours for any categories that apply. You don't need to fill in
-            all categories to submit.
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Enter hours for applicable categories (You can leave categories
+            blank)
           </Typography>
 
-          {categories.map((category) => {
-            const activity = activities.find(
-              (a) => a.category === category.value
-            ) || {
-              id: category.value,
-              category: category.value,
-              description: "",
-              hours: "",
-            };
+          <Box sx={{ border: 1, borderColor: "divider", borderRadius: 1 }}>
+            {categories.map((category, index) => {
+              const activity = activities.find(
+                (a) => a.category === category.value
+              ) || {
+                id: category.value,
+                category: category.value,
+                description: "",
+                hours: "",
+              };
 
-            return (
-              <Paper
-                key={category.value}
-                sx={{ p: 3, mb: 2, backgroundColor: "grey.50" }}
-              >
-                <Typography variant="h6" sx={{ mb: 1, color: "primary.main" }}>
-                  {category.label}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mb: 2 }}
+              return (
+                <Box
+                  key={category.value}
+                  sx={{
+                    p: 2,
+                    borderBottom: index !== categories.length - 1 ? 1 : 0,
+                    borderColor: "divider",
+                    "&:hover": { bgcolor: "action.hover" },
+                  }}
                 >
-                  {category.description}
-                </Typography>
+                  <Grid container spacing={1}>
+                    <Grid item xs={12}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ fontWeight: 600, color: "primary.main" }}
+                      >
+                        {category.label}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{}}
+                      >
+                        {category.description}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6} sm={2}>
+                      <TextField
+                        fullWidth
+                        type="number"
+                        label="Hours"
+                        value={activity.hours}
+                        onChange={(e) =>
+                          updateActivity(activity.id, "hours", e.target.value)
+                        }
+                        inputProps={{ step: "0.25", min: "0" }}
+                        size="small"
+                      />
+                    </Grid>
+                    <Grid item xs={6} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Description (optional)"
+                        value={activity.description}
+                        onChange={(e) =>
+                          updateActivity(
+                            activity.id,
+                            "description",
+                            e.target.value
+                          )
+                        }
+                        placeholder={`Describe activities...`}
+                        size="small"
+                      />
+                    </Grid>
+                  </Grid>
+                </Box>
+              );
+            })}
+          </Box>
 
-                <Grid container spacing={2} alignItems="center">
-                  <Grid item xs={12} sm={3}>
-                    <TextField
-                      fullWidth
-                      type="number"
-                      label="Hours "
-                      value={activity.hours}
-                      onChange={(e) =>
-                        updateActivity(activity.id, "hours", e.target.value)
-                      }
-                      inputProps={{ step: "0.25", min: "0" }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={9}>
-                    <TextField
-                      fullWidth
-                      label="Description (optional)"
-                      value={activity.description}
-                      onChange={(e) =>
-                        updateActivity(
-                          activity.id,
-                          "description",
-                          e.target.value
-                        )
-                      }
-                      placeholder={`Describe your ${category.label.toLowerCase()} activities...`}
-                    />
-                  </Grid>
-                </Grid>
-              </Paper>
-            );
-          })}
+          {/* Total Hours Display */}
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+            <Box
+              sx={{
+                px: 3,
+                py: 1,
+                backgroundColor: "primary.main",
+                borderRadius: 1,
+              }}
+            >
+              <Typography
+                variant="subtitle1"
+                sx={{ color: "primary.contrastText", fontWeight: 600 }}
+              >
+                Total:{" "}
+                {activities
+                  .reduce((sum, act) => sum + (Number(act.hours) || 0), 0)
+                  .toFixed(0)}{" "}
+                hours
+              </Typography>
+            </Box>
+          </Box>
 
           {error && (
             <Alert severity="error" sx={{ mt: 2 }}>

@@ -41,7 +41,7 @@ const personTypeCards = [
     value: "missionary",
     icon: BadgeIcon,
     title: "Missionary",
-    desc: "Full-time missionary service",
+    desc: "Service Missionary assignment",
   },
   {
     value: "volunteer",

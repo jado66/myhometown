@@ -17,7 +17,10 @@ import {
 } from "@mui/material";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 
+// Updated template header to include the new required 'Type' column (Missionary or Volunteer)
+// Order matches the export format used in MissionaryManagement and the validation expectations.
 const csvHeader = [
+  "Type",
   "First Name",
   "Last Name",
   "Email",
@@ -25,6 +28,7 @@ const csvHeader = [
   "Status",
   "Level",
   "Assignment",
+
   "Position",
   "Position Detail",
   "Start Date",
@@ -39,45 +43,50 @@ const csvHeader = [
 
 function downloadTemplate() {
   const header = csvHeader.join(",") + "\n";
+  // Example rows aligned with header. Adjust 'Assignment', 'City', 'Community' names to match your database.
+  // Row 1: Missionary at community level
   const row1 =
     [
-      "Missionary",
-      "Jane",
-      "Doe",
-      "jane.doe@email.com",
-      "123-456-7890",
-      "Active",
-      "Community",
-      "Granger West",
-      "Support Staff",
-      "Service Missionary",
-      "01-01-2024",
-      "12-31-2024",
-      "123 Main St",
-      "Salt Lake City",
-      "UT",
-      "84101",
-      "Salt Lake 1st Stake",
+      "Missionary", // Type
+      "Jane", // First Name
+      "Doe", // Last Name
+      "jane.doe@email.com", // Email
+      "123-456-7890", // Phone
+      "Active", // Status
+      "Community", // Level
+      "Granger West", // Assignment (community name)
+      "Team Member", // Position (maps to title)
+      "Service Missionary", // Position Detail
+      "01-01-2024", // Start Date (MM-DD-YYYY)
+      "12-31-2024", // End Date (MM-DD-YYYY)
+      "123 Main St", // Street Address
+      "Salt Lake City", // City (address city)
+      "UT", // State
+      "84101", // Zip Code
+      "Salt Lake 1st Stake", // Home Stake
+      "Protecting children and youth training completed", // Notes
     ].join(",") + "\n";
+  // Row 2: Volunteer at state level (Assignment must be 'Utah' for state level per validation rules)
   const row2 =
     [
-      "Volunteer",
-      "John",
-      "Smith",
-      "john.smith@email.com",
-      "801-555-5678",
-      "Pending",
-      "Community",
-      "Dixon",
-      "Support Staff",
-      "Teacher",
-      "02-15-2024",
-      "02-14-2025",
-      "456 Oak Ave",
-      "Orem",
-      "UT",
-      "84302",
-      "",
+      "Volunteer", // Type
+      "John", // First Name
+      "Smith", // Last Name
+      "john.smith@email.com", // Email
+      "801-555-5678", // Phone
+      "Pending", // Status
+      "State", // Level
+      "Utah", // Assignment (state level requires 'Utah')
+      "Team Member", // Position
+      "Teacher", // Position Detail
+      "02-15-2024", // Start Date
+      "02-14-2025", // End Date
+      "456 Oak Ave", // Street Address
+      "Orem", // City (address city)
+      "UT", // State
+      "84302", // Zip Code
+      "", // Home Stake (blank for volunteer)
+      "CPR Certified", // Notes
     ].join(",") + "\n";
 
   const csv = header + row1 + row2;
@@ -138,6 +147,9 @@ const ImportMissionaryCsvHelpDialog = ({
             <b>Assignment *</b>
           </li>
           <li>
+            <b>Type *</b> <i>(Missionary or Volunteer)</i>
+          </li>
+          <li>
             <b>Position *</b>
           </li>
           <li>
@@ -182,6 +194,15 @@ const ImportMissionaryCsvHelpDialog = ({
             State, Cities and Communities must exist in our database. The
             downloadable template will contain all of the cities and communities
             values you may use.
+          </li>
+          <li>
+            For Level 'state' the Assignment value must be 'Utah'. For 'city' or
+            'community' it must match an existing name exactly
+            (case-insensitive).
+          </li>
+          <li>
+            Type must be either Missionary or Volunteer. If omitted it defaults
+            to Missionary.
           </li>
         </ul>
       </Typography>

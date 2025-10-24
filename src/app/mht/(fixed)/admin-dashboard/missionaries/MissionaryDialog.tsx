@@ -54,7 +54,7 @@ const POSITIONS_BY_LEVEL: Record<string, Record<string, string[]>> = {
       "Neighborhood Services Associate Director",
       "Neighborhood Services Secretary",
     ],
-    "Support Staff": ["Support Staff"],
+    "Team Member": ["Team Member"],
   },
 };
 
