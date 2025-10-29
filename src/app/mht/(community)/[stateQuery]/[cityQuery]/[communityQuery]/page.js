@@ -34,6 +34,7 @@ import { MaintenanceMode } from "@/views/supportingPages";
 import { LoadedClassesProvider } from "@/contexts/LoadedClassesProvider";
 import { useEvents } from "@/hooks/useEvents";
 import MarketingItem from "@/components/community/MarketingItem";
+import { VolunteerSignupForm } from "@/components/volunteers/VolunteerSignupForm";
 
 // export const dynamic = "force-dynamic";
 // export const revalidate = 0;
@@ -441,14 +442,12 @@ const Page = ({ params }) => {
                   </Grid>
                 ) : (
                   <>
-                    <VolunteerSignUps
-                      volunteerHeaderText={community.volunteerHeaderText}
-                      volunteerHeaderImage={community.volunteerHeaderImage}
-                      setVolunteerHeaderText={alertNotEdit}
-                      signUpFormId={community.signUpFormId}
-                      setSignUpFormId={alertNotEdit}
-                      onClose={() => setShowSignup(false)}
-                      sx={{ backgroundColor: "#1b75bc !important;" }}
+                    <VolunteerSignupForm
+                      communityId={community._id}
+                      communityName={`${communityQuery.replaceAll(
+                        "-",
+                        " "
+                      )} Community`}
                     />
                   </>
                 )}

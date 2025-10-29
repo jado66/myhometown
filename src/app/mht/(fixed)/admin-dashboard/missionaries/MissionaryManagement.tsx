@@ -56,6 +56,7 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 import ProfilePictureDialog from "./ProfilePictureDialog";
 import { toast } from "react-toastify";
 import PermissionGuard from "@/guards/permission-guard";
+import VolunteerSignupsTable from "@/components/volunteers/VolunteerSignupsTable";
 
 // NOTE: Using loosely typed missionary records to avoid conflicts with existing global Missionary type.
 
@@ -867,10 +868,15 @@ export default function MissionaryManagement() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Failed to save missionary" }));
-        
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Failed to save missionary" }));
+
         if (response.status === 409) {
-          toast.error(errorData.error || "A missionary or volunteer with this email already exists.");
+          toast.error(
+            errorData.error ||
+              "A missionary or volunteer with this email already exists."
+          );
         } else {
           toast.error(errorData.error || "Failed to save missionary");
         }
@@ -878,7 +884,9 @@ export default function MissionaryManagement() {
       }
 
       await fetchMissionaries();
-      toast.success(`Missionary ${selectedMissionary ? "updated" : "created"} successfully`);
+      toast.success(
+        `Missionary ${selectedMissionary ? "updated" : "created"} successfully`
+      );
       handleCloseDialog();
     } catch (err) {
       console.error("Error saving missionary:", err);
@@ -1056,7 +1064,7 @@ export default function MissionaryManagement() {
             >
               <Tab label="Missionaries & Volunteers Table" />
               <Tab label="Hours Overview" />
-              {/* <Tab label="Upcoming Releases" /> */}
+              <Tab label="Upcoming Releases" />
               <Tab label="Volunteer Applications" />
             </Tabs>
 
@@ -1208,6 +1216,10 @@ export default function MissionaryManagement() {
                 onEdit={handleOpenDialog}
                 onDelete={handleDeleteMissionary}
               />
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={3}>
+              <VolunteerSignupsTable />
             </TabPanel>
 
             <ProfilePictureDialog

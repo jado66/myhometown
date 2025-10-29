@@ -116,13 +116,17 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
 
     // Calculate current month hours
     const now = new Date();
-    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth(); // 0-based (0 = January, 9 = October)
 
     const currentMonthHours = missionaryHours
       .filter((h) => {
         if (!h.period_start_date) return false;
-        const periodStart = new Date(h.period_start_date);
-        return periodStart >= currentMonthStart;
+        // Parse the date string (format: "2025-10-01")
+        const periodStart = new Date(h.period_start_date + "T00:00:00.000Z");
+        const periodYear = periodStart.getUTCFullYear();
+        const periodMonth = periodStart.getUTCMonth();
+        return periodYear === currentYear && periodMonth === currentMonth;
       })
       .reduce((sum, h) => sum + (h.total_hours || 0), 0);
 
