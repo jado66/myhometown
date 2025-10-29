@@ -51,7 +51,7 @@ const MarketingItem = ({
               height: "auto",
               flexGrow: 1,
               objectFit: "cover",
-              boxShadow: "0px 2px 8px 0px rgba(0, 0, 0, 0.5)",
+
               borderRadius: 4,
               aspectRatio: "8 / 11",
               imageRendering: "smooth",

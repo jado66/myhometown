@@ -15,7 +15,7 @@ export async function PATCH(request) {
       );
     }
 
-    if (typeof is_contacted !== 'boolean') {
+    if (typeof is_contacted !== "boolean") {
       return new Response(
         JSON.stringify({
           success: false,
@@ -28,9 +28,9 @@ export async function PATCH(request) {
     // Update the volunteer signup contact status
     const { data, error } = await supabaseServer
       .from("volunteer_signups")
-      .update({ 
+      .update({
         is_contacted,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq("id", id)
       .select()
@@ -38,8 +38,8 @@ export async function PATCH(request) {
 
     if (error) {
       console.error("Error updating volunteer contact status:", error);
-      
-      if (error.code === 'PGRST116') {
+
+      if (error.code === "PGRST116") {
         return new Response(
           JSON.stringify({
             success: false,
@@ -61,7 +61,9 @@ export async function PATCH(request) {
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Volunteer marked as ${is_contacted ? 'contacted' : 'not contacted'}`,
+        message: `Volunteer marked as ${
+          is_contacted ? "contacted" : "not contacted"
+        }`,
         data: data,
       }),
       { status: 200 }
