@@ -1,4 +1,3 @@
-
 import { supabaseServer } from "@/util/supabaseServer";
 
 export const newToOldCommunity = {
@@ -106,7 +105,6 @@ export async function GET(request) {
   }
 }
 
-
 export async function POST(request) {
   try {
     const formData = await request.json();
@@ -138,7 +136,8 @@ export async function POST(request) {
 
     // Normalize the volunteering community ID if it's an old one
     const incomingCommunityId = formData.volunteeringCityId;
-    const normalizedCommunityId = oldToNewCommunity[incomingCommunityId] || incomingCommunityId;
+    const normalizedCommunityId =
+      oldToNewCommunity[incomingCommunityId] || incomingCommunityId;
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

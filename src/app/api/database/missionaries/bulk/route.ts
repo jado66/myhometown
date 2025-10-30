@@ -53,6 +53,13 @@ function calculateDuration(
   return Math.max(0, totalMonths);
 }
 
+// NEW: Validate timestamp fields
+function isValidTimestamp(value: any): boolean {
+  if (!value) return true; // null/undefined is okay
+  const date = new Date(value);
+  return !isNaN(date.getTime());
+}
+
 // Validate a single missionary payload; returns list of error messages (empty if valid)
 function validateMissionary(m: any): string[] {
   const errors: string[] = [];
@@ -66,9 +73,8 @@ function validateMissionary(m: any): string[] {
   if (!first) errors.push("First name is required");
   if (!last) errors.push("Last name is required");
 
-  if (status && !["active", "inactive", "pending"].includes(status)) {
-    errors.push("Invalid assignment_status (must be active|inactive|pending)");
-  }
+  // Fixed: removed "pending" from allowed values
+
   if (level && !["state", "city", "community"].includes(level)) {
     errors.push("Invalid assignment_level (must be state|city|community)");
   }
@@ -85,7 +91,72 @@ function validateMissionary(m: any): string[] {
   if (level === "community" && !m.community_id) {
     errors.push("Community level requires community_id");
   }
+
+  // NEW: Validate timestamp fields
+  if (m.start_date && !isValidTimestamp(m.start_date)) {
+    errors.push(
+      `Invalid start_date: "${m.start_date}" (expected timestamp format)`
+    );
+  }
+  if (m.end_date && !isValidTimestamp(m.end_date)) {
+    errors.push(
+      `Invalid end_date: "${m.end_date}" (expected timestamp format)`
+    );
+  }
+  if (m.last_login && !isValidTimestamp(m.last_login)) {
+    errors.push(
+      `Invalid last_login: "${m.last_login}" (expected timestamp format)`
+    );
+  }
+
   return errors;
+}
+
+// NEW: Log all fields to detect misalignment
+function logRecordFields(record: any, label: string = "Record") {
+  console.log(`\n=== ${label} ===`);
+  const allFields = [
+    "email",
+    "first_name",
+    "last_name",
+    "city_id",
+    "community_id",
+    "assignment_status",
+    "assignment_level",
+    "contact_number",
+    "notes",
+    "title",
+    "group",
+    "start_date",
+    "end_date",
+    "duration",
+    "stake_name",
+    "gender",
+    "profile_picture_url",
+    "preferred_entry_method",
+    "last_login",
+    "street_address",
+    "address_city",
+    "address_state",
+    "zip_code",
+    "person_type",
+    "position_detail",
+  ];
+
+  allFields.forEach((field) => {
+    const value = record[field];
+    const type = typeof value;
+    const preview =
+      value === null
+        ? "null"
+        : value === undefined
+        ? "undefined"
+        : type === "string"
+        ? `"${value.substring(0, 50)}${value.length > 50 ? "..." : ""}"`
+        : JSON.stringify(value);
+    console.log(`  ${field.padEnd(25)} [${type.padEnd(9)}] = ${preview}`);
+  });
+  console.log("===================\n");
 }
 
 export async function POST(request: NextRequest) {
@@ -101,6 +172,12 @@ export async function POST(request: NextRequest) {
         { error: "'missionaries' must be a non-empty array" },
         { status: 400 }
       );
+    }
+
+    // NEW: Log first incoming record
+    if (missionaries.length > 0) {
+      console.log("\n🔍 INCOMING DATA INSPECTION (First Record):");
+      logRecordFields(missionaries[0], "Raw Input Record #0");
     }
 
     // Per-record status tracking
@@ -137,6 +214,7 @@ export async function POST(request: NextRequest) {
         invalid.push({ index, email, errors });
         recordStatuses[index].status = "invalid_validation";
         recordStatuses[index].errors = errors;
+        console.log(`❌ Validation failed for record #${index}:`, errors);
         return; // do not push to prepared
       }
 
@@ -218,6 +296,70 @@ export async function POST(request: NextRequest) {
     for (let i = 0; i < recordsToInsert.length; i += CHUNK_SIZE) {
       const chunk = recordsToInsert.slice(i, i + CHUNK_SIZE);
       if (chunk.length === 0) continue;
+
+      // NEW: COMPREHENSIVE DIAGNOSTIC LOGGING
+      console.log(
+        `\n🔄 PROCESSING CHUNK ${
+          Math.floor(i / CHUNK_SIZE) + 1
+        } (records ${i} to ${i + chunk.length - 1})`
+      );
+
+      if (chunk.length > 0) {
+        // Log first record in chunk
+        logRecordFields(
+          chunk[0],
+          `Pre-Insert Record #${chunk[0]._originalIndex}`
+        );
+
+        // Create the exact payload that will be sent to Supabase
+        const insertPayload = chunk.map((c) => ({
+          email: c.email,
+          first_name: c.first_name,
+          last_name: c.last_name,
+          city_id: c.city_id || null,
+          community_id: c.community_id || null,
+          assignment_status: c.assignment_status || "active",
+          assignment_level: c.assignment_level || null,
+          contact_number: c.contact_number || null,
+          notes: c.notes || "",
+          title: c.title || null,
+          group: c.group || null,
+          start_date: c.start_date || null,
+          end_date: c.end_date || null,
+          duration: c.duration || null,
+          stake_name: c.stake_name || null,
+          gender: c.gender || null,
+          profile_picture_url: c.profile_picture_url || "",
+          preferred_entry_method: c.preferred_entry_method || null,
+          last_login: c.last_login || null,
+          street_address: c.street_address || null,
+          address_city: c.address_city || null,
+          address_state: c.address_state || null,
+          zip_code: c.zip_code || null,
+          person_type: c.person_type || null,
+          position_detail: c.position_detail || null,
+        }));
+
+        // Log the transformed payload
+        logRecordFields(insertPayload[0], "Transformed Payload #0");
+
+        // Check for suspicious values in timestamp fields
+        console.log("\n⚠️  TIMESTAMP FIELD VALIDATION:");
+        const timestampFields = ["start_date", "end_date", "last_login"];
+        timestampFields.forEach((field) => {
+          const value = insertPayload[0][field];
+          if (
+            value &&
+            typeof value === "string" &&
+            !/^\d{4}-\d{2}-\d{2}/.test(value)
+          ) {
+            console.log(
+              `  ⚠️  WARNING: ${field} has suspicious value: "${value}"`
+            );
+          }
+        });
+      }
+
       const { data, error } = await supabaseServer
         .from("missionaries")
         .insert(
@@ -250,8 +392,16 @@ export async function POST(request: NextRequest) {
           }))
         )
         .select();
+
       if (error) {
-        console.error("Bulk insert chunk error", error);
+        console.error("❌ Bulk insert chunk error", error);
+        console.error("Error details:", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+        });
+
         // Mark entire chunk as failed
         chunk.forEach((c) => {
           const origIndex = c._originalIndex;
@@ -267,6 +417,9 @@ export async function POST(request: NextRequest) {
         });
         continue;
       }
+
+      console.log(`✅ Successfully inserted ${data?.length || 0} records`);
+
       inserted.push(...(data || []));
       // Mark inserted
       (data || []).forEach((row: any) => {
