@@ -56,7 +56,7 @@ import ProfilePictureDialog from "./ProfilePictureDialog";
 import { toast } from "react-toastify";
 import PermissionGuard from "@/guards/permission-guard";
 import VolunteerSignupsTable from "@/components/volunteers/VolunteerSignupsTable";
-import { useCommunitiesSupabase } from "../../../../../hooks/use-communities-supabase";
+import { useCommunitiesSupabase } from "@/hooks/use-communities-supabase";
 
 // NOTE: Using loosely typed missionary records to avoid conflicts with existing global Missionary type.
 
