@@ -1094,7 +1094,7 @@ export default function MissionaryManagement() {
                     value: filteredMissionaries.filter(
                       (m) => m.assignment_level?.toLowerCase() === "community"
                     ).length,
-                    color: "warning.main",
+                    color: "secondary.main",
                     icon: <LocationCity sx={{ color: "#fff" }} />,
                   },
                 ]}
