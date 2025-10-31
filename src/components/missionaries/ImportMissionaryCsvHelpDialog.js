@@ -21,6 +21,7 @@ import FileUploadIcon from "@mui/icons-material/FileUpload";
 // Order matches the export format used in MissionaryManagement and the validation expectations.
 const csvHeader = [
   "Type",
+  "Gender",
   "First Name",
   "Last Name",
   "Email",
@@ -48,6 +49,7 @@ function downloadTemplate() {
   const row1 =
     [
       "Missionary", // Type
+      "Female", // Gender
       "Jane", // First Name
       "Doe", // Last Name
       "jane.doe@email.com", // Email
@@ -70,6 +72,7 @@ function downloadTemplate() {
   const row2 =
     [
       "Volunteer", // Type
+      "Male", // Gender
       "John", // First Name
       "Smith", // Last Name
       "john.smith@email.com", // Email
@@ -126,6 +129,9 @@ const ImportMissionaryCsvHelpDialog = ({
             <b>Type *</b> <i>(Missionary or Volunteer)</i>
           </li>
           <li>
+            <b>Gender</b> <i>(Male or Female)</i>
+          </li>
+          <li>
             <b>First Name *</b>
           </li>
           <li>
@@ -145,9 +151,6 @@ const ImportMissionaryCsvHelpDialog = ({
           </li>
           <li>
             <b>Assignment *</b>
-          </li>
-          <li>
-            <b>Type *</b> <i>(Missionary or Volunteer)</i>
           </li>
           <li>
             <b>Position *</b>

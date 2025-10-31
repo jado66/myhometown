@@ -49,7 +49,6 @@ import { useMissionaryHours } from "@/hooks/use-missionary-hours";
 import { AggregateStats } from "./AggregateStats";
 import { useUser } from "@/contexts/UserProvider";
 import useManageCities from "@/hooks/use-manage-cities";
-import { useCommunities } from "@/hooks/use-communities";
 import { MissionaryDialog } from "./MissionaryDialog";
 import { UpcomingReleases } from "./UpcomingReleases";
 import { useLocalStorage } from "@/hooks/use-local-storage";
@@ -57,6 +56,7 @@ import ProfilePictureDialog from "./ProfilePictureDialog";
 import { toast } from "react-toastify";
 import PermissionGuard from "@/guards/permission-guard";
 import VolunteerSignupsTable from "@/components/volunteers/VolunteerSignupsTable";
+import { useCommunitiesSupabase } from "../../../../../hooks/use-communities-supabase";
 
 // NOTE: Using loosely typed missionary records to avoid conflicts with existing global Missionary type.
 
@@ -111,7 +111,7 @@ export default function MissionaryManagement() {
   const [missionaries, setMissionaries] = useState<any[] | null>(null);
   const { user } = useUser();
   const { cities } = useManageCities(user);
-  const { communities } = useCommunities(user);
+  const { communities } = useCommunitiesSupabase(user);
   const [tabValue, setTabValue] = useLocalStorage("missionary-tab-value", 0);
 
   // Profile picture dialog state
@@ -420,6 +420,7 @@ export default function MissionaryManagement() {
           ? row["State"] || ""
           : row["Address State"] || "";
         const stake_name = row["Home Stake"] || row["Stake Name"] || "";
+        const gender = (row["Gender"] || "").toLowerCase().trim();
 
         valid.push({
           first_name,
@@ -444,6 +445,7 @@ export default function MissionaryManagement() {
           stake_name,
           notes: row["Notes"] || "",
           person_type: person_type_raw || "missionary",
+          gender: gender || null,
         });
       }
     });
@@ -735,6 +737,7 @@ export default function MissionaryManagement() {
       "Level",
       "Assignment",
       "Type", // include for round-trip consistency
+      "Gender",
       "Position",
       "Position Detail",
       "Start Date",
@@ -766,6 +769,7 @@ export default function MissionaryManagement() {
         Level: m.assignment_level || "",
         Assignment: assignment,
         Type: m.person_type || "missionary",
+        Gender: m.gender || "",
         // Updated mapping: Position now reflects missionary.title; Position Detail reflects position_detail
         Position: m.title || "",
         "Position Detail": m.position_detail || "",
