@@ -27,6 +27,7 @@ import {
 import { AggregateStats } from "./AggregateStats";
 import { MissionaryListView } from "./MissionaryListView";
 import { MissionaryCard } from "./MissionaryCard";
+import { SearchAndFilter } from "./SearchAndFilter";
 
 interface Missionary {
   id: string;
@@ -60,6 +61,14 @@ interface City {
   state: string;
 }
 
+interface FilterState {
+  searchTerm: string;
+  statusFilter: string;
+  assignmentLevel: "all" | "state" | "city" | "community";
+  selectedCityId: string | null;
+  selectedCommunityId: string | null;
+}
+
 interface UpcomingReleasesProps {
   missionaries: Missionary[];
   cities: City[];
@@ -71,6 +80,8 @@ interface UpcomingReleasesProps {
   ) => void;
   onEdit: (missionary: Missionary) => void;
   onDelete: (missionary: Missionary) => void;
+  filters: FilterState;
+  onFiltersChange: (filters: FilterState) => void;
 }
 
 // Helper to calculate release date from start_date and duration (e.g., '12 months')
@@ -128,6 +139,8 @@ export function UpcomingReleases({
   onViewModeChange,
   onEdit,
   onDelete,
+  filters,
+  onFiltersChange,
 }: UpcomingReleasesProps) {
   // Group missionaries by urgency level using calculated release date
   const groupedMissionaries = missionaries.reduce(
@@ -208,7 +221,14 @@ export function UpcomingReleases({
         ]}
       />
 
-      <Divider sx={{ my: 3 }} />
+      {/* Search and Filter */}
+      <SearchAndFilter
+        filters={filters}
+        onFiltersChange={onFiltersChange}
+        cities={cities}
+        communities={communities}
+        resultCount={missionaries.length}
+      />
 
       {/* Header and view toggle inline */}
       <Box

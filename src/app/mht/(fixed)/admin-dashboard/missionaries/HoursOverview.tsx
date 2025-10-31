@@ -24,6 +24,7 @@ import {
   TableChart,
 } from "@mui/icons-material";
 import { AggregateStats } from "./AggregateStats";
+import { SearchAndFilter } from "./SearchAndFilter";
 
 interface Missionary {
   id: string;
@@ -51,12 +52,18 @@ interface HoursOverviewProps {
   missionaries: Missionary[];
   filters: FilterState;
   hours: MissionaryHours[];
+  cities: any[];
+  communities: any[];
+  onFiltersChange: (filters: FilterState) => void;
 }
 
 export function HoursOverview({
   missionaries,
   filters,
   hours,
+  cities,
+  communities,
+  onFiltersChange,
 }: HoursOverviewProps) {
   const [activeTab, setActiveTab] = useState(0);
 
@@ -172,7 +179,14 @@ export function HoursOverview({
         ]}
       />
 
-      <Divider sx={{ my: 3 }} />
+      {/* Search and Filter */}
+      <SearchAndFilter
+        filters={filters}
+        onFiltersChange={onFiltersChange}
+        cities={cities}
+        communities={communities}
+        resultCount={missionaries.length}
+      />
 
       {/* Tabs for different views */}
       <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>

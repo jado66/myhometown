@@ -1051,22 +1051,13 @@ export default function MissionaryManagement() {
         </AppBar>
 
         <Container maxWidth="xl" sx={{ py: 4 }}>
-          {/* Unified Search and Filter */}
-          <SearchAndFilter
-            filters={filters}
-            onFiltersChange={setFilters}
-            cities={cities}
-            communities={communities}
-            resultCount={filteredMissionaries.length}
-          />
-
           {/* Main Content Tabs */}
           <Paper elevation={2} sx={{ mb: 3 }}>
             <Tabs
               value={tabValue}
               onChange={(e, newValue) => setTabValue(newValue)}
             >
-              <Tab label="Missionaries & Volunteers Table" />
+              <Tab label="Missionaries & Volunteers Roster" />
               <Tab label="Hours Overview" />
               <Tab label="Upcoming Releases" />
               <Tab label="Volunteer Applications" />
@@ -1108,7 +1099,15 @@ export default function MissionaryManagement() {
                   },
                 ]}
               />
-              <Divider sx={{ my: 3 }} />
+
+              {/* Unified Search and Filter */}
+              <SearchAndFilter
+                filters={filters}
+                onFiltersChange={setFilters}
+                cities={cities}
+                communities={communities}
+                resultCount={filteredMissionaries.length}
+              />
 
               <Box
                 sx={{
@@ -1123,7 +1122,7 @@ export default function MissionaryManagement() {
                   color="text.primary"
                   sx={{ display: "flex", alignItems: "center" }}
                 >
-                  Missionaries &amp; Volunteers Table
+                  Missionaries &amp; Volunteers Roster
                 </Typography>
                 <ToggleButtonGroup
                   value={viewMode}
@@ -1207,6 +1206,9 @@ export default function MissionaryManagement() {
                 missionaries={filteredMissionaries}
                 filters={filters}
                 hours={hours}
+                cities={cities}
+                communities={communities}
+                onFiltersChange={setFilters}
               />
             </TabPanel>
 
@@ -1219,6 +1221,8 @@ export default function MissionaryManagement() {
                 onViewModeChange={handleViewModeChange}
                 onEdit={handleOpenDialog}
                 onDelete={handleDeleteMissionary}
+                filters={filters}
+                onFiltersChange={setFilters}
               />
             </TabPanel>
 

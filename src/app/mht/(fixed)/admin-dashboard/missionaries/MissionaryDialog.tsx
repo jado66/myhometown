@@ -141,6 +141,31 @@ interface MissionaryFormData {
   position_detail: string;
 }
 
+const initalFormData: MissionaryFormData = {
+  person_type: "missionary",
+  email: "",
+  first_name: "",
+  last_name: "",
+  profile_picture_url: "",
+  city_id: "",
+  community_id: "",
+  assignment_status: "active",
+  assignment_level: "state",
+  contact_number: "",
+  notes: "",
+  group: "",
+  title: "",
+  start_date: "",
+  duration: "",
+  stake_name: "",
+  gender: null,
+  street_address: "",
+  address_city: "",
+  address_state: "",
+  zip_code: "",
+  position_detail: "",
+};
+
 const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
   open,
   onClose,
@@ -150,31 +175,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
   communities,
   user = {},
 }) => {
-  const [formData, setFormData] = useState<MissionaryFormData>({
-    person_type: "missionary",
-    email: "",
-    first_name: "",
-    last_name: "",
-    profile_picture_url: "",
-    city_id: "",
-    community_id: "",
-    assignment_status: "active",
-    assignment_level: "state",
-    contact_number: "",
-    notes: "",
-    group: "",
-    title: "",
-    start_date: "",
-    duration: "",
-    stake_name: "",
-    gender: null,
-    // Address fields
-    street_address: "",
-    address_city: "",
-    address_state: "",
-    zip_code: "",
-    position_detail: "",
-  });
+  const [formData, setFormData] = useState<MissionaryFormData>(initalFormData);
 
   const isAdmin = user?.permissions?.administrator || false;
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -218,6 +219,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
     } else {
       // Reset errors when creating a new missionary
       setErrors({});
+      setFormData(initalFormData);
     }
   }, [missionary]);
 
