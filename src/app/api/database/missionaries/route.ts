@@ -30,52 +30,77 @@ function calculateDuration(
   return Math.max(0, totalMonths); // Ensure non-negative
 }
 
-export async function GET(request: NextRequest) {
-  try {
-    const { data: missionaries, error } = await supabaseServer
-      .from("missionaries")
-      .select(
-        `
-        *,
-        cities:city_id (name, state, country)
-      `
-      )
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Fetch missionaries error:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch missionaries" },
-        { status: 500 }
-      );
-    }
-
-    // Calculate duration for each missionary
-    const missionariesWithDuration =
-      missionaries?.map((missionary) => ({
-        ...missionary,
-        // Provide unified `type` field (new column) while remaining backward compatible.
-        type:
-          (missionary as any).type || (missionary as any).person_type || null,
-        calculated_duration: calculateDuration(
-          missionary.start_date,
-          missionary.end_date
-        ),
-      })) || [];
-
-    return NextResponse.json({ missionaries: missionariesWithDuration });
-  } catch (error) {
-    console.error("Missionaries API error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+
+    // Check if this is a fetch request (has user property) or a create request
+    if (body.user !== undefined) {
+      // This is a fetch missionaries request
+      const { user } = body;
+
+      let query = supabaseServer
+        .from("missionaries")
+        .select(
+          `
+          *,
+          cities:city_id (name, state, country)
+        `
+        )
+        .order("created_at", { ascending: false });
+
+      // Apply filters based on user's cities and communities
+      if (user) {
+        const userCities = user.cities || [];
+        const userCommunities = user.communities || [];
+
+        // If user has specific cities or communities assigned, filter accordingly
+        if (userCities.length > 0 || userCommunities.length > 0) {
+          // Build OR conditions for filtering
+          const orConditions: string[] = [];
+
+          if (userCities.length > 0) {
+            orConditions.push(`city_id.in.(${userCities.join(",")})`);
+          }
+
+          if (userCommunities.length > 0) {
+            orConditions.push(`community_id.in.(${userCommunities.join(",")})`);
+          }
+
+          if (orConditions.length > 0) {
+            query = query.or(orConditions.join(","));
+          }
+        }
+        // If user has no cities or communities, they can see all (admin behavior)
+      }
+
+      const { data: missionaries, error } = await query;
+
+      if (error) {
+        console.error("Fetch missionaries error:", error);
+        return NextResponse.json(
+          { error: "Failed to fetch missionaries" },
+          { status: 500 }
+        );
+      }
+
+      // Calculate duration for each missionary
+      const missionariesWithDuration =
+        missionaries?.map((missionary) => ({
+          ...missionary,
+          // Provide unified `type` field (new column) while remaining backward compatible.
+          type:
+            (missionary as any).type || (missionary as any).person_type || null,
+          calculated_duration: calculateDuration(
+            missionary.start_date,
+            missionary.end_date
+          ),
+        })) || [];
+
+      return NextResponse.json({ missionaries: missionariesWithDuration });
+    }
+
+    // Otherwise, this is a create missionary request
     const {
       email,
       first_name,

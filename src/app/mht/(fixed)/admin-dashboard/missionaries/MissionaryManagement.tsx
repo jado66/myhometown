@@ -57,6 +57,7 @@ import { toast } from "react-toastify";
 import PermissionGuard from "@/guards/permission-guard";
 import VolunteerSignupsTable from "@/components/volunteers/VolunteerSignupsTable";
 import { useCommunitiesSupabase } from "@/hooks/use-communities-supabase";
+import { useCitiesSupabase } from "@/hooks/use-cities-supabase";
 
 // NOTE: Using loosely typed missionary records to avoid conflicts with existing global Missionary type.
 
@@ -110,7 +111,7 @@ type ViewMode = "card" | "list";
 export default function MissionaryManagement() {
   const [missionaries, setMissionaries] = useState<any[] | null>(null);
   const { user } = useUser();
-  const { cities } = useManageCities(user);
+  const { cities } = useCitiesSupabase(user);
   const { communities } = useCommunitiesSupabase(user);
   const [tabValue, setTabValue] = useLocalStorage("missionary-tab-value", 0);
 
@@ -648,7 +649,13 @@ export default function MissionaryManagement() {
 
   const fetchMissionaries = async () => {
     try {
-      const response = await fetch("/api/database/missionaries");
+      const response = await fetch("/api/database/missionaries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user }),
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch missionaries");
       }
@@ -1052,6 +1059,7 @@ export default function MissionaryManagement() {
 
         <Container maxWidth="xl" sx={{ py: 4 }}>
           {/* Main Content Tabs */}
+
           <Paper elevation={2} sx={{ mb: 3 }}>
             <Tabs
               value={tabValue}

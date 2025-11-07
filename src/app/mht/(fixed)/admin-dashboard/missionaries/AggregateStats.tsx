@@ -1,6 +1,5 @@
 "use client";
 
-
 import React from "react";
 import { Grid, Card, CardContent, Typography, Avatar } from "@mui/material";
 
@@ -17,9 +16,20 @@ export interface AggregateStatsProps {
 }
 
 export function AggregateStats({ cards, sx }: AggregateStatsProps) {
+  // Filter out cards with 0 values
+  const visibleCards = cards.filter((card) => {
+    const numValue =
+      typeof card.value === "number" ? card.value : parseFloat(card.value);
+    return !isNaN(numValue) && numValue !== 0;
+  });
+
+  if (visibleCards.length === 0) {
+    return null;
+  }
+
   return (
-    <Grid container spacing={3} sx={{ mb: 3, ...sx }}>
-      {cards.map((card, idx) => (
+    <Grid container spacing={3} justifyContent="center" sx={{ mb: 3, ...sx }}>
+      {visibleCards.map((card, idx) => (
         <Grid item xs={12} sm={6} md={3} key={idx}>
           <Card>
             <CardContent sx={{ textAlign: "center" }}>

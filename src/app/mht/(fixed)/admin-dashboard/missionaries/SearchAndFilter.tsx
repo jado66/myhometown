@@ -32,6 +32,8 @@ import {
   Group,
   Schedule,
 } from "@mui/icons-material";
+import CommunitySelect from "@/components/data-tables/selects/CommunitySelect";
+import CitySelect from "@/components/data-tables/selects/CitySelect";
 
 interface FilterState {
   searchTerm: string;
@@ -74,17 +76,13 @@ export function SearchAndFilter({
   resultCount,
   showUpcomingReleaseFilter = false,
 }: UnifiedSearchFilterProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   const updateFilter = (key: keyof FilterState, value: any) => {
     const newFilters = { ...filters, [key]: value };
     // Reset dependent filters when assignment level changes
     if (key === "assignmentLevel") {
       newFilters.selectedCityId = null;
-      newFilters.selectedCommunityId = null;
-    }
-    // Reset community when city changes
-    if (key === "selectedCityId") {
       newFilters.selectedCommunityId = null;
     }
     onFiltersChange(newFilters);
@@ -161,7 +159,7 @@ export function SearchAndFilter({
       <AccordionDetails>
         {/* Search and Status Row */}
         <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={3}>
             <TextField
               fullWidth
               label="Search missionaries..."
@@ -176,21 +174,7 @@ export function SearchAndFilter({
               }}
             />
           </Grid>
-          {/* <Grid item xs={12} md={3}>
-            <FormControl fullWidth>
-              <InputLabel>Status Filter</InputLabel>
-              <Select
-                value={filters.statusFilter}
-                label="Status Filter"
-                onChange={(e) => updateFilter("statusFilter", e.target.value)}
-              >
-                <MenuItem value="all">All Status</MenuItem>
-                <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="inactive">Inactive</MenuItem>
-                <MenuItem value="pending">Pending</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid> */}
+
           <Grid item xs={12} md={3}>
             <FormControl fullWidth>
               <InputLabel>Type Filter</InputLabel>
@@ -205,6 +189,45 @@ export function SearchAndFilter({
               </Select>
             </FormControl>
           </Grid>
+
+          {
+            // if there are no options hide this filter
+            cities.length > 1 && (
+              <Grid item xs={12} md={3}>
+                <FormControl fullWidth>
+                  <CitySelect
+                    value={filters.selectedCityId}
+                    onChange={(value: string | null) =>
+                      updateFilter("selectedCityId", value)
+                    }
+                    onLabelChange={() => {}}
+                    isNewIds={true}
+                    placeholder="Filter by City"
+                    height="56px"
+                  />
+                </FormControl>
+              </Grid>
+            )
+          }
+
+          {communities.length > 1 && (
+            <Grid item xs={12} md={3}>
+              <FormControl fullWidth>
+                <CommunitySelect
+                  value={filters.selectedCommunityId}
+                  onChange={(value: string | null) =>
+                    updateFilter("selectedCommunityId", value)
+                  }
+                  onLabelChange={() => {}}
+                  isMulti={false}
+                  concatCityName={true}
+                  isNewIds={true}
+                  placeholder="Filter by Community"
+                  height="56px"
+                />
+              </FormControl>
+            </Grid>
+          )}
         </Grid>
 
         {/* Upcoming Release Filter - Only show on Upcoming Releases tab */}
@@ -285,7 +308,7 @@ export function SearchAndFilter({
         )}
 
         {/* Assignment Level Selection */}
-        <Box sx={{ mb: 3 }}>
+        {/* <Box sx={{ mb: 3 }}>
           <Typography variant="h6" gutterBottom>
             Assignment Level
           </Typography>
@@ -369,59 +392,42 @@ export function SearchAndFilter({
               })}
             </Grid>
           </RadioGroup>
-        </Box>
+        </Box> */}
 
         {/* City and Community Selection */}
         {(filters.assignmentLevel === "city" ||
           filters.assignmentLevel === "community") && (
           <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth>
-                <InputLabel>Select City</InputLabel>
-                <Select
-                  value={filters.selectedCityId ?? ""}
-                  label="Select City"
-                  onChange={(e) =>
-                    updateFilter(
-                      "selectedCityId",
-                      e.target.value === "" ? null : e.target.value
-                    )
+            {filters.assignmentLevel === "city" && (
+              <Grid item xs={12}>
+                <FormControl fullWidth>
+                  <CitySelect
+                    value={filters.selectedCityId}
+                    onChange={(value: string | null) =>
+                      updateFilter("selectedCityId", value)
+                    }
+                    onLabelChange={() => {}}
+                    isNewIds={true}
+                    placeholder="Searching All Cities"
+                  />
+                </FormControl>
+              </Grid>
+            )}
+            {filters.assignmentLevel === "community" && (
+              <Grid item xs={12}>
+                <CommunitySelect
+                  value={filters.selectedCommunityId}
+                  onChange={(value: string | null) =>
+                    updateFilter("selectedCommunityId", value)
                   }
-                >
-                  <MenuItem value="">All Cities</MenuItem>
-                  {cities.map((city) => (
-                    <MenuItem key={city._id} value={city._id}>
-                      {city.name}, {city.state}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            {filters.assignmentLevel === "community" &&
-              filters.selectedCityId && (
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Select Community</InputLabel>
-                    <Select
-                      value={filters.selectedCommunityId ?? ""}
-                      label="Select Community"
-                      onChange={(e) =>
-                        updateFilter(
-                          "selectedCommunityId",
-                          e.target.value === "" ? null : e.target.value
-                        )
-                      }
-                    >
-                      <MenuItem value="">All Communities</MenuItem>
-                      {getFilteredCommunities().map((community) => (
-                        <MenuItem key={community._id} value={community._id}>
-                          {community.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-              )}
+                  onLabelChange={() => {}}
+                  isMulti={false}
+                  concatCityName={true}
+                  isNewIds={true}
+                  placeholder="Searching All Communities"
+                />
+              </Grid>
+            )}
           </Grid>
         )}
 

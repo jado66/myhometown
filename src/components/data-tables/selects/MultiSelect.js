@@ -12,6 +12,7 @@ const MultiSelect = ({
   direction,
   isMulti = true,
   isGrouped = false,
+  height = null,
 }) => {
   return (
     <Select
@@ -31,6 +32,10 @@ const MultiSelect = ({
         menu: (provided) => ({
           ...provided,
           zIndex: 9999,
+        }),
+        control: (provided) => ({
+          ...provided,
+          ...(height && { minHeight: height, height: height }),
         }),
       }}
       menuPlacement={direction === "up" ? "top" : "auto"}

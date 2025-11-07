@@ -74,24 +74,24 @@ const AdminDashboardPages = () => {
                   href: "/admin-dashboard/days-of-service",
                 },
 
+                // {
+                //   title: "Missionary Hours",
+                //   subtitle:
+                //     "View and manage your missionary hours. Track your service hours and progress.",
+                //   media: "/admin-icons/missionary-logs.png",
+                //   href: "/admin-dashboard/missionary-hours",
+                // },
+                // {
+                //   title: "Volunteer Hours",
+                //   subtitle:
+                //     "View and manage your volunteer hours. Track your service hours and progress.",
+                //   media: "/admin-icons/missionary-logs.png",
+                //   href: "/admin-dashboard/volunteer-hours",
+                // },
                 {
-                  title: "Missionary Hours",
+                  title: "Content Management & Global Admin",
                   subtitle:
-                    "View and manage your missionary hours. Track your service hours and progress.",
-                  media: "/admin-icons/missionary-logs.png",
-                  href: "/admin-dashboard/missionary-hours",
-                },
-                {
-                  title: "Volunteer Hours",
-                  subtitle:
-                    "View and manage your volunteer hours. Track your service hours and progress.",
-                  media: "/admin-icons/missionary-logs.png",
-                  href: "/admin-dashboard/volunteer-hours",
-                },
-                {
-                  title: "Admin",
-                  subtitle:
-                    "Manage city and community pages, classes, texting and communications.",
+                    "Manage city and community pages, classes, texting and communications, or global management.",
                   media: "/admin-icons/User Management.svg",
                   href: "/admin-dashboard",
                 },

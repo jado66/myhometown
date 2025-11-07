@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useCommunities } from "@/hooks/use-communities";
 import { useUser } from "@/hooks/use-user";
 import JsonViewer from "@/components/util/debug/DebugOutput";
+import { useCommunitiesSupabase } from "@/hooks/use-communities-supabase";
 
 const CommunitySelect = ({
   value,
@@ -14,14 +15,23 @@ const CommunitySelect = ({
   isMulti = true,
   concatCityName = false,
   onLabelChange,
+  isNewIds = false,
+  placeholder = "Select a Community",
+  height = null,
 }) => {
   const { user } = useUser();
   const { communities, loading } = useCommunities(user);
+  const { communities: newIdCommunities, loading: newIdLoading } =
+    useCommunitiesSupabase(user);
+
+  // Use the appropriate communities based on isNewIds prop
+  const activeCommunities = isNewIds ? newIdCommunities : communities;
+  const activeLoading = isNewIds ? newIdLoading : loading;
 
   // Group communities by city and state for grouped select
   const communitySelectOptions = (() => {
     const grouped = {};
-    communities.forEach((comm, index) => {
+    activeCommunities.forEach((comm, index) => {
       const city = comm.city || "Unknown";
       const state = comm.state || "Unknown";
       const groupLabel = `${city}, ${state}`;
@@ -79,7 +89,7 @@ const CommunitySelect = ({
     }
   };
 
-  if (loading) {
+  if (activeLoading) {
     return <Loading />;
   }
 
@@ -87,14 +97,15 @@ const CommunitySelect = ({
     <>
       <MultiSelect
         options={communitySelectOptions}
-        placeholder="Select a Community"
-        isLoading={loading}
+        placeholder={placeholder}
+        isLoading={activeLoading}
         value={selectedValues}
         onChange={handleChange}
         defaultValue={defaultValue}
         direction="up"
         isMulti={isMulti}
         isGrouped={true}
+        height={height}
       />
     </>
   );
