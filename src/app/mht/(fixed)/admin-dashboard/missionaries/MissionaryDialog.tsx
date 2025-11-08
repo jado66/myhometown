@@ -190,6 +190,10 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
       setFormData((prev) => ({ ...prev, profile_picture_url: url }))
   );
 
+  const resetFormData = () => {
+    setFormData(initalFormData);
+  };
+
   useEffect(() => {
     if (missionary) {
       setFormData({
@@ -451,11 +455,13 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
       setErrors(newErrors);
       // Proceed to save as incomplete (draft-like) without blocking
       onSave({ ...submitData, is_incomplete: true });
+      resetFormData();
       return;
     }
     // If all required fields are present, proceed with a clean error state
     setErrors({});
     onSave({ ...submitData, is_incomplete: false });
+    resetFormData();
   };
 
   const calculateEndDate = (startDate: string, duration: string) => {
@@ -492,12 +498,18 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
     setImageToCrop(null);
   };
 
+  const handleClose = () => {
+    resetFormData();
+    setErrors({});
+    onClose();
+  };
+
   // Handle file selection for cropping
   return (
     <>
       <Dialog
         open={open}
-        onClose={onClose}
+        onClose={handleClose}
         maxWidth="xl"
         fullWidth
         PaperProps={{ sx: { maxHeight: "90vh" } }}
@@ -515,7 +527,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
               ? "Edit Volunteer or Missionary"
               : "Add New Volunteer or Missionary"}
           </Typography>
-          <IconButton onClick={onClose} edge="end">
+          <IconButton onClick={handleClose} edge="end">
             <CloseIcon />
           </IconButton>
         </DialogTitle>
