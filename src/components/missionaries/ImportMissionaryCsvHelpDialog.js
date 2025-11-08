@@ -6,12 +6,6 @@ import {
   DialogActions,
   Button,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   Box,
 } from "@mui/material";
@@ -43,67 +37,10 @@ const csvHeader = [
 ];
 
 function downloadTemplate() {
-  const header = csvHeader.join(",") + "\n";
-  // Example rows aligned with header. Adjust 'Assignment', 'City', 'Community' names to match your database.
-  // Row 1: Missionary at community level
-  const row1 =
-    [
-      "Missionary", // Type
-      "Female", // Gender
-      "Jane", // First Name
-      "Doe", // Last Name
-      "jane.doe@email.com", // Email
-      "123-456-7890", // Phone
-      "Active", // Status
-      "Community", // Level
-      "Granger West", // Assignment (community name)
-      "Team Member", // Position (maps to title)
-      "Service Missionary", // Position Detail
-      "01-01-2024", // Start Date (MM-DD-YYYY)
-      "12-31-2024", // End Date (MM-DD-YYYY)
-      "123 Main St", // Street Address
-      "Salt Lake City", // City (address city)
-      "UT", // State
-      "84101", // Zip Code
-      "Salt Lake 1st Stake", // Home Stake
-      "Protecting children and youth training completed", // Notes
-    ].join(",") + "\n";
-  // Row 2: Volunteer at state level (Assignment must be 'Utah' for state level per validation rules)
-  const row2 =
-    [
-      "Volunteer", // Type
-      "Male", // Gender
-      "John", // First Name
-      "Smith", // Last Name
-      "john.smith@email.com", // Email
-      "801-555-5678", // Phone
-      "Pending", // Status
-      "State", // Level
-      "Utah", // Assignment (state level requires 'Utah')
-      "Team Member", // Position
-      "Teacher", // Position Detail
-      "02-15-2024", // Start Date
-      "02-14-2025", // End Date
-      "456 Oak Ave", // Street Address
-      "Orem", // City (address city)
-      "UT", // State
-      "84302", // Zip Code
-      "", // Home Stake (blank for volunteer)
-      "CPR Certified", // Notes
-    ].join(",") + "\n";
-
-  const csv = header + row1 + row2;
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
-  if (link.download !== undefined) {
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", "missionaries-template.csv");
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
+  link.href = "/Template.xlsx";
+  link.download = "Template.xlsx";
+  link.click();
 }
 
 const ImportMissionaryCsvHelpDialog = ({

@@ -434,8 +434,8 @@ export default function MissionaryManagement() {
           community_id,
           // Position column should map to the database 'title' field; keep group strictly from 'Group'
           group: row["Group"] || "",
-          title:
-            row["Position"] || row["Title"] || row["Position Detail"] || "",
+          title: row["Position"] || row["Title"] || "",
+          position_detail: row["Position Detail"] || "",
           start_date,
           end_date,
           duration,
@@ -910,6 +910,7 @@ export default function MissionaryManagement() {
   const [missionaryToDelete, setMissionaryToDelete] = useState<any | null>(
     null
   );
+  const [deleting, setDeleting] = useState(false);
 
   const handleDeleteMissionary = (missionary: any) => {
     setMissionaryToDelete(missionary);
@@ -918,6 +919,7 @@ export default function MissionaryManagement() {
 
   const handleConfirmDelete = async () => {
     if (!missionaryToDelete) return;
+    setDeleting(true);
     try {
       const response = await fetch(
         `/api/database/missionaries?id=${missionaryToDelete.id}`,
@@ -931,6 +933,7 @@ export default function MissionaryManagement() {
     } catch (err) {
       toast.error("Error deleting missionary");
     } finally {
+      setDeleting(false);
       setDeleteDialogOpen(false);
       setMissionaryToDelete(null);
     }
@@ -977,6 +980,7 @@ export default function MissionaryManagement() {
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
         onClose={handleCancelDelete}
+        loading={deleting}
       />
 
       <Box
@@ -1000,15 +1004,13 @@ export default function MissionaryManagement() {
               </Typography>
             </Box>
             <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-              <PermissionGuard requiredPermission="administrator" user={user}>
-                <Button
-                  variant="outlined"
-                  startIcon={<Upload />}
-                  onClick={() => setBulkImportOpen(true)}
-                >
-                  Bulk Import
-                </Button>
-              </PermissionGuard>
+              <Button
+                variant="outlined"
+                startIcon={<Upload />}
+                onClick={() => setBulkImportOpen(true)}
+              >
+                Bulk Import
+              </Button>
               <Button
                 variant="outlined"
                 startIcon={<Download />}

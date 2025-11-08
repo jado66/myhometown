@@ -219,35 +219,10 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({
   };
 
   const downloadTemplate = () => {
-    const headers = [
-      "first_name",
-      "last_name",
-      "email",
-      "contact_number",
-      "gender",
-      "assignment_level",
-      "city_name",
-      "community_name",
-      "group",
-      "title",
-      "stake_name",
-      "start_date",
-      "duration",
-      "notes",
-    ];
-
-    const template = [
-      headers.join(","),
-      "John,Doe,john.doe@example.com,801-555-1234,male,city,Salt Lake City,Downtown,Executive Board,City Chair,Salt Lake Stake,2024-01-15,18 months,Example missionary",
-    ].join("\n");
-
-    const blob = new Blob([template], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "missionary_import_template.csv";
+    a.href = "/Template.xlsx";
+    a.download = "Template.xlsx";
     a.click();
-    URL.revokeObjectURL(url);
   };
 
   const reset = () => {
