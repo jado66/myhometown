@@ -190,29 +190,15 @@ export default function VolunteerDashboard({
     setSubmitting(true);
     setError(null);
     try {
-      // Validation
-      const hoursNum = Number(totalHours);
-      if (!totalHours || hoursNum < 0) {
-        throw new Error("Please enter valid total hours.");
-      }
-
-      // Max hours validation
-      if (
-        (entryMethod === "weekly" && hoursNum > 80) ||
-        (entryMethod === "monthly" && hoursNum > 200)
-      ) {
-        throw new Error("Are you sure these hours are correct?");
-      }
-
+      // Calculate total hours from activities
       const totalActivityHours = activities.reduce(
         (sum, act) => sum + (Number(act.hours) || 0),
         0
       );
 
-      if (Math.abs(totalActivityHours - hoursNum) > 0.01) {
-        throw new Error(
-          `Activity hours must equal total hours. Double check your entries.`
-        );
+      // Validation
+      if (totalActivityHours < 0) {
+        throw new Error("Please enter valid hours.");
       }
 
       // Calculate period start date consistently
@@ -222,7 +208,7 @@ export default function VolunteerDashboard({
       const payload = {
         entryMethod,
         period_start_date: periodStartDate.format("YYYY-MM-DD"), // Use consistent format
-        total_hours: hoursNum,
+        total_hours: totalActivityHours, // Use calculated total from activities
         activities: activities.map(({ id, ...rest }) => ({
           ...rest,
           hours: Number(rest.hours),
