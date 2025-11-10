@@ -5,9 +5,13 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { email: string } }
 ) {
+  const startTime = Date.now();
+  console.log(`[GET /api/missionary/[email]/hours] Request started for email: ${params.email}`);
+  
   try {
     const email = params.email;
     if (!email) {
+      console.warn('[GET /api/missionary/[email]/hours] Missing email parameter');
       return NextResponse.json(
         { error: "Missionary email is required" },
         { status: 400 }
@@ -15,6 +19,7 @@ export async function GET(
     }
 
     // First, get the missionary's ID from their email
+    console.log(`[GET /api/missionary/[email]/hours] Fetching missionary ID for email: ${email}`);
     const { data: missionary, error: missionaryError } = await supabaseServer
       .from("missionaries")
       .select("id")
@@ -22,13 +27,17 @@ export async function GET(
       .single();
 
     if (missionaryError || !missionary) {
+      console.error(`[GET /api/missionary/[email]/hours] Missionary not found for email: ${email}`, missionaryError);
       return NextResponse.json(
         { error: "Missionary not found" },
         { status: 404 }
       );
     }
 
+    console.log(`[GET /api/missionary/[email]/hours] Found missionary ID: ${missionary.id}`);
+
     // Then, fetch all hour entries for that missionary ID
+    console.log(`[GET /api/missionary/[email]/hours] Fetching hours for missionary ID: ${missionary.id}`);
     const { data: hours, error: hoursError } = await supabaseServer
       .from("missionary_hours")
       .select("*")
@@ -36,16 +45,20 @@ export async function GET(
       .order("period_start_date", { ascending: false });
 
     if (hoursError) {
-      console.error("Fetch hours error:", hoursError);
+      console.error(`[GET /api/missionary/[email]/hours] Failed to fetch hours for missionary ID: ${missionary.id}`, hoursError);
       return NextResponse.json(
         { error: "Failed to fetch hours" },
         { status: 500 }
       );
     }
 
+    const duration = Date.now() - startTime;
+    console.log(`[GET /api/missionary/[email]/hours] Successfully fetched ${hours?.length || 0} hour entries for missionary ID: ${missionary.id} (${duration}ms)`);
+    
     return NextResponse.json({ hours });
   } catch (error) {
-    console.error("Hours API error:", error);
+    const duration = Date.now() - startTime;
+    console.error(`[GET /api/missionary/[email]/hours] Unexpected error after ${duration}ms:`, error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
