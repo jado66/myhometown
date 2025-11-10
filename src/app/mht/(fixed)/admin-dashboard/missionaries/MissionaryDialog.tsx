@@ -348,6 +348,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
         label: `${comm.name}`,
         city: comm.city,
         state: comm.state,
+        city_id: comm.city_id, // Include city_id for automatic assignment
       });
     });
 

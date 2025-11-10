@@ -128,6 +128,10 @@ export const CommunityIdToPasswordHash = {
     name: "Santaquin - Santaquin",
     password: "9433",
   },
+  "dcf35fbc-8053-40fa-b4a4-faaa61e2fbef": {
+    name: "Provo - Provost",
+    password: "2468",
+  },
 };
 
 export const authenticateCity = (city, password) => {

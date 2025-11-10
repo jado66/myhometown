@@ -68,6 +68,7 @@ interface FilterState {
   selectedCityId: string | null;
   selectedCommunityId: string | null;
   personType: "all" | "missionary" | "volunteer";
+  upcomingReleaseDays?: 30 | 60 | 90;
 }
 
 interface UpcomingReleasesProps {

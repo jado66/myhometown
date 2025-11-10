@@ -15,6 +15,7 @@ const CitySelect = ({
   isNewIds = false,
   placeholder = "Select a City",
   height = null,
+  includeNullOption = false,
 }) => {
   const { user } = useUser();
   const { cities, loading } = useManageCities(user);
@@ -28,6 +29,19 @@ const CitySelect = ({
   // Group cities by state for grouped select
   const citySelectOptions = (() => {
     const grouped = {};
+
+    // Add "All Cities" option at the top if includeNullOption is true
+    if (includeNullOption && !isMulti) {
+      grouped["_all"] = [
+        {
+          value: null,
+          label: "All Cities",
+          city: null,
+          state: null,
+        },
+      ];
+    }
+
     (activeCities || []).forEach((city) => {
       const state = city.state || "Unknown";
       if (!grouped[state]) grouped[state] = [];
@@ -38,10 +52,21 @@ const CitySelect = ({
         state: city.state,
       });
     });
-    return Object.entries(grouped).map(([state, cities]) => ({
-      label: state,
-      options: cities,
-    }));
+
+    // Return with "All Cities" first if it exists
+    const entries = Object.entries(grouped);
+    const allEntry = entries.find(([key]) => key === "_all");
+    const otherEntries = entries.filter(([key]) => key !== "_all");
+
+    const result = [
+      ...(allEntry ? [{ label: "", options: allEntry[1] }] : []),
+      ...otherEntries.map(([state, cities]) => ({
+        label: state,
+        options: cities,
+      })),
+    ];
+
+    return result;
   })();
 
   // Helper to flatten grouped options

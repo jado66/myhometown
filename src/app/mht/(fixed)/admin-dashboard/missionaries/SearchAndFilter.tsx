@@ -204,6 +204,7 @@ export function SearchAndFilter({
                     isNewIds={true}
                     placeholder="Filter by City"
                     height="56px"
+                    includeNullOption
                   />
                 </FormControl>
               </Grid>
@@ -224,6 +225,7 @@ export function SearchAndFilter({
                   isNewIds={true}
                   placeholder="Filter by Community"
                   height="56px"
+                  includeNullOption
                 />
               </FormControl>
             </Grid>

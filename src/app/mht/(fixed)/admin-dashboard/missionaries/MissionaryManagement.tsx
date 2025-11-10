@@ -82,6 +82,7 @@ interface FilterState {
   selectedCityId: string | null;
   selectedCommunityId: string | null;
   personType: "all" | "missionary" | "volunteer";
+  upcomingReleaseDays?: 30 | 60 | 90;
 }
 
 interface ImportSummary {
@@ -694,8 +695,7 @@ export default function MissionaryManagement() {
       !selectedCommunityId || missionary.community_id === selectedCommunityId;
 
     const matchesPersonType =
-      personType === "all" ||
-      missionary.person_type === personType;
+      personType === "all" || missionary.person_type === personType;
 
     return (
       matchesSearch &&

@@ -43,6 +43,8 @@ interface FilterState {
   assignmentLevel: "all" | "state" | "city" | "community";
   selectedCityId: string | null;
   selectedCommunityId: string | null;
+  personType: "all" | "missionary" | "volunteer";
+  upcomingReleaseDays?: 30 | 60 | 90;
 }
 
 import type { MissionaryHours } from "@/types/missionary/types";

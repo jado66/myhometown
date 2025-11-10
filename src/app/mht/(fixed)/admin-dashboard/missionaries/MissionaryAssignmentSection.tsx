@@ -141,6 +141,7 @@ const MissionaryAssignmentSection: React.FC<
           label: `${selected.name} (${selected.city}, ${selected.state})`,
           city: selected.city,
           state: selected.state,
+          city_id: selected.city_id, // Include city_id for proper handling
         }
       : null;
   }, [formData.community_id, availableCommunities]);
@@ -364,6 +365,7 @@ const MissionaryAssignmentSection: React.FC<
                   setFormData((prev: any) => ({
                     ...prev,
                     community_id: option?.value || "",
+                    city_id: option?.city_id || "", // Automatically set city_id from community
                   }))
                 }
                 isClearable

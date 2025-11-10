@@ -18,6 +18,7 @@ const CommunitySelect = ({
   isNewIds = false,
   placeholder = "Select a Community",
   height = null,
+  includeNullOption = false,
 }) => {
   const { user } = useUser();
   const { communities, loading } = useCommunities(user);
@@ -31,6 +32,19 @@ const CommunitySelect = ({
   // Group communities by city and state for grouped select
   const communitySelectOptions = (() => {
     const grouped = {};
+
+    // Add "All Communities" option at the top if includeNullOption is true
+    if (includeNullOption && !isMulti) {
+      grouped["_all"] = [
+        {
+          value: null,
+          label: "All Communities",
+          city: null,
+          state: null,
+        },
+      ];
+    }
+
     activeCommunities.forEach((comm, index) => {
       const city = comm.city || "Unknown";
       const state = comm.state || "Unknown";
@@ -44,10 +58,21 @@ const CommunitySelect = ({
         state: comm.state,
       });
     });
-    return Object.entries(grouped).map(([label, communities]) => ({
-      label,
-      options: communities,
-    }));
+
+    // Return with "All Communities" first if it exists
+    const entries = Object.entries(grouped);
+    const allEntry = entries.find(([key]) => key === "_all");
+    const otherEntries = entries.filter(([key]) => key !== "_all");
+
+    const result = [
+      ...(allEntry ? [{ label: "", options: allEntry[1] }] : []),
+      ...otherEntries.map(([label, communities]) => ({
+        label,
+        options: communities,
+      })),
+    ];
+
+    return result;
   })();
 
   // Helper to flatten grouped options
