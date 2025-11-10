@@ -787,8 +787,12 @@ export default function MissionaryManagement() {
         // Updated mapping: Position now reflects missionary.title; Position Detail reflects position_detail
         Position: m.title || "",
         "Position Detail": m.position_detail || "",
-        "Start Date": m.start_date ? new Date(m.start_date).toLocaleDateString('en-US') : "",
-        "End Date": m.end_date ? new Date(m.end_date).toLocaleDateString('en-US') : "",
+        "Start Date": m.start_date
+          ? new Date(m.start_date).toLocaleDateString("en-US")
+          : "",
+        "End Date": m.end_date
+          ? new Date(m.end_date).toLocaleDateString("en-US")
+          : "",
         "Street Address": m.street_address || "",
         City: m.address_city || "",
         State: m.address_state || "",

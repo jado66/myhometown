@@ -38,6 +38,7 @@ import {
   Grid,
   Tooltip,
   Divider,
+  Popover,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -53,6 +54,7 @@ import {
   Schedule as ScheduleIcon,
   CalendarToday as CalendarTodayIcon,
   Help,
+  StickyNote2 as NoteIcon,
 } from "@mui/icons-material";
 
 interface MissionaryListViewProps {
@@ -161,6 +163,10 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedMissionary, setSelectedMissionary] = React.useState<any>(null);
   const [detailsOpen, setDetailsOpen] = React.useState(false);
+  const [noteAnchorEl, setNoteAnchorEl] = React.useState<null | HTMLElement>(
+    null
+  );
+  const [noteForMissionary, setNoteForMissionary] = React.useState<any>(null);
 
   const handleMenuOpen = (
     event: React.MouseEvent<HTMLElement>,
@@ -173,6 +179,19 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
   const handleMenuClose = () => {
     setAnchorEl(null);
     setSelectedMissionary(null);
+  };
+
+  const handleNoteOpen = (
+    event: React.MouseEvent<HTMLElement>,
+    missionary: any
+  ) => {
+    setNoteAnchorEl(event.currentTarget);
+    setNoteForMissionary(missionary);
+  };
+
+  const handleNoteClose = () => {
+    setNoteAnchorEl(null);
+    setNoteForMissionary(null);
   };
 
   const getLocationDisplay = (missionary: any) => {
@@ -224,7 +243,7 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
               <TableCell>Contact</TableCell>
               <TableCell>Type</TableCell>
               <TableCell>Assignment</TableCell>
-              <TableCell>Title/Group</TableCell>
+              <TableCell>Title</TableCell>
               <TableCell>Total Hours</TableCell>
               <TableCell>This Month</TableCell>
               <TableCell>Call/Start Date</TableCell>
@@ -430,11 +449,6 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                       >
                         {missionary.title || "Position not set"}
                       </Typography>
-                      {missionary.group && (
-                        <Typography variant="caption" color="text.secondary">
-                          {missionary.group}
-                        </Typography>
-                      )}
                     </Box>
                   </TableCell>
 
@@ -524,23 +538,43 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                   </TableCell>
 
                   <TableCell align="right">
-                    <Tooltip title="View details">
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "flex-end",
+                        gap: 0.5,
+                      }}
+                    >
+                      {missionary.notes && (
+                        <Tooltip title="View note">
+                          <IconButton
+                            onClick={(e) => handleNoteOpen(e, missionary)}
+                            size="small"
+                            color="primary"
+                          >
+                            <NoteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      <Tooltip title="View details">
+                        <IconButton
+                          onClick={() => {
+                            setSelectedMissionary(missionary);
+                            setDetailsOpen(true);
+                          }}
+                          size="small"
+                        >
+                          <InfoIcon />
+                        </IconButton>
+                      </Tooltip>
                       <IconButton
-                        onClick={() => {
-                          setSelectedMissionary(missionary);
-                          setDetailsOpen(true);
-                        }}
+                        onClick={(e) => handleMenuOpen(e, missionary)}
                         size="small"
                       >
-                        <InfoIcon />
+                        <MoreVertIcon />
                       </IconButton>
-                    </Tooltip>
-                    <IconButton
-                      onClick={(e) => handleMenuOpen(e, missionary)}
-                      size="small"
-                    >
-                      <MoreVertIcon />
-                    </IconButton>
+                    </Box>
                   </TableCell>
                 </TableRow>
               );
@@ -576,6 +610,29 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
           </MenuItem>
         </Menu>
       </TableContainer>
+
+      {/* Note Popover */}
+      <Popover
+        open={Boolean(noteAnchorEl)}
+        anchorEl={noteAnchorEl}
+        onClose={handleNoteClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        PaperProps={{
+          sx: { maxWidth: 300, p: 2 },
+        }}
+      >
+        <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+          Note
+        </Typography>
+        <Typography variant="body2">{noteForMissionary?.notes}</Typography>
+      </Popover>
 
       {/* Details Dialog */}
       <Dialog
