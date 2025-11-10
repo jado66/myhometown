@@ -111,12 +111,12 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
     const legacyId = community._id || community.id;
 
     // Check if user has permission and is assigned to this community
-    const hasPermission = isDaysOfService 
-      ? user?.permissions?.dos_admin 
+    const hasPermission = isDaysOfService
+      ? user?.permissions?.dos_admin
       : user?.permissions?.classes_admin;
-    
+
     const isAssignedToCommunity = user?.communities?.includes(legacyId);
-    
+
     const canSkipAuth = hasPermission && isAssignedToCommunity;
 
     if (isAuthenticated(legacyId, false, isDaysOfService) || canSkipAuth) {

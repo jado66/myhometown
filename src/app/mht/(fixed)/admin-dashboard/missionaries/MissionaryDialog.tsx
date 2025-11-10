@@ -191,7 +191,9 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
   );
 
   const resetFormData = () => {
-    setFormData(initalFormData);
+    setTimeout(() => {
+      setFormData(initalFormData);
+    }, 2000);
   };
 
   useEffect(() => {
