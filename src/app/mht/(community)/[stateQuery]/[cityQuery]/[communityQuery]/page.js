@@ -133,7 +133,7 @@ const Page = ({ params }) => {
     setSelectedImage(null);
   };
 
-  const isShowVolunteerSection = community.isVolunteerSectionVisible === true;
+  const isShowVolunteerSection = community?.isVolunteerSectionVisible === true;
 
   const BreadcrumbSection = () => {
     return (
