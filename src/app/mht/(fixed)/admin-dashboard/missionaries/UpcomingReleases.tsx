@@ -67,6 +67,7 @@ interface FilterState {
   assignmentLevel: "all" | "state" | "city" | "community";
   selectedCityId: string | null;
   selectedCommunityId: string | null;
+  personType: "all" | "missionary" | "volunteer";
 }
 
 interface UpcomingReleasesProps {

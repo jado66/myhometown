@@ -641,6 +641,7 @@ export default function MissionaryManagement() {
   const assignmentLevel = filters.assignmentLevel;
   const selectedCityId = filters.selectedCityId;
   const selectedCommunityId = filters.selectedCommunityId;
+  const personType = filters.personType;
 
   // Fetch missionaries on mount
   useEffect(() => {
@@ -692,12 +693,17 @@ export default function MissionaryManagement() {
     const matchesCommunity =
       !selectedCommunityId || missionary.community_id === selectedCommunityId;
 
+    const matchesPersonType =
+      personType === "all" ||
+      missionary.person_type === personType;
+
     return (
       matchesSearch &&
       matchesStatus &&
       matchesLevel &&
       matchesCity &&
-      matchesCommunity
+      matchesCommunity &&
+      matchesPersonType
     );
   });
 
@@ -710,6 +716,7 @@ export default function MissionaryManagement() {
     assignmentLevel,
     selectedCityId,
     selectedCommunityId,
+    personType,
   ]);
 
   // Ensure page is not out of bounds after filtering
