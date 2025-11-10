@@ -353,17 +353,6 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                         <Typography variant="subtitle2" fontWeight="bold">
                           {missionary.first_name} {missionary.last_name}
                         </Typography>
-                        {missionary.notes && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            noWrap
-                          >
-                            {missionary.notes.length > 50
-                              ? `${missionary.notes.substring(0, 50)}...`
-                              : missionary.notes}
-                          </Typography>
-                        )}
                       </Box>
                     </Box>
                   </TableCell>
