@@ -60,6 +60,10 @@ export const CommunityIdToPasswordHash = {
     name: "Dev - Dev",
     password: "1234",
   },
+  "7d059ebc-78ee-4b47-97ab-276ae480b8de": {
+    name: "Layton - Layton",
+    password: "9786",
+  },
   "a78e8c7c-eca4-4f13-b6c8-e5603d1c36da": {
     name: "Orem - Geneva Heights",
     password: "8631",
@@ -75,6 +79,10 @@ export const CommunityIdToPasswordHash = {
   "7c446e80-323d-4268-b595-6945e915330f": {
     name: "Provo - Dixon",
     password: "1823",
+  },
+  "dcf35fbc-8053-40fa-b4a4-faaa61e2fbef": {
+    name: "Provo - Provost",
+    password: "2468",
   },
   "7c8731bc-1aee-406a-9847-7dc1e5255587": {
     name: "Provo - South Freedom",
@@ -108,10 +116,7 @@ export const CommunityIdToPasswordHash = {
     name: "West Valley City - Central Granger",
     password: "1037",
   },
-  "7d059ebc-78ee-4b47-97ab-276ae480b8de": {
-    name: "Layton - Layton",
-    password: "9786",
-  },
+
   "4687e12e-497f-40a2-ab1b-ab455f250fce": {
     name: "West Valley City - North East Granger",
     password: "6324",
@@ -127,10 +132,6 @@ export const CommunityIdToPasswordHash = {
   "724b1aa6-0950-40ba-9453-cdd80085c5d4": {
     name: "Santaquin - Santaquin",
     password: "9433",
-  },
-  "dcf35fbc-8053-40fa-b4a4-faaa61e2fbef": {
-    name: "Provo - Provost",
-    password: "2468",
   },
 };
 

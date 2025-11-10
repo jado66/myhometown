@@ -110,7 +110,16 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
 
     const legacyId = community._id || community.id;
 
-    if (isAuthenticated(legacyId, false, isDaysOfService)) {
+    // Check if user has permission and is assigned to this community
+    const hasPermission = isDaysOfService 
+      ? user?.permissions?.dos_admin 
+      : user?.permissions?.classes_admin;
+    
+    const isAssignedToCommunity = user?.communities?.includes(legacyId);
+    
+    const canSkipAuth = hasPermission && isAssignedToCommunity;
+
+    if (isAuthenticated(legacyId, false, isDaysOfService) || canSkipAuth) {
       router.push(
         process.env.NEXT_PUBLIC_DOMAIN + `/admin-dashboard/${route}/${legacyId}`
       );
