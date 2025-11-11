@@ -52,6 +52,7 @@ import CarIcon from "@/assets/svg/icons/CarIcon";
 import BikeIcon from "@/assets/svg/icons/BikeIcon";
 import WheelsIcon from "@/assets/svg/icons/WheelsIcon";
 import KnitIcon from "@/assets/svg/icons/KnitIcon";
+import ChessIcon from "@/assets/svg/icons/ChessIcon";
 
 export const ExampleIcons = {
   None: <div style={{ height: "30px", width: "35px" }}> </div>,
@@ -66,6 +67,7 @@ export const ExampleIcons = {
   BrushIcon: <ArtsIcon />,
   TranslateIcon: <LanguageIcon />,
   Bear: <BearIcon />,
+  Chess: <ChessIcon />,
   HomeCare: <HomeCareIcon />,
   MentalHealth: <MentalHealthIcon />,
   Computer: <ComputerIcon />,
