@@ -313,7 +313,7 @@ const Page = () => {
 
           <Grid item xs={12} sx={{ px: 4 }}>
             <Typography variant="h4" sx={{ mt: 4, mb: 2 }} align="center">
-              City Strong Foundation focuses on lifting communities along the
+              Cities Strong Foundation focuses on lifting communities across the
               Wasatch Front.
             </Typography>
           </Grid>
