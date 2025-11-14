@@ -43,6 +43,7 @@ import {
   VisibilityOff,
 } from "@mui/icons-material";
 import { useVolunteerSignups } from "@/hooks/use-volunteer-signups";
+import { useUser } from "@/hooks/use-user";
 import moment from "moment";
 
 const VolunteerSignupsTable = ({ communityFilter = null }) => {
@@ -53,6 +54,7 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [showContacted, setShowContacted] = useState(false);
   const [updatingContact, setUpdatingContact] = useState(null);
+  const { user } = useUser();
 
   const {
     signups: allSignups,
@@ -62,7 +64,7 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
     refetch,
     changePage,
     changeLimit,
-  } = useVolunteerSignups(communityFilter, searchTerm);
+  } = useVolunteerSignups(communityFilter, searchTerm, user);
 
   // Filter signups based on contacted status
   const signups = showContacted

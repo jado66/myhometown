@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 
-export const useVolunteerSignups = (communityId = null, searchTerm = "") => {
+export const useVolunteerSignups = (communityId = null, searchTerm = "", user = null) => {
   const [signups, setSignups] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -16,20 +16,19 @@ export const useVolunteerSignups = (communityId = null, searchTerm = "") => {
       setError(null);
 
       try {
-        const params = new URLSearchParams({
-          page: page.toString(),
-          limit: limit.toString(),
+        const response = await fetch(`/api/volunteer-signup`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ 
+            user,
+            page, 
+            limit,
+            communityId,
+            searchTerm 
+          }),
         });
-
-        if (communityId) {
-          params.append("communityId", communityId);
-        }
-
-        if (searchTerm) {
-          params.append("search", searchTerm);
-        }
-
-        const response = await fetch(`/api/volunteer-signup?${params}`);
         const result = await response.json();
 
         if (!response.ok) {
@@ -52,7 +51,7 @@ export const useVolunteerSignups = (communityId = null, searchTerm = "") => {
         setLoading(false);
       }
     },
-    [communityId, searchTerm]
+    [communityId, searchTerm, user]
   );
 
   useEffect(() => {

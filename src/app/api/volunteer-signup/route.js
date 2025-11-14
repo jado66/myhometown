@@ -108,7 +108,114 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const formData = await request.json();
+    const body = await request.json();
+
+    // Check if this is a fetch request (has user property) or a create request
+    if (body.user !== undefined) {
+      // This is a fetch volunteer signups request
+      const { user, page = 0, limit = 50, communityId, searchTerm } = body;
+
+      let query = supabaseServer
+        .from("volunteer_signups")
+        .select(
+          `
+          *,
+          communities:volunteering_community_id (
+            id,
+            name,
+            city_id,
+            cities:city_id (
+              id,
+              name,
+              state
+            )
+          )
+        `
+        )
+        .order("created_at", { ascending: false });
+
+      // Apply filters based on user's cities and communities
+      if (user) {
+        const userCities = user.cities || [];
+        const userCommunities = user.communities || [];
+
+        // If user has specific cities or communities assigned, filter accordingly
+        if (userCities.length > 0 || userCommunities.length > 0) {
+          // Get communities that belong to user's cities
+          let allowedCommunityIds = [];
+          
+          if (userCommunities.length > 0) {
+            allowedCommunityIds = [...userCommunities];
+          }
+          
+          if (userCities.length > 0) {
+            // Fetch communities that belong to user's cities
+            const { data: cityCommunities } = await supabaseServer
+              .from("communities")
+              .select("id")
+              .in("city_id", userCities);
+            
+            if (cityCommunities) {
+              const cityCommunitiesIds = cityCommunities.map(c => c.id);
+              allowedCommunityIds = [...allowedCommunityIds, ...cityCommunitiesIds];
+            }
+          }
+
+          if (allowedCommunityIds.length > 0) {
+            // Remove duplicates
+            allowedCommunityIds = [...new Set(allowedCommunityIds)];
+            query = query.in("volunteering_community_id", allowedCommunityIds);
+          }
+        }
+        // If user has no cities or communities, they can see all (admin behavior)
+      }
+
+      // Filter by community if specified (additional filter on top of user permissions)
+      if (communityId) {
+        query = query.eq("volunteering_community_id", communityId);
+      }
+
+      // Search filter
+      if (searchTerm) {
+        query = query.or(
+          `first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`
+        );
+      }
+
+      // Apply pagination
+      const from = page * limit;
+      const to = from + limit - 1;
+      query = query.range(from, to);
+
+      const { data: signups, error, count } = await query;
+
+      if (error) {
+        console.error("Fetch volunteer signups error:", error);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            message: "Failed to fetch volunteer signups",
+          }),
+          { status: 500 }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: signups || [],
+          pagination: {
+            page,
+            limit,
+            total: count,
+          },
+        }),
+        { status: 200 }
+      );
+    }
+
+    // Otherwise, this is a create volunteer signup request
+    const formData = body;
 
     // Validate required fields
     const requiredFields = [

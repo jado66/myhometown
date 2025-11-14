@@ -22,10 +22,24 @@ export const pages = () => {
           href: rootUrl + "/admin-dashboard/communities",
           requiredPermission: "content_development",
         },
+      ],
+    },
+    {
+      title: "Missionaries & Volunteers",
+      id: "missionary-volunteer-pages",
+      pages: [
         {
-          title: "Missionaries & Volunteers",
+          title: "Missionaries & Volunteer Roster",
           href: rootUrl + "/admin-dashboard/missionaries",
           requiredPermission: "missionary_volunteer_management",
+        },
+        {
+          title: "Missionary Hours",
+          href: rootUrl + "/admin-dashboard/missionary-hours",
+        },
+        {
+          title: "Volunteer Hours",
+          href: rootUrl + "/admin-dashboard/volunteer-hours",
         },
       ],
     },
