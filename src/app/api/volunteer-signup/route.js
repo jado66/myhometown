@@ -143,21 +143,24 @@ export async function POST(request) {
         if (userCities.length > 0 || userCommunities.length > 0) {
           // Get communities that belong to user's cities
           let allowedCommunityIds = [];
-          
+
           if (userCommunities.length > 0) {
             allowedCommunityIds = [...userCommunities];
           }
-          
+
           if (userCities.length > 0) {
             // Fetch communities that belong to user's cities
             const { data: cityCommunities } = await supabaseServer
               .from("communities")
               .select("id")
               .in("city_id", userCities);
-            
+
             if (cityCommunities) {
-              const cityCommunitiesIds = cityCommunities.map(c => c.id);
-              allowedCommunityIds = [...allowedCommunityIds, ...cityCommunitiesIds];
+              const cityCommunitiesIds = cityCommunities.map((c) => c.id);
+              allowedCommunityIds = [
+                ...allowedCommunityIds,
+                ...cityCommunitiesIds,
+              ];
             }
           }
 

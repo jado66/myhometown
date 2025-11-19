@@ -89,6 +89,14 @@ const AdminDashboardPages = () => {
                 //   href: "/admin-dashboard/volunteer-hours",
                 // },
                 {
+                  title: "Missionaries & Volunteers Management",
+                  subtitle:
+                    "Manage your missionaries & volunteers. Add, remove, or edit missionary information.",
+                  media: "/admin-icons/missionary-management.png",
+                  href: "/admin-dashboard",
+                  requiredPermission: "missionary_volunteer_management",
+                },
+                {
                   title: "Content Management & Global Admin",
                   subtitle:
                     "Manage city and community pages, classes, texting and communications, or global management.",

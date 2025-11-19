@@ -166,7 +166,7 @@ export function SearchAndFilter({
               variant="outlined"
               value={filters.searchTerm}
               onChange={(e) => updateFilter("searchTerm", e.target.value)}
-              placeholder="Search by name, email, or title..."
+              placeholder="Search by name, email, title, or position detail..."
               InputProps={{
                 startAdornment: (
                   <SearchIcon sx={{ mr: 1, color: "action.active" }} />
@@ -310,54 +310,52 @@ export function SearchAndFilter({
         )}
 
         {/* Assignment Level Selection */}
-        {/* <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Assignment Level
-          </Typography>
+        <Box sx={{ mb: 3 }}>
           <RadioGroup
             value={filters.assignmentLevel}
             onChange={(e) => updateFilter("assignmentLevel", e.target.value)}
             row
           >
-            <Grid container spacing={2}>
+            <Grid container spacing={3}>
               {[
                 {
                   value: "all",
                   label: "All Levels",
-                  icon: Person,
+
                   description: "Show all missionaries",
                 },
                 {
                   value: "state",
                   label: "State Level",
-                  icon: Business,
+
                   description: "Utah state-wide assignments",
                 },
                 {
                   value: "city",
                   label: "City Level",
-                  icon: LocationCity,
+
                   description: "City-specific assignments",
                 },
                 {
                   value: "community",
                   label: "Community Level",
-                  icon: Group,
+
                   description: "Community assignments",
                 },
               ].map((level) => {
-                const Icon = level.icon;
                 const isSelected = filters.assignmentLevel === level.value;
                 return (
                   <Grid item xs={12} md={3} key={level.value}>
                     <Card
                       sx={{
-                        p: 2,
+                        p: 1,
+                        pl: 2,
                         cursor: "pointer",
-                        border: 2,
+                        border: 1,
                         borderColor: isSelected ? "primary.main" : "grey.300",
                         "&:hover": { borderColor: "primary.main" },
                       }}
+                      elevation={0}
                       onClick={() =>
                         updateFilter("assignmentLevel", level.value)
                       }
@@ -373,16 +371,9 @@ export function SearchAndFilter({
                               gap: 1,
                             }}
                           >
-                            <Icon />
                             <Box>
-                              <Typography variant="subtitle1" fontWeight="bold">
+                              <Typography variant="subtitle1">
                                 {level.label}
-                              </Typography>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                {level.description}
                               </Typography>
                             </Box>
                           </Box>
@@ -394,7 +385,7 @@ export function SearchAndFilter({
               })}
             </Grid>
           </RadioGroup>
-        </Box> */}
+        </Box>
 
         {/* City and Community Selection */}
         {(filters.assignmentLevel === "city" ||

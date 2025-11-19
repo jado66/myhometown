@@ -243,9 +243,9 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
               <TableCell>Contact</TableCell>
               <TableCell>Type</TableCell>
               <TableCell>Assignment</TableCell>
-              <TableCell>Title</TableCell>
-              <TableCell>Total Hours</TableCell>
-              <TableCell>This Month</TableCell>
+              <TableCell>Position</TableCell>
+              <TableCell>Position Detail</TableCell>
+              <TableCell>Hours (Month/Total)</TableCell>
               <TableCell>Call/Start Date</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
@@ -256,7 +256,7 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
               return (
                 <TableRow key={missionary.id} hover>
                   {/* Error/Warning column */}
-                  <TableCell sx={{ width: 56 }}>
+                  <TableCell sx={{ pl: 1, pr: 0 }}>
                     {/* Error icon if no hours entries */}
                     {!hoursData.hasEntries && showNoHoursWarning && (
                       <Tooltip title="No hours logged this month">
@@ -412,14 +412,14 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                       )}
                     </Box>
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ minWidth: 150 }}>
                     <Box
                       sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
                     >
                       <LocationOnIcon
                         sx={{ fontSize: 14, color: "text.secondary" }}
                       />
-                      <Typography variant="body2" noWrap>
+                      <Typography variant="body2">
                         {getLocationDisplay(missionary)}
                       </Typography>
                     </Box>
@@ -434,6 +434,7 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                           opacity: missionary.title ? 1 : 0.6,
                           fontStyle: missionary.title ? "normal" : "italic",
                           color: missionary.title ? "inherit" : "warning.main",
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {missionary.title || "Position not set"}
@@ -442,22 +443,16 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                   </TableCell>
 
                   <TableCell>
-                    <Box
-                      sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                    >
-                      <ScheduleIcon
-                        sx={{ fontSize: 14, color: "text.secondary" }}
-                      />
+                    <Box>
                       <Typography
                         variant="body2"
                         fontWeight="medium"
-                        color={
-                          hoursData.totalHours > 0
-                            ? "primary.main"
-                            : "text.secondary"
-                        }
+                        sx={{
+                          opacity: missionary.position_detail ? 1 : 0.6,
+                          fontStyle: "normal",
+                        }}
                       >
-                        {hoursData.totalHours}h
+                        {missionary.position_detail}
                       </Typography>
                     </Box>
                   </TableCell>
@@ -469,16 +464,14 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                       <ScheduleIcon
                         sx={{ fontSize: 14, color: "text.secondary" }}
                       />
-                      <Typography
-                        variant="body2"
-                        fontWeight="medium"
-                        color={
-                          hoursData.currentMonthHours > 0
-                            ? "secondary.main"
-                            : "text.secondary"
-                        }
-                      >
-                        {hoursData.currentMonthHours}h
+                      <Typography variant="body2" fontWeight="medium">
+                        <Box component="span" color="secondary.main">
+                          {hoursData.currentMonthHours}h
+                        </Box>
+                        {" / "}
+                        <Box component="span" color="primary.main">
+                          {hoursData.totalHours}h
+                        </Box>
                       </Typography>
                     </Box>
                   </TableCell>

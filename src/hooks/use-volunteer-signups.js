@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 
-export const useVolunteerSignups = (communityId = null, searchTerm = "", user = null) => {
+export const useVolunteerSignups = (
+  communityId = null,
+  searchTerm = "",
+  user = null
+) => {
   const [signups, setSignups] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -21,12 +25,12 @@ export const useVolunteerSignups = (communityId = null, searchTerm = "", user = 
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             user,
-            page, 
+            page,
             limit,
             communityId,
-            searchTerm 
+            searchTerm,
           }),
         });
         const result = await response.json();

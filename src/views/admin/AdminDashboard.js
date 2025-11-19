@@ -138,7 +138,7 @@ const AdminDashboardPages = () => {
                 {
                   title: "Missionaries & Volunteers Management",
                   subtitle:
-                    "Manage your missionaries. Add, remove, or edit missionary information. Log their service hours and track your progress.",
+                    "Manage your missionaries & volunteers. Add, remove, or edit missionary information.",
                   media: "/admin-icons/missionary-management.png",
                   href: rootUrl + "/admin-dashboard/missionaries",
                   requiredPermission: "missionary_volunteer_management",

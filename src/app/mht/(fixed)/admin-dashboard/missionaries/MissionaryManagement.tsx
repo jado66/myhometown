@@ -677,6 +677,9 @@ export default function MissionaryManagement() {
       (missionary.title || "")
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
+      (missionary.position_detail || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       (missionary.group || "").toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
@@ -1077,6 +1080,39 @@ export default function MissionaryManagement() {
             <Tabs
               value={tabValue}
               onChange={(e, newValue) => setTabValue(newValue)}
+              sx={{
+                backgroundColor: "#f5f5f5",
+                borderBottom: "2px solid #e0e0e0",
+                "& .MuiTab-root": {
+                  fontSize: "1.1rem",
+                  fontWeight: 600,
+                  minHeight: "64px",
+                  py: 2,
+
+                  textTransform: "none",
+                  borderTopLeftRadius: "8px",
+                  borderTopRightRadius: "8px",
+                  marginRight: "4px",
+                  backgroundColor: "#e8e8e8",
+                  color: "#666",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    backgroundColor: "#d8d8d8",
+                  },
+                  "&.Mui-selected": {
+                    backgroundColor: "#fff",
+                    color: "primary.main",
+                    fontWeight: 700,
+                    borderTop: "3px solid",
+                    borderTopColor: "primary.main",
+                    borderLeft: "1px solid #e0e0e0",
+                    borderRight: "1px solid #e0e0e0",
+                  },
+                },
+                "& .MuiTabs-indicator": {
+                  display: "none",
+                },
+              }}
             >
               <Tab label="Missionaries & Volunteers Roster" />
               <Tab label="Hours Overview" />
