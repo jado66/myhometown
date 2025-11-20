@@ -264,29 +264,41 @@ export async function POST(request: NextRequest) {
     // Build duplicates array without relying on iterator protocol (for older TS targets)
     // Include both email and name for better UX
     const duplicatesMap = new Map<string, { email: string; name: string }>();
-    
+
     // Collect duplicates from payload
     for (let i = 0; i < missionaries.length; i++) {
       const rs = recordStatuses[i];
-      if (rs.email && duplicateInPayload.has(rs.email) && !duplicatesMap.has(rs.email)) {
+      if (
+        rs.email &&
+        duplicateInPayload.has(rs.email) &&
+        !duplicatesMap.has(rs.email)
+      ) {
         duplicatesMap.set(rs.email, {
           email: rs.email,
-          name: `${missionaries[i].first_name || ''} ${missionaries[i].last_name || ''}`.trim()
+          name: `${missionaries[i].first_name || ""} ${
+            missionaries[i].last_name || ""
+          }`.trim(),
         });
       }
     }
-    
+
     // Collect duplicates from existing records
     for (let i = 0; i < missionaries.length; i++) {
       const rs = recordStatuses[i];
-      if (rs.email && existingEmailSet.has(rs.email) && !duplicatesMap.has(rs.email)) {
+      if (
+        rs.email &&
+        existingEmailSet.has(rs.email) &&
+        !duplicatesMap.has(rs.email)
+      ) {
         duplicatesMap.set(rs.email, {
           email: rs.email,
-          name: `${missionaries[i].first_name || ''} ${missionaries[i].last_name || ''}`.trim()
+          name: `${missionaries[i].first_name || ""} ${
+            missionaries[i].last_name || ""
+          }`.trim(),
         });
       }
     }
-    
+
     const duplicates = Array.from(duplicatesMap.values());
 
     // Mark duplicates existing

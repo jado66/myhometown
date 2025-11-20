@@ -147,7 +147,7 @@ export function EditClassSignupForm({
           <TextField
             fullWidth
             multiline
-            rows={3}
+            rows={10}
             label="Class Introduction"
             value={classConfig.description}
             onChange={(e) =>

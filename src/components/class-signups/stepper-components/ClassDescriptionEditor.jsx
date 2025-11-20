@@ -146,7 +146,7 @@ export function ClassDescriptionEditor({ CategorySelectOptions, isEdit }) {
       <TextField
         fullWidth
         multiline
-        rows={3}
+        rows={10}
         label="Class Introduction"
         value={classConfig.description}
         onChange={(e) => handleClassConfigChange("description", e.target.value)}

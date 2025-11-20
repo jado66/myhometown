@@ -455,11 +455,19 @@ export function ClassSignupProvider({
           formConfig,
           fieldOrder,
         });
+        // Clear the cache for this class so it gets fresh data on next load
+        if (loadedClassesContext && classConfig.id) {
+          loadedClassesContext.clearClassCache(classConfig.id);
+        }
       } else {
-        await onCreateSubclass(classConfig, {
+        const result = await onCreateSubclass(classConfig, {
           formConfig,
           fieldOrder,
         });
+        // Clear cache for newly created class if it has an ID
+        if (loadedClassesContext && result?.id) {
+          loadedClassesContext.clearClassCache(result.id);
+        }
       }
 
       return true;
@@ -480,6 +488,10 @@ export function ClassSignupProvider({
     if (!classConfig.id) return;
     try {
       await onDeleteSubclass(classConfig.id);
+      // Clear the cache for this deleted class
+      if (loadedClassesContext && classConfig.id) {
+        loadedClassesContext.clearClassCache(classConfig.id);
+      }
     } catch (error) {
       console.error("Failed to delete class", error);
       throw error;
