@@ -13,12 +13,13 @@ import Loading from "@/components/util/Loading";
 import NextLink from "next/link";
 import PermissionGuard from "@/guards/permission-guard";
 import { ShowIfAuthenticatedOnce } from "@/guards/withAuthenticatedOnce";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import DevEnvGuard from "@/guards/dev-env-guard";
 import UserGuard from "@/guards/user-guard";
 
 const AdminDashboardPages = () => {
   const theme = useTheme();
+  const searchParams = useSearchParams();
 
   const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
 
@@ -93,7 +94,7 @@ const AdminDashboardPages = () => {
                   subtitle:
                     "Manage your missionaries & volunteers. Add, remove, or edit missionary information.",
                   media: "/admin-icons/missionary-management.png",
-                  href: "/admin-dashboard",
+                  href: "/admin-dashboard/missionaries",
                   requiredPermission: "missionary_volunteer_management",
                 },
                 {
@@ -104,7 +105,11 @@ const AdminDashboardPages = () => {
                   href: "/admin-dashboard",
                 },
               ].map((item, i) => (
-                <AdminDashboardCard item={item} i={i} />
+                <AdminDashboardCard
+                  item={item}
+                  i={i}
+                  returnTo={searchParams.get("returnTo")}
+                />
               ))}
 
               {/* Design Hub - only show if they've authenticated previously */}
@@ -118,6 +123,7 @@ const AdminDashboardPages = () => {
                     href: "/admin-dashboard/design-hub",
                   }}
                   i={999}
+                  returnTo={searchParams.get("returnTo")}
                 />
               </ShowIfAuthenticatedOnce>
             </Grid>
@@ -130,14 +136,26 @@ const AdminDashboardPages = () => {
 
 export default AdminDashboardPages;
 
-const AdminDashboardCard = ({ item, i }) => {
+const AdminDashboardCard = ({ item, i, returnTo }) => {
   const theme = useTheme();
 
   const router = useRouter();
 
   const onClick = () => {
     const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
-    router.push(rootUrl + item.href);
+    const targetUrl = rootUrl + item.href;
+
+    // If there's a returnTo parameter and it starts with this card's target path,
+    // redirect to the specific returnTo URL
+    if (returnTo) {
+      const decodedReturnTo = decodeURIComponent(returnTo);
+      if (decodedReturnTo.includes(item.href)) {
+        router.push(decodedReturnTo);
+        return;
+      }
+    }
+
+    router.push(targetUrl);
   };
 
   return (

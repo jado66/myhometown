@@ -87,7 +87,7 @@ interface FilterState {
 
 interface ImportSummary {
   success: number;
-  duplicates: string[];
+  duplicates: { email: string; name: string }[];
   failed: { email: string; reason: string }[];
 }
 
@@ -225,14 +225,14 @@ export default function MissionaryManagement() {
       const person_type_raw = (
         row["Type"] || // preferred header
         row["Person Type"] || // fallback header name
-        "missionary"
-      ) // default if omitted
+        ""
+      ) // no default - now required
         .toLowerCase()
         .trim();
-      if (
-        person_type_raw &&
-        !["missionary", "volunteer"].includes(person_type_raw)
-      ) {
+      // Type is now required
+      if (!person_type_raw) {
+        errors.push(`Row ${rowNum}: Type is required.`);
+      } else if (!["missionary", "volunteer"].includes(person_type_raw)) {
         errors.push(
           `Row ${rowNum}: Type must be one of missionary, volunteer.`
         );
@@ -264,6 +264,10 @@ export default function MissionaryManagement() {
         errors.push(`Row ${rowNum}: Duplicate email '${email}'.`);
       if (email) emailSet.add(email);
 
+      // Phone is now required
+      const phone = row["Phone"] || "";
+      if (!phone) errors.push(`Row ${rowNum}: Phone is required.`);
+
       if (
         !assignment_status_raw ||
         !["active", "inactive", "pending"].includes(assignment_status_raw)
@@ -273,24 +277,26 @@ export default function MissionaryManagement() {
         );
       }
 
+      // Level is now required
       if (
-        assignment_level_raw &&
+        !assignment_level_raw ||
         !["state", "city", "community"].includes(assignment_level_raw)
       ) {
         errors.push(
-          `Row ${rowNum}: Level must be one of state, city, community.`
+          `Row ${rowNum}: Level is required and must be one of state, city, community.`
         );
+      }
+
+      // Assignment is now always required (regardless of level)
+      if (!assignmentName) {
+        errors.push(`Row ${rowNum}: Assignment is required.`);
       }
 
       // Assignment resolution (populate IDs based on provided names)
       let city_id: string | null = null;
       let community_id: string | null = null;
       if (assignment_level_raw === "city") {
-        if (!assignmentName) {
-          errors.push(
-            `Row ${rowNum}: Assignment (City name) is required for Level 'city'.`
-          );
-        } else {
+        if (assignmentName) {
           const city = cities.find((c) => ciEquals(c.name, assignmentName));
           if (!city) {
             errors.push(`Row ${rowNum}: City '${assignmentName}' not found.`);
@@ -299,11 +305,7 @@ export default function MissionaryManagement() {
           }
         }
       } else if (assignment_level_raw === "community") {
-        if (!assignmentName) {
-          errors.push(
-            `Row ${rowNum}: Assignment (Community name) is required for Level 'community'.`
-          );
-        } else {
+        if (assignmentName) {
           // Find all communities matching the given name (case-insensitive)
           const matchingCommunities = communities.filter((c) =>
             ciEquals(c.name, assignmentName)
@@ -371,9 +373,8 @@ export default function MissionaryManagement() {
           }
         }
       } else if (assignment_level_raw === "state") {
-        // For state level we now REQUIRE the Assignment column to be 'Utah'
-        // (case-insensitive). Any other value (including blank) is invalid.
-        if (!assignmentName || assignmentName.toLowerCase() !== "utah") {
+        // For state level, Assignment must be 'Utah' (case-insensitive)
+        if (assignmentName && assignmentName.toLowerCase() !== "utah") {
           errors.push(
             `Row ${rowNum}: Assignment must be 'Utah' for Level 'state'.`
           );
@@ -423,19 +424,25 @@ export default function MissionaryManagement() {
           : row["Address State"] || "";
         const stake_name = row["Home Stake"] || row["Stake Name"] || "";
         const gender = (row["Gender"] || "").toLowerCase().trim();
+        const position = row["Position"] || row["Title"] || "";
+
+        // Position is now required
+        if (!position) {
+          errors.push(`Row ${rowNum}: Position is required.`);
+        }
 
         valid.push({
           first_name,
           last_name,
           email,
-          contact_number: row["Phone"] || "",
+          contact_number: phone,
           assignment_status,
           assignment_level,
           city_id,
           community_id,
           // Position column should map to the database 'title' field; keep group strictly from 'Group'
           group: row["Group"] || "",
-          title: row["Position"] || row["Title"] || "",
+          title: position,
           position_detail: row["Position Detail"] || "",
           start_date,
           end_date,
@@ -463,6 +470,8 @@ export default function MissionaryManagement() {
     setImportFile(file);
     setImportError(null);
     setImportResults({ valid: [], errors: [] });
+    setImportSummary({ success: 0, duplicates: [], failed: [] });
+    setImporting(false);
 
     if (!file) return;
 
@@ -546,6 +555,7 @@ export default function MissionaryManagement() {
     if (!importResults.valid.length) return;
 
     setImporting(true);
+    setImportSummary({ success: 0, duplicates: [], failed: [] });
 
     const summary: ImportSummary = { success: 0, duplicates: [], failed: [] };
 

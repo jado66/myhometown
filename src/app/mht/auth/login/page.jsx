@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { supabase } from "@/util/supabase";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -25,6 +25,7 @@ const LoginPage = () => {
   const [mounted, setMounted] = useState(false);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Add useEffect to handle client-side mounting
   useEffect(() => {
@@ -47,7 +48,12 @@ const LoginPage = () => {
         throw error;
       }
 
-      router.push(process.env.NEXT_PUBLIC_DOMAIN + "/admin-dashboard");
+      const returnTo = searchParams.get("returnTo");
+      const redirectUrl = returnTo
+        ? decodeURIComponent(returnTo)
+        : process.env.NEXT_PUBLIC_DOMAIN + "/admin-dashboard";
+
+      router.push(redirectUrl);
     } catch (error) {
       setError(error.message);
     }
