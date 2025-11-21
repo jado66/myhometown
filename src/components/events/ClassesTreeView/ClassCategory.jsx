@@ -240,6 +240,7 @@ export const ClassCategory = ({
           formConfig: rest.signupForm?.formConfig || {},
           fieldOrder: rest.signupForm?.fieldOrder || [],
         },
+        attendance: [],
       };
 
       console.log(
