@@ -10,6 +10,11 @@ export async function GET(
     `[GET /api/missionary/[email]/hours] Request started for email: ${params.email}`
   );
 
+  console.log("[GET /api/missionary/[email]/hours] Env debug", {
+    NODE_ENV: process.env.NODE_ENV,
+    SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
+  });
+
   try {
     const email = params.email;
     if (!email) {
@@ -67,6 +72,15 @@ export async function GET(
         { status: 500 }
       );
     }
+
+    console.log(
+      `[GET /api/missionary/[email]/hours] Raw hours result for missionary ID: ${missionary.id}`,
+      {
+        count: hours?.length || 0,
+        ids: hours?.map((h: any) => h.id),
+        created_at: hours?.map((h: any) => h.created_at),
+      }
+    );
 
     const duration = Date.now() - startTime;
     console.log(

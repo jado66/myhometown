@@ -29,8 +29,7 @@ export async function PUT(
 
   const totalHoursFromActivities = Array.isArray(body.activities)
     ? body.activities.reduce(
-        (sum: number, act: { hours: number }) =>
-          sum + (Number(act.hours) || 0),
+        (sum: number, act: { hours: number }) => sum + (Number(act.hours) || 0),
         0
       )
     : 0;
