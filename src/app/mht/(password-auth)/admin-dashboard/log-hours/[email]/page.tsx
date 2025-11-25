@@ -314,7 +314,7 @@ export default function MissionaryDashboard({
           <Person sx={{ mr: 2, color: "primary.main" }} />
           <Box sx={{ flexGrow: 1 }}>
             <Typography variant="h5" component="h1" fontWeight="bold">
-              Missionary Hours
+              Log Service Hours
             </Typography>
             <Typography variant="body1" color="text.secondary">
               Welcome back, {email}!

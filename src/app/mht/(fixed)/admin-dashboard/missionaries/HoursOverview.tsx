@@ -68,6 +68,7 @@ export function HoursOverview({
   onFiltersChange,
 }: HoursOverviewProps) {
   const [activeTab, setActiveTab] = useState(0);
+  const currentYear = new Date().getFullYear();
 
   // Calculate hours stats based on filtered missionaries
   const filteredHours = useMemo(() => {
@@ -108,6 +109,49 @@ export function HoursOverview({
         .length,
       monthlyEntries: filteredHours.filter((h) => h.entry_method === "monthly")
         .length,
+    };
+  }, [filteredHours]);
+
+  const categoryStats = useMemo(() => {
+    let totalCRC = 0;
+    let totalDOS = 0;
+    let totalAdmin = 0;
+    let monthCRC = 0;
+    let monthDOS = 0;
+    let monthAdmin = 0;
+
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    for (const h of filteredHours) {
+      const periodDate = new Date(h.period_start_date);
+      for (const a of h.activities || []) {
+        if (!a || !a.category || !a.hours) continue;
+        const hrs = a.hours;
+        switch (a.category) {
+          case "crc":
+            totalCRC += hrs;
+            if (periodDate >= monthStart) monthCRC += hrs;
+            break;
+          case "dos":
+            totalDOS += hrs;
+            if (periodDate >= monthStart) monthDOS += hrs;
+            break;
+          case "administrative":
+            totalAdmin += hrs;
+            if (periodDate >= monthStart) monthAdmin += hrs;
+            break;
+        }
+      }
+    }
+
+    return {
+      totalCRC,
+      totalDOS,
+      totalAdmin,
+      monthCRC,
+      monthDOS,
+      monthAdmin,
     };
   }, [filteredHours]);
 
@@ -155,28 +199,52 @@ export function HoursOverview({
       <AggregateStats
         cards={[
           {
-            label: "Total Hours",
+            label: `Total Hours (${currentYear})`,
             value: hoursStats.total,
             color: "primary.main",
             icon: <Schedule sx={{ color: "#fff" }} />,
           },
           {
-            label: "Active Missionaries & Volunteers ",
-            value: hoursStats.activeMissionaries,
-            color: "success.main",
-            icon: <Person sx={{ color: "#fff" }} />,
+            label: `Total CRC Hours (${currentYear})`,
+            value: categoryStats.totalCRC,
+            color: "primary.main",
+            icon: <BarChartIcon sx={{ color: "#fff" }} />,
           },
           {
-            label: "Avg Hours/Missionary",
-            value: hoursStats.averagePerMissionary,
-            color: "info.main",
-            icon: <TrendingUp sx={{ color: "#fff" }} />,
+            label: `Total DOS Hours (${currentYear})`,
+            value: categoryStats.totalDOS,
+            color: "primary.main",
+            icon: <Analytics sx={{ color: "#fff" }} />,
           },
           {
-            label: "This Month",
+            label: `Total Administrative Hours (${currentYear})`,
+            value: categoryStats.totalAdmin,
+            color: "primary.main",
+            icon: <TableChart sx={{ color: "#fff" }} />,
+          },
+          {
+            label: "This Month Hours",
             value: hoursStats.thisMonth,
-            color: "warning.main",
+            color: "primary.main",
             icon: <Schedule sx={{ color: "#fff" }} />,
+          },
+          {
+            label: "This Month CRC",
+            value: categoryStats.monthCRC,
+            color: "primary.main",
+            icon: <BarChartIcon sx={{ color: "#fff" }} />,
+          },
+          {
+            label: "This Month DOS",
+            value: categoryStats.monthDOS,
+            color: "primary.main",
+            icon: <Analytics sx={{ color: "#fff" }} />,
+          },
+          {
+            label: "This Month Administrative",
+            value: categoryStats.monthAdmin,
+            color: "primary.main",
+            icon: <TableChart sx={{ color: "#fff" }} />,
           },
         ]}
       />

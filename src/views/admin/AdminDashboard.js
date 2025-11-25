@@ -144,18 +144,10 @@ const AdminDashboardPages = () => {
                   requiredPermission: "missionary_volunteer_management",
                 },
                 {
-                  title: "Missionary Hours",
-                  subtitle:
-                    "View and manage your missionary hours. Track your service hours and progress.",
+                  title: "Enter Missionary & Volunteers Hours",
+                  subtitle: "View and manage your service hours.",
                   media: "/admin-icons/missionary-logs.png",
-                  href: rootUrl + "/admin-dashboard/missionary-hours",
-                },
-                {
-                  title: "Volunteer Hours",
-                  subtitle:
-                    "View and manage your volunteer hours. Track your service hours and progress.",
-                  media: "/admin-icons/missionary-logs.png",
-                  href: rootUrl + "/admin-dashboard/volunteer-hours",
+                  href: rootUrl + "/admin-dashboard/log-hours",
                 },
               ].map((item, i) => (
                 <PermissionGuard

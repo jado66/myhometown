@@ -27,12 +27,20 @@ export async function PUT(
   const { id } = params;
   const body = await request.json();
 
+  const totalHoursFromActivities = Array.isArray(body.activities)
+    ? body.activities.reduce(
+        (sum: number, act: { hours: number }) =>
+          sum + (Number(act.hours) || 0),
+        0
+      )
+    : 0;
+
   const { data, error } = await supabaseServer
     .from("missionary_hours")
     .update({
       entry_method: body.entryMethod,
-      period_start_date: body.periodStartDate,
-      total_hours: body.totalHours,
+      period_start_date: body.period_start_date,
+      total_hours: totalHoursFromActivities,
       activities: body.activities, // This is the JSONB field
       location: body.location || null,
     })

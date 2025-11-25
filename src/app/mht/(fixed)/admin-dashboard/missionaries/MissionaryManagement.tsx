@@ -416,12 +416,14 @@ export default function MissionaryManagement() {
         }
 
         // Address fields: new format uses City/State for address; legacy uses Address City/Address State
+        const street_address = row["Street Address"] || "";
         const address_city = isNewFormat
           ? row["City"] || ""
           : row["Address City"] || "";
         const address_state = isNewFormat
           ? row["State"] || ""
           : row["Address State"] || "";
+        const zip_code = row["Zip Code"] || "";
         const stake_name = row["Home Stake"] || row["Stake Name"] || "";
         const gender = (row["Gender"] || "").toLowerCase().trim();
         const position = row["Position"] || row["Title"] || "";
@@ -429,6 +431,20 @@ export default function MissionaryManagement() {
         // Position is now required
         if (!position) {
           errors.push(`Row ${rowNum}: Position is required.`);
+        }
+
+        // Address fields are now required
+        if (!street_address) {
+          errors.push(`Row ${rowNum}: Street Address is required.`);
+        }
+        if (!address_city) {
+          errors.push(`Row ${rowNum}: City is required.`);
+        }
+        if (!address_state) {
+          errors.push(`Row ${rowNum}: State is required.`);
+        }
+        if (!zip_code) {
+          errors.push(`Row ${rowNum}: Zip Code is required.`);
         }
 
         valid.push({
@@ -447,10 +463,10 @@ export default function MissionaryManagement() {
           start_date,
           end_date,
           duration,
-          street_address: row["Street Address"] || "",
+          street_address,
           address_city,
           address_state,
-          zip_code: row["Zip Code"] || "",
+          zip_code,
           stake_name,
           notes: row["Notes"] || "",
           person_type: person_type_raw || "missionary",

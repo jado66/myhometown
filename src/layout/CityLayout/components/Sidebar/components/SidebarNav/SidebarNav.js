@@ -222,7 +222,7 @@ const SidebarNav = ({ onClose }) => {
                 </Typography>
               </NextLink>
               <NextLink
-                href={rootUrl + "/admin-dashboard/missionary-hours"}
+                href={rootUrl + "/admin-dashboard/log-hours"}
                 style={{ textDecoration: "none", color: "#686868" }}
               >
                 <Typography
