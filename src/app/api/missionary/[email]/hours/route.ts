@@ -1,6 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/util/supabaseServer";
 
+// Add these lines to disable caching
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { email: string } }
@@ -12,7 +16,8 @@ export async function GET(
 
   console.log("[GET /api/missionary/[email]/hours] Env debug", {
     NODE_ENV: process.env.NODE_ENV,
-    SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
+    SUPABASE_URL:
+      process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
   });
 
   try {
