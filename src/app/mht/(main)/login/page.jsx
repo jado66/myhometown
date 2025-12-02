@@ -75,20 +75,14 @@ const AdminDashboardPages = () => {
                   href: "/admin-dashboard/days-of-service",
                 },
 
-                // {
-                //   title: "Missionary Hours",
-                //   subtitle:
-                //     "View and manage your missionary hours. Track your service hours and progress.",
-                //   media: "/admin-icons/missionary-logs.png",
-                //   href: "/admin-dashboard/missionary-hours",
-                // },
-                // {
-                //   title: "Volunteer Hours",
-                //   subtitle:
-                //     "View and manage your volunteer hours. Track your service hours and progress.",
-                //   media: "/admin-icons/missionary-logs.png",
-                //   href: "/admin-dashboard/volunteer-hours",
-                // },
+                {
+                  title: "Missionary & Volunteer",
+                  subtitle:
+                    "View and manage your missionary & volunteer hours. Track your service hours and progress.",
+                  media: "/admin-icons/missionary-logs.png",
+                  href: "/admin-dashboard/log-hours",
+                },
+
                 {
                   title: "Missionaries & Volunteers Management",
                   subtitle:
