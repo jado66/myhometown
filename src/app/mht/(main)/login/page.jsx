@@ -76,7 +76,7 @@ const AdminDashboardPages = () => {
                 },
 
                 {
-                  title: "Missionary & Volunteer",
+                  title: "Log Service Hours",
                   subtitle:
                     "View and manage your missionary & volunteer hours. Track your service hours and progress.",
                   media: "/admin-icons/missionary-logs.png",

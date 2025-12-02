@@ -34,7 +34,7 @@ export const pages = () => {
           requiredPermission: "missionary_volunteer_management",
         },
         {
-          title: "Missionary & Volunteer Hours",
+          title: "Log Service Hours",
           href: rootUrl + "/admin-dashboard/log-hours",
         },
       ],
