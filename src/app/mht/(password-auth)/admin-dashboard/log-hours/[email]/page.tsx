@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { act, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -26,6 +26,11 @@ import {
   DialogContent,
   DialogActions,
   CircularProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
 } from "@mui/material";
 import {
   Add,
@@ -57,10 +62,10 @@ interface MissionaryHourEntry {
   created_at: string;
 }
 
-const categoryDisplay: { [key: string]: { label: string; color: any } } = {
-  outreach: { label: "Community Outreach", color: "primary" },
-  community_service: { label: "Community Service", color: "warning" },
-  administrative: { label: "Administrative Work", color: "secondary" },
+const categoryDisplay: { [key: string]: { label: string } } = {
+  crc: { label: "Community Resource Center" },
+  dos: { label: "Days Of Service" },
+  administrative: { label: "Administrative Work" },
 };
 
 export default function MissionaryDashboard({
@@ -509,43 +514,62 @@ export default function MissionaryDashboard({
                               </Grid>
                             </Grid>
                           </AccordionSummary>
-                          <AccordionDetails sx={{ bgcolor: "grey.50" }}>
-                            <Typography variant="subtitle2" gutterBottom>
-                              Activity Breakdown:
-                            </Typography>
-                            {entry.activities.map((act, actIdx) => (
-                              <Paper
-                                key={actIdx}
-                                variant="outlined"
-                                sx={{ p: 1.5, mb: 1 }}
-                              >
-                                <Box
-                                  sx={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                  }}
-                                >
-                                  <Chip
-                                    label={
-                                      categoryDisplay[act.category]?.label ||
-                                      act.category
-                                    }
-                                    color={
-                                      categoryDisplay[act.category]?.color ||
-                                      "default"
-                                    }
-                                    size="small"
-                                  />
-                                  <Typography fontWeight="bold">
-                                    {act.hours}
-                                  </Typography>
-                                  <Grid item xs={6} sm={3}></Grid>
-                                </Box>
-                                <Typography variant="body2" sx={{ mt: 1 }}>
-                                  {act.description}
-                                </Typography>
-                              </Paper>
-                            ))}
+                          <AccordionDetails sx={{ bgcolor: "grey.50", p: 0 }}>
+                            <Table size="small">
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell sx={{ fontWeight: "bold" }}>
+                                    Activity
+                                  </TableCell>
+                                  <TableCell
+                                    align="right"
+                                    sx={{ fontWeight: "bold" }}
+                                  >
+                                    Hours
+                                  </TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {entry.activities
+                                  .filter((act) => act.category)
+                                  .map((act, actIdx, filteredArr) => (
+                                    <TableRow
+                                      key={actIdx}
+                                      sx={
+                                        actIdx === filteredArr.length - 1
+                                          ? { "& td": { borderBottom: "none" } }
+                                          : {}
+                                      }
+                                    >
+                                      <TableCell>
+                                        <Typography
+                                          variant="body2"
+                                          fontWeight="medium"
+                                        >
+                                          {categoryDisplay[act.category]
+                                            ?.label || act.category}
+                                        </Typography>
+                                        {act.description && (
+                                          <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                          >
+                                            {act.description}
+                                          </Typography>
+                                        )}
+                                      </TableCell>
+                                      <TableCell align="right">
+                                        <Typography
+                                          variant="body2"
+                                          fontWeight="bold"
+                                        >
+                                          {act.hours}
+                                        </Typography>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                              </TableBody>
+                            </Table>
                           </AccordionDetails>
                         </Accordion>
                         {index !== arr.length - 1 && <Divider />}

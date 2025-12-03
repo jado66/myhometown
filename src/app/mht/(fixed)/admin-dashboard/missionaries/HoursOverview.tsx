@@ -13,6 +13,12 @@ import {
   Tab,
   Card,
   CardContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -49,6 +55,11 @@ interface FilterState {
 
 import type { MissionaryHours } from "@/types/missionary/types";
 import { HoursAnalytics } from "./HoursAnalytics";
+
+// Helper function to format numbers with commas
+const formatNumber = (num: number): string => {
+  return num.toLocaleString();
+};
 
 interface HoursOverviewProps {
   missionaries: Missionary[];
@@ -155,9 +166,12 @@ export function HoursOverview({
     };
   }, [filteredHours]);
 
-  // Missionary hours summary
+  // Missionary hours summary with category breakdown
   const missionaryHoursSummary = useMemo(() => {
     const summary = new Map();
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
     missionaries.forEach((missionary) => {
       const missionaryHours = filteredHours.filter(
         (h) => h.missionary_id === missionary.id
@@ -166,25 +180,56 @@ export function HoursOverview({
         (sum, h) => sum + h.total_hours,
         0
       );
-      const weeklyHours = missionaryHours
-        .filter((h) => h.entry_method === "weekly")
-        .reduce((sum, h) => sum + h.total_hours, 0);
-      const monthlyHours = missionaryHours
-        .filter((h) => h.entry_method === "monthly")
-        .reduce((sum, h) => sum + h.total_hours, 0);
+
+      // Calculate category breakdowns
+      let totalCRC = 0;
+      let totalDOS = 0;
+      let totalAdmin = 0;
+      let monthCRC = 0;
+      let monthDOS = 0;
+      let monthAdmin = 0;
+      let monthTotal = 0;
+
+      for (const h of missionaryHours) {
+        const periodDate = new Date(h.period_start_date);
+        const isThisMonth = periodDate >= monthStart;
+
+        if (isThisMonth) {
+          monthTotal += h.total_hours;
+        }
+
+        for (const a of h.activities || []) {
+          if (!a || !a.category || !a.hours) continue;
+          const hrs = a.hours;
+          switch (a.category) {
+            case "crc":
+              totalCRC += hrs;
+              if (isThisMonth) monthCRC += hrs;
+              break;
+            case "dos":
+              totalDOS += hrs;
+              if (isThisMonth) monthDOS += hrs;
+              break;
+            case "administrative":
+              totalAdmin += hrs;
+              if (isThisMonth) monthAdmin += hrs;
+              break;
+          }
+        }
+      }
+
       if (totalHours > 0) {
         summary.set(missionary.id, {
           missionary,
           totalHours,
           entries: missionaryHours.length,
-          weeklyHours,
-          monthlyHours,
-          weeklyEntries: missionaryHours.filter(
-            (h) => h.entry_method === "weekly"
-          ).length,
-          monthlyEntries: missionaryHours.filter(
-            (h) => h.entry_method === "monthly"
-          ).length,
+          totalCRC,
+          totalDOS,
+          totalAdmin,
+          monthTotal,
+          monthCRC,
+          monthDOS,
+          monthAdmin,
         });
       }
     });
@@ -299,80 +344,317 @@ export function HoursOverview({
           </Typography>
 
           {missionaryHoursSummary.length > 0 ? (
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {missionaryHoursSummary.map((summary) => (
-                <Paper key={summary.missionary.id} sx={{ p: 3 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Avatar sx={{ bgcolor: "primary.main" }}>
-                        {summary.missionary.first_name[0]}
-                        {summary.missionary.last_name[0]}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="h6">
-                          {summary.missionary.first_name}{" "}
-                          {summary.missionary.last_name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {summary.missionary.email}
-                        </Typography>
-                        <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
-                          {summary.missionary.title && (
-                            <Chip
-                              label={summary.missionary.title}
-                              size="small"
-                              sx={{ textTransform: "capitalize" }}
-                              variant="outlined"
-                            />
-                          )}
-                          <Chip
-                            label={summary.missionary.assignment_status}
-                            size="small"
-                            color={
-                              summary.missionary.assignment_status === "active"
-                                ? "success"
-                                : "default"
-                            }
-                          />
-                        </Box>
-                      </Box>
-                    </Box>
-                    <Box sx={{ textAlign: "right" }}>
-                      <Typography
-                        variant="h4"
-                        color="primary"
-                        fontWeight="bold"
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: "grey.50" }}>
+                    <TableCell
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                    >
+                      Name
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                    >
+                      Total Hours
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                    >
+                      Total CRC
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                    >
+                      Total DOS
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "3px solid", borderColor: "divider" }}
+                    >
+                      Total Admin
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                    >
+                      Month Hours
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                    >
+                      Month CRC
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                    >
+                      Month DOS
+                    </TableCell>
+                    <TableCell align="center">Month Admin</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {missionaryHoursSummary.map((summary, index) => (
+                    <TableRow
+                      key={summary.missionary.id}
+                      hover
+                      sx={{
+                        backgroundColor:
+                          index % 2 === 0 ? "transparent" : "grey.50",
+                      }}
+                    >
+                      <TableCell
+                        sx={{
+                          borderRight: "3px solid",
+                          borderColor: "divider",
+                        }}
                       >
-                        {summary.totalHours}h
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                        >
+                          <Avatar
+                            sx={{
+                              bgcolor: "primary.main",
+                              width: 36,
+                              height: 36,
+                            }}
+                          >
+                            {summary.missionary.first_name[0]}
+                            {summary.missionary.last_name[0]}
+                          </Avatar>
+                          <Box>
+                            <Typography variant="subtitle2" fontWeight="bold">
+                              {summary.missionary.first_name}{" "}
+                              {summary.missionary.last_name}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {summary.missionary.email}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          fontWeight="bold"
+                          color="primary.main"
+                        >
+                          {formatNumber(summary.totalHours)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
+                      >
+                        <Typography variant="body2" fontWeight="medium">
+                          {formatNumber(summary.totalCRC)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
+                      >
+                        <Typography variant="body2" fontWeight="medium">
+                          {formatNumber(summary.totalDOS)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          borderRight: "3px solid",
+                          borderColor: "divider",
+                        }}
+                      >
+                        <Typography variant="body2" fontWeight="medium">
+                          {formatNumber(summary.totalAdmin)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          fontWeight="bold"
+                          color="secondary.main"
+                        >
+                          {formatNumber(summary.monthTotal)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
+                      >
+                        <Typography variant="body2" fontWeight="medium">
+                          {formatNumber(summary.monthCRC)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
+                      >
+                        <Typography variant="body2" fontWeight="medium">
+                          {formatNumber(summary.monthDOS)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body2" fontWeight="medium">
+                          {formatNumber(summary.monthAdmin)}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {/* Sum Row */}
+                  <TableRow sx={{ backgroundColor: "grey.100" }}>
+                    <TableCell
+                      sx={{ borderRight: "3px solid", borderColor: "divider" }}
+                    >
+                      <Typography variant="subtitle2" fontWeight="bold">
+                        Total ({missionaryHoursSummary.length} missionaries)
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {summary.entries} entries
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                    >
+                      <Typography
+                        variant="body2"
+                        fontWeight="bold"
+                        color="primary.main"
+                      >
+                        {formatNumber(
+                          missionaryHoursSummary.reduce(
+                            (sum, s) => sum + s.totalHours,
+                            0
+                          )
+                        )}
                       </Typography>
-                      {/* <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
-                        <Chip
-                          label={`${summary.weeklyHours}h`}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                        />
-                        <Chip
-                          label={`Monthly: ${summary.monthlyHours}h`}
-                          size="small"
-                          color="secondary"
-                          variant="outlined"
-                        />
-                      </Box> */}
-                    </Box>
-                  </Box>
-                </Paper>
-              ))}
-            </Box>
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                    >
+                      <Typography variant="body2" fontWeight="bold">
+                        {formatNumber(
+                          missionaryHoursSummary.reduce(
+                            (sum, s) => sum + s.totalCRC,
+                            0
+                          )
+                        )}
+                      </Typography>
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                    >
+                      <Typography variant="body2" fontWeight="bold">
+                        {formatNumber(
+                          missionaryHoursSummary.reduce(
+                            (sum, s) => sum + s.totalDOS,
+                            0
+                          )
+                        )}
+                      </Typography>
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "3px solid", borderColor: "divider" }}
+                    >
+                      <Typography variant="body2" fontWeight="bold">
+                        {formatNumber(
+                          missionaryHoursSummary.reduce(
+                            (sum, s) => sum + s.totalAdmin,
+                            0
+                          )
+                        )}
+                      </Typography>
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                    >
+                      <Typography
+                        variant="body2"
+                        fontWeight="bold"
+                        color="secondary.main"
+                      >
+                        {formatNumber(
+                          missionaryHoursSummary.reduce(
+                            (sum, s) => sum + s.monthTotal,
+                            0
+                          )
+                        )}
+                      </Typography>
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                    >
+                      <Typography variant="body2" fontWeight="bold">
+                        {formatNumber(
+                          missionaryHoursSummary.reduce(
+                            (sum, s) => sum + s.monthCRC,
+                            0
+                          )
+                        )}
+                      </Typography>
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                    >
+                      <Typography variant="body2" fontWeight="bold">
+                        {formatNumber(
+                          missionaryHoursSummary.reduce(
+                            (sum, s) => sum + s.monthDOS,
+                            0
+                          )
+                        )}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body2" fontWeight="bold">
+                        {formatNumber(
+                          missionaryHoursSummary.reduce(
+                            (sum, s) => sum + s.monthAdmin,
+                            0
+                          )
+                        )}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
           ) : (
             <Box sx={{ textAlign: "center", py: 8 }}>
               <Schedule sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
@@ -388,44 +670,6 @@ export function HoursOverview({
             </Box>
           )}
         </Box>
-      )}
-
-      {/* Filter Summary */}
-      {(filters.searchTerm ||
-        filters.statusFilter !== "all" ||
-        filters.assignmentLevel !== "all") && (
-        <Card sx={{ mt: 3 }}>
-          <CardContent>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-                flexWrap: "wrap",
-              }}
-            >
-              <Typography variant="body2" color="text.secondary">
-                Showing hours for {missionaries.length} missionaries matching
-                current filters:
-              </Typography>
-              {filters.assignmentLevel !== "all" && (
-                <Chip
-                  label={`Level: ${filters.assignmentLevel}`}
-                  size="small"
-                  variant="outlined"
-                />
-              )}
-              {filters.statusFilter !== "all" && (
-                <Chip
-                  label={`Status: ${filters.statusFilter}`}
-                  size="small"
-                  sx={{ textTransform: "capitalize" }}
-                  variant="outlined"
-                />
-              )}
-            </Box>
-          </CardContent>
-        </Card>
       )}
     </Box>
   );
