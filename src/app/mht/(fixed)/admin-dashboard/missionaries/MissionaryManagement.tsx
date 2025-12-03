@@ -778,6 +778,36 @@ export default function MissionaryManagement() {
   } = useMissionaryHours();
 
   const handleExportCSV = () => {
+    // Helper function to calculate hours for a missionary
+    const getHoursData = (missionaryId: string) => {
+      const missionaryHours = (hours || []).filter(
+        (h) => h.missionary_id === missionaryId
+      );
+
+      // Calculate total hours
+      const totalHours = missionaryHours.reduce((sum, h) => {
+        const hoursValue = h.total_hours || 0;
+        return sum + hoursValue;
+      }, 0);
+
+      // Calculate current month hours
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+
+      const currentMonthHours = missionaryHours
+        .filter((h) => {
+          if (!h.period_start_date) return false;
+          const periodStart = new Date(h.period_start_date + "T00:00:00.000Z");
+          const periodYear = periodStart.getUTCFullYear();
+          const periodMonth = periodStart.getUTCMonth();
+          return periodYear === currentYear && periodMonth === currentMonth;
+        })
+        .reduce((sum, h) => sum + (h.total_hours || 0), 0);
+
+      return { totalHours, currentMonthHours };
+    };
+
     // New unified export format matching updated import template
     const header = [
       "First Name",
@@ -791,6 +821,8 @@ export default function MissionaryManagement() {
       "Gender",
       "Position",
       "Position Detail",
+      "Hours This Month",
+      "Total Hours",
       "Start Date",
       "End Date",
       "Street Address",
@@ -811,6 +843,7 @@ export default function MissionaryManagement() {
         // Export rule: state-level missionaries must have 'Utah' in Assignment per new business rule
         assignment = "Utah";
       }
+      const hoursData = getHoursData(m.id);
       return {
         "First Name": m.first_name,
         "Last Name": m.last_name,
@@ -824,6 +857,8 @@ export default function MissionaryManagement() {
         // Updated mapping: Position now reflects missionary.title; Position Detail reflects position_detail
         Position: m.title || "",
         "Position Detail": m.position_detail || "",
+        "Hours This Month": hoursData.currentMonthHours,
+        "Total Hours": hoursData.totalHours,
         "Start Date": m.start_date
           ? new Date(m.start_date).toLocaleDateString("en-US")
           : "",
