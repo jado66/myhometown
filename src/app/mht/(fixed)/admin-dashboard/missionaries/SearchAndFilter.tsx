@@ -31,14 +31,17 @@ import {
   LocationCity,
   Group,
   Schedule,
+  Refresh as RefreshIcon,
 } from "@mui/icons-material";
 import CommunitySelect from "@/components/data-tables/selects/CommunitySelect";
 import CitySelect from "@/components/data-tables/selects/CitySelect";
+import MultiSelect from "@/components/data-tables/selects/MultiSelect";
 
 interface FilterState {
   searchTerm: string;
   statusFilter: string;
-  assignmentLevel: "all" | "state" | "city" | "community";
+  assignmentLevels: string[];
+  assignmentStatus: string[];
   selectedCityId: string | null;
   selectedCommunityId: string | null;
   personType: "all" | "missionary" | "volunteer";
@@ -80,11 +83,6 @@ export function SearchAndFilter({
 
   const updateFilter = (key: keyof FilterState, value: any) => {
     const newFilters = { ...filters, [key]: value };
-    // Reset dependent filters when assignment level changes
-    if (key === "assignmentLevel") {
-      newFilters.selectedCityId = null;
-      newFilters.selectedCommunityId = null;
-    }
     onFiltersChange(newFilters);
   };
 
@@ -92,13 +90,26 @@ export function SearchAndFilter({
     onFiltersChange({
       searchTerm: "",
       statusFilter: "all",
-      assignmentLevel: "all",
+      assignmentLevels: [],
+      assignmentStatus: ["pending", "active"],
       selectedCityId: null,
       selectedCommunityId: null,
       personType: "all",
       ...(showUpcomingReleaseFilter && { upcomingReleaseDays: 90 }),
     });
   };
+
+  const levelOptions = [
+    { value: "state", label: "State Level" },
+    { value: "city", label: "City Level" },
+    { value: "community", label: "Community Level" },
+  ];
+
+  const statusOptions = [
+    { value: "pending", label: "Pending" },
+    { value: "active", label: "Active" },
+    { value: "released", label: "Released" },
+  ];
 
   const getFilteredCommunities = () => {
     if (!filters.selectedCityId) return [];
@@ -113,7 +124,16 @@ export function SearchAndFilter({
     let count = 0;
     if (filters.searchTerm) count++;
     if (filters.statusFilter !== "all") count++;
-    if (filters.assignmentLevel !== "all") count++;
+    if (filters.assignmentLevels?.length > 0) count++;
+    if (
+      filters.assignmentStatus?.length > 0 &&
+      !(
+        filters.assignmentStatus.length === 2 &&
+        filters.assignmentStatus.includes("pending") &&
+        filters.assignmentStatus.includes("active")
+      )
+    )
+      count++;
     if (filters.selectedCityId) count++;
     if (filters.selectedCommunityId) count++;
     if (filters.personType !== "all") count++;
@@ -157,9 +177,9 @@ export function SearchAndFilter({
         )}
       </AccordionSummary>
       <AccordionDetails>
-        {/* Search and Status Row */}
+        {/* Search and Type Row */}
         <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} md={4}>
             <TextField
               fullWidth
               label="Search missionaries..."
@@ -175,7 +195,7 @@ export function SearchAndFilter({
             />
           </Grid>
 
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} md={4}>
             <FormControl fullWidth>
               <InputLabel>Type Filter</InputLabel>
               <Select
@@ -190,10 +210,61 @@ export function SearchAndFilter({
             </FormControl>
           </Grid>
 
+          <Grid item xs={12} md={4}>
+            <MultiSelect
+              label="Assignment Status"
+              options={statusOptions}
+              value={statusOptions.filter((opt) =>
+                filters.assignmentStatus?.includes(opt.value)
+              )}
+              onChange={(selected: any) => {
+                const values = selected
+                  ? selected.map((s: any) => s.value)
+                  : [];
+                // Reset to defaults if cleared completely
+                updateFilter(
+                  "assignmentStatus",
+                  values.length === 0 ? ["pending", "active"] : values
+                );
+              }}
+              placeholder="Assignment Status"
+              height="56px"
+              clearIcon={<RefreshIcon fontSize="small" />}
+              isClearable={
+                !(
+                  filters.assignmentStatus?.length === 2 &&
+                  filters.assignmentStatus.includes("pending") &&
+                  filters.assignmentStatus.includes("active")
+                )
+              }
+            />
+          </Grid>
+        </Grid>
+
+        {/* Levels, City, and Community Row */}
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          <Grid item xs={12} md={4}>
+            <MultiSelect
+              label="Assignment Levels"
+              options={levelOptions}
+              value={levelOptions.filter((opt) =>
+                filters.assignmentLevels?.includes(opt.value)
+              )}
+              onChange={(selected: any) =>
+                updateFilter(
+                  "assignmentLevels",
+                  selected ? selected.map((s: any) => s.value) : []
+                )
+              }
+              placeholder="Assignment Levels"
+              height="56px"
+            />
+          </Grid>
+
           {
             // if there are no options hide this filter
             cities.length > 1 && (
-              <Grid item xs={12} md={3}>
+              <Grid item xs={12} md={4}>
                 <FormControl fullWidth>
                   <CitySelect
                     value={filters.selectedCityId}
@@ -212,7 +283,7 @@ export function SearchAndFilter({
           }
 
           {communities.length > 1 && (
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} md={4}>
               <FormControl fullWidth>
                 <CommunitySelect
                   value={filters.selectedCommunityId}
@@ -309,121 +380,6 @@ export function SearchAndFilter({
           </Box>
         )}
 
-        {/* Assignment Level Selection */}
-        <Box sx={{ mb: 3 }}>
-          <RadioGroup
-            value={filters.assignmentLevel}
-            onChange={(e) => updateFilter("assignmentLevel", e.target.value)}
-            row
-          >
-            <Grid container spacing={3}>
-              {[
-                {
-                  value: "all",
-                  label: "All Levels",
-
-                  description: "Show all missionaries",
-                },
-                {
-                  value: "state",
-                  label: "State Level",
-
-                  description: "Utah state-wide assignments",
-                },
-                {
-                  value: "city",
-                  label: "City Level",
-
-                  description: "City-specific assignments",
-                },
-                {
-                  value: "community",
-                  label: "Community Level",
-
-                  description: "Community assignments",
-                },
-              ].map((level) => {
-                const isSelected = filters.assignmentLevel === level.value;
-                return (
-                  <Grid item xs={12} md={3} key={level.value}>
-                    <Card
-                      sx={{
-                        p: 1,
-                        pl: 2,
-                        cursor: "pointer",
-                        border: 1,
-                        borderColor: isSelected ? "primary.main" : "grey.300",
-                        "&:hover": { borderColor: "primary.main" },
-                      }}
-                      elevation={0}
-                      onClick={() =>
-                        updateFilter("assignmentLevel", level.value)
-                      }
-                    >
-                      <FormControlLabel
-                        value={level.value}
-                        control={<Radio />}
-                        label={
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <Box>
-                              <Typography variant="subtitle1">
-                                {level.label}
-                              </Typography>
-                            </Box>
-                          </Box>
-                        }
-                      />
-                    </Card>
-                  </Grid>
-                );
-              })}
-            </Grid>
-          </RadioGroup>
-        </Box>
-
-        {/* City and Community Selection */}
-        {(filters.assignmentLevel === "city" ||
-          filters.assignmentLevel === "community") && (
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            {filters.assignmentLevel === "city" && (
-              <Grid item xs={12}>
-                <FormControl fullWidth>
-                  <CitySelect
-                    value={filters.selectedCityId}
-                    onChange={(value: string | null) =>
-                      updateFilter("selectedCityId", value)
-                    }
-                    onLabelChange={() => {}}
-                    isNewIds={true}
-                    placeholder="Searching All Cities"
-                  />
-                </FormControl>
-              </Grid>
-            )}
-            {filters.assignmentLevel === "community" && (
-              <Grid item xs={12}>
-                <CommunitySelect
-                  value={filters.selectedCommunityId}
-                  onChange={(value: string | null) =>
-                    updateFilter("selectedCommunityId", value)
-                  }
-                  onLabelChange={() => {}}
-                  isMulti={false}
-                  concatCityName={true}
-                  isNewIds={true}
-                  placeholder="Searching All Communities"
-                />
-              </Grid>
-            )}
-          </Grid>
-        )}
-
         {/* Active Filters and Results */}
         <Box
           sx={{
@@ -445,7 +401,8 @@ export function SearchAndFilter({
           >
             {(filters.searchTerm ||
               filters.statusFilter !== "all" ||
-              filters.assignmentLevel !== "all" ||
+              filters.assignmentLevels?.length > 0 ||
+              filters.assignmentStatus?.length > 0 ||
               filters.personType !== "all" ||
               (showUpcomingReleaseFilter && filters.upcomingReleaseDays)) && (
               <Typography variant="body2" color="text.secondary">
@@ -469,12 +426,23 @@ export function SearchAndFilter({
                 variant="outlined"
               />
             )}
-            {filters.assignmentLevel !== "all" && (
+            {filters.assignmentLevels?.length > 0 && (
               <Chip
-                label={`Level: ${filters.assignmentLevel}`}
+                label={`Levels: ${filters.assignmentLevels.join(", ")}`}
                 size="small"
                 sx={{ textTransform: "capitalize" }}
-                onDelete={() => updateFilter("assignmentLevel", "all")}
+                onDelete={() => updateFilter("assignmentLevels", [])}
+                variant="outlined"
+              />
+            )}
+            {filters.assignmentStatus?.length > 0 && (
+              <Chip
+                label={`Status: ${filters.assignmentStatus.join(", ")}`}
+                size="small"
+                sx={{ textTransform: "capitalize" }}
+                onDelete={() =>
+                  updateFilter("assignmentStatus", ["pending", "active"])
+                }
                 variant="outlined"
               />
             )}

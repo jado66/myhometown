@@ -131,6 +131,7 @@ const CommunitySelect = ({
         isMulti={isMulti}
         isGrouped={true}
         height={height}
+        label="Community"
       />
     </>
   );

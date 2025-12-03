@@ -139,6 +139,7 @@ interface MissionaryFormData {
   address_state: string;
   zip_code: string;
   position_detail: string;
+  end_date: string;
 }
 
 const initalFormData: MissionaryFormData = {
@@ -164,6 +165,7 @@ const initalFormData: MissionaryFormData = {
   address_state: "",
   zip_code: "",
   position_detail: "",
+  end_date: "",
 };
 
 const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
@@ -221,6 +223,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
         address_state: missionary.address_state || "",
         zip_code: missionary.zip_code || "",
         position_detail: missionary.position_detail || "",
+        end_date: missionary.end_date || "",
       });
     } else {
       // Reset errors when creating a new missionary

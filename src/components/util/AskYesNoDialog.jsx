@@ -10,8 +10,19 @@ import {
 } from "@mui/material";
 
 export default function AskYesNoDialog(props) {
-  const { title, description, onConfirm, onCancel, onClose, open, loading } =
-    props;
+  const {
+    title,
+    description,
+    onConfirm,
+    onCancel,
+    onClose,
+    open,
+    loading,
+    confirmText = "Yes",
+    cancelText = "No",
+    loadingText = "Deleting...",
+    confirmColor = "primary",
+  } = props;
 
   return (
     <Dialog
@@ -26,24 +37,24 @@ export default function AskYesNoDialog(props) {
 
       <DialogActions>
         <Button
-          variant="contained"
+          variant="out"
           onClick={onCancel}
           color="secondary"
           disabled={loading}
         >
-          No
+          {cancelText}
         </Button>
         <Button
           variant="contained"
           onClick={onConfirm}
-          color="primary"
+          color={confirmColor}
           autoFocus
           disabled={loading}
           startIcon={
             loading ? <CircularProgress size={20} color="inherit" /> : null
           }
         >
-          {loading ? "Deleting..." : "Yes"}
+          {loading ? loadingText : confirmText}
         </Button>
       </DialogActions>
     </Dialog>

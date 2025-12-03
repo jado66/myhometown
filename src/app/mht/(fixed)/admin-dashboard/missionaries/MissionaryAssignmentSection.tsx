@@ -158,17 +158,23 @@ const MissionaryAssignmentSection: React.FC<
 
   // Debounced handler for duration input
   const debouncedSetDuration = useRef(
-    debounce((val: string) => {
+    debounce((val: string, startDate: string) => {
       let rounded = Math.round(Number(val));
       if (!val || isNaN(rounded) || rounded < 1) {
         setFormData((prev: any) => ({
           ...prev,
           duration: "",
+          end_date: "",
         }));
       } else {
+        const calculatedEndDate = calculateEndDate(
+          startDate,
+          `${rounded} months`
+        );
         setFormData((prev: any) => ({
           ...prev,
           duration: String(rounded),
+          end_date: calculatedEndDate,
         }));
       }
     }, 100)
@@ -179,11 +185,47 @@ const MissionaryAssignmentSection: React.FC<
       const val = e.target.value;
       // Only allow whole numbers (no decimals, no non-numeric)
       if (/^\d*$/.test(val)) {
-        debouncedSetDuration.current(val);
+        debouncedSetDuration.current(val, formData.start_date);
       }
       // else ignore input
     },
-    []
+    [formData.start_date]
+  );
+
+  const handleEndDateChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const endDate = e.target.value;
+      if (!endDate || !formData.start_date) {
+        return;
+      }
+
+      const start = new Date(formData.start_date);
+      const end = new Date(endDate);
+
+      // Calculate months difference
+      const yearsDiff = end.getFullYear() - start.getFullYear();
+      const monthsDiff = end.getMonth() - start.getMonth();
+      const daysDiff = end.getDate() - start.getDate();
+
+      let totalMonths = yearsDiff * 12 + monthsDiff;
+
+      // Round up if there are extra days (more than half a month)
+      if (daysDiff > 15) {
+        totalMonths += 1;
+      } else if (daysDiff < -15) {
+        totalMonths -= 1;
+      }
+
+      // Ensure non-negative
+      totalMonths = Math.max(0, Math.round(totalMonths));
+
+      setFormData((prev: any) => ({
+        ...prev,
+        duration: String(totalMonths),
+        end_date: endDate,
+      }));
+    },
+    [formData.start_date, setFormData]
   );
 
   const formattedDuration = formData.duration
@@ -383,7 +425,7 @@ const MissionaryAssignmentSection: React.FC<
               )}
             </Grid>
           )}
-          <Grid item xs={12} md={formData.assignment_level === "state" ? 8 : 4}>
+          <Grid item xs={12} md={4}>
             <Typography
               variant="body2"
               color="#318D43"
@@ -475,30 +517,27 @@ const MissionaryAssignmentSection: React.FC<
                 ),
               }}
               error={!!errors.duration}
-              helperText={errors.duration || "Enter a whole number (months)"}
             />
           </Grid>
           <Grid item xs={12} md={4}>
             <TextField
               label={
                 formData.person_type === "missionary"
-                  ? "Release Date (Calculated)"
-                  : "End Date (Calculated)"
+                  ? "Release Date"
+                  : "End Date"
               }
               type="date"
-              InputProps={{ readOnly: true }}
               fullWidth
               size="small"
-              value={calculateEndDate(
-                formData.start_date,
-                formData.duration ? `${formData.duration} months` : ""
-              )}
-              sx={{
-                "& .MuiInputBase-input": {
-                  color: "text.primary",
-                  backgroundColor: "grey.100",
-                },
-              }}
+              value={
+                formData.end_date
+                  ? formData.end_date.split("T")[0]
+                  : calculateEndDate(
+                      formData.start_date,
+                      formData.duration ? `${formData.duration} months` : ""
+                    )
+              }
+              onChange={handleEndDateChange}
               InputLabelProps={{ shrink: true }}
             />
           </Grid>

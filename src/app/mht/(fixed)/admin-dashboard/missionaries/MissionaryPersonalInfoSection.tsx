@@ -165,7 +165,7 @@ const MissionaryPersonalInfoSection: React.FC<
         </Grid>
         <Grid item xs={12} sm={8} md={8}>
           <Grid container spacing={2} sx={{ mb: 1 }}>
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 label="First Name"
                 required
@@ -182,7 +182,7 @@ const MissionaryPersonalInfoSection: React.FC<
                 helperText={errors.first_name}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 label="Last Name"
                 required
@@ -236,6 +236,41 @@ const MissionaryPersonalInfoSection: React.FC<
                 error={!!errors.contact_number}
                 helperText={errors.contact_number}
               />
+            </Grid>
+            <Grid item xs={12}>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1,
+                  mt: 0.25,
+                }}
+              >
+                <Typography sx={{ alignSelf: "center", mr: 1 }}>
+                  Status:
+                </Typography>
+                {["pending", "active", "released"].map((status) => {
+                  const isSelected =
+                    (formData.assignment_status || "pending") === status;
+                  return (
+                    <Button
+                      key={status}
+                      color={"primary"}
+                      variant={isSelected ? "contained" : "outlined"}
+                      onClick={() =>
+                        setFormData((prev: any) => ({
+                          ...prev,
+                          assignment_status: status,
+                        }))
+                      }
+                      size="medium"
+                      sx={{ textTransform: "capitalize", flex: 1 }}
+                      aria-pressed={isSelected}
+                    >
+                      {status}
+                    </Button>
+                  );
+                })}
+              </Box>
             </Grid>
           </Grid>
         </Grid>

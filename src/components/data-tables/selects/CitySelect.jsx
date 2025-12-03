@@ -125,6 +125,7 @@ const CitySelect = ({
         isMulti={isMulti}
         isGrouped={true}
         height={height}
+        label="City"
       />
     </>
   );

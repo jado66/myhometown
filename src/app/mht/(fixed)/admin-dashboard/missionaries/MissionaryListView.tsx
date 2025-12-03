@@ -241,7 +241,7 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
               {isUpcomingView && <TableCell>Days Left</TableCell>}
               <TableCell>Name</TableCell>
               <TableCell>Contact</TableCell>
-              <TableCell>Type</TableCell>
+              <TableCell>Type/Status</TableCell>
               <TableCell>Assignment</TableCell>
               <TableCell>Position</TableCell>
               <TableCell>Position Detail</TableCell>
@@ -410,6 +410,14 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                           {missionary.person_type}
                         </Typography>
                       )}
+                      <Typography
+                        variant="caption"
+                        fontWeight="medium"
+                        color="primary"
+                        sx={{ textTransform: "capitalize" }}
+                      >
+                        {missionary.assignment_status}
+                      </Typography>
                     </Box>
                   </TableCell>
                   <TableCell sx={{ minWidth: 150 }}>

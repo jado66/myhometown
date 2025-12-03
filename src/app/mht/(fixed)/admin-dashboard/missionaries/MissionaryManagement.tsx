@@ -78,7 +78,8 @@ interface Community {
 interface FilterState {
   searchTerm: string;
   statusFilter: string;
-  assignmentLevel: "all" | "state" | "city" | "community";
+  assignmentLevels: string[];
+  assignmentStatus: string[];
   selectedCityId: string | null;
   selectedCommunityId: string | null;
   personType: "all" | "missionary" | "volunteer";
@@ -636,7 +637,8 @@ export default function MissionaryManagement() {
   const [filters, setFilters] = useState<FilterState>({
     searchTerm: "",
     statusFilter: "all",
-    assignmentLevel: "all",
+    assignmentLevels: [],
+    assignmentStatus: ["pending", "active"],
     selectedCityId: null,
     selectedCommunityId: null,
     personType: "all",
@@ -665,7 +667,8 @@ export default function MissionaryManagement() {
   // Sync individual filter states for filtering logic
   const searchTerm = filters.searchTerm;
   const statusFilter = filters.statusFilter;
-  const assignmentLevel = filters.assignmentLevel;
+  const assignmentLevels = filters.assignmentLevels;
+  const assignmentStatus = filters.assignmentStatus;
   const selectedCityId = filters.selectedCityId;
   const selectedCommunityId = filters.selectedCommunityId;
   const personType = filters.personType;
@@ -713,9 +716,12 @@ export default function MissionaryManagement() {
       missionary.assignment_status.toLowerCase() === statusFilter.toLowerCase();
 
     const matchesLevel =
-      assignmentLevel === "all" ||
-      missionary.assignment_level?.toLowerCase() ===
-        assignmentLevel.toLowerCase();
+      assignmentLevels.length === 0 ||
+      assignmentLevels.includes(missionary.assignment_level?.toLowerCase());
+
+    const matchesAssignmentStatus =
+      assignmentStatus.length === 0 ||
+      assignmentStatus.includes(missionary.assignment_status?.toLowerCase());
 
     const matchesCity =
       !selectedCityId || missionary.city_id === selectedCityId;
@@ -730,6 +736,7 @@ export default function MissionaryManagement() {
       matchesSearch &&
       matchesStatus &&
       matchesLevel &&
+      matchesAssignmentStatus &&
       matchesCity &&
       matchesCommunity &&
       matchesPersonType
@@ -742,7 +749,8 @@ export default function MissionaryManagement() {
   }, [
     searchTerm,
     statusFilter,
-    assignmentLevel,
+    assignmentLevels,
+    assignmentStatus,
     selectedCityId,
     selectedCommunityId,
     personType,
@@ -1015,11 +1023,14 @@ export default function MissionaryManagement() {
     <Grid container item sm={12} display="flex">
       <AskYesNoDialog
         open={deleteDialogOpen}
-        title="Delete Missionary?"
-        description={`Are you sure you want to delete missionary ${missionaryToDelete?.first_name} ${missionaryToDelete?.last_name}? This action cannot be undone.`}
+        title={`Delete ${missionaryToDelete?.type} ${missionaryToDelete?.first_name} ${missionaryToDelete?.last_name}?`}
+        description={`This action cannot be undone. If this ${missionaryToDelete?.type} is released, and you want to retain their data, consider editing their status instead.`}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
         onClose={handleCancelDelete}
+        confirmColor="error"
+        cancelText="Cancel"
+        confirmText="Yes, Delete"
         loading={deleting}
       />
 
