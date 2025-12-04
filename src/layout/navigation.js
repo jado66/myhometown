@@ -9,7 +9,7 @@ export const pages = () => {
       pages: [
         {
           title: "User Management",
-          href: rootUrl + "/admin-dashboard/manage-users",
+          href: "https://myhometown-landing.vercel.app/admin/users",
           requiredPermission: "administrator",
         },
         {

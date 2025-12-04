@@ -587,6 +587,45 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
 
         <DialogContent dividers>
           <Stack spacing={3}>
+            {/* Profile Picture Section */}
+            <Box display="flex" flexDirection="column" alignItems="center">
+              {missionary.profile_picture_url ? (
+                <img
+                  src={missionary.profile_picture_url}
+                  alt={fullName}
+                  style={{
+                    width: 140,
+                    height: 140,
+                    objectFit: "cover",
+                    borderRadius: "50%",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                  }}
+                />
+              ) : (
+                <Avatar
+                  sx={{
+                    width: 140,
+                    height: 140,
+                    bgcolor: "warning.light",
+                    border: "2px solid",
+                    borderColor: "warning.main",
+                    fontSize: 48,
+                  }}
+                >
+                  {initials}
+                </Avatar>
+              )}
+              {!missionary.profile_picture_url && (
+                <Typography
+                  variant="caption"
+                  color="warning.main"
+                  sx={{ mt: 1 }}
+                >
+                  No profile picture
+                </Typography>
+              )}
+            </Box>
+
             {/* Basic Info */}
             <Box>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>

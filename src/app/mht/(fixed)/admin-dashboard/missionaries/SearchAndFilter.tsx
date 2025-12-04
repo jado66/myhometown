@@ -186,7 +186,7 @@ export function SearchAndFilter({
               variant="outlined"
               value={filters.searchTerm}
               onChange={(e) => updateFilter("searchTerm", e.target.value)}
-              placeholder="Search by name, email, title, or position detail..."
+              placeholder="Search by name (e.g. Kathy Craven), email, title..."
               InputProps={{
                 startAdornment: (
                   <SearchIcon sx={{ mr: 1, color: "action.active" }} />

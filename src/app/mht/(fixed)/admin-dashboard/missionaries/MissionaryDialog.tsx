@@ -542,6 +542,15 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
           <Box component="form" onSubmit={handleSubmit}>
             <Grid container spacing={4}>
               <Grid item xs={12} md={7}>
+                <MissionaryPersonalInfoSection
+                  formData={formData}
+                  setFormData={setFormData}
+                  uploadLoading={uploadLoading}
+                  handleFileSelectForCrop={handleFileSelectForCrop}
+                  errors={errors}
+                />
+              </Grid>
+              <Grid item xs={12} md={5}>
                 <MissionaryAssignmentSection
                   formData={formData}
                   setFormData={setFormData}
@@ -554,15 +563,6 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
                   handleAssignmentLevelChange={handleAssignmentLevelChange}
                   handleTitleChange={handleTitleChange}
                   calculateEndDate={calculateEndDate}
-                  errors={errors}
-                />
-              </Grid>
-              <Grid item xs={12} md={5}>
-                <MissionaryPersonalInfoSection
-                  formData={formData}
-                  setFormData={setFormData}
-                  uploadLoading={uploadLoading}
-                  handleFileSelectForCrop={handleFileSelectForCrop}
                   errors={errors}
                 />
               </Grid>

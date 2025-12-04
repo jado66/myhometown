@@ -699,17 +699,17 @@ export default function MissionaryManagement() {
   };
 
   const filteredMissionaries = (missionaries || []).filter((missionary) => {
+    const fullName =
+      `${missionary.first_name} ${missionary.last_name}`.toLowerCase();
+    const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
-      missionary.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      missionary.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      missionary.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (missionary.title || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      (missionary.position_detail || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      (missionary.group || "").toLowerCase().includes(searchTerm.toLowerCase());
+      fullName.includes(searchLower) ||
+      missionary.first_name.toLowerCase().includes(searchLower) ||
+      missionary.last_name.toLowerCase().includes(searchLower) ||
+      missionary.email.toLowerCase().includes(searchLower) ||
+      (missionary.title || "").toLowerCase().includes(searchLower) ||
+      (missionary.position_detail || "").toLowerCase().includes(searchLower) ||
+      (missionary.group || "").toLowerCase().includes(searchLower);
 
     const matchesStatus =
       statusFilter === "all" ||
@@ -1338,6 +1338,7 @@ export default function MissionaryManagement() {
                 cities={cities}
                 communities={communities}
                 onFiltersChange={setFilters}
+                onEdit={handleOpenDialog}
               />
             </TabPanel>
 

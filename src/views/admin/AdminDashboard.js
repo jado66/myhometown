@@ -92,7 +92,7 @@ const AdminDashboardPages = () => {
                   subtitle:
                     "Add, remove, or edit users and their roles to manage who can access your city or community.",
                   media: "/admin-icons/User Management.svg",
-                  href: rootUrl + "/admin-dashboard/manage-users",
+                  href: "https://myhometown-landing.vercel.app/admin/users",
                   requiredPermission: "admin",
                 },
                 {

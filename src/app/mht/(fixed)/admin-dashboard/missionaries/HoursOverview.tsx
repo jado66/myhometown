@@ -19,6 +19,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Tooltip,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -31,6 +32,7 @@ import {
 } from "@mui/icons-material";
 import { AggregateStats } from "./AggregateStats";
 import { SearchAndFilter } from "./SearchAndFilter";
+import { MissionaryViewDialog } from "./MissionaryViewDialog";
 
 interface Missionary {
   id: string;
@@ -68,6 +70,7 @@ interface HoursOverviewProps {
   cities: any[];
   communities: any[];
   onFiltersChange: (filters: FilterState) => void;
+  onEdit?: (missionary: any) => void;
 }
 
 export function HoursOverview({
@@ -77,8 +80,11 @@ export function HoursOverview({
   cities,
   communities,
   onFiltersChange,
+  onEdit,
 }: HoursOverviewProps) {
   const [activeTab, setActiveTab] = useState(0);
+  const [selectedMissionary, setSelectedMissionary] = useState<any>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const currentYear = new Date().getFullYear();
 
   // Calculate hours stats based on filtered missionaries
@@ -170,7 +176,9 @@ export function HoursOverview({
   const missionaryHoursSummary = useMemo(() => {
     const summary = new Map();
     const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    // Use year and month numbers for comparison to avoid timezone issues
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
 
     missionaries.forEach((missionary) => {
       const missionaryHours = filteredHours.filter(
@@ -191,8 +199,9 @@ export function HoursOverview({
       let monthTotal = 0;
 
       for (const h of missionaryHours) {
-        const periodDate = new Date(h.period_start_date);
-        const isThisMonth = periodDate >= monthStart;
+        // Parse the date string directly to avoid timezone issues
+        const [year, month] = h.period_start_date.split("-").map(Number);
+        const isThisMonth = year === currentYear && month === currentMonth + 1;
 
         if (isThisMonth) {
           monthTotal += h.total_hours;
@@ -349,7 +358,7 @@ export function HoursOverview({
                 <TableHead>
                   <TableRow sx={{ backgroundColor: "grey.50" }}>
                     <TableCell
-                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                      sx={{ borderRight: "3px solid", borderColor: "divider" }}
                     >
                       Name
                     </TableCell>
@@ -414,32 +423,53 @@ export function HoursOverview({
                           borderColor: "divider",
                         }}
                       >
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
-                        >
-                          <Avatar
+                        <Tooltip title="View details">
+                          <Box
                             sx={{
-                              bgcolor: "primary.main",
-                              width: 36,
-                              height: 36,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                              cursor: "pointer",
+                              "&:hover": {
+                                "& .missionary-name": {
+                                  textDecoration: "underline",
+                                },
+                              },
+                            }}
+                            onClick={() => {
+                              setSelectedMissionary(summary.missionary);
+                              setDetailsOpen(true);
                             }}
                           >
-                            {summary.missionary.first_name[0]}
-                            {summary.missionary.last_name[0]}
-                          </Avatar>
-                          <Box>
-                            <Typography variant="subtitle2" fontWeight="bold">
-                              {summary.missionary.first_name}{" "}
-                              {summary.missionary.last_name}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
+                            <Avatar
+                              src={summary.missionary.profile_picture_url}
+                              sx={{
+                                bgcolor: "primary.main",
+                                width: 36,
+                                height: 36,
+                              }}
                             >
-                              {summary.missionary.email}
-                            </Typography>
+                              {summary.missionary.first_name[0]}
+                              {summary.missionary.last_name[0]}
+                            </Avatar>
+                            <Box>
+                              <Typography
+                                variant="subtitle2"
+                                fontWeight="bold"
+                                className="missionary-name"
+                              >
+                                {summary.missionary.first_name}{" "}
+                                {summary.missionary.last_name}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {summary.missionary.email}
+                              </Typography>
+                            </Box>
                           </Box>
-                        </Box>
+                        </Tooltip>
                       </TableCell>
                       <TableCell
                         align="center"
@@ -671,6 +701,45 @@ export function HoursOverview({
           )}
         </Box>
       )}
+
+      {/* Details Dialog */}
+      <MissionaryViewDialog
+        open={detailsOpen && !!selectedMissionary}
+        onClose={() => setDetailsOpen(false)}
+        onEdit={
+          onEdit
+            ? (missionary) => {
+                setDetailsOpen(false);
+                onEdit(missionary);
+              }
+            : undefined
+        }
+        missionary={selectedMissionary}
+        cities={cities}
+        communities={communities}
+        hoursData={
+          selectedMissionary
+            ? {
+                totalHours:
+                  missionaryHoursSummary.find(
+                    (s) => s.missionary.id === selectedMissionary.id
+                  )?.totalHours || 0,
+                currentMonthHours:
+                  missionaryHoursSummary.find(
+                    (s) => s.missionary.id === selectedMissionary.id
+                  )?.monthTotal || 0,
+                hasEntries:
+                  (missionaryHoursSummary.find(
+                    (s) => s.missionary.id === selectedMissionary.id
+                  )?.entries || 0) > 0,
+                entryCount:
+                  missionaryHoursSummary.find(
+                    (s) => s.missionary.id === selectedMissionary.id
+                  )?.entries || 0,
+              }
+            : undefined
+        }
+      />
     </Box>
   );
 }

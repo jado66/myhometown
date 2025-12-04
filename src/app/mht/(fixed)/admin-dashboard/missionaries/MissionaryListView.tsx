@@ -56,6 +56,7 @@ import {
   Help,
   StickyNote2 as NoteIcon,
 } from "@mui/icons-material";
+import { MissionaryViewDialog } from "./MissionaryViewDialog";
 
 interface MissionaryListViewProps {
   missionaries: any[];
@@ -312,49 +313,62 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                     </TableCell>
                   )}
                   <TableCell>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Avatar
-                        src={missionary.profile_picture_url}
-                        alt={`${missionary.first_name} ${missionary.last_name}`}
+                    <Tooltip title="View details">
+                      <Box
                         sx={{
-                          width: 40,
-                          height: 40,
-                          bgcolor: missionary.profile_picture_url
-                            ? "transparent"
-                            : "warning.light",
-                          border: !missionary.profile_picture_url
-                            ? "2px solid"
-                            : "none",
-                          borderColor: !missionary.profile_picture_url
-                            ? "warning.main"
-                            : "transparent",
-                          cursor: onProfilePictureClick ? "pointer" : undefined,
-                          boxShadow: onProfilePictureClick ? 2 : undefined,
-                          transition: "box-shadow 0.2s",
-                          "&:hover": onProfilePictureClick
-                            ? { boxShadow: 6 }
-                            : undefined,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 2,
+                          cursor: "pointer",
+                          "&:hover": {
+                            "& .missionary-name": {
+                              textDecoration: "underline",
+                            },
+                          },
                         }}
-                        onClick={() =>
-                          onProfilePictureClick?.(
-                            missionary.profile_picture_url || null,
-                            missionary.first_name + " " + missionary.last_name
-                          )
-                        }
+                        onClick={() => {
+                          setSelectedMissionary(missionary);
+                          setDetailsOpen(true);
+                        }}
                       >
-                        {!missionary.profile_picture_url && (
-                          <Typography variant="body2">
-                            {missionary.first_name?.[0]}
-                            {missionary.last_name?.[0]}
+                        <Avatar
+                          src={missionary.profile_picture_url}
+                          alt={`${missionary.first_name} ${missionary.last_name}`}
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            bgcolor: missionary.profile_picture_url
+                              ? "transparent"
+                              : "warning.light",
+                            border: !missionary.profile_picture_url
+                              ? "2px solid"
+                              : "none",
+                            borderColor: !missionary.profile_picture_url
+                              ? "warning.main"
+                              : "transparent",
+                            boxShadow: 2,
+                            transition: "box-shadow 0.2s",
+                            "&:hover": { boxShadow: 6 },
+                          }}
+                        >
+                          {!missionary.profile_picture_url && (
+                            <Typography variant="body2">
+                              {missionary.first_name?.[0]}
+                              {missionary.last_name?.[0]}
+                            </Typography>
+                          )}
+                        </Avatar>
+                        <Box>
+                          <Typography
+                            variant="subtitle2"
+                            fontWeight="bold"
+                            className="missionary-name"
+                          >
+                            {missionary.first_name} {missionary.last_name}
                           </Typography>
-                        )}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                          {missionary.first_name} {missionary.last_name}
-                        </Typography>
+                        </Box>
                       </Box>
-                    </Box>
+                    </Tooltip>
                   </TableCell>
 
                   <TableCell>
@@ -547,23 +561,23 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                           </IconButton>
                         </Tooltip>
                       )}
-                      <Tooltip title="View details">
+                      <Tooltip title="Edit">
                         <IconButton
-                          onClick={() => {
-                            setSelectedMissionary(missionary);
-                            setDetailsOpen(true);
-                          }}
+                          onClick={() => onEdit(missionary)}
                           size="small"
                         >
-                          <InfoIcon />
+                          <EditIcon />
                         </IconButton>
                       </Tooltip>
-                      <IconButton
-                        onClick={(e) => handleMenuOpen(e, missionary)}
-                        size="small"
-                      >
-                        <MoreVertIcon />
-                      </IconButton>
+                      <Tooltip title="Delete">
+                        <IconButton
+                          onClick={() => onDelete(missionary)}
+                          size="small"
+                          color="error"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -571,34 +585,6 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
             })}
           </TableBody>
         </Table>
-
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-        >
-          <MenuItem
-            onClick={() => {
-              if (selectedMissionary) {
-                onEdit(selectedMissionary);
-              }
-              handleMenuClose();
-            }}
-          >
-            <EditIcon sx={{ mr: 1, fontSize: 20 }} /> Edit
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              if (selectedMissionary) {
-                onDelete(selectedMissionary);
-              }
-              handleMenuClose();
-            }}
-            sx={{ color: "error.main" }}
-          >
-            <DeleteIcon sx={{ mr: 1, fontSize: 20 }} /> Delete
-          </MenuItem>
-        </Menu>
       </TableContainer>
 
       {/* Note Popover */}
@@ -625,276 +611,21 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
       </Popover>
 
       {/* Details Dialog */}
-      <Dialog
+      <MissionaryViewDialog
         open={detailsOpen && !!selectedMissionary}
         onClose={() => setDetailsOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Typography variant="h6">
-            {selectedMissionary?.first_name} {selectedMissionary?.last_name}
-          </Typography>
-          <IconButton onClick={() => setDetailsOpen(false)} size="small">
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent dividers>
-          {selectedMissionary && (
-            <Stack spacing={3}>
-              {/* Basic Info */}
-              <Box>
-                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                  Basic Information
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <Box
-                      sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                    >
-                      <EmailIcon
-                        sx={{ fontSize: 16, color: "text.secondary" }}
-                      />
-                      <Typography variant="body2" noWrap>
-                        {selectedMissionary.email || "No email provided"}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Box
-                      sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                    >
-                      <PhoneIcon
-                        sx={{ fontSize: 16, color: "text.secondary" }}
-                      />
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          opacity: selectedMissionary.contact_number ? 1 : 0.6,
-                          fontStyle: selectedMissionary.contact_number
-                            ? "normal"
-                            : "italic",
-                          color: selectedMissionary.contact_number
-                            ? "inherit"
-                            : "warning.main",
-                        }}
-                      >
-                        {selectedMissionary.contact_number ||
-                          "No phone provided"}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Box
-                      sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                    >
-                      <LocationOnIcon
-                        sx={{ fontSize: 16, color: "text.secondary" }}
-                      />
-                      <Typography variant="body2" noWrap>
-                        {getLocationDisplay(selectedMissionary)}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Tooltip
-                      title={
-                        getMissingAddressParts(selectedMissionary).length
-                          ? `Missing: ${getMissingAddressParts(
-                              selectedMissionary
-                            ).join(", ")}`
-                          : "Physical address"
-                      }
-                    >
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                      >
-                        <LocationOnIcon
-                          sx={{ fontSize: 16, color: "text.secondary" }}
-                        />
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            opacity: getMissingAddressParts(selectedMissionary)
-                              .length
-                              ? 0.7
-                              : 1,
-                            fontStyle: getMissingAddressParts(
-                              selectedMissionary
-                            ).length
-                              ? "italic"
-                              : "normal",
-                          }}
-                          noWrap
-                        >
-                          {buildFullAddress(selectedMissionary)}
-                        </Typography>
-                      </Box>
-                    </Tooltip>
-                  </Grid>
-                </Grid>
-              </Box>
-
-              {/* Hours Information */}
-              <Box>
-                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                  Service Hours
-                </Typography>
-                <Stack spacing={1}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    <ScheduleIcon
-                      sx={{ fontSize: 16, color: "text.secondary" }}
-                    />
-                    <Typography variant="body2">
-                      {getHoursData(selectedMissionary.id).totalHours} total
-                      hours recorded
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    <ScheduleIcon
-                      sx={{ fontSize: 16, color: "text.secondary" }}
-                    />
-                    <Typography variant="body2">
-                      {getHoursData(selectedMissionary.id).currentMonthHours}{" "}
-                      hours this month
-                    </Typography>
-                  </Box>
-                  <Typography variant="caption" color="text.secondary">
-                    {getHoursData(selectedMissionary.id).entryCount} total
-                    entries
-                  </Typography>
-                </Stack>
-              </Box>
-
-              {/* Assignment Details */}
-              <Box>
-                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                  Assignment Details
-                </Typography>
-                <Stack spacing={1}>
-                  <Typography variant="body2">
-                    <strong>Level:</strong>{" "}
-                    {selectedMissionary.assignment_level}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Title:</strong>{" "}
-                    {selectedMissionary.title ? (
-                      <span>{selectedMissionary.title}</span>
-                    ) : (
-                      <span style={{ color: "#ed6c02", fontStyle: "italic" }}>
-                        Not set
-                      </span>
-                    )}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Home Stake:</strong>{" "}
-                    {selectedMissionary.stake_name ? (
-                      <span>{selectedMissionary.stake_name}</span>
-                    ) : (
-                      <span style={{ color: "#ed6c02", fontStyle: "italic" }}>
-                        Not set
-                      </span>
-                    )}
-                  </Typography>
-                </Stack>
-              </Box>
-
-              {/* Mission Timeline */}
-              <Box>
-                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                  Mission Timeline
-                </Typography>
-                <Stack spacing={1}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    <CalendarTodayIcon
-                      sx={{ fontSize: 16, color: "text.secondary" }}
-                    />
-                    <Typography variant="body2">
-                      <strong>Called:</strong>{" "}
-                      {selectedMissionary.start_date ? (
-                        <span>{formatDate(selectedMissionary.start_date)}</span>
-                      ) : (
-                        <span style={{ color: "#ed6c02", fontStyle: "italic" }}>
-                          Not set
-                        </span>
-                      )}
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2">
-                    <strong>Duration:</strong>{" "}
-                    {selectedMissionary.duration ? (
-                      <span>{selectedMissionary.duration}</span>
-                    ) : (
-                      <span style={{ color: "#ed6c02", fontStyle: "italic" }}>
-                        Not set
-                      </span>
-                    )}
-                  </Typography>
-                  {selectedMissionary.start_date &&
-                    selectedMissionary.duration &&
-                    getReleaseDate(selectedMissionary) && (
-                      <Typography variant="body2">
-                        <strong>Expected Release:</strong>{" "}
-                        {getReleaseDate(selectedMissionary)}
-                      </Typography>
-                    )}
-                  {isUpcomingView && (
-                    <Typography variant="body2">
-                      <strong>Days Remaining:</strong>{" "}
-                      {selectedMissionary.daysUntilRelease ??
-                        getDaysLeft(selectedMissionary)}
-                    </Typography>
-                  )}
-                </Stack>
-              </Box>
-
-              {/* Notes */}
-              {selectedMissionary.notes && (
-                <Box>
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight="bold"
-                    gutterBottom
-                  >
-                    Notes
-                  </Typography>
-                  <Box
-                    sx={{
-                      p: 2,
-                      bgcolor: "grey.50",
-                      borderRadius: 1,
-                      borderLeft: 3,
-                      borderColor: "primary.main",
-                    }}
-                  >
-                    <Typography variant="body2">
-                      {selectedMissionary.notes}
-                    </Typography>
-                  </Box>
-                </Box>
-              )}
-            </Stack>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDetailsOpen(false)}>Close</Button>
-          <Button
-            variant="outlined"
-            startIcon={<EditIcon />}
-            onClick={() => {
-              if (selectedMissionary) onEdit(selectedMissionary);
-            }}
-          >
-            Edit
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onEdit={(missionary) => {
+          setDetailsOpen(false);
+          onEdit(missionary);
+        }}
+        missionary={selectedMissionary}
+        cities={cities}
+        communities={communities}
+        hoursData={
+          selectedMissionary ? getHoursData(selectedMissionary.id) : undefined
+        }
+        isUpcomingView={isUpcomingView}
+      />
     </>
   );
 };
