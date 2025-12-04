@@ -12,6 +12,7 @@ import {
   Divider,
   ToggleButtonGroup,
   ToggleButton,
+  Button,
 } from "@mui/material";
 import {
   Schedule,
@@ -22,6 +23,7 @@ import {
   Group,
   ViewModule,
   ViewList,
+  Download,
 } from "@mui/icons-material";
 
 import { AggregateStats } from "./AggregateStats";
@@ -144,6 +146,86 @@ export function UpcomingReleases({
   filters,
   onFiltersChange,
 }: UpcomingReleasesProps) {
+  // Export CSV handler
+  const handleExportCSV = () => {
+    // Combine all upcoming releases
+    const allUpcoming = [
+      ...groupedMissionaries.critical,
+      ...groupedMissionaries.warning,
+      ...groupedMissionaries.info,
+    ].sort((a, b) => a.daysUntilRelease - b.daysUntilRelease);
+
+    const header = [
+      "First Name",
+      "Last Name",
+      "Email",
+      "Phone",
+      "Type",
+      "Status",
+      "Level",
+      "Assignment",
+      "Position",
+      "Start Date",
+      "Release Date",
+      "Days Until Release",
+      "Urgency",
+    ];
+
+    const rows = allUpcoming.map((m: any) => {
+      let assignment = "";
+      if (m.assignment_level?.toLowerCase() === "city") {
+        assignment = cities.find((c) => c.id === m.city_id)?.name || "";
+      } else if (m.assignment_level?.toLowerCase() === "community") {
+        assignment = communities.find((c) => c.id === m.community_id)?.name || "";
+      } else if (m.assignment_level?.toLowerCase() === "state") {
+        assignment = "Utah";
+      }
+
+      const releaseDate = getReleaseDate(m);
+      const urgency = getUrgencyLevel(m.daysUntilRelease);
+
+      return {
+        "First Name": m.first_name,
+        "Last Name": m.last_name,
+        "Email": m.email,
+        "Phone": m.contact_number || "",
+        "Type": m.person_type || "missionary",
+        "Status": m.assignment_status,
+        "Level": m.assignment_level || "",
+        "Assignment": assignment,
+        "Position": m.title || "",
+        "Start Date": m.start_date ? new Date(m.start_date).toLocaleDateString("en-US") : "",
+        "Release Date": releaseDate ? releaseDate.toLocaleDateString("en-US") : "",
+        "Days Until Release": m.daysUntilRelease,
+        "Urgency": urgency === "critical" ? "Within 30 days" : urgency === "warning" ? "Within 60 days" : "Within 90 days",
+      };
+    });
+
+    const escapeCsv = (val: any) => {
+      if (val === null || val === undefined) return "";
+      const str = String(val);
+      if (/[",\n]/.test(str)) {
+        return '"' + str.replace(/"/g, '""') + '"';
+      }
+      return str;
+    };
+
+    const csvContent = [
+      header.join(","),
+      ...rows.map((row) => header.map((h) => escapeCsv((row as any)[h])).join(",")),
+    ].join("\r\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `upcoming_releases_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   // Group missionaries by urgency level using calculated release date
   const groupedMissionaries = missionaries.reduce(
     (acc, missionary) => {
@@ -248,21 +330,31 @@ export function UpcomingReleases({
         >
           Upcoming Releases Table
         </Typography>
-        <ToggleButtonGroup
-          value={viewMode}
-          exclusive
-          onChange={onViewModeChange}
-          size="small"
-        >
-          <ToggleButton value="card" aria-label="card view">
-            <ViewModule sx={{ mr: 1 }} />
-            Cards
-          </ToggleButton>
-          <ToggleButton value="list" aria-label="list view">
-            <ViewList sx={{ mr: 1 }} />
-            List
-          </ToggleButton>
-        </ToggleButtonGroup>
+<Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={onViewModeChange}
+            size="small"
+          >
+            <ToggleButton value="card" aria-label="card view">
+              <ViewModule sx={{ mr: 1 }} />
+              Cards
+            </ToggleButton>
+            <ToggleButton value="list" aria-label="list view">
+              <ViewList sx={{ mr: 1 }} />
+              List
+            </ToggleButton>
+          </ToggleButtonGroup>
+          <Button
+            variant="outlined"
+            startIcon={<Download />}
+            onClick={handleExportCSV}
+            disabled={totalUpcoming === 0}
+          >
+            Export CSV
+          </Button>
+        </Box>
       </Box>
 
       {/* Critical Releases (Within 30 days) */}

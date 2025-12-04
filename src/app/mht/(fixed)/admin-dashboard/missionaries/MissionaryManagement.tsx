@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import IconButton from "@mui/material/IconButton";
@@ -25,6 +25,7 @@ import {
   ToggleButtonGroup,
   Divider,
   TablePagination,
+  Badge,
 } from "@mui/material";
 import {
   Add,
@@ -56,6 +57,7 @@ import ProfilePictureDialog from "./ProfilePictureDialog";
 import { toast } from "react-toastify";
 import PermissionGuard from "@/guards/permission-guard";
 import VolunteerSignupsTable from "@/components/volunteers/VolunteerSignupsTable";
+import { useVolunteerSignups } from "@/hooks/use-volunteer-signups";
 import { useCommunitiesSupabase } from "@/hooks/use-communities-supabase";
 import { useCitiesSupabase } from "@/hooks/use-cities-supabase";
 
@@ -777,6 +779,29 @@ export default function MissionaryManagement() {
     error: hoursError,
   } = useMissionaryHours();
 
+  // Fetch volunteer signups for badge count
+  const { signups: volunteerSignups } = useVolunteerSignups(null, "", user);
+  const uncontactedVolunteersCount = useMemo(() => {
+    return (volunteerSignups || []).filter((s: any) => !s.is_contacted).length;
+  }, [volunteerSignups]);
+
+  // Calculate critical releases count (within 30 days) based on filtered missionaries
+  const criticalReleasesCount = useMemo(() => {
+    const now = new Date();
+    return (filteredMissionaries || []).filter((m: any) => {
+      if (!m.start_date || !m.duration) return false;
+      const monthsMatch = m.duration.match(/(\d+)/);
+      if (!monthsMatch) return false;
+      const months = parseInt(monthsMatch[1], 10);
+      if (isNaN(months)) return false;
+      const releaseDate = new Date(m.start_date);
+      releaseDate.setMonth(releaseDate.getMonth() + months);
+      const diffTime = releaseDate.getTime() - now.getTime();
+      const daysUntilRelease = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return daysUntilRelease > 0 && daysUntilRelease <= 30;
+    }).length;
+  }, [filteredMissionaries]);
+
   const handleExportCSV = () => {
     // Helper function to calculate hours for a missionary
     const getHoursData = (missionaryId: string) => {
@@ -1097,13 +1122,6 @@ export default function MissionaryManagement() {
               >
                 Bulk Import
               </Button>
-              <Button
-                variant="outlined"
-                startIcon={<Download />}
-                onClick={handleExportCSV}
-              >
-                Export CSV
-              </Button>
 
               {/* Bulk Import Dialog */}
               <ImportMissionaryCsvHelpDialog
@@ -1155,12 +1173,19 @@ export default function MissionaryManagement() {
               sx={{
                 backgroundColor: "#f5f5f5",
                 borderBottom: "2px solid #e0e0e0",
+                overflow: "visible",
+                "& .MuiTabs-scroller": {
+                  overflow: "visible !important",
+                },
+                "& .MuiTabs-flexContainer": {
+                  overflow: "visible",
+                },
                 "& .MuiTab-root": {
                   fontSize: "1.1rem",
                   fontWeight: 600,
                   minHeight: "64px",
                   py: 2,
-
+                  overflow: "visible",
                   textTransform: "none",
                   borderTopLeftRadius: "8px",
                   borderTopRightRadius: "8px",
@@ -1188,8 +1213,46 @@ export default function MissionaryManagement() {
             >
               <Tab label="Missionaries & Volunteers Roster" />
               <Tab label="Hours Overview" />
-              <Tab label="Upcoming Releases" />
-              <Tab label="Volunteer Applications" />
+              <Tab
+                label={
+                  <Badge
+                    badgeContent={criticalReleasesCount}
+                    color="error"
+                    max={99}
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        right: -16,
+                        top: -8,
+                        fontSize: "0.75rem",
+                        minWidth: "20px",
+                        height: "20px",
+                      },
+                    }}
+                  >
+                    Upcoming Releases
+                  </Badge>
+                }
+              />
+              <Tab
+                label={
+                  <Badge
+                    badgeContent={uncontactedVolunteersCount}
+                    color="primary"
+                    max={99}
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        right: -16,
+                        top: -8,
+                        fontSize: "0.75rem",
+                        minWidth: "20px",
+                        height: "20px",
+                      },
+                    }}
+                  >
+                    Volunteer Applications
+                  </Badge>
+                }
+              />
             </Tabs>
 
             <TabPanel value={tabValue} index={0}>
@@ -1253,21 +1316,31 @@ export default function MissionaryManagement() {
                 >
                   Missionaries &amp; Volunteers Roster
                 </Typography>
-                <ToggleButtonGroup
-                  value={viewMode}
-                  exclusive
-                  onChange={handleViewModeChange}
-                  size="small"
-                >
-                  <ToggleButton value="card" aria-label="card view">
-                    <ViewModule sx={{ mr: 1 }} />
-                    Cards
-                  </ToggleButton>
-                  <ToggleButton value="list" aria-label="list view">
-                    <ViewList sx={{ mr: 1 }} />
-                    List
-                  </ToggleButton>
-                </ToggleButtonGroup>
+
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <ToggleButtonGroup
+                    value={viewMode}
+                    exclusive
+                    onChange={handleViewModeChange}
+                    size="small"
+                  >
+                    <ToggleButton value="card" aria-label="card view">
+                      <ViewModule sx={{ mr: 1 }} />
+                      Cards
+                    </ToggleButton>
+                    <ToggleButton value="list" aria-label="list view">
+                      <ViewList sx={{ mr: 1 }} />
+                      List
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                  <Button
+                    variant="outlined"
+                    startIcon={<Download />}
+                    onClick={handleExportCSV}
+                  >
+                    Export CSV
+                  </Button>
+                </Box>
               </Box>
 
               {/* Missionary Cards or List */}

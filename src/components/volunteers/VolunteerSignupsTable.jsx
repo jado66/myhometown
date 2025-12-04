@@ -369,14 +369,14 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
               <Refresh />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Export CSV">
-            <IconButton
-              onClick={handleExportCSV}
-              disabled={signups.length === 0}
-            >
-              <Download />
-            </IconButton>
-          </Tooltip>
+          <Button
+            variant="outlined"
+            startIcon={<Download />}
+            onClick={handleExportCSV}
+            disabled={signups.length === 0}
+          >
+            Export CSV
+          </Button>
         </Box>
       </Box>
 

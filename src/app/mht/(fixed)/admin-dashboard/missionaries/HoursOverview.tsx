@@ -29,6 +29,7 @@ import {
   Person,
   Analytics,
   TableChart,
+  Download,
 } from "@mui/icons-material";
 import { AggregateStats } from "./AggregateStats";
 import { SearchAndFilter } from "./SearchAndFilter";
@@ -343,14 +344,83 @@ export function HoursOverview({
 
       {activeTab === 0 && (
         <Box>
-          <Typography
-            variant="body2"
-            color="text.primary"
-            sx={{ display: "flex", mb: 3, alignItems: "center" }}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 3,
+            }}
           >
-            <BarChartIcon sx={{ mr: 1 }} />
-            Hours Summary by Missionary
-          </Typography>
+            <Typography
+              variant="body2"
+              color="text.primary"
+              sx={{ display: "flex", alignItems: "center" }}
+            >
+              <BarChartIcon sx={{ mr: 1 }} />
+              Hours Summary by Missionary
+            </Typography>
+            <Button
+              variant="outlined"
+              startIcon={<Download />}
+              onClick={() => {
+                const header = [
+                  "First Name",
+                  "Last Name",
+                  "Email",
+                  "Total Hours",
+                  "Total CRC",
+                  "Total DOS",
+                  "Total Admin",
+                  "Month Hours",
+                  "Month CRC",
+                  "Month DOS",
+                  "Month Admin",
+                ];
+
+                const rows = missionaryHoursSummary.map((summary) => ({
+                  "First Name": summary.missionary.first_name,
+                  "Last Name": summary.missionary.last_name,
+                  "Email": summary.missionary.email,
+                  "Total Hours": summary.totalHours,
+                  "Total CRC": summary.totalCRC,
+                  "Total DOS": summary.totalDOS,
+                  "Total Admin": summary.totalAdmin,
+                  "Month Hours": summary.monthTotal,
+                  "Month CRC": summary.monthCRC,
+                  "Month DOS": summary.monthDOS,
+                  "Month Admin": summary.monthAdmin,
+                }));
+
+                const escapeCsv = (val: any) => {
+                  if (val === null || val === undefined) return "";
+                  const str = String(val);
+                  if (/[",\n]/.test(str)) {
+                    return '"' + str.replace(/"/g, '""') + '"';
+                  }
+                  return str;
+                };
+
+                const csvContent = [
+                  header.join(","),
+                  ...rows.map((row) => header.map((h) => escapeCsv((row as any)[h])).join(",")),
+                ].join("\r\n");
+
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `hours_overview_${new Date().toISOString().slice(0, 10)}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              }}
+              disabled={missionaryHoursSummary.length === 0}
+            >
+              Export CSV
+            </Button>
+          </Box>
 
           {missionaryHoursSummary.length > 0 ? (
             <TableContainer component={Paper}>
