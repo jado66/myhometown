@@ -381,7 +381,7 @@ export function HoursOverview({
                 const rows = missionaryHoursSummary.map((summary) => ({
                   "First Name": summary.missionary.first_name,
                   "Last Name": summary.missionary.last_name,
-                  "Email": summary.missionary.email,
+                  Email: summary.missionary.email,
                   "Total Hours": summary.totalHours,
                   "Total CRC": summary.totalCRC,
                   "Total DOS": summary.totalDOS,
@@ -403,14 +403,20 @@ export function HoursOverview({
 
                 const csvContent = [
                   header.join(","),
-                  ...rows.map((row) => header.map((h) => escapeCsv((row as any)[h])).join(",")),
+                  ...rows.map((row) =>
+                    header.map((h) => escapeCsv((row as any)[h])).join(",")
+                  ),
                 ].join("\r\n");
 
-                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                const blob = new Blob([csvContent], {
+                  type: "text/csv;charset=utf-8;",
+                });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = `hours_overview_${new Date().toISOString().slice(0, 10)}.csv`;
+                a.download = `hours_overview_${new Date()
+                  .toISOString()
+                  .slice(0, 10)}.csv`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);

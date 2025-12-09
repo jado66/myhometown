@@ -522,13 +522,11 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
                           ? formatDate(missionary.start_date)
                           : "Start date not set"}
                       </Typography>
-                      {missionary.start_date &&
-                        missionary.duration &&
-                        getReleaseDate(missionary) && (
-                          <Typography variant="caption" color="text.secondary">
-                            Release: {getReleaseDate(missionary)}
-                          </Typography>
-                        )}
+                      {missionary.end_date && (
+                        <Typography variant="caption" color="text.secondary">
+                          Release: {formatDate(missionary.end_date)}
+                        </Typography>
+                      )}
                       {(!missionary.start_date || !missionary.duration) && (
                         <Typography
                           variant="caption"

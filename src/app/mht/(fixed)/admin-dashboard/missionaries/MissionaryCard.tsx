@@ -752,9 +752,9 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
                       <strong>Duration:</strong> {missionary.duration}
                     </Typography>
                   )}
-                  {getReleaseDate() && (
+                  {missionary.end_date} && (
                     <Typography variant="body2">
-                      <strong>Expected Release:</strong> {getReleaseDate()}
+                      <strong>Expected Release:</strong> {missionary.end_date}
                     </Typography>
                   )}
                   {isUpcomingView && (

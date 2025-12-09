@@ -414,7 +414,7 @@ const MissionaryViewDialog: React.FC<MissionaryViewDialogProps> = ({
                       missionary.duration ? `${missionary.duration}` : null
                     }
                   />
-                  <InfoRow label="Expected Release" value={getReleaseDate()} />
+                  <InfoRow label="Expected Release" value={missionary.end_date ? formatDate(missionary.end_date) : null} />
                   {isUpcomingView && (
                     <Box
                       sx={{

@@ -176,7 +176,8 @@ export function UpcomingReleases({
       if (m.assignment_level?.toLowerCase() === "city") {
         assignment = cities.find((c) => c.id === m.city_id)?.name || "";
       } else if (m.assignment_level?.toLowerCase() === "community") {
-        assignment = communities.find((c) => c.id === m.community_id)?.name || "";
+        assignment =
+          communities.find((c) => c.id === m.community_id)?.name || "";
       } else if (m.assignment_level?.toLowerCase() === "state") {
         assignment = "Utah";
       }
@@ -187,17 +188,26 @@ export function UpcomingReleases({
       return {
         "First Name": m.first_name,
         "Last Name": m.last_name,
-        "Email": m.email,
-        "Phone": m.contact_number || "",
-        "Type": m.person_type || "missionary",
-        "Status": m.assignment_status,
-        "Level": m.assignment_level || "",
-        "Assignment": assignment,
-        "Position": m.title || "",
-        "Start Date": m.start_date ? new Date(m.start_date).toLocaleDateString("en-US") : "",
-        "Release Date": releaseDate ? releaseDate.toLocaleDateString("en-US") : "",
+        Email: m.email,
+        Phone: m.contact_number || "",
+        Type: m.person_type || "missionary",
+        Status: m.assignment_status,
+        Level: m.assignment_level || "",
+        Assignment: assignment,
+        Position: m.title || "",
+        "Start Date": m.start_date
+          ? new Date(m.start_date).toLocaleDateString("en-US")
+          : "",
+        "Release Date": releaseDate
+          ? releaseDate.toLocaleDateString("en-US")
+          : "",
         "Days Until Release": m.daysUntilRelease,
-        "Urgency": urgency === "critical" ? "Within 30 days" : urgency === "warning" ? "Within 60 days" : "Within 90 days",
+        Urgency:
+          urgency === "critical"
+            ? "Within 30 days"
+            : urgency === "warning"
+            ? "Within 60 days"
+            : "Within 90 days",
       };
     });
 
@@ -212,14 +222,18 @@ export function UpcomingReleases({
 
     const csvContent = [
       header.join(","),
-      ...rows.map((row) => header.map((h) => escapeCsv((row as any)[h])).join(",")),
+      ...rows.map((row) =>
+        header.map((h) => escapeCsv((row as any)[h])).join(",")
+      ),
     ].join("\r\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `upcoming_releases_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `upcoming_releases_${new Date()
+      .toISOString()
+      .slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -330,7 +344,7 @@ export function UpcomingReleases({
         >
           Upcoming Releases Table
         </Typography>
-<Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
           <ToggleButtonGroup
             value={viewMode}
             exclusive
