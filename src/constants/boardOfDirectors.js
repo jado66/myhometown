@@ -25,7 +25,7 @@ and church service, including the My Hometown initiative, with his wife Marge.`,
   },
   {
     name: "Kent Bowman",
-    position: "Chief Operating Officer",
+    position: "Vice President",
     avatar: "/images/board/Kent Bowman.jpeg",
     bio: `Kent is a former Managing Partner and Audit and Transactional Advisory Partner at
 Arthur Andersen LLP and Tanner LLC, and a former Audit and Business Advisory
@@ -75,16 +75,17 @@ earned degrees from Columbia University and Johns Hopkins University.`,
   // Chair for My Hometown Ogden.`,
   //   },
   {
-    name: "Ted Hill",
-    position: "Chief Financial Officer",
-    avatar: "/images/board/Ted Hill.jpg",
-    bio: `Ted is a retired partner of Eide Bailly LLP, a regional accounting and business
-consulting firm, where he formerly served as the partner-in-charge of the Utah offices.
-He holds a BA in Accounting from the University of Utah. Ted has been an active
-community member, serving as a board member and chair of the Finance Committee at
-Primary Children's Hospital. He is also a board member and treasurer for the Utah
-Refugee Connection, contributing his expertise to support local causes and improve
-community well-being.`,
+    name: "Mark Morris",
+    position: "Secretary",
+    avatar: "/images/board/Mark Morris.jpg",
+    bio: `Mark is the Managing Partner of the Salt Lake City office of Snell & Wilmer L.L.P. He
+holds a J.D. from the J. Reuben Clark Law School at Brigham Young University and a
+B.A. from Columbia College, Columbia University. Mark is a Commissioner of the Utah
+State Bar and has been recognized in The Best Lawyers in America® for commercial
+
+litigation and other specialties. He is a Fellow of the Construction Lawyers Society of
+America and a past president of the Brigham Young University Law School Alumni
+Association.`,
   },
   {
     name: "Paul Werner",
@@ -134,6 +135,17 @@ field.`,
     name: "Bruce Jardine",
     avatar: "/images/board/Bruce Jardine.jpg",
     bio: `Bruce is the retired principal owner and CEO of LWE Electric Inc. working throughout much of  the Western United States.  He received his education degree from Weber State University.  Bruce and his wife Diane are currently serving as leaders and executive directors of the My HomeTown Ogden South Council.  He is an active community member and supported many non-profit causes in Northern Utah.  He is a founding member of Rocky Mountain Home Fund and currently serving on the RMHF foundation board.  Bruce is a member of the Weber County School Board of Education and an advocate for family, community and youth programs.`,
+  },
+  {
+    name: "Ted Hill",
+    avatar: "/images/board/Ted Hill.jpg",
+    bio: `Ted is a retired partner of Eide Bailly LLP, a regional accounting and business
+consulting firm, where he formerly served as the partner-in-charge of the Utah offices.
+He holds a BA in Accounting from the University of Utah. Ted has been an active
+community member, serving as a board member and chair of the Finance Committee at
+Primary Children's Hospital. He is also a board member and treasurer for the Utah
+Refugee Connection, contributing his expertise to support local causes and improve
+community well-being.`,
   },
   {
     name: "Rev. Bruce Kolasch",
@@ -193,18 +205,7 @@ Bank. A Regents Professor of Health Administration, Ann holds an EdD from Brigha
 Young University, an MS from Texas State University, an MT from Vanderbilt University,
 and a BS from the University of Tennessee.`,
   },
-  {
-    name: "Mark Morris",
-    avatar: "/images/board/Mark Morris.jpg",
-    bio: `Mark is the Managing Partner of the Salt Lake City office of Snell & Wilmer L.L.P. He
-holds a J.D. from the J. Reuben Clark Law School at Brigham Young University and a
-B.A. from Columbia College, Columbia University. Mark is a Commissioner of the Utah
-State Bar and has been recognized in The Best Lawyers in America® for commercial
 
-litigation and other specialties. He is a Fellow of the Construction Lawyers Society of
-America and a past president of the Brigham Young University Law School Alumni
-Association.`,
-  },
   {
     name: "Kimberly Teitter",
     avatar: "/images/board/KimberlyTeitter.jpg",
@@ -245,5 +246,10 @@ planning, real estate, architecture, and law. She serves on advisory boards for 
 Butte Garden, Envision Utah, the Utah Impact Partnership, and the Utah Housing
 Preservation Fund, among others. Shaleane holds an MA and PhD from The University
 of Chicago and a BA and MA from the University of Utah.`,
+  },
+  {
+    name: "Kristin Andrus",
+    avatar: "/images/board/Kristin Andrus.jpg",
+    bio: ``,
   },
 ];
