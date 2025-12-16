@@ -1,6 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/util/supabaseServer";
 
+// Add these lines to disable caching
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 // Helper function to calculate duration in months between start_date and end_date
 function calculateDuration(
   startDate: string | null,
@@ -39,54 +43,71 @@ export async function POST(request: NextRequest) {
       // This is a fetch missionaries request
       const { user } = body;
 
-      let query = supabaseServer
-        .from("missionaries")
-        .select(
+      // Fetch all records using pagination to bypass the 1000 row limit
+      const pageSize = 1000;
+      let allMissionaries: any[] = [];
+      let from = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        let query = supabaseServer
+          .from("missionaries")
+          .select(
+            `
+            *,
+            cities:city_id (name, state, country)
           `
-          *,
-          cities:city_id (name, state, country)
-        `
-        )
-        .order("created_at", { ascending: false });
+          )
+          .order("created_at", { ascending: false })
+          .range(from, from + pageSize - 1);
 
-      // Apply filters based on user's cities and communities
-      if (user) {
-        const userCities = user.cities || [];
-        const userCommunities = user.communities || [];
+        // Apply filters based on user's cities and communities
+        if (user) {
+          const userCities = user.cities || [];
+          const userCommunities = user.communities || [];
 
-        // If user has specific cities or communities assigned, filter accordingly
-        if (userCities.length > 0 || userCommunities.length > 0) {
-          // Build OR conditions for filtering
-          const orConditions: string[] = [];
+          // If user has specific cities or communities assigned, filter accordingly
+          if (userCities.length > 0 || userCommunities.length > 0) {
+            // Build OR conditions for filtering
+            const orConditions: string[] = [];
 
-          if (userCities.length > 0) {
-            orConditions.push(`city_id.in.(${userCities.join(",")})`);
+            if (userCities.length > 0) {
+              orConditions.push(`city_id.in.(${userCities.join(",")})`);
+            }
+
+            if (userCommunities.length > 0) {
+              orConditions.push(`community_id.in.(${userCommunities.join(",")})`);
+            }
+
+            if (orConditions.length > 0) {
+              query = query.or(orConditions.join(","));
+            }
           }
-
-          if (userCommunities.length > 0) {
-            orConditions.push(`community_id.in.(${userCommunities.join(",")})`);
-          }
-
-          if (orConditions.length > 0) {
-            query = query.or(orConditions.join(","));
-          }
+          // If user has no cities or communities, they can see all (admin behavior)
         }
-        // If user has no cities or communities, they can see all (admin behavior)
-      }
 
-      const { data: missionaries, error } = await query;
+        const { data: missionaries, error } = await query;
 
-      if (error) {
-        console.error("Fetch missionaries error:", error);
-        return NextResponse.json(
-          { error: "Failed to fetch missionaries" },
-          { status: 500 }
-        );
+        if (error) {
+          console.error("Fetch missionaries error:", error);
+          return NextResponse.json(
+            { error: "Failed to fetch missionaries" },
+            { status: 500 }
+          );
+        }
+
+        if (missionaries && missionaries.length > 0) {
+          allMissionaries = allMissionaries.concat(missionaries);
+          from += pageSize;
+          hasMore = missionaries.length === pageSize;
+        } else {
+          hasMore = false;
+        }
       }
 
       // Calculate duration for each missionary
       const missionariesWithDuration =
-        missionaries?.map((missionary) => ({
+        allMissionaries.map((missionary) => ({
           ...missionary,
           // Provide unified `type` field (new column) while remaining backward compatible.
           type:
@@ -95,7 +116,7 @@ export async function POST(request: NextRequest) {
             missionary.start_date,
             missionary.end_date
           ),
-        })) || [];
+        }));
 
       return NextResponse.json({ missionaries: missionariesWithDuration });
     }
