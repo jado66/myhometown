@@ -76,7 +76,9 @@ export async function POST(request: NextRequest) {
             }
 
             if (userCommunities.length > 0) {
-              orConditions.push(`community_id.in.(${userCommunities.join(",")})`);
+              orConditions.push(
+                `community_id.in.(${userCommunities.join(",")})`
+              );
             }
 
             if (orConditions.length > 0) {
@@ -106,17 +108,16 @@ export async function POST(request: NextRequest) {
       }
 
       // Calculate duration for each missionary
-      const missionariesWithDuration =
-        allMissionaries.map((missionary) => ({
-          ...missionary,
-          // Provide unified `type` field (new column) while remaining backward compatible.
-          type:
-            (missionary as any).type || (missionary as any).person_type || null,
-          calculated_duration: calculateDuration(
-            missionary.start_date,
-            missionary.end_date
-          ),
-        }));
+      const missionariesWithDuration = allMissionaries.map((missionary) => ({
+        ...missionary,
+        // Provide unified `type` field (new column) while remaining backward compatible.
+        type:
+          (missionary as any).type || (missionary as any).person_type || null,
+        calculated_duration: calculateDuration(
+          missionary.start_date,
+          missionary.end_date
+        ),
+      }));
 
       return NextResponse.json({ missionaries: missionariesWithDuration });
     }

@@ -60,6 +60,58 @@ function isValidTimestamp(value: any): boolean {
   return !isNaN(date.getTime());
 }
 
+// Parse and convert date to ISO format (YYYY-MM-DD), returns null if invalid
+function parseAndFormatDate(value: any): string | null {
+  if (!value) return null;
+  
+  // If already in ISO format, validate and return
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    
+    // Try parsing as-is first
+    let date = new Date(trimmed);
+    
+    // Handle MM/DD/YYYY format explicitly
+    const slashMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (slashMatch) {
+      const [, month, day, year] = slashMatch;
+      date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      // Verify the date components match (catches invalid dates like 11/31)
+      if (
+        date.getFullYear() !== parseInt(year) ||
+        date.getMonth() !== parseInt(month) - 1 ||
+        date.getDate() !== parseInt(day)
+      ) {
+        return null; // Invalid date like 11/31
+      }
+    }
+    
+    // Handle MM-DD-YYYY format
+    const dashMatch = trimmed.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (dashMatch) {
+      const [, month, day, year] = dashMatch;
+      date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      if (
+        date.getFullYear() !== parseInt(year) ||
+        date.getMonth() !== parseInt(month) - 1 ||
+        date.getDate() !== parseInt(day)
+      ) {
+        return null;
+      }
+    }
+    
+    if (isNaN(date.getTime())) return null;
+    
+    // Return ISO format YYYY-MM-DD
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  
+  return null;
+}
+
 // Validate a single missionary payload; returns list of error messages (empty if valid)
 function validateMissionary(m: any): string[] {
   const errors: string[] = [];
@@ -93,15 +145,21 @@ function validateMissionary(m: any): string[] {
   }
 
   // NEW: Validate timestamp fields
-  if (m.start_date && !isValidTimestamp(m.start_date)) {
-    errors.push(
-      `Invalid start_date: "${m.start_date}" (expected timestamp format)`
-    );
+  if (m.start_date) {
+    const parsed = parseAndFormatDate(m.start_date);
+    if (!parsed) {
+      errors.push(
+        `Invalid start_date: "${m.start_date}" (invalid or non-existent date)`
+      );
+    }
   }
-  if (m.end_date && !isValidTimestamp(m.end_date)) {
-    errors.push(
-      `Invalid end_date: "${m.end_date}" (expected timestamp format)`
-    );
+  if (m.end_date) {
+    const parsed = parseAndFormatDate(m.end_date);
+    if (!parsed) {
+      errors.push(
+        `Invalid end_date: "${m.end_date}" (invalid or non-existent date)`
+      );
+    }
   }
   if (m.last_login && !isValidTimestamp(m.last_login)) {
     errors.push(
@@ -358,8 +416,8 @@ export async function POST(request: NextRequest) {
           notes: c.notes || "",
           title: c.title || null,
           group: c.group || null,
-          start_date: c.start_date || null,
-          end_date: c.end_date || null,
+          start_date: parseAndFormatDate(c.start_date),
+          end_date: parseAndFormatDate(c.end_date),
           duration: c.duration || null,
           stake_name: c.stake_name || null,
           gender: c.gender || null,
@@ -409,8 +467,8 @@ export async function POST(request: NextRequest) {
             notes: c.notes || "",
             title: c.title || null,
             group: c.group || null,
-            start_date: c.start_date || null,
-            end_date: c.end_date || null,
+            start_date: parseAndFormatDate(c.start_date),
+            end_date: parseAndFormatDate(c.end_date),
             duration: c.duration || null,
             stake_name: c.stake_name || null,
             gender: c.gender || null,
@@ -436,17 +494,27 @@ export async function POST(request: NextRequest) {
           hint: error.hint,
         });
 
+        // Build detailed error message
+        const errorDetail = [
+          error.message,
+          error.code ? `Code: ${error.code}` : null,
+          error.details ? `Details: ${error.details}` : null,
+          error.hint ? `Hint: ${error.hint}` : null,
+        ]
+          .filter(Boolean)
+          .join(" | ");
+
         // Mark entire chunk as failed
         chunk.forEach((c) => {
           const origIndex = c._originalIndex;
           invalid.push({
             index: origIndex,
             email: c.email,
-            errors: ["Insert failure"],
+            errors: [errorDetail || "Insert failure"],
           });
           if (recordStatuses[origIndex]) {
             recordStatuses[origIndex].status = "insertion_failed";
-            recordStatuses[origIndex].errors = ["Insert failure"];
+            recordStatuses[origIndex].errors = [errorDetail || "Insert failure"];
           }
         });
         continue;
