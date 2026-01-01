@@ -39,7 +39,7 @@ const categories: Category[] = [
     value: "crc",
     label: "Community Resource Center",
     description:
-      "Log any hours associated with Community Resource Center activities, including tutoring, meetings, planning, travel, etc.",
+      "Log any hours associated with Community Resource Center activities, including community events, tutoring, meetings, planning, travel, etc.",
   },
   {
     value: "dos",
