@@ -743,6 +743,10 @@ export default function MissionaryManagement() {
       matchesCommunity &&
       matchesPersonType
     );
+  }).sort((a, b) => {
+    const lastNameA = (a.last_name || "").toLowerCase();
+    const lastNameB = (b.last_name || "").toLowerCase();
+    return lastNameA.localeCompare(lastNameB);
   });
 
   // Reset page when filters change
