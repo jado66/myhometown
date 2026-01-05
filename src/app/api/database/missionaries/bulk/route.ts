@@ -63,14 +63,14 @@ function isValidTimestamp(value: any): boolean {
 // Parse and convert date to ISO format (YYYY-MM-DD), returns null if invalid
 function parseAndFormatDate(value: any): string | null {
   if (!value) return null;
-  
+
   // If already in ISO format, validate and return
   if (typeof value === "string") {
     const trimmed = value.trim();
-    
+
     // Try parsing as-is first
     let date = new Date(trimmed);
-    
+
     // Handle MM/DD/YYYY format explicitly
     const slashMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
     if (slashMatch) {
@@ -85,7 +85,7 @@ function parseAndFormatDate(value: any): string | null {
         return null; // Invalid date like 11/31
       }
     }
-    
+
     // Handle MM-DD-YYYY format
     const dashMatch = trimmed.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
     if (dashMatch) {
@@ -99,16 +99,16 @@ function parseAndFormatDate(value: any): string | null {
         return null;
       }
     }
-    
+
     if (isNaN(date.getTime())) return null;
-    
+
     // Return ISO format YYYY-MM-DD
     const yyyy = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, "0");
     const dd = String(date.getDate()).padStart(2, "0");
     return `${yyyy}-${mm}-${dd}`;
   }
-  
+
   return null;
 }
 
@@ -514,7 +514,9 @@ export async function POST(request: NextRequest) {
           });
           if (recordStatuses[origIndex]) {
             recordStatuses[origIndex].status = "insertion_failed";
-            recordStatuses[origIndex].errors = [errorDetail || "Insert failure"];
+            recordStatuses[origIndex].errors = [
+              errorDetail || "Insert failure",
+            ];
           }
         });
         continue;
