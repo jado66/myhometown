@@ -41,7 +41,7 @@ const POSITIONS_BY_LEVEL: Record<string, Record<string, string[]>> = {
   community: {
     "Community Executives": [
       "Community Executive Director",
-      "Community Associate Secretary",
+      "Community Executive Secretary",
       "Community Associate Executive Director",
       "CommunityTechnology Specialist",
     ],

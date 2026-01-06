@@ -700,54 +700,59 @@ export default function MissionaryManagement() {
     }
   };
 
-  const filteredMissionaries = (missionaries || []).filter((missionary) => {
-    const fullName =
-      `${missionary.first_name} ${missionary.last_name}`.toLowerCase();
-    const searchLower = searchTerm.toLowerCase();
-    const matchesSearch =
-      fullName.includes(searchLower) ||
-      missionary.first_name.toLowerCase().includes(searchLower) ||
-      missionary.last_name.toLowerCase().includes(searchLower) ||
-      missionary.email.toLowerCase().includes(searchLower) ||
-      (missionary.title || "").toLowerCase().includes(searchLower) ||
-      (missionary.position_detail || "").toLowerCase().includes(searchLower) ||
-      (missionary.group || "").toLowerCase().includes(searchLower);
+  const filteredMissionaries = (missionaries || [])
+    .filter((missionary) => {
+      const fullName =
+        `${missionary.first_name} ${missionary.last_name}`.toLowerCase();
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch =
+        fullName.includes(searchLower) ||
+        missionary.first_name.toLowerCase().includes(searchLower) ||
+        missionary.last_name.toLowerCase().includes(searchLower) ||
+        missionary.email.toLowerCase().includes(searchLower) ||
+        (missionary.title || "").toLowerCase().includes(searchLower) ||
+        (missionary.position_detail || "")
+          .toLowerCase()
+          .includes(searchLower) ||
+        (missionary.group || "").toLowerCase().includes(searchLower);
 
-    const matchesStatus =
-      statusFilter === "all" ||
-      missionary.assignment_status.toLowerCase() === statusFilter.toLowerCase();
+      const matchesStatus =
+        statusFilter === "all" ||
+        missionary.assignment_status.toLowerCase() ===
+          statusFilter.toLowerCase();
 
-    const matchesLevel =
-      assignmentLevels.length === 0 ||
-      assignmentLevels.includes(missionary.assignment_level?.toLowerCase());
+      const matchesLevel =
+        assignmentLevels.length === 0 ||
+        assignmentLevels.includes(missionary.assignment_level?.toLowerCase());
 
-    const matchesAssignmentStatus =
-      assignmentStatus.length === 0 ||
-      assignmentStatus.includes(missionary.assignment_status?.toLowerCase());
+      const matchesAssignmentStatus =
+        assignmentStatus.length === 0 ||
+        assignmentStatus.includes(missionary.assignment_status?.toLowerCase());
 
-    const matchesCity =
-      !selectedCityId || missionary.city_id === selectedCityId;
+      const matchesCity =
+        !selectedCityId || missionary.city_id === selectedCityId;
 
-    const matchesCommunity =
-      !selectedCommunityId || missionary.community_id === selectedCommunityId;
+      const matchesCommunity =
+        !selectedCommunityId || missionary.community_id === selectedCommunityId;
 
-    const matchesPersonType =
-      personType === "all" || missionary.person_type === personType;
+      const matchesPersonType =
+        personType === "all" || missionary.person_type === personType;
 
-    return (
-      matchesSearch &&
-      matchesStatus &&
-      matchesLevel &&
-      matchesAssignmentStatus &&
-      matchesCity &&
-      matchesCommunity &&
-      matchesPersonType
-    );
-  }).sort((a, b) => {
-    const lastNameA = (a.last_name || "").toLowerCase();
-    const lastNameB = (b.last_name || "").toLowerCase();
-    return lastNameA.localeCompare(lastNameB);
-  });
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesLevel &&
+        matchesAssignmentStatus &&
+        matchesCity &&
+        matchesCommunity &&
+        matchesPersonType
+      );
+    })
+    .sort((a, b) => {
+      const lastNameA = (a.last_name || "").toLowerCase();
+      const lastNameB = (b.last_name || "").toLowerCase();
+      return lastNameA.localeCompare(lastNameB);
+    });
 
   // Reset page when filters change
   useEffect(() => {
