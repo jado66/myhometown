@@ -14,12 +14,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find missionary by using supabaseServer
+    // Find missionary by using supabaseServer (case-insensitive email match)
 
     const { data: missionary, error } = await supabaseServer
       .from("missionaries")
       .select("*")
-      .eq("email", email)
+      .ilike("email", email)
       .eq("assignment_status", "active")
       .single();
 
