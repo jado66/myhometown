@@ -62,6 +62,17 @@ export async function POST(request: NextRequest) {
         email: missionary.email,
         first_name: missionary.first_name,
         last_name: missionary.last_name,
+        contact_number: missionary.contact_number,
+        assignment_status: missionary.assignment_status,
+        assignment_level: missionary.assignment_level,
+        city_id: missionary.city_id,
+        community_id: missionary.community_id,
+        title: missionary.title,
+        position_detail: missionary.position_detail,
+        person_type: missionary.person_type,
+        profile_picture_url: missionary.profile_picture_url,
+        cities: missionary.cities,
+        communities: missionary.communities,
       },
     });
   } catch (error) {

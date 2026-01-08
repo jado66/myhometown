@@ -15,9 +15,9 @@ import {
   Container,
   Paper,
 } from "@mui/material";
-import { Mail, Login } from "@mui/icons-material";
+import { People, Login } from "@mui/icons-material";
 
-export default function MissionaryLogin() {
+export default function DirectoryLogin() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -44,9 +44,7 @@ export default function MissionaryLogin() {
         setSuccess(true);
         setMessage("Login successful! Redirecting...");
         setTimeout(() => {
-          router.push(
-            rootUrl + `/admin-dashboard/log-hours/${email.toLowerCase()}`
-          );
+          router.push(rootUrl + `/admin-dashboard/directory/${email.toLowerCase()}`);
         }, 1000);
       } else {
         setSuccess(false);
@@ -76,17 +74,17 @@ export default function MissionaryLogin() {
           <Card>
             <CardContent sx={{ p: 4 }}>
               <Box sx={{ textAlign: "center", mb: 4 }}>
-                <Mail sx={{ fontSize: 64, color: "primary.main", mb: 2 }} />
+                <People sx={{ fontSize: 64, color: "primary.main", mb: 2 }} />
                 <Typography
                   variant="h3"
                   component="h1"
                   gutterBottom
                   fontWeight="bold"
                 >
-                  Logs Hours
+                  Missionary Directory
                 </Typography>
                 <Typography variant="h6" color="text.secondary">
-                  Enter your email address to login
+                  Enter your email address to view your community&apos;s directory
                 </Typography>
               </Box>
 
@@ -132,7 +130,7 @@ export default function MissionaryLogin() {
                     fontWeight: "bold",
                   }}
                 >
-                  {loading ? "Logging in..." : "Login"}
+                  {loading ? "Logging in..." : "View Directory"}
                 </Button>
               </Box>
 

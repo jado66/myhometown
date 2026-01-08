@@ -38,10 +38,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Check if this is a fetch request (has user property) or a create request
-    if (body.user !== undefined) {
+    // Check if this is a fetch request (has user, communityId, or cityId property) or a create request
+    if (
+      body.user !== undefined ||
+      body.communityId ||
+      body.cityId !== undefined
+    ) {
       // This is a fetch missionaries request
-      const { user } = body;
+      const { user, communityId, cityId, excludeEmail } = body;
 
       // Fetch all records using pagination to bypass the 1000 row limit
       const pageSize = 1000;
@@ -55,14 +59,21 @@ export async function POST(request: NextRequest) {
           .select(
             `
             *,
-            cities:city_id (name, state, country)
+            cities:city_id (name, state, country),
+            communities:community_id (name)
           `
           )
           .order("created_at", { ascending: false })
           .range(from, from + pageSize - 1);
 
-        // Apply filters based on user's cities and communities
-        if (user) {
+        // Apply filters based on communityId (for email-logged-in users at community level)
+        if (communityId) {
+          query = query.eq("community_id", communityId);
+        }
+        // For city-level users, we'll fetch all and filter on the client side
+        // since we need access to the community list to find child communities
+        // Apply filters based on user's cities and communities (for authenticated users)
+        else if (user) {
           const userCities = user.cities || [];
           const userCommunities = user.communities || [];
 
@@ -108,16 +119,25 @@ export async function POST(request: NextRequest) {
       }
 
       // Calculate duration for each missionary
-      const missionariesWithDuration = allMissionaries.map((missionary) => ({
-        ...missionary,
-        // Provide unified `type` field (new column) while remaining backward compatible.
-        type:
-          (missionary as any).type || (missionary as any).person_type || null,
-        calculated_duration: calculateDuration(
-          missionary.start_date,
-          missionary.end_date
-        ),
-      }));
+      const missionariesWithDuration = allMissionaries.map((missionary) => {
+        const result: any = {
+          ...missionary,
+          // Provide unified `type` field (new column) while remaining backward compatible.
+          type:
+            (missionary as any).type || (missionary as any).person_type || null,
+          calculated_duration: calculateDuration(
+            missionary.start_date,
+            missionary.end_date
+          ),
+        };
+
+        // Remove email if excludeEmail flag is set
+        if (excludeEmail) {
+          delete result.email;
+        }
+
+        return result;
+      });
 
       return NextResponse.json({ missionaries: missionariesWithDuration });
     }

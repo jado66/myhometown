@@ -675,10 +675,12 @@ export default function MissionaryManagement() {
   const selectedCommunityId = filters.selectedCommunityId;
   const personType = filters.personType;
 
-  // Fetch missionaries on mount
+  // Fetch missionaries when user is loaded
   useEffect(() => {
-    fetchMissionaries();
-  }, []);
+    if (user) {
+      fetchMissionaries();
+    }
+  }, [user]);
 
   const fetchMissionaries = async () => {
     try {
