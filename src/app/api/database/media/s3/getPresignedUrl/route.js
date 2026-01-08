@@ -6,7 +6,13 @@ export async function POST(request) {
   const { filename, contentType, originalFilename } = await request.json();
 
   try {
-    const client = new S3Client({ region: "us-west-1" });
+    const client = new S3Client({
+      region: "us-west-1",
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      },
+    });
 
     const uniqueId = uuidv4();
     const key = `uploads/${uniqueId}-${originalFilename}`;
