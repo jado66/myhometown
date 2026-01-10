@@ -35,7 +35,7 @@ export default function MissionaryLogin() {
       const response = await fetch("/api/missionary/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.toLowerCase() }),
+        body: JSON.stringify({ email: email }),
       });
 
       const result = await response.json();
@@ -44,9 +44,7 @@ export default function MissionaryLogin() {
         setSuccess(true);
         setMessage("Login successful! Redirecting...");
         setTimeout(() => {
-          router.push(
-            rootUrl + `/admin-dashboard/log-hours/${email.toLowerCase()}`
-          );
+          router.push(rootUrl + `/admin-dashboard/log-hours/${email}`);
         }, 1000);
       } else {
         setSuccess(false);

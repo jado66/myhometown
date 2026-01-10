@@ -14,7 +14,7 @@ export async function GET(
     const { data, error } = await supabaseServer
       .from("missionaries")
       .select("preferred_entry_method")
-      .eq("email", email)
+      .ilike("email", email)
       .single();
 
     if (error) {

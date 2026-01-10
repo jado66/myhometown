@@ -612,7 +612,7 @@ export default function MissionaryDashboard({
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
         totalHours={totalHours}
-        setTotalHours={setTotalHours}
+        setTotalHours={setTotalHours} 
         activities={activities}
         setActivities={setActivities}
         addActivity={() =>

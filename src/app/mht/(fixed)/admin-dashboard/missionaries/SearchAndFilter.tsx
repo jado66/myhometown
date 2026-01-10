@@ -81,6 +81,18 @@ export function SearchAndFilter({
 }: UnifiedSearchFilterProps) {
   const [expanded, setExpanded] = useState(true);
 
+  // Debug logging for communities
+  React.useEffect(() => {
+    console.log(
+      "SearchAndFilter - communities:",
+      communities,
+      "length:",
+      communities?.length,
+      "isArray:",
+      Array.isArray(communities)
+    );
+  }, [communities]);
+
   const updateFilter = (key: keyof FilterState, value: any) => {
     const newFilters = { ...filters, [key]: value };
     onFiltersChange(newFilters);
@@ -263,7 +275,7 @@ export function SearchAndFilter({
 
           {
             // if there are no options hide this filter
-            cities.length > 1 && (
+            Array.isArray(cities) && cities.length > 1 && (
               <Grid item xs={12} md={4}>
                 <FormControl fullWidth>
                   <CitySelect
@@ -282,7 +294,7 @@ export function SearchAndFilter({
             )
           }
 
-          {communities.length > 1 && (
+          {Array.isArray(communities) && communities.length > 0 && (
             <Grid item xs={12} md={4}>
               <FormControl fullWidth>
                 <CommunitySelect

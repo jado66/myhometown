@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     const { data: missionary, error: missionaryError } = await supabaseServer
       .from("missionaries")
       .select("email, id")
-      .eq("email", email)
+      .ilike("email", email)
       .single();
 
     if (missionaryError || !missionary) {

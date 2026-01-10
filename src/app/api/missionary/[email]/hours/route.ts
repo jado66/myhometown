@@ -39,7 +39,7 @@ export async function GET(
     const { data: missionary, error: missionaryError } = await supabaseServer
       .from("missionaries")
       .select("id")
-      .eq("email", email)
+      .ilike("email", email)
       .single();
 
     if (missionaryError || !missionary) {

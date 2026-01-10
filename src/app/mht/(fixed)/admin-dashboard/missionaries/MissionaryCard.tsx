@@ -165,12 +165,25 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
   const getLocationDisplay = () => {
     if (missionary.assignment_level === "state") return "myHometown Utah";
     if (missionary.assignment_level === "city") {
+      // Check if city data is already joined in the missionary object
+      if (missionary.cities && typeof missionary.cities === 'object' && missionary.cities.name) {
+        return `${missionary.cities.name}${missionary.cities.state ? ', ' + missionary.cities.state : ''}`;
+      }
+      // Otherwise, look up from cities array
       const city = cities.find(
         (c) => c._id === missionary.city_id || c.id === missionary.city_id
       );
       return city ? `${city.name}, ${city.state}` : "Unknown City";
     }
     if (missionary.assignment_level === "community") {
+      // Check if community data is already joined in the missionary object
+      if (missionary.communities && typeof missionary.communities === 'object' && missionary.communities.name) {
+        const cityName = missionary.cities && typeof missionary.cities === 'object' && missionary.cities.name 
+          ? missionary.cities.name 
+          : (missionary.communities.city || '');
+        return `${missionary.communities.name}${cityName ? ' (' + cityName + ')' : ''}`;
+      }
+      // Otherwise, look up from communities array
       const community = communities.find(
         (c) =>
           c._id === missionary.community_id || c.id === missionary.community_id

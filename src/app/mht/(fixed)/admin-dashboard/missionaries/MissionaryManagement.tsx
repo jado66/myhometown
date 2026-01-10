@@ -119,6 +119,16 @@ export default function MissionaryManagement() {
   const { communities } = useCommunitiesSupabase(user);
   const [tabValue, setTabValue] = useLocalStorage("missionary-tab-value", 0);
 
+  // Debug logging
+  useEffect(() => {
+    console.log(
+      "MissionaryManagement - communities:",
+      communities,
+      "length:",
+      communities?.length
+    );
+  }, [communities]);
+
   // Profile picture dialog state
   const [profilePicDialogOpen, setProfilePicDialogOpen] = useState(false);
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
@@ -1124,6 +1134,8 @@ export default function MissionaryManagement() {
               <Typography variant="body2" color="text.secondary">
                 Manage contacts, assignments, and service records
               </Typography>
+
+              <pre>{JSON.stringify(user, null, 2)}</pre>
             </Box>
             <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
               <Button
@@ -1307,8 +1319,8 @@ export default function MissionaryManagement() {
               <SearchAndFilter
                 filters={filters}
                 onFiltersChange={setFilters}
-                cities={cities}
-                communities={communities}
+                cities={cities || []}
+                communities={communities || []}
                 resultCount={filteredMissionaries.length}
               />
 

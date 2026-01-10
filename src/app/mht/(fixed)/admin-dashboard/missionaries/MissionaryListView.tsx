@@ -199,12 +199,41 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
     if (missionary.assignment_level === "state") {
       return "myHometown Utah";
     } else if (missionary.assignment_level === "city") {
+      // Check if city data is already joined in the missionary object
+      if (
+        missionary.cities &&
+        typeof missionary.cities === "object" &&
+        missionary.cities.name
+      ) {
+        return `${missionary.cities.name}${
+          missionary.cities.state ? ", " + missionary.cities.state : ""
+        }`;
+      }
+      // Otherwise, look up from cities array
       if (!Array.isArray(cities)) return "";
       const city = cities.find(
         (c) => c._id === missionary.city_id || c.id === missionary.city_id
       );
       return city ? `${city.name}, ${city.state}` : "";
     } else if (missionary.assignment_level === "community") {
+      // Check if community data is already joined in the missionary object
+      if (
+        missionary.communities &&
+        typeof missionary.communities === "object" &&
+        missionary.communities.name
+      ) {
+        // Also get city name if available
+        const cityName =
+          missionary.cities &&
+          typeof missionary.cities === "object" &&
+          missionary.cities.name
+            ? missionary.cities.name
+            : missionary.communities.city || "";
+        return `${missionary.communities.name}${
+          cityName ? " (" + cityName + ")" : ""
+        }`;
+      }
+      // Otherwise, look up from communities array
       if (!Array.isArray(communities)) return "";
       const community = communities.find(
         (c) =>

@@ -174,10 +174,24 @@ export function UpcomingReleases({
     const rows = allUpcoming.map((m: any) => {
       let assignment = "";
       if (m.assignment_level?.toLowerCase() === "city") {
-        assignment = cities.find((c) => c.id === m.city_id)?.name || "";
+        // Check if city data is already joined
+        if (m.cities && typeof m.cities === "object" && m.cities.name) {
+          assignment = m.cities.name;
+        } else {
+          assignment = cities.find((c) => c.id === m.city_id)?.name || "";
+        }
       } else if (m.assignment_level?.toLowerCase() === "community") {
-        assignment =
-          communities.find((c) => c.id === m.community_id)?.name || "";
+        // Check if community data is already joined
+        if (
+          m.communities &&
+          typeof m.communities === "object" &&
+          m.communities.name
+        ) {
+          assignment = m.communities.name;
+        } else {
+          assignment =
+            communities.find((c) => c.id === m.community_id)?.name || "";
+        }
       } else if (m.assignment_level?.toLowerCase() === "state") {
         assignment = "Utah";
       }
