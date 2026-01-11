@@ -1134,8 +1134,6 @@ export default function MissionaryManagement() {
               <Typography variant="body2" color="text.secondary">
                 Manage contacts, assignments, and service records
               </Typography>
-
-              <pre>{JSON.stringify(user, null, 2)}</pre>
             </Box>
             <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
               <Button
