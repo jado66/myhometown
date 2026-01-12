@@ -423,15 +423,18 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
       "email",
       "contact_number",
     ];
-    
+
     // Add assignment-level specific required fields
     if (submitData.assignment_level === "city" && !submitData.city_id) {
       criticalFields.push("city_id");
     }
-    if (submitData.assignment_level === "community" && !submitData.community_id) {
+    if (
+      submitData.assignment_level === "community" &&
+      !submitData.community_id
+    ) {
       criticalFields.push("community_id");
     }
-    
+
     const missingCriticalFields = criticalFields.filter(
       (field) => !submitData[field as keyof MissionaryFormData]
     );

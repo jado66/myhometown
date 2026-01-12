@@ -184,17 +184,25 @@ export async function POST(request: NextRequest) {
     // Validate assignment constraints if assignment_level is provided
     if (assignment_level) {
       // Normalize empty strings to null for validation
-      const normalizedCityId = city_id && city_id.trim() !== "" ? city_id : null;
-      const normalizedCommunityId = community_id && community_id.trim() !== "" ? community_id : null;
+      const normalizedCityId =
+        city_id && city_id.trim() !== "" ? city_id : null;
+      const normalizedCommunityId =
+        community_id && community_id.trim() !== "" ? community_id : null;
 
-      if (assignment_level === "state" && (normalizedCityId || normalizedCommunityId)) {
+      if (
+        assignment_level === "state" &&
+        (normalizedCityId || normalizedCommunityId)
+      ) {
         return NextResponse.json(
           { error: "State level assignments cannot have city or community" },
           { status: 400 }
         );
       }
 
-      if (assignment_level === "city" && (!normalizedCityId || normalizedCommunityId)) {
+      if (
+        assignment_level === "city" &&
+        (!normalizedCityId || normalizedCommunityId)
+      ) {
         return NextResponse.json(
           { error: "City level assignments must have city but not community" },
           { status: 400 }
@@ -214,7 +222,8 @@ export async function POST(request: NextRequest) {
     // Check for existing missionary with the same email
     const { data: existing, error: existingError } = await supabaseServer
       .from("missionaries")
-      .select(`
+      .select(
+        `
         id,
         first_name,
         last_name,
@@ -224,7 +233,8 @@ export async function POST(request: NextRequest) {
           name,
           cities:city_id (name, state)
         )
-      `)
+      `
+      )
       .eq("email", email)
       .maybeSingle();
 
@@ -242,11 +252,18 @@ export async function POST(request: NextRequest) {
         locationMessage = "at the Utah state level";
       } else if (existing.assignment_level === "city" && existing.cities) {
         locationMessage = `in ${existing.cities.name}, ${existing.cities.state}`;
-      } else if (existing.assignment_level === "community" && existing.communities) {
+      } else if (
+        existing.assignment_level === "community" &&
+        existing.communities
+      ) {
         const communityCity = existing.communities.cities;
-        locationMessage = `in ${existing.communities.name}${communityCity ? ` (${communityCity.name}, ${communityCity.state})` : ''}`;
+        locationMessage = `in ${existing.communities.name}${
+          communityCity
+            ? ` (${communityCity.name}, ${communityCity.state})`
+            : ""
+        }`;
       }
-      
+
       return NextResponse.json(
         {
           error: `A missionary or volunteer with this email already exists ${locationMessage}.`,
@@ -352,17 +369,25 @@ export async function PATCH(request: NextRequest) {
     // Validate assignment constraints if assignment_level is provided
     if (assignment_level) {
       // Normalize empty strings to null for validation
-      const normalizedCityId = city_id && city_id.trim() !== "" ? city_id : null;
-      const normalizedCommunityId = community_id && community_id.trim() !== "" ? community_id : null;
+      const normalizedCityId =
+        city_id && city_id.trim() !== "" ? city_id : null;
+      const normalizedCommunityId =
+        community_id && community_id.trim() !== "" ? community_id : null;
 
-      if (assignment_level === "state" && (normalizedCityId || normalizedCommunityId)) {
+      if (
+        assignment_level === "state" &&
+        (normalizedCityId || normalizedCommunityId)
+      ) {
         return NextResponse.json(
           { error: "State level assignments cannot have city or community" },
           { status: 400 }
         );
       }
 
-      if (assignment_level === "city" && (!normalizedCityId || normalizedCommunityId)) {
+      if (
+        assignment_level === "city" &&
+        (!normalizedCityId || normalizedCommunityId)
+      ) {
         return NextResponse.json(
           { error: "City level assignments must have city but not community" },
           { status: 400 }
@@ -383,7 +408,8 @@ export async function PATCH(request: NextRequest) {
     if (email !== undefined) {
       const { data: existing, error: existingError } = await supabaseServer
         .from("missionaries")
-        .select(`
+        .select(
+          `
           id,
           first_name,
           last_name,
@@ -393,7 +419,8 @@ export async function PATCH(request: NextRequest) {
             name,
             cities:city_id (name, state)
           )
-        `)
+        `
+        )
         .eq("email", email)
         .neq("id", id)
         .maybeSingle();
@@ -412,11 +439,18 @@ export async function PATCH(request: NextRequest) {
           locationMessage = "at the Utah state level";
         } else if (existing.assignment_level === "city" && existing.cities) {
           locationMessage = `in ${existing.cities.name}, ${existing.cities.state}`;
-        } else if (existing.assignment_level === "community" && existing.communities) {
+        } else if (
+          existing.assignment_level === "community" &&
+          existing.communities
+        ) {
           const communityCity = existing.communities.cities;
-          locationMessage = `in ${existing.communities.name}${communityCity ? ` (${communityCity.name}, ${communityCity.state})` : ''}`;
+          locationMessage = `in ${existing.communities.name}${
+            communityCity
+              ? ` (${communityCity.name}, ${communityCity.state})`
+              : ""
+          }`;
         }
-        
+
         return NextResponse.json(
           {
             error: `A missionary or volunteer with this email already exists ${locationMessage}.`,

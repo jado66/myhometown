@@ -139,25 +139,29 @@ export function HoursOverview({
     let monthAdmin = 0;
 
     const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
 
     for (const h of filteredHours) {
-      const periodDate = new Date(h.period_start_date);
+      // Parse the date string directly to avoid timezone issues
+      const [year, month] = h.period_start_date.split("-").map(Number);
+      const isThisMonth = year === currentYear && month === currentMonth + 1;
+
       for (const a of h.activities || []) {
         if (!a || !a.category || !a.hours) continue;
         const hrs = a.hours;
         switch (a.category) {
           case "crc":
             totalCRC += hrs;
-            if (periodDate >= monthStart) monthCRC += hrs;
+            if (isThisMonth) monthCRC += hrs;
             break;
           case "dos":
             totalDOS += hrs;
-            if (periodDate >= monthStart) monthDOS += hrs;
+            if (isThisMonth) monthDOS += hrs;
             break;
           case "administrative":
             totalAdmin += hrs;
-            if (periodDate >= monthStart) monthAdmin += hrs;
+            if (isThisMonth) monthAdmin += hrs;
             break;
         }
       }
