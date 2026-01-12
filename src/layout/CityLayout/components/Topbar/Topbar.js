@@ -180,7 +180,6 @@ const Topbar = ({ onSidebarOpen }) => {
                 },
               }}
             >
-              {/* <pre>{JSON.stringify(communities, null, 2)}</pre> */}
               {communities.map((community, index) => (
                 <MenuItem
                   key={index}

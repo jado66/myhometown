@@ -46,8 +46,6 @@ const ClassPreview = ({ classData, noBanner }) => {
 
       <Divider sx={{ my: 2 }} />
 
-      {/* <pre>{JSON.stringify(classData, null, 2)}</pre> */}
-
       {classData?.startDate && classData?.endDate && (
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
           <CalendarToday fontSize="small" color="action" />

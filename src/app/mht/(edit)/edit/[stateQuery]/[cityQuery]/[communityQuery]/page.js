@@ -964,7 +964,6 @@ const Page = ({ params }) => {
           </span>
         </Typography>
         <JsonViewer data={communityData} />
-        {/* <pre>{JSON.stringify(communityData, null, 4)}</pre> */}
         <PhotoGallery
           photos={content.galleryPhotos}
           changePhoto={handleChangePhoto}
@@ -1243,7 +1242,6 @@ const Page = ({ params }) => {
         <Grid item md={12}>
           <Divider sx={{ my: 5 }} />
         </Grid>
-        {/* <pre>{JSON.stringify(events, null, 4)}</pre> */}
         <UpcomingEvents
           events={events}
           maxEvents={5}
@@ -1252,7 +1250,6 @@ const Page = ({ params }) => {
           onAdd={startCreatingNewEvent}
         />
         <Divider sx={{ my: 5 }} />
-        {/* <pre>{JSON.stringify(cityData, null, 4)}</pre> */}
         <EventsCalendar
           events={events}
           onSelectEvent={onSelectEvent}

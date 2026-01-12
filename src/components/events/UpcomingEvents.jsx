@@ -161,7 +161,6 @@ const UpcomingEventCard = ({ event, dateFormatter, onSelect }) => {
       onClick={() => onSelect(event)}
       id="events"
     >
-      {/* <pre>{JSON.stringify(event, null, 2)}</pre> */}
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Typography variant="h6">{event.title}</Typography>

@@ -50,10 +50,6 @@ export default function PasteLogPlugin(): JSX.Element {
       >
         <ContentPasteIcon />
       </button>
-
-      {isActive && lastClipboardData !== null ? (
-        <pre>{lastClipboardData}</pre>
-      ) : null}
     </>
   );
 }

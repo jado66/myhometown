@@ -182,6 +182,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
 
   const isAdmin = user?.permissions?.administrator || false;
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [saving, setSaving] = useState(false);
 
   // State for the image cropper dialog
   const [cropperOpen, setCropperOpen] = useState(false);
@@ -402,6 +403,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setSaving(true);
     setErrors({});
     let submitData: MissionaryFormData = { ...formData };
     if (submitData.assignment_level === "state") {
@@ -413,6 +415,46 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
     if (submitData.person_type === "volunteer") {
       submitData.stake_name = "";
     }
+
+    // Critical fields that MUST be present - cannot save without these
+    const criticalFields = [
+      "first_name",
+      "last_name",
+      "email",
+      "contact_number",
+    ];
+    
+    // Add assignment-level specific required fields
+    if (submitData.assignment_level === "city" && !submitData.city_id) {
+      criticalFields.push("city_id");
+    }
+    if (submitData.assignment_level === "community" && !submitData.community_id) {
+      criticalFields.push("community_id");
+    }
+    
+    const missingCriticalFields = criticalFields.filter(
+      (field) => !submitData[field as keyof MissionaryFormData]
+    );
+
+    if (missingCriticalFields.length > 0) {
+      const fieldNames: { [key: string]: string } = {
+        first_name: "First Name",
+        last_name: "Last Name",
+        email: "Email",
+        contact_number: "Phone Number",
+        city_id: "City",
+        community_id: "Community",
+      };
+      const newErrors: { [key: string]: string } = {};
+      missingCriticalFields.forEach((f) => {
+        newErrors[f] = `${fieldNames[f] || f} is required and cannot be empty`;
+      });
+      setErrors(newErrors);
+      // Block save - do not proceed - DO NOT RESET FORM
+      setSaving(false);
+      return;
+    }
+
     let missingFields: string[] = [];
     // Check for missing required fields
     try {
@@ -461,14 +503,23 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
       });
       setErrors(newErrors);
       // Proceed to save as incomplete (draft-like) without blocking
-      onSave({ ...submitData, is_incomplete: true });
-      resetFormData();
+      try {
+        await onSave({ ...submitData, is_incomplete: true });
+      } finally {
+        setSaving(false);
+      }
+      // DO NOT reset form on incomplete save - user may want to fix errors
       return;
     }
     // If all required fields are present, proceed with a clean error state
     setErrors({});
-    onSave({ ...submitData, is_incomplete: false });
-    resetFormData();
+    try {
+      await onSave({ ...submitData, is_incomplete: false });
+      // Only reset form on successful complete save
+      resetFormData();
+    } finally {
+      setSaving(false);
+    }
   };
 
   const calculateEndDate = (startDate: string, duration: string) => {
@@ -584,11 +635,35 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
           <Button
             onClick={handleSubmit}
             variant="contained"
-            startIcon={<SaveIcon />}
+            startIcon={saving ? null : <SaveIcon />}
             sx={{ ml: 1 }}
-            disabled={uploadLoading}
+            disabled={uploadLoading || saving}
           >
-            {missionary ? "Update" : "Create"}
+            {saving ? (
+              <>
+                <Box
+                  component="span"
+                  sx={{
+                    width: 20,
+                    height: 20,
+                    border: "2px solid",
+                    borderColor: "currentColor",
+                    borderRightColor: "transparent",
+                    borderRadius: "50%",
+                    display: "inline-block",
+                    animation: "spin 1s linear infinite",
+                    mr: 1,
+                    "@keyframes spin": {
+                      "0%": { transform: "rotate(0deg)" },
+                      "100%": { transform: "rotate(360deg)" },
+                    },
+                  }}
+                />
+                Saving...
+              </>
+            ) : (
+              <>{missionary ? "Update" : "Create"}</>
+            )}
           </Button>
         </DialogActions>
       </Dialog>

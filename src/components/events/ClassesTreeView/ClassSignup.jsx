@@ -147,11 +147,6 @@ export const ClassSignup = ({
 
   return (
     <>
-      {/* <Box sx={{ mb: 2, p: 2, border: "1px solid #ccc", borderRadius: "4px" }}>
-        <Typography variant="h6">Debug Information:</Typography>
-        <pre>{JSON.stringify(localClassObj, null, 2)}</pre>
-      </Box> */}
-
       {isFirstClass && isLastClass ? (
         <Box
           key={`class-content-${localClassObj.id}`}

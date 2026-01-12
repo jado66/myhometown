@@ -33,7 +33,6 @@ export function ClassDescriptionEditor({ CategorySelectOptions, isEdit }) {
     <Stack spacing={3} sx={{ py: 2 }}>
       <JsonViewer data={classConfig} />
 
-      {/* <pre>{JSON.stringify(classConfig, null, 4)}</pre> */}
       <Typography variant="h6">Class Description</Typography>
 
       <Grid container>

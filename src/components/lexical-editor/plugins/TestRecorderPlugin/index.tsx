@@ -457,9 +457,6 @@ ${steps.map(formatStep).join(`\n`)}
           onClick={onDownloadClick}
         />
       </div>
-      <pre id="test-recorder" ref={preRef}>
-        {templatedTest}
-      </pre>
     </div>
   ) : null;
 
