@@ -60,9 +60,20 @@ const RecipientSelector = ({
 
   // Custom functions to ensure unique keys
   const getOptionValue = (option) => {
-    // Create a unique key using contactId if available, otherwise fall back to phone + ownerType + ownerId
+    // If option already has a value property (like groups do), use it
+    if (option.value) {
+      return option.value;
+    }
+    // Handle groups (they have a groupId or id but not contactId)
+    if (option.groupId) {
+      return `group-${option.groupId}`;
+    }
+    if (option.id && !option.contactId) {
+      return `group-${option.id}`;
+    }
+    // Create a unique key using contactId if available
     if (option.contactId) {
-      return option.contactId;
+      return `contact-${option.contactId}`;
     }
     // For recipients without contactId (like class members), create a unique identifier
     return `${option.phone}-${option.ownerType || "unknown"}-${
@@ -92,6 +103,7 @@ const RecipientSelector = ({
         isClearable={true}
         isSearchable={true}
         blurInputOnSelect={false}
+        hideSelectedOptions={false}
       />
     </Box>
   );
