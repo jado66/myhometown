@@ -1,6 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+export const newToOldCity = {
+  "1ffc6f04-4c38-438a-8c48-dc9a2bbc0305": "66df5865f05bd41ef9493f43",
+  "2e4f79c6-bd84-4d48-9538-959ecd07b027": "6876c0292a087f662c17feec",
+  "7cbcd408-1c81-4b36-97d6-1213c9065f8f": "66df585ff05bd41ef9493f42",
+  "ba0dd989-a0a6-4bf0-8c6d-7d42e9a2dd11": "6838ad5a2243dc8160ce207c",
+  "db0e7992-4ce3-464b-9b0b-1ed9a1551086": "663d845ca86c5c22c6ab33b3",
+  "dc67276d-6e17-4c79-88aa-00ce07e154de": "66df5855f05bd41ef9493f41",
+  "e052f9e9-66a4-4f74-97e9-3836d2ade8fe": "66df586ff05bd41ef9493f44",
+};
 
 export default function useManageCities(
   userfilter,
@@ -46,12 +55,14 @@ export default function useManageCities(
 
     async function fetchCitiesByIds(ids) {
       try {
+        // Convert new format city IDs to old MongoDB format
+        const convertedIds = ids.map((id) => newToOldCity[id] || id);
         const res = await fetch(`/api/database/cities/fetchByIds`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(ids),
+          body: JSON.stringify(convertedIds),
         });
         const data = await res.json();
         setCities(data);
