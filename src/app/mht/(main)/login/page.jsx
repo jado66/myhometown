@@ -75,11 +75,12 @@ const AdminDashboardPages = () => {
                 },
 
                 {
-                  title: "Log Service Hours",
+                  title:
+                    "Log Service Hours & Missionary/Volunteers Contact Directory",
                   subtitle:
                     "View and manage your missionary & volunteer hours. Track your service hours and progress.",
                   media: "/admin-icons/missionary-logs.png",
-                  href: "/admin-dashboard/log-hours",
+                  href: "/admin-dashboard/hours-and-directory",
                 },
 
                 {

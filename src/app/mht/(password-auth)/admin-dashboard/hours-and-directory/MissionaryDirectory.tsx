@@ -40,6 +40,7 @@ import {
   ContentCopy,
   People,
   Logout,
+  Download,
 } from "@mui/icons-material";
 import { useCommunitiesSupabase } from "@/hooks/use-communities-supabase";
 import { useCitiesSupabase } from "@/hooks/use-cities-supabase";
@@ -317,7 +318,8 @@ export default function MissionaryDirectory({
           m.first_name?.toLowerCase().includes(searchLower) ||
           m.last_name?.toLowerCase().includes(searchLower) ||
           m.email?.toLowerCase().includes(searchLower) ||
-          (m.title || "").toLowerCase().includes(searchLower);
+          (m.title || "").toLowerCase().includes(searchLower) ||
+          (m.position_detail || "").toLowerCase().includes(searchLower);
 
         // Community filter based on assignment level
         let matchesCommunity = true;
@@ -397,6 +399,57 @@ export default function MissionaryDirectory({
       )}`;
     }
     return phone;
+  };
+
+  const exportToCSV = () => {
+    // Prepare CSV headers
+    const headers = [
+      "First Name",
+      "Last Name",
+      "Phone",
+      "Title",
+      "Position Detail",
+      "City",
+      "Community",
+      "Assignment Status",
+      "Person Type",
+    ];
+
+    // Prepare CSV rows
+    const rows = filteredMissionaries.map((missionary) => [
+      missionary.first_name || "",
+      missionary.last_name || "",
+      missionary.contact_number || "",
+      missionary.title || "",
+      missionary.position_detail || "",
+      getCityName(missionary),
+      getCommName(missionary),
+      missionary.assignment_status || "",
+      missionary.person_type || "",
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+      ),
+    ].join("\n");
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `missionary-directory-${new Date().toISOString().split("T")[0]}.csv`
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Directory exported to CSV");
   };
 
   // Get unique communities for filter dropdown based on what missionaries are assigned to
@@ -535,6 +588,11 @@ export default function MissionaryDirectory({
             <Typography variant="body2" color="text.secondary">
               {missionary.title || "—"}
             </Typography>
+            {missionary.position_detail && (
+              <Typography variant="caption" color="text.secondary">
+                {missionary.position_detail}
+              </Typography>
+            )}
           </Box>
         </Box>
 
@@ -569,12 +627,23 @@ export default function MissionaryDirectory({
             </IconButton>
           </Box>
 
-          <Box sx={{ mt: 1 }}>
+          <Box sx={{ mt: 1, display: "flex", gap: 1, flexWrap: "wrap" }}>
             <Chip
               label={getCommunityName(missionary)}
               size="small"
               variant="outlined"
               color="primary"
+            />
+            <Chip
+              label={missionary.person_type || "—"}
+              size="small"
+              variant="outlined"
+              sx={{ textTransform: "capitalize" }}
+              color={
+                missionary.person_type?.toLowerCase() === "missionary"
+                  ? "primary"
+                  : "secondary"
+              }
             />
           </Box>
         </Box>
@@ -583,12 +652,21 @@ export default function MissionaryDirectory({
   );
 
   return (
-    <Grid container item sm={12} display="flex">
-      <Box
+    <Grid
+      item
+      sm={12}
+      display="flex"
+      sx={{
+        backgroundColor: "#f5f5f5",
+        flexGrow: 1,
+        minHeight: "100vh",
+        py: 5,
+      }}
+    >
+      <Container
         sx={{
-          backgroundColor: "#f5f5f5",
           flexGrow: 1,
-          minHeight: "100vh",
+
           py: 5,
         }}
       >
@@ -610,6 +688,16 @@ export default function MissionaryDirectory({
                   : "Contact information for active missionaries and volunteers"}
               </Typography>
             </Box>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<Download />}
+              onClick={exportToCSV}
+              size="small"
+              sx={{ mr: 1 }}
+            >
+              Export CSV
+            </Button>
             <Button
               variant="outlined"
               color="primary"
@@ -699,6 +787,7 @@ export default function MissionaryDirectory({
                     <TableRow sx={{ backgroundColor: "#f9f9f9" }}>
                       <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
                       <TableCell sx={{ fontWeight: "bold" }}>Phone</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>Type</TableCell>
                       <TableCell sx={{ fontWeight: "bold" }}>City</TableCell>
                       <TableCell sx={{ fontWeight: "bold" }}>
                         Community
@@ -768,6 +857,20 @@ export default function MissionaryDirectory({
                           </Box>
                         </TableCell>
                         <TableCell>
+                          <Chip
+                            label={missionary.person_type || "—"}
+                            size="small"
+                            sx={{ textTransform: "capitalize" }}
+                            color={
+                              missionary.person_type?.toLowerCase() ===
+                              "missionary"
+                                ? "primary"
+                                : "secondary"
+                            }
+                            variant="outlined"
+                          />
+                        </TableCell>
+                        <TableCell>
                           <Typography variant="body2">
                             {getCityName(missionary)}
                           </Typography>
@@ -778,9 +881,19 @@ export default function MissionaryDirectory({
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2">
-                            {missionary.title || "—"}
-                          </Typography>
+                          <Box>
+                            <Typography variant="body2" fontWeight="medium">
+                              {missionary.title || "—"}
+                            </Typography>
+                            {missionary.position_detail && (
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {missionary.position_detail}
+                              </Typography>
+                            )}
+                          </Box>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -816,7 +929,7 @@ export default function MissionaryDirectory({
             )}
           </Paper>
         </Container>
-      </Box>
+      </Container>
     </Grid>
   );
 }

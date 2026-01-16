@@ -2,7 +2,7 @@
 import dynamic from "next/dynamic";
 
 const DynamicMissionaryDirectory = dynamic(
-  () => import("../MissionaryDirectory"),
+  () => import("../../hours-and-directory/MissionaryDirectory"),
   {
     ssr: false,
   }

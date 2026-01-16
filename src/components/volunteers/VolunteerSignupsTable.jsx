@@ -56,6 +56,10 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
   const [updatingContact, setUpdatingContact] = useState(null);
   const { user } = useUser();
 
+  // Local state for notes editing
+  const [notesState, setNotesState] = useState({});
+  const [notesSaving, setNotesSaving] = useState({});
+
   const {
     signups: allSignups,
     loading,
@@ -70,6 +74,50 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
   const signups = showContacted
     ? allSignups
     : allSignups.filter((signup) => !signup.is_contacted);
+
+  // Initialize notes state when signups change
+  useEffect(() => {
+    const initialNotes = {};
+    (allSignups || []).forEach((signup) => {
+      initialNotes[signup.id] = signup.notes || "";
+    });
+    setNotesState(initialNotes);
+  }, [allSignups]);
+
+  // Debounce function
+  function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  }
+
+  // Save notes to backend
+  const saveNotes = async (signupId, notes) => {
+    setNotesSaving((prev) => ({ ...prev, [signupId]: true }));
+    try {
+      const response = await fetch("/api/volunteer-signup/notes", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: signupId, notes }),
+      });
+      if (!response.ok) throw new Error("Failed to update notes");
+      refetch();
+    } catch (error) {
+      // Optionally show error
+      console.error("Error updating notes:", error);
+    } finally {
+      setNotesSaving((prev) => ({ ...prev, [signupId]: false }));
+    }
+  };
+
+  // Debounced version
+  const debouncedSaveNotes = React.useRef(
+    debounce((signupId, notes) => {
+      saveNotes(signupId, notes);
+    }, 600)
+  ).current;
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -444,11 +492,13 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
                 <TableCell>Signup Date</TableCell>
 
                 <TableCell>Actions</TableCell>
+                <TableCell>Notes</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {signups.map((signup) => (
                 <TableRow key={signup.id} hover>
+                  {/* ...existing code... */}
                   <TableCell>
                     <Box display="flex" alignItems="center">
                       <Box>
@@ -554,6 +604,29 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
                         ? "Mark Uncontacted"
                         : "Mark Contacted"}
                     </Button>
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      value={notesState[signup.id] ?? ""}
+                      placeholder="Add notes..."
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setNotesState((prev) => ({
+                          ...prev,
+                          [signup.id]: value,
+                        }));
+                        debouncedSaveNotes(signup.id, value);
+                      }}
+                      disabled={notesSaving[signup.id]}
+                      InputProps={{
+                        endAdornment: notesSaving[signup.id] ? (
+                          <CircularProgress size={18} />
+                        ) : null,
+                      }}
+                    />
                   </TableCell>
                 </TableRow>
               ))}

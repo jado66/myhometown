@@ -335,7 +335,7 @@ export default function MissionaryDashboard({
           </Alert>
         )}
 
-        <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 4 }}>
+        <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 4, px: 10 }}>
           <Button
             variant="contained"
             color="primary"
@@ -612,7 +612,7 @@ export default function MissionaryDashboard({
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
         totalHours={totalHours}
-        setTotalHours={setTotalHours} 
+        setTotalHours={setTotalHours}
         activities={activities}
         setActivities={setActivities}
         addActivity={() =>
