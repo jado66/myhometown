@@ -634,10 +634,7 @@ export default function MissionaryDirectory({
               variant="outlined"
               color="primary"
             />
-            <Typography
-              variant="body2"
-              sx={{ textTransform: "capitalize" }}
-            >
+            <Typography variant="body2" sx={{ textTransform: "capitalize" }}>
               {missionary.person_type || "—"}
             </Typography>
           </Box>

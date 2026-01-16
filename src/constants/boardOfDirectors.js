@@ -38,7 +38,7 @@ Farsi-speaking refugees for My Home Town.`,
   },
   {
     name: "Mark Durham",
-    position: "Chief Communications Officer",
+    position: "Vice President",
     avatar: "/images/board/Mark Durham.jpg",
     bio: `Mark is the Chairman and Founder of Durham Brands, a prominent consumer products
 company serving major retailers in the United States. Mark previously chaired the Global
