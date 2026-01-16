@@ -634,17 +634,12 @@ export default function MissionaryDirectory({
               variant="outlined"
               color="primary"
             />
-            <Chip
-              label={missionary.person_type || "—"}
-              size="small"
-              variant="outlined"
+            <Typography
+              variant="body2"
               sx={{ textTransform: "capitalize" }}
-              color={
-                missionary.person_type?.toLowerCase() === "missionary"
-                  ? "primary"
-                  : "secondary"
-              }
-            />
+            >
+              {missionary.person_type || "—"}
+            </Typography>
           </Box>
         </Box>
       </CardContent>
@@ -857,18 +852,12 @@ export default function MissionaryDirectory({
                           </Box>
                         </TableCell>
                         <TableCell>
-                          <Chip
-                            label={missionary.person_type || "—"}
-                            size="small"
+                          <Typography
+                            variant="body2"
                             sx={{ textTransform: "capitalize" }}
-                            color={
-                              missionary.person_type?.toLowerCase() ===
-                              "missionary"
-                                ? "primary"
-                                : "secondary"
-                            }
-                            variant="outlined"
-                          />
+                          >
+                            {missionary.person_type || "—"}
+                          </Typography>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">

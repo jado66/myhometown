@@ -140,6 +140,15 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
 
   // Utility functions
   const getReleaseDate = () => {
+    // Use end_date if available
+    if (missionary.end_date) {
+      return new Date(missionary.end_date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    }
+    // Fall back to calculating from start_date + duration
     if (!missionary.start_date || !missionary.duration) return null;
     const monthsMatch = missionary.duration.match(/(\d+)/);
     if (!monthsMatch) return null;
@@ -765,9 +774,9 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
                       <strong>Duration:</strong> {missionary.duration}
                     </Typography>
                   )}
-                  {missionary.end_date} && (
+                  {missionary.end_date && (
                     <Typography variant="body2">
-                      <strong>Expected Release:</strong> {missionary.end_date}
+                      <strong>Expected Release:</strong> {formatDate(missionary.end_date)}
                     </Typography>
                   )}
                   {isUpcomingView && (
