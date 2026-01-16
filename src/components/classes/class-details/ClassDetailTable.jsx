@@ -84,8 +84,20 @@ const ClassDetailTable = ({
         );
         if (response.ok) {
           const data = await response.json();
+          const now = new Date();
+          now.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
           const filteredClasses =
-            data.results?.filter((c) => c.id !== classData.id) || [];
+            data.results?.filter((c) => {
+              // Filter out current class
+              if (c.id === classData.id) return false;
+              // Filter out classes whose end date is in the past
+              if (c.endDate) {
+                const endDate = new Date(c.endDate);
+                endDate.setHours(0, 0, 0, 0);
+                if (endDate < now) return false;
+              }
+              return true;
+            }) || [];
           setClassesForTransfer(filteredClasses);
         }
       } catch (error) {
