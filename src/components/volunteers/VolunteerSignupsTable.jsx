@@ -77,24 +77,20 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
 
   // Initialize notes state when signups change
   useEffect(() => {
-    const initialNotes = {};
-    (allSignups || []).forEach((signup) => {
-      initialNotes[signup.id] = signup.notes || "";
+    setNotesState((prevState) => {
+      const newState = { ...prevState };
+      (allSignups || []).forEach((signup) => {
+        // Only initialize if this signup doesn't exist in state yet
+        if (!(signup.id in newState)) {
+          newState[signup.id] = signup.notes || "";
+        }
+      });
+      return newState;
     });
-    setNotesState(initialNotes);
   }, [allSignups]);
 
-  // Debounce function
-  function debounce(func, wait) {
-    let timeout;
-    return function (...args) {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => func.apply(this, args), wait);
-    };
-  }
-
   // Save notes to backend
-  const saveNotes = async (signupId, notes) => {
+  const saveNotes = React.useCallback(async (signupId, notes) => {
     setNotesSaving((prev) => ({ ...prev, [signupId]: true }));
     try {
       const response = await fetch("/api/volunteer-signup/notes", {
@@ -103,21 +99,25 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
         body: JSON.stringify({ id: signupId, notes }),
       });
       if (!response.ok) throw new Error("Failed to update notes");
-      refetch();
+      // Don't refetch - local state is already updated optimistically
     } catch (error) {
       // Optionally show error
       console.error("Error updating notes:", error);
     } finally {
       setNotesSaving((prev) => ({ ...prev, [signupId]: false }));
     }
-  };
+  }, []);
 
   // Debounced version
-  const debouncedSaveNotes = React.useRef(
-    debounce((signupId, notes) => {
-      saveNotes(signupId, notes);
-    }, 600)
-  ).current;
+  const debouncedSaveNotes = React.useMemo(() => {
+    let timeout;
+    return (signupId, notes) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        saveNotes(signupId, notes);
+      }, 600);
+    };
+  }, [saveNotes]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
