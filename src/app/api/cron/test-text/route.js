@@ -8,22 +8,26 @@ export const runtime = "nodejs";
 export async function GET(req) {
   const requestId = crypto.randomUUID();
   const headers = Object.fromEntries(req.headers.entries());
-  
+
   console.log(`[${requestId}] === CRON EXECUTION START ===`);
   console.log(`[${requestId}] Timestamp: ${new Date().toISOString()}`);
   console.log(`[${requestId}] SITE_KEYWORD: ${process.env.SITE_KEYWORD}`);
-  console.log(`[${requestId}] User-Agent: ${headers['user-agent']}`);
-  console.log(`[${requestId}] X-Vercel-ID: ${headers['x-vercel-id']}`);
-  console.log(`[${requestId}] X-Vercel-Deployment-URL: ${headers['x-vercel-deployment-url']}`);
+  console.log(`[${requestId}] User-Agent: ${headers["user-agent"]}`);
+  console.log(`[${requestId}] X-Vercel-ID: ${headers["x-vercel-id"]}`);
+  console.log(
+    `[${requestId}] X-Vercel-Deployment-URL: ${headers["x-vercel-deployment-url"]}`,
+  );
   console.log(`[${requestId}] All Headers:`, JSON.stringify(headers, null, 2));
 
   // Only run on MHT environment
-  if (process.env.SITE_KEYWORD !== 'mht') {
-    console.log(`[${requestId}] Skipping - not MHT environment (SITE_KEYWORD: ${process.env.SITE_KEYWORD})`);
+  if (process.env.SITE_KEYWORD !== "mht") {
+    console.log(
+      `[${requestId}] Skipping - not MHT environment (SITE_KEYWORD: ${process.env.SITE_KEYWORD})`,
+    );
     return new Response(
       JSON.stringify({
         success: false,
-        message: 'Cron only runs on MHT environment',
+        message: "Cron only runs on MHT environment",
         siteKeyword: process.env.SITE_KEYWORD,
         timestamp: new Date().toISOString(),
       }),
@@ -75,12 +79,19 @@ export async function GET(req) {
 
       if (missionary) {
         // Fetch hours for current month
-        const { data: hoursData } = await supabaseServer
+        const { data: hoursData, error: hoursError } = await supabaseServer
           .from("missionary_hours")
           .select("total_hours")
           .eq("missionary_id", missionary.id)
           .gte("period_start_date", periodStartDate)
-          .single();
+          .maybeSingle();
+
+        if (hoursError) {
+          console.error(
+            `[${requestId}] Error fetching hours for missionary ${missionary.id}:`,
+            hoursError,
+          );
+        }
 
         const hours = hoursData?.total_hours || 0;
 
