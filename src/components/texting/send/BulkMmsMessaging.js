@@ -37,7 +37,7 @@ export default function BulkMMSMessaging() {
   } = useUserContacts(
     user?.id,
     user?.communities_details?.map((c) => c.id) || [],
-    user?.cities_details?.map((c) => c.id) || []
+    user?.cities_details?.map((c) => c.id) || [],
   );
 
   const [message, setMessage] = useState("");
@@ -57,11 +57,6 @@ export default function BulkMMSMessaging() {
   const redisHealth = useRedisHealth(60000);
   const [apiResponse, setApiResponse] = useState(null);
   const { getClass } = useClasses();
-
-  // New state for section management
-  const [selectedSections, setSelectedSections] = useState(new Map());
-  const [filteredRecipientsForSending, setFilteredRecipientsForSending] =
-    useState([]);
 
   // Helper function to determine file type from URL
   const getFileTypeFromUrl = (url) => {
@@ -103,7 +98,7 @@ export default function BulkMMSMessaging() {
           if (Array.isArray(communityContactList)) {
             contactsList = [...contactsList, ...communityContactList];
           }
-        }
+        },
       );
     }
 
@@ -235,7 +230,7 @@ export default function BulkMMSMessaging() {
         console.error(
           "Failed to parse mediaUrls parameter:",
           error,
-          urlMediaUrls
+          urlMediaUrls,
         );
       }
     }
@@ -277,7 +272,7 @@ export default function BulkMMSMessaging() {
         setSelectedRecipients((prevRecipients) => {
           const phoneSet = new Set(prevRecipients.map((r) => r.value));
           const newRecipients = classRecipients.filter(
-            (r) => !phoneSet.has(r.value)
+            (r) => !phoneSet.has(r.value),
           );
           return [...prevRecipients, ...newRecipients];
         });
@@ -297,18 +292,18 @@ export default function BulkMMSMessaging() {
     setSelectedRecipients((prevRecipients) => {
       const phoneSet = new Set(prevRecipients.map((r) => r.value));
       const filteredNewRecipients = newRecipients.filter(
-        (r) => !phoneSet.has(r.value)
+        (r) => !phoneSet.has(r.value),
       );
 
       if (filteredNewRecipients.length === 0) {
         toast.info(
-          "All selected class members are already in your recipient list"
+          "All selected class members are already in your recipient list",
         );
         return prevRecipients;
       }
 
       toast.success(
-        `Added ${filteredNewRecipients.length} recipients from class`
+        `Added ${filteredNewRecipients.length} recipients from class`,
       );
       return [...prevRecipients, ...filteredNewRecipients];
     });
@@ -329,7 +324,7 @@ export default function BulkMMSMessaging() {
           return {
             ...group,
             contacts: group.contacts.filter(
-              (contact) => contact.ownerType !== "user"
+              (contact) => contact.ownerType !== "user",
             ),
           };
         }
@@ -339,30 +334,16 @@ export default function BulkMMSMessaging() {
     return expanded;
   };
 
-  // New function to handle section changes from RecipientsList
-  const handleSectionChange = (newSelectedSections, filteredRecipients) => {
-    setSelectedSections(newSelectedSections);
-    setFilteredRecipientsForSending(filteredRecipients || []);
-  };
-
-  // Modified handleSend to use filtered recipients based on sections
+  // Simplified handleSend - sends to all recipients at once
   const handleSend = async () => {
     const phoneNumberMap = new Map();
     const uniqueRecipients = [];
 
-    // Use filtered recipients if sections are selected, otherwise use normal expansion
-    let recipientsToProcess = [];
-
-    if (filteredRecipientsForSending.length > 0) {
-      // Use the section-filtered recipients
-      recipientsToProcess = filteredRecipientsForSending;
-    } else {
-      // Use normal expansion if no sections are selected
-      recipientsToProcess = expandGroupsWithAdminFilter(
-        selectedRecipients,
-        allContacts
-      ).flatMap((group) => group.contacts);
-    }
+    // Expand all groups and get all recipients
+    const recipientsToProcess = expandGroupsWithAdminFilter(
+      selectedRecipients,
+      allContacts,
+    ).flatMap((group) => group.contacts);
 
     recipientsToProcess.forEach((recipient) => {
       if (!phoneNumberMap.has(recipient.value)) {
@@ -380,7 +361,7 @@ export default function BulkMMSMessaging() {
         message,
         uniqueRecipients,
         mediaUrls,
-        selectedRecipients
+        selectedRecipients,
       );
 
       // Set the API response for the ProgressTracker
@@ -425,8 +406,6 @@ export default function BulkMMSMessaging() {
     setHasSent(false);
     setTotalFileSize(0);
     setIsSending(false);
-    setSelectedSections(new Map());
-    setFilteredRecipientsForSending([]);
     reset();
     setActiveTab(0);
     setApiResponse(null);
@@ -455,7 +434,7 @@ export default function BulkMMSMessaging() {
     setSelectedRecipients((prevRecipients) => {
       const phoneSet = new Set(prevRecipients.map((r) => r.value));
       const filteredNewRecipients = newRecipients.filter(
-        (r) => !phoneSet.has(r.value)
+        (r) => !phoneSet.has(r.value),
       );
 
       if (filteredNewRecipients.length === 0) {
@@ -609,10 +588,6 @@ export default function BulkMMSMessaging() {
                   user={user}
                   expandGroups={expandGroupsWithAdminFilter}
                   onScheduled={() => setHasSent(true)}
-                  // Pass section-related props
-                  selectedSections={selectedSections}
-                  filteredRecipientsForSending={filteredRecipientsForSending}
-                  onSectionChange={handleSectionChange}
                 />
               )}
             </>

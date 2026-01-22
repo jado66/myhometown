@@ -26,7 +26,6 @@ import {
   CalendarMonth,
   AccessTime,
   Check,
-  Groups,
 } from "@mui/icons-material";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -49,9 +48,6 @@ const ReviewAndSend = ({
   user,
   expandGroups,
   onScheduled,
-  selectedSections,
-  filteredRecipientsForSending,
-  onSectionChange,
 }) => {
   const { scheduleText, loading: schedulingLoading } = useScheduledTexts();
   const [sendOption, setSendOption] = useState("now");
@@ -100,21 +96,12 @@ const ReviewAndSend = ({
 
     const mediaUrls = mediaFiles.map((file) => file.url);
 
-    // Expand and deduplicate (with section filtering)
+    // Expand and deduplicate recipients
     let expandedRecipients = expandGroups
       ? expandGroups(selectedRecipients, allContacts).flatMap(
           (group) => group.contacts,
         )
       : selectedRecipients;
-
-    // Apply section filtering if provided
-    if (selectedSections && selectedSections.size > 0) {
-      expandedRecipients = expandedRecipients.filter((recipient) => {
-        // Implement your section logic here, e.g., check if recipient.section is in selectedSections
-        const recipientSection = recipient.section || "default"; // Assume 'section' field exists
-        return selectedSections.has(recipientSection);
-      });
-    }
 
     const phoneNumberMap = new Map();
     const uniqueRecipients = expandedRecipients.filter((recipient) => {
@@ -158,24 +145,6 @@ const ReviewAndSend = ({
   };
 
   const getDisplayRecipientCount = () => {
-    // If we have section-filtered recipients, use those
-    if (
-      filteredRecipientsForSending &&
-      filteredRecipientsForSending.length > 0
-    ) {
-      const phoneNumberMap = new Map();
-      const uniqueCount = filteredRecipientsForSending.filter((recipient) => {
-        const phone = recipient.value || recipient.phone;
-        if (phoneNumberMap.has(phone)) {
-          return false;
-        }
-        phoneNumberMap.set(phone, true);
-        return true;
-      }).length;
-      return uniqueCount;
-    }
-
-    // Otherwise use the original logic
     if (expandGroups) {
       const expandedRecipients = expandGroups(
         selectedRecipients,
@@ -203,19 +172,6 @@ const ReviewAndSend = ({
         Review and Send
       </Typography>
 
-      {recipientCount > 80 && (
-        <Alert severity="warning" sx={{ mb: 2 }} icon={<Groups />}>
-          <Typography variant="body2" fontWeight="bold">
-            Large Recipient List ({recipientCount} recipients)
-          </Typography>
-          <Typography variant="body2">
-            You have selected more than 80 recipients. To ensure reliable
-            delivery, consider using the section buttons below to send to
-            smaller groups. Send to one section at a time for best results.
-          </Typography>
-        </Alert>
-      )}
-
       <Typography variant="body1" gutterBottom>
         Selected Recipients:
       </Typography>
@@ -224,7 +180,6 @@ const ReviewAndSend = ({
         <RecipientsList
           selectedRecipients={selectedRecipients}
           contacts={allContacts}
-          onSectionChange={onSectionChange}
         />
       </Paper>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Box,
   Typography,
@@ -10,19 +10,12 @@ import {
   Divider,
   Button,
   Collapse,
-  Chip,
-  Alert,
 } from "@mui/material";
-import { Error, ExpandMore, ExpandLess, Groups } from "@mui/icons-material";
+import { Error, ExpandMore, ExpandLess } from "@mui/icons-material";
 import { getGroupMembers } from "@/util/texting/utils";
 
-export default function RecipientsList({
-  selectedRecipients,
-  contacts,
-  onSectionChange,
-}) {
+export default function RecipientsList({ selectedRecipients, contacts }) {
   const [expandedGroups, setExpandedGroups] = useState(new Set());
-  const [selectedSections, setSelectedSections] = useState(new Map()); // Track selected section per group
 
   const isGroupRecipient = (recipient) =>
     recipient &&
@@ -37,17 +30,6 @@ export default function RecipientsList({
       newExpandedGroups.add(groupIndex);
     }
     setExpandedGroups(newExpandedGroups);
-  };
-
-  const handleSectionSelect = (groupIndex, sectionNumber) => {
-    const newSelectedSections = new Map(selectedSections);
-    newSelectedSections.set(groupIndex, sectionNumber);
-    setSelectedSections(newSelectedSections);
-
-    // Notify parent component about section changes
-    if (onSectionChange) {
-      onSectionChange(newSelectedSections);
-    }
   };
 
   const processRecipients = () => {
@@ -176,62 +158,23 @@ export default function RecipientsList({
     </ListItem>
   );
 
-  const renderSectionButtons = (groupIndex, totalContacts) => {
-    const SECTION_SIZE = 80;
-    const numSections = Math.ceil(totalContacts / SECTION_SIZE);
-    const selectedSection = selectedSections.get(groupIndex) || 1;
-
-    if (numSections <= 1) return null;
-
-    return (
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
-        {Array.from({ length: numSections }, (_, i) => {
-          const sectionNumber = i + 1;
-          const startIndex = i * SECTION_SIZE;
-          const endIndex = Math.min(startIndex + SECTION_SIZE, totalContacts);
-          const contactCount = endIndex - startIndex;
-
-          return (
-            <Chip
-              key={sectionNumber}
-              label={`Section ${sectionNumber} (${contactCount})`}
-              variant={
-                selectedSection === sectionNumber ? "filled" : "outlined"
-              }
-              color={selectedSection === sectionNumber ? "primary" : "default"}
-              onClick={() => handleSectionSelect(groupIndex, sectionNumber)}
-              sx={{ cursor: "pointer" }}
-            />
-          );
-        })}
-      </Box>
-    );
-  };
-
   const renderContactList = (contacts, groupIndex) => {
     const DISPLAY_LIMIT = 8;
-    const SECTION_SIZE = 80;
-    const selectedSection = selectedSections.get(groupIndex) || 1;
 
-    // Filter contacts based on selected section
-    const sectionStartIndex = (selectedSection - 1) * SECTION_SIZE;
-    const sectionEndIndex = sectionStartIndex + SECTION_SIZE;
-    const sectionContacts = contacts.slice(sectionStartIndex, sectionEndIndex);
-
-    const totalContacts = sectionContacts.length;
+    const totalContacts = contacts.length;
     const shouldShowExpand = totalContacts > DISPLAY_LIMIT;
     const isExpanded = expandedGroups.has(groupIndex);
 
-    // Always show first batch of contacts from the selected section
-    const initialContacts = sectionContacts.slice(0, DISPLAY_LIMIT);
-    const remainingContacts = sectionContacts.slice(DISPLAY_LIMIT);
+    // Always show first batch of contacts
+    const initialContacts = contacts.slice(0, DISPLAY_LIMIT);
+    const remainingContacts = contacts.slice(DISPLAY_LIMIT);
 
     return (
       <Box>
         {/* Always visible contacts */}
         <List dense sx={{ py: 0 }}>
           {initialContacts.map((contact, contactIndex) =>
-            renderContactItem(contact, contactIndex)
+            renderContactItem(contact, contactIndex),
           )}
         </List>
 
@@ -289,7 +232,7 @@ export default function RecipientsList({
                 <Box>
                   <List dense sx={{ py: 0 }}>
                     {remainingContacts.map((contact, contactIndex) =>
-                      renderContactItem(contact, contactIndex + DISPLAY_LIMIT)
+                      renderContactItem(contact, contactIndex + DISPLAY_LIMIT),
                     )}
                   </List>
                 </Box>
@@ -304,58 +247,6 @@ export default function RecipientsList({
   const { groupRecipients, individualRecipients } = processRecipients();
   const allRecipients = [...groupRecipients, ...individualRecipients];
 
-  // Calculate total recipients considering sections
-  const getTotalRecipientsCount = () => {
-    let total = 0;
-    allRecipients.forEach((group, index) => {
-      const selectedSection = selectedSections.get(index) || 1;
-      const SECTION_SIZE = 80;
-      const sectionStartIndex = (selectedSection - 1) * SECTION_SIZE;
-      const sectionEndIndex = sectionStartIndex + SECTION_SIZE;
-      const sectionContacts = group.contacts.slice(
-        sectionStartIndex,
-        sectionEndIndex
-      );
-      total += sectionContacts.length;
-    });
-    return total;
-  };
-
-  const totalRecipients = getTotalRecipientsCount();
-  const hasLargeGroups = allRecipients.some(
-    (group) => group.totalContacts > 80
-  );
-
-  const getFilteredRecipientsForSending = () => {
-    const { groupRecipients, individualRecipients } = processRecipients();
-    const allRecipients = [...groupRecipients, ...individualRecipients];
-
-    let filteredContacts = [];
-
-    allRecipients.forEach((group, groupIndex) => {
-      const selectedSection = selectedSections.get(groupIndex) || 1;
-      const SECTION_SIZE = 80;
-      const sectionStartIndex = (selectedSection - 1) * SECTION_SIZE;
-      const sectionEndIndex = sectionStartIndex + SECTION_SIZE;
-      const sectionContacts = group.contacts.slice(
-        sectionStartIndex,
-        sectionEndIndex
-      );
-
-      filteredContacts = [...filteredContacts, ...sectionContacts];
-    });
-
-    return filteredContacts;
-  };
-
-  // Notify parent of filtered recipients whenever sections change
-  useEffect(() => {
-    if (onSectionChange) {
-      const filteredRecipients = getFilteredRecipientsForSending();
-      onSectionChange(selectedSections, filteredRecipients);
-    }
-  }, [selectedSections, selectedRecipients, contacts]);
-
   if (allRecipients.length === 0) {
     return (
       <Box sx={{ textAlign: "center", py: 4 }}>
@@ -368,20 +259,6 @@ export default function RecipientsList({
 
   return (
     <Box>
-      {hasLargeGroups && (
-        <Alert severity="warning" sx={{ mb: 2 }} icon={<Groups />}>
-          <Typography variant="body2" fontWeight="bold">
-            Large Group Detected
-          </Typography>
-          <Typography variant="body2">
-            Some groups have more than 80 recipients. Use the section buttons
-            below to send to smaller batches. Send to Section 1 first, then
-            Section 2, and so on to ensure all messages are delivered
-            successfully.
-          </Typography>
-        </Alert>
-      )}
-
       <Box
         sx={{
           maxHeight: 400,
@@ -424,7 +301,6 @@ export default function RecipientsList({
                 </Typography>
               </Box>
 
-              {renderSectionButtons(index, group.totalContacts)}
               {renderContactList(group.contacts, index)}
 
               {index < allRecipients.length - 1 && (
