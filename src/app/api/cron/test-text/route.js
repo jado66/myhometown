@@ -59,34 +59,26 @@ export async function GET(req) {
           ? normalizedPhone.substring(1)
           : normalizedPhone;
 
-      // Fetch all missionaries and find match by normalizing their contact numbers
-      const { data: allMissionaries } = await supabaseServer
+      console.log(`[${requestId}] Processing phone: ${phone}`);
+      console.log(`[${requestId}] Normalized search: ${searchPhone}`);
+
+      // Search for missionary by phone number directly in database
+      // Try all possible phone format variations
+      const { data: missionaries } = await supabaseServer
         .from("missionaries")
         .select("id, first_name, contact_number")
-        .not("contact_number", "is", null);
+        .or(
+          `contact_number.eq.${searchPhone},contact_number.eq.${normalizedPhone},contact_number.eq.1${searchPhone}`,
+        );
+
+      const missionary = missionaries?.[0] || null;
 
       console.log(
-        `[${requestId}] All missionaries count:`,
-        allMissionaries?.length || 0,
+        `[${requestId}] Missionary found:`,
+        missionary
+          ? `Yes (ID: ${missionary.id}, Name: ${missionary.first_name})`
+          : "No",
       );
-      if (allMissionaries && allMissionaries.length > 0) {
-        allMissionaries.forEach((m) => {
-          const normalizedDbPhone = m.contact_number?.replace(/\D/g, "") || "";
-          console.log(
-            `[${requestId}] DB Phone: "${normalizedDbPhone}" vs search: "${searchPhone}" or "${normalizedPhone}" or "1${searchPhone}"`,
-          );
-        });
-      }
-
-      // Find missionary by normalizing and comparing contact numbers
-      const missionary = allMissionaries?.find((m) => {
-        const normalizedDbPhone = m.contact_number?.replace(/\D/g, "") || "";
-        return (
-          normalizedDbPhone === searchPhone ||
-          normalizedDbPhone === normalizedPhone ||
-          normalizedDbPhone === `1${searchPhone}`
-        );
-      });
 
       let message;
       let hoursData = null;
