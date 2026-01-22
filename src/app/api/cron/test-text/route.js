@@ -8,11 +8,16 @@ export async function GET(req) {
   console.log("Running test text cron job...");
 
   try {
-    const phoneNumbers = ["18012548871", "13852508633"];
+    // Get last month's name
+    const lastMonth = new Date();
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    const monthName = lastMonth.toLocaleString("en-US", { month: "long" });
+
+    const phoneNumbers = ["18012548871", "13852508633", "18014554526"]; // Test phone numbers
     const results = [];
     for (const phone of phoneNumbers) {
       const result = await sendSimpleText({
-        message: "This is a test message from the cron job.",
+        message: `Please submit your missionary hours for the month of ${monthName}. Thank you!`,
         phone,
         name: "Test User",
       });

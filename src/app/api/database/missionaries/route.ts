@@ -8,7 +8,7 @@ export const revalidate = 0;
 // Helper function to calculate duration in months between start_date and end_date
 function calculateDuration(
   startDate: string | null,
-  endDate: string | null
+  endDate: string | null,
 ): number | null {
   if (!startDate || !endDate) return null;
 
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
             *,
             cities:city_id (name, state, country),
             communities:community_id (name)
-          `
+          `,
           )
           .order("created_at", { ascending: false })
           .range(from, from + pageSize - 1);
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
 
             if (userCommunities.length > 0) {
               orConditions.push(
-                `community_id.in.(${userCommunities.join(",")})`
+                `community_id.in.(${userCommunities.join(",")})`,
               );
             }
 
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
           console.error("Fetch missionaries error:", error);
           return NextResponse.json(
             { error: "Failed to fetch missionaries" },
-            { status: 500 }
+            { status: 500 },
           );
         }
 
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
             (missionary as any).type || (missionary as any).person_type || null,
           calculated_duration: calculateDuration(
             missionary.start_date,
-            missionary.end_date
+            missionary.end_date,
           ),
         };
 
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
     if (!email || !first_name || !last_name) {
       return NextResponse.json(
         { error: "Email, first name, and last name are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
       ) {
         return NextResponse.json(
           { error: "State level assignments cannot have city or community" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -205,7 +205,7 @@ export async function POST(request: NextRequest) {
       ) {
         return NextResponse.json(
           { error: "City level assignments must have city but not community" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
           {
             error: "Community level assignments must have a community",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -233,7 +233,7 @@ export async function POST(request: NextRequest) {
           name,
           cities:city_id (name, state)
         )
-      `
+      `,
       )
       .eq("email", email)
       .maybeSingle();
@@ -242,7 +242,7 @@ export async function POST(request: NextRequest) {
       console.error("Error checking for existing missionary:", existingError);
       return NextResponse.json(
         { error: "Error checking for existing missionary" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -269,7 +269,7 @@ export async function POST(request: NextRequest) {
           error: `A missionary or volunteer with this email already exists ${locationMessage}.`,
           id: existing.id,
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -310,7 +310,7 @@ export async function POST(request: NextRequest) {
       console.error("Create missionary error:", error);
       return NextResponse.json(
         { error: "Failed to create missionary" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -319,7 +319,7 @@ export async function POST(request: NextRequest) {
     console.error("Create missionary API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -332,7 +332,7 @@ export async function PATCH(request: NextRequest) {
     if (!id) {
       return NextResponse.json(
         { error: "Missionary ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -380,7 +380,7 @@ export async function PATCH(request: NextRequest) {
       ) {
         return NextResponse.json(
           { error: "State level assignments cannot have city or community" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -390,7 +390,7 @@ export async function PATCH(request: NextRequest) {
       ) {
         return NextResponse.json(
           { error: "City level assignments must have city but not community" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -399,7 +399,7 @@ export async function PATCH(request: NextRequest) {
           {
             error: "Community level assignments must have a community",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -419,7 +419,7 @@ export async function PATCH(request: NextRequest) {
             name,
             cities:city_id (name, state)
           )
-        `
+        `,
         )
         .eq("email", email)
         .neq("id", id)
@@ -429,7 +429,7 @@ export async function PATCH(request: NextRequest) {
         console.error("Error checking for existing missionary:", existingError);
         return NextResponse.json(
           { error: "Error checking for existing missionary" },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
@@ -456,7 +456,7 @@ export async function PATCH(request: NextRequest) {
             error: `A missionary or volunteer with this email already exists ${locationMessage}.`,
             id: existing.id,
           },
-          { status: 409 }
+          { status: 409 },
         );
       }
     }
@@ -513,7 +513,7 @@ export async function PATCH(request: NextRequest) {
       console.error("Update missionary error:", error);
       return NextResponse.json(
         { error: "Failed to update missionary" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -522,7 +522,7 @@ export async function PATCH(request: NextRequest) {
     console.error("Update missionary API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -535,7 +535,7 @@ export async function DELETE(request: NextRequest) {
     if (!id) {
       return NextResponse.json(
         { error: "Missionary ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -548,7 +548,7 @@ export async function DELETE(request: NextRequest) {
       console.error("Delete missionary error:", error);
       return NextResponse.json(
         { error: "Failed to delete missionary" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -557,7 +557,7 @@ export async function DELETE(request: NextRequest) {
     console.error("Delete missionary API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
