@@ -191,7 +191,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
   // Initialize image upload hook
   const { uploadProcessedImage, uploading: uploadLoading } = useImageUpload(
     (url: string) =>
-      setFormData((prev) => ({ ...prev, profile_picture_url: url }))
+      setFormData((prev) => ({ ...prev, profile_picture_url: url })),
   );
 
   const resetFormData = () => {
@@ -282,18 +282,18 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
 
     if (formData.city_id) {
       const selectedCity = cities.find(
-        (city) => (city._id || city.id) === formData.city_id
+        (city) => (city._id || city.id) === formData.city_id,
       );
       if (selectedCity) {
         availableCommunities = availableCommunities.filter(
-          (comm) => comm.city === selectedCity.name
+          (comm) => comm.city === selectedCity.name,
         );
       }
     }
 
     if (!isAdmin && user?.communities && user.communities.length > 0) {
       availableCommunities = availableCommunities.filter((comm) =>
-        user.communities!.includes(comm._id || comm.id)
+        user.communities!.includes(comm._id || comm.id),
       );
     }
 
@@ -443,7 +443,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
     }
 
     const missingCriticalFields = criticalFields.filter(
-      (field) => !submitData[field as keyof MissionaryFormData]
+      (field) => !submitData[field as keyof MissionaryFormData],
     );
 
     if (missingCriticalFields.length > 0) {
@@ -546,7 +546,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
 
   // Handle file selection for cropping
   const handleFileSelectForCrop = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];

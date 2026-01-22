@@ -79,12 +79,21 @@ export async function GET(req) {
 
       console.log(`[${requestId}] Processing phone: ${phone}`);
       console.log(`[${requestId}] Normalized search: ${searchPhone}`);
-      console.log(`[${requestId}] Missionary found:`, missionary ? `Yes (ID: ${missionary.id}, Name: ${missionary.first_name})` : 'No');
+      console.log(
+        `[${requestId}] Missionary found:`,
+        missionary
+          ? `Yes (ID: ${missionary.id}, Name: ${missionary.first_name})`
+          : "No",
+      );
 
       if (missionary) {
-        console.log(`[${requestId}] Querying hours for missionary_id: ${missionary.id}`);
-        console.log(`[${requestId}] Period start date filter: ${periodStartDate}`);
-        
+        console.log(
+          `[${requestId}] Querying hours for missionary_id: ${missionary.id}`,
+        );
+        console.log(
+          `[${requestId}] Period start date filter: ${periodStartDate}`,
+        );
+
         // Fetch hours for current month
         const { data: hoursData, error: hoursError } = await supabaseServer
           .from("missionary_hours")
@@ -93,7 +102,10 @@ export async function GET(req) {
           .gte("period_start_date", periodStartDate)
           .maybeSingle();
 
-        console.log(`[${requestId}] Hours query result:`, JSON.stringify(hoursData));
+        console.log(
+          `[${requestId}] Hours query result:`,
+          JSON.stringify(hoursData),
+        );
         console.log(`[${requestId}] Hours query error:`, hoursError);
 
         if (hoursError) {
@@ -116,7 +128,9 @@ export async function GET(req) {
         message = `Please submit your missionary hours for the month of ${monthName}. If you did not serve this month, please log 0 hours. You can do this by going to https://www.myhometownut.com/admin-dashboard/hours-and-directory and entering your email. Thank you!`;
       }
 
-      console.log(`[${requestId}] Sending message to ${phone}: ${message.substring(0, 50)}...`);
+      console.log(
+        `[${requestId}] Sending message to ${phone}: ${message.substring(0, 50)}...`,
+      );
 
       const result = await sendSimpleText({
         message,
