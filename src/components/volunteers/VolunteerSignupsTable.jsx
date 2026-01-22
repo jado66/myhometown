@@ -28,6 +28,7 @@ import {
   Switch,
   FormControlLabel,
   Button,
+  TextareaAutosize,
 } from "@mui/material";
 import {
   Search,
@@ -58,7 +59,6 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
 
   // Local state for notes editing
   const [notesState, setNotesState] = useState({});
-  const [notesSaving, setNotesSaving] = useState({});
 
   const {
     signups: allSignups,
@@ -91,7 +91,6 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
 
   // Save notes to backend
   const saveNotes = React.useCallback(async (signupId, notes) => {
-    setNotesSaving((prev) => ({ ...prev, [signupId]: true }));
     try {
       const response = await fetch("/api/volunteer-signup/notes", {
         method: "PATCH",
@@ -103,8 +102,6 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
     } catch (error) {
       // Optionally show error
       console.error("Error updating notes:", error);
-    } finally {
-      setNotesSaving((prev) => ({ ...prev, [signupId]: false }));
     }
   }, []);
 
@@ -178,7 +175,7 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
     const cleaned = phone.replace(/\D/g, "");
     if (cleaned.length === 10) {
       return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(
-        6
+        6,
       )}`;
     }
     return phone;
@@ -205,6 +202,7 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
         ? `${signup.communities.cities.name}, ${signup.communities.cities.state}`
         : "N/A",
       "Signup Date": formatDate(signup.created_at),
+      Notes: signup.notes || "",
     }));
 
     const headers = Object.keys(csvData[0] || {});
@@ -220,7 +218,7 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
             }
             return value;
           })
-          .join(",")
+          .join(","),
       ),
     ].join("\n");
 
@@ -379,8 +377,8 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
                 {updatingContact === signup.id
                   ? "Updating..."
                   : signup.is_contacted
-                  ? "Mark Uncontacted"
-                  : "Mark Contacted"}
+                    ? "Mark Uncontacted"
+                    : "Mark Contacted"}
               </Button>
             </Box>
           </Grid>
@@ -601,15 +599,16 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
                       {updatingContact === signup.id
                         ? "Updating..."
                         : signup.is_contacted
-                        ? "Mark Uncontacted"
-                        : "Mark Contacted"}
+                          ? "Mark Uncontacted"
+                          : "Mark Contacted"}
                     </Button>
                   </TableCell>
                   <TableCell>
-                    <TextField
+                    <TextareaAutosize
                       variant="outlined"
                       size="small"
                       fullWidth
+                      rows={1}
                       value={notesState[signup.id] ?? ""}
                       placeholder="Add notes..."
                       onChange={(e) => {
@@ -619,12 +618,6 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
                           [signup.id]: value,
                         }));
                         debouncedSaveNotes(signup.id, value);
-                      }}
-                      disabled={notesSaving[signup.id]}
-                      InputProps={{
-                        endAdornment: notesSaving[signup.id] ? (
-                          <CircularProgress size={18} />
-                        ) : null,
                       }}
                     />
                   </TableCell>

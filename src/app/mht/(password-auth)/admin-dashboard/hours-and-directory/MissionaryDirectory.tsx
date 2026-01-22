@@ -92,6 +92,7 @@ export default function MissionaryDirectory({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCity, setSelectedCity] = useState<string>("all");
   const [selectedCommunity, setSelectedCommunity] = useState<string>("all");
+  const [selectedType, setSelectedType] = useState<string>("all");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
 
@@ -237,7 +238,7 @@ export default function MissionaryDirectory({
       missionary.community_id
     ) {
       const community = communityList.find(
-        (c) => c.id === missionary.community_id
+        (c) => c.id === missionary.community_id,
       );
       return community?.name || "—";
     }
@@ -272,77 +273,68 @@ export default function MissionaryDirectory({
     }
     // Fall back to lookup
     const community = communityList.find(
-      (c) => c.id === missionary.community_id
+      (c) => c.id === missionary.community_id,
     );
     return community?.name || "—";
   };
 
   // Filter missionaries: only show active ones in directory
-  const filteredMissionaries = useMemo(() => {
+  const scopedMissionaries = useMemo(() => {
     let missionaryList = missionaries || [];
 
-    // For email-logged-in users (when email parameter is provided), apply assignment-level specific filtering
     if (loggedInMissionary && email) {
       if (loggedInMissionary.assignment_level === "community") {
-        // Community missionary: show only their community
-        missionaryList = missionaryList.filter((m) => {
-          return m.community_id === loggedInMissionary.community_id;
-        });
+        missionaryList = missionaryList.filter(
+          (m) => m.community_id === loggedInMissionary.community_id,
+        );
       } else if (loggedInMissionary.assignment_level === "city") {
-        // City missionary: show city missionaries + all child community missionaries
         const childCommunityIds = communityList
           .filter((c) => c.city_id === loggedInMissionary.city_id)
           .map((c) => c.id);
 
-        missionaryList = missionaryList.filter((m) => {
-          // Show if same city or in a child community
-          return (
+        missionaryList = missionaryList.filter(
+          (m) =>
             m.city_id === loggedInMissionary.city_id ||
-            childCommunityIds.includes(m.community_id || "")
-          );
-        });
+            childCommunityIds.includes(m.community_id || ""),
+        );
       }
-      // For state level, no additional filtering needed - show all missionaries
     }
 
-    return missionaryList
+    return missionaryList;
+  }, [missionaries, loggedInMissionary, email, communityList]);
+
+  // Filter missionaries: only show active ones in directory
+  const filteredMissionaries = useMemo(() => {
+    const searchLower = searchTerm.toLowerCase();
+    const selectedTypeLower = selectedType.toLowerCase();
+
+    return scopedMissionaries
       .filter((m) => {
-        // Only show active missionaries/volunteers in directory
         if (m.assignment_status?.toLowerCase() !== "active") return false;
 
-        // Search filter
+        if (selectedCity !== "all" && m.city_id !== selectedCity) return false;
+        if (
+          selectedCommunity !== "all" &&
+          m.community_id !== selectedCommunity
+        ) {
+          return false;
+        }
+
+        if (selectedType !== "all") {
+          const type = (m.person_type || "").toLowerCase();
+          if (type !== selectedTypeLower) return false;
+        }
+
         const fullName = `${m.first_name} ${m.last_name}`.toLowerCase();
-        const searchLower = searchTerm.toLowerCase();
-        const matchesSearch =
+        return (
           fullName.includes(searchLower) ||
           m.first_name?.toLowerCase().includes(searchLower) ||
           m.last_name?.toLowerCase().includes(searchLower) ||
           m.email?.toLowerCase().includes(searchLower) ||
           (m.title || "").toLowerCase().includes(searchLower) ||
-          (m.position_detail || "").toLowerCase().includes(searchLower);
-
-        // Community filter based on assignment level
-        let matchesCommunity = true;
-
-        // For email-logged-in users, apply filter restrictions based on their role
-        if (loggedInMissionary && email) {
-          if (loggedInMissionary.assignment_level === "community") {
-            // Community missionary: only show their community
-            matchesCommunity =
-              m.community_id === loggedInMissionary.community_id;
-          } else if (loggedInMissionary.assignment_level === "city") {
-            // City missionary: only show city and child communities
-            const childCommunityIds = communityList
-              .filter((c) => c.city_id === loggedInMissionary.city_id)
-              .map((c) => c.id);
-            matchesCommunity =
-              m.city_id === loggedInMissionary.city_id ||
-              childCommunityIds.includes(m.community_id || "");
-          }
-          // For state level, matchesCommunity stays true (show all)
-        }
-
-        return matchesSearch && matchesCommunity;
+          (m.position_detail || "").toLowerCase().includes(searchLower) ||
+          (m.notes || "").toLowerCase().includes(searchLower)
+        );
       })
       .sort((a, b) => {
         const lastNameA = (a.last_name || "").toLowerCase();
@@ -350,22 +342,21 @@ export default function MissionaryDirectory({
         return lastNameA.localeCompare(lastNameB);
       });
   }, [
-    missionaries,
+    scopedMissionaries,
     searchTerm,
     selectedCity,
     selectedCommunity,
-    loggedInMissionary,
-    communityList,
+    selectedType,
   ]);
 
   // Reset page when filters change
   useEffect(() => {
     setPage(0);
-  }, [searchTerm, selectedCity, selectedCommunity]);
+  }, [searchTerm, selectedCity, selectedCommunity, selectedType]);
 
   const paginatedMissionaries = filteredMissionaries.slice(
     page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
+    page * rowsPerPage + rowsPerPage,
   );
 
   const handleChangePage = (_: any, newPage: number) => {
@@ -373,7 +364,7 @@ export default function MissionaryDirectory({
   };
 
   const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
@@ -390,12 +381,12 @@ export default function MissionaryDirectory({
     const cleaned = phone.replace(/\D/g, "");
     if (cleaned.length === 10) {
       return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(
-        6
+        6,
       )}`;
     }
     if (cleaned.length === 11 && cleaned.startsWith("1")) {
       return `(${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(
-        7
+        7,
       )}`;
     }
     return phone;
@@ -407,7 +398,7 @@ export default function MissionaryDirectory({
       "First Name",
       "Last Name",
       "Phone",
-      "Title",
+      "Position",
       "Position Detail",
       "City",
       "Community",
@@ -426,13 +417,14 @@ export default function MissionaryDirectory({
       getCommName(missionary),
       missionary.assignment_status || "",
       missionary.person_type || "",
+      missionary.notes || "",
     ]);
 
     // Combine headers and rows
     const csvContent = [
       headers.join(","),
       ...rows.map((row) =>
-        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
       ),
     ].join("\n");
 
@@ -443,7 +435,7 @@ export default function MissionaryDirectory({
     link.setAttribute("href", url);
     link.setAttribute(
       "download",
-      `missionary-directory-${new Date().toISOString().split("T")[0]}.csv`
+      `missionary-directory-${new Date().toISOString().split("T")[0]}.csv`,
     );
     link.style.visibility = "hidden";
     document.body.appendChild(link);
@@ -467,7 +459,7 @@ export default function MissionaryDirectory({
         // Community-level: only their community
         if (loggedInMissionary.community_id) {
           const community = communityList.find(
-            (c) => c.id === loggedInMissionary.community_id
+            (c) => c.id === loggedInMissionary.community_id,
           );
           if (community) {
             communitiesMap.set(community.id, community);
@@ -476,7 +468,7 @@ export default function MissionaryDirectory({
         // Also add their city
         if (loggedInMissionary.city_id) {
           const city = cityList.find(
-            (c) => c.id === loggedInMissionary.city_id
+            (c) => c.id === loggedInMissionary.city_id,
           );
           if (city) {
             citiesMap.set(city.id, city);
@@ -491,19 +483,19 @@ export default function MissionaryDirectory({
         } else if (loggedInMissionary.city_id) {
           // Fallback: build city from missionaries data
           const missionaryWithCity = (missionaries || []).find(
-            (m) => m.city_id === loggedInMissionary.city_id
+            (m) => m.city_id === loggedInMissionary.city_id,
           );
           if (missionaryWithCity && (missionaryWithCity as any).cities) {
             citiesMap.set(
               loggedInMissionary.city_id,
-              (missionaryWithCity as any).cities
+              (missionaryWithCity as any).cities,
             );
           }
         }
 
         // Add all communities in their city
         const filtered = communityList.filter(
-          (c) => c.city_id === loggedInMissionary.city_id
+          (c) => c.city_id === loggedInMissionary.city_id,
         );
 
         filtered.forEach((community) => {
@@ -532,6 +524,29 @@ export default function MissionaryDirectory({
       cities: Array.from(citiesMap.values()),
     };
   }, [communityList, cityList, loggedInMissionary, email, missionaries]);
+
+  const availableTypes = useMemo(() => {
+    const typeSet = new Set<string>();
+
+    scopedMissionaries.forEach((m) => {
+      if (m.assignment_status?.toLowerCase() !== "active") return;
+      if (m.person_type) {
+        typeSet.add(m.person_type);
+      }
+    });
+
+    return Array.from(typeSet).sort((a, b) => a.localeCompare(b));
+  }, [scopedMissionaries]);
+
+  const formatTypeLabel = (type: string) =>
+    type
+      .split(" ")
+      .map((word) =>
+        word.length > 0
+          ? word[0].toUpperCase() + word.slice(1).toLowerCase()
+          : "",
+      )
+      .join(" ");
 
   // Determine if we should show the community/city filter dropdown based on assignment level
   const shouldShowCommunityFilter = useMemo(() => {
@@ -651,7 +666,8 @@ export default function MissionaryDirectory({
       sx={{
         backgroundColor: "#f5f5f5",
         flexGrow: 1,
-        minHeight: "100vh",
+
+        overflowY: "auto",
         py: 5,
       }}
     >
@@ -674,10 +690,10 @@ export default function MissionaryDirectory({
                 {loggedInMissionary?.assignment_level === "community"
                   ? "Viewing directory for your community"
                   : loggedInMissionary?.assignment_level === "city"
-                  ? "Viewing directory for your city and communities"
-                  : loggedInMissionary?.assignment_level === "state"
-                  ? "Viewing directory for all regions"
-                  : "Contact information for active missionaries and volunteers"}
+                    ? "Viewing directory for your city and communities"
+                    : loggedInMissionary?.assignment_level === "state"
+                      ? "Viewing directory for all regions"
+                      : "Contact information for active missionaries and volunteers"}
               </Typography>
             </Box>
             <Button
@@ -706,7 +722,7 @@ export default function MissionaryDirectory({
           <Paper elevation={2} sx={{ p: 3 }}>
             {/* Search and Filter Controls */}
             <Grid container spacing={2} sx={{ mb: 3 }}>
-              <Grid item xs={12} md={shouldShowCommunityFilter ? 4 : 8}>
+              <Grid item xs={12} md={shouldShowCommunityFilter ? 3 : 6}>
                 <TextField
                   fullWidth
                   placeholder="Search by name, email, or position..."
@@ -721,10 +737,44 @@ export default function MissionaryDirectory({
                   }}
                 />
               </Grid>
+              {availableTypes.length > 0 && (
+                <Grid item xs={12} md={shouldShowCommunityFilter ? 3 : 6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Filter by Type</InputLabel>
+                    <Select
+                      value={selectedType}
+                      label="Filter by Type"
+                      onChange={(e) => setSelectedType(e.target.value)}
+                      renderValue={(value) =>
+                        value === "all"
+                          ? "All Types"
+                          : formatTypeLabel(
+                              availableTypes.find(
+                                (type) =>
+                                  type.toLowerCase() ===
+                                  String(value).toLowerCase(),
+                              ) || String(value),
+                            )
+                      }
+                    >
+                      <MenuItem value="all">All Types</MenuItem>
+                      {availableTypes.map((type) => (
+                        <MenuItem
+                          key={type}
+                          value={type.toLowerCase()}
+                          sx={{ textTransform: "capitalize" }}
+                        >
+                          {formatTypeLabel(type)}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              )}
               {shouldShowCommunityFilter && (
                 <>
                   {availableCommunities.cities.length > 1 && (
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                       <FormControl fullWidth>
                         <InputLabel>Filter by City</InputLabel>
                         <Select
@@ -743,7 +793,7 @@ export default function MissionaryDirectory({
                     </Grid>
                   )}
                   {availableCommunities.communities.length > 1 && (
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                       <FormControl fullWidth>
                         <InputLabel>Filter by Community</InputLabel>
                         <Select
@@ -838,7 +888,7 @@ export default function MissionaryDirectory({
                                   onClick={() =>
                                     copyToClipboard(
                                       missionary.contact_number!,
-                                      "Phone"
+                                      "Phone",
                                     )
                                   }
                                 >

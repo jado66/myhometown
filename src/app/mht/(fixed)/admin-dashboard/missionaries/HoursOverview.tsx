@@ -91,14 +91,14 @@ export function HoursOverview({
   // Calculate hours stats based on filtered missionaries
   const filteredHours = useMemo(() => {
     return hours.filter((h) =>
-      missionaries.some((m) => m.id === h.missionary_id)
+      missionaries.some((m) => m.id === h.missionary_id),
     );
   }, [hours, missionaries]);
 
   const hoursStats = useMemo(() => {
     const totalHours = filteredHours.reduce((sum, h) => sum + h.total_hours, 0);
     const uniqueMissionaries = new Set(
-      filteredHours.map((h) => h.missionary_id)
+      filteredHours.map((h) => h.missionary_id),
     ).size;
     const averagePerMissionary =
       uniqueMissionaries > 0 ? Math.round(totalHours / uniqueMissionaries) : 0;
@@ -187,11 +187,11 @@ export function HoursOverview({
 
     missionaries.forEach((missionary) => {
       const missionaryHours = filteredHours.filter(
-        (h) => h.missionary_id === missionary.id
+        (h) => h.missionary_id === missionary.id,
       );
       const totalHours = missionaryHours.reduce(
         (sum, h) => sum + h.total_hours,
-        0
+        0,
       );
 
       // Calculate category breakdowns
@@ -248,7 +248,7 @@ export function HoursOverview({
       }
     });
     return Array.from(summary.values()).sort(
-      (a, b) => b.totalHours - a.totalHours
+      (a, b) => b.totalHours - a.totalHours,
     );
   }, [filteredHours, missionaries]);
 
@@ -362,8 +362,22 @@ export function HoursOverview({
               sx={{ display: "flex", alignItems: "center" }}
             >
               <BarChartIcon sx={{ mr: 1 }} />
-              Hours Summary by Missionary
+              Hours Summary by Missionary &amp; Volunteer
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ ml: 2, fontWeight: "bold" }}
+              >
+                {missionaryHoursSummary.length} Individuals Logging Hours -
+                {"  "}
+                {(
+                  (missionaryHoursSummary.length / missionaries.length) *
+                  100
+                ).toFixed(0)}
+                %
+              </Typography>
             </Typography>
+
             <Button
               variant="outlined"
               startIcon={<Download />}
@@ -408,7 +422,7 @@ export function HoursOverview({
                 const csvContent = [
                   header.join(","),
                   ...rows.map((row) =>
-                    header.map((h) => escapeCsv((row as any)[h])).join(",")
+                    header.map((h) => escapeCsv((row as any)[h])).join(","),
                   ),
                 ].join("\r\n");
 
@@ -664,8 +678,8 @@ export function HoursOverview({
                         {formatNumber(
                           missionaryHoursSummary.reduce(
                             (sum, s) => sum + s.totalHours,
-                            0
-                          )
+                            0,
+                          ),
                         )}
                       </Typography>
                     </TableCell>
@@ -677,8 +691,8 @@ export function HoursOverview({
                         {formatNumber(
                           missionaryHoursSummary.reduce(
                             (sum, s) => sum + s.totalCRC,
-                            0
-                          )
+                            0,
+                          ),
                         )}
                       </Typography>
                     </TableCell>
@@ -690,8 +704,8 @@ export function HoursOverview({
                         {formatNumber(
                           missionaryHoursSummary.reduce(
                             (sum, s) => sum + s.totalDOS,
-                            0
-                          )
+                            0,
+                          ),
                         )}
                       </Typography>
                     </TableCell>
@@ -703,8 +717,8 @@ export function HoursOverview({
                         {formatNumber(
                           missionaryHoursSummary.reduce(
                             (sum, s) => sum + s.totalAdmin,
-                            0
-                          )
+                            0,
+                          ),
                         )}
                       </Typography>
                     </TableCell>
@@ -720,8 +734,8 @@ export function HoursOverview({
                         {formatNumber(
                           missionaryHoursSummary.reduce(
                             (sum, s) => sum + s.monthTotal,
-                            0
-                          )
+                            0,
+                          ),
                         )}
                       </Typography>
                     </TableCell>
@@ -733,8 +747,8 @@ export function HoursOverview({
                         {formatNumber(
                           missionaryHoursSummary.reduce(
                             (sum, s) => sum + s.monthCRC,
-                            0
-                          )
+                            0,
+                          ),
                         )}
                       </Typography>
                     </TableCell>
@@ -746,8 +760,8 @@ export function HoursOverview({
                         {formatNumber(
                           missionaryHoursSummary.reduce(
                             (sum, s) => sum + s.monthDOS,
-                            0
-                          )
+                            0,
+                          ),
                         )}
                       </Typography>
                     </TableCell>
@@ -756,8 +770,8 @@ export function HoursOverview({
                         {formatNumber(
                           missionaryHoursSummary.reduce(
                             (sum, s) => sum + s.monthAdmin,
-                            0
-                          )
+                            0,
+                          ),
                         )}
                       </Typography>
                     </TableCell>
@@ -802,19 +816,19 @@ export function HoursOverview({
             ? {
                 totalHours:
                   missionaryHoursSummary.find(
-                    (s) => s.missionary.id === selectedMissionary.id
+                    (s) => s.missionary.id === selectedMissionary.id,
                   )?.totalHours || 0,
                 currentMonthHours:
                   missionaryHoursSummary.find(
-                    (s) => s.missionary.id === selectedMissionary.id
+                    (s) => s.missionary.id === selectedMissionary.id,
                   )?.monthTotal || 0,
                 hasEntries:
                   (missionaryHoursSummary.find(
-                    (s) => s.missionary.id === selectedMissionary.id
+                    (s) => s.missionary.id === selectedMissionary.id,
                   )?.entries || 0) > 0,
                 entryCount:
                   missionaryHoursSummary.find(
-                    (s) => s.missionary.id === selectedMissionary.id
+                    (s) => s.missionary.id === selectedMissionary.id,
                   )?.entries || 0,
               }
             : undefined
