@@ -17,7 +17,7 @@ export async function GET(req) {
     const results = [];
     for (const phone of phoneNumbers) {
       const result = await sendSimpleText({
-        message: `Please submit your missionary hours for the month of ${monthName}. Thank you!`,
+        message: `Please submit your missionary hours for the month of ${monthName}. If you did not serve last month, please log 0 hours. You can do this by going to https://www.myhometownut.com/admin-dashboard/hours-and-directory and entering your email. Thank you!`,
         phone,
         name: "Test User",
       });
