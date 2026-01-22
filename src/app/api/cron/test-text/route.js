@@ -9,9 +9,9 @@ export async function GET(req) {
 
   try {
     // Get last month's name
-    const lastMonth = new Date();
-    lastMonth.setMonth(lastMonth.getMonth() - 1);
-    const monthName = lastMonth.toLocaleString("en-US", { month: "long" });
+    const currentMonth = new Date();
+    currentMonth.setMonth(currentMonth.getMonth());
+    const monthName = currentMonth.toLocaleString("en-US", { month: "long" });
 
     const phoneNumbers = ["18012548871", "18014407878", "18014554526"]; // Test phone numbers
     const results = [];
@@ -50,9 +50,4 @@ export async function GET(req) {
       },
     );
   }
-}
-
-// Also support POST method for manual triggering
-export async function POST(req) {
-  return GET(req);
 }
