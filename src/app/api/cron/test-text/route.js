@@ -73,33 +73,10 @@ export async function GET(req) {
 
       const missionary = missionaries?.[0] || null;
 
-      console.log(
-        `[${requestId}] Missionary found:`,
-        missionary
-          ? `Yes (ID: ${missionary.id}, Name: ${missionary.first_name})`
-          : "No",
-      );
-
       let message;
       let hoursData = null;
 
-      console.log(`[${requestId}] Processing phone: ${phone}`);
-      console.log(`[${requestId}] Normalized search: ${searchPhone}`);
-      console.log(
-        `[${requestId}] Missionary found:`,
-        missionary
-          ? `Yes (ID: ${missionary.id}, Name: ${missionary.first_name})`
-          : "No",
-      );
-
       if (missionary) {
-        console.log(
-          `[${requestId}] Querying hours for missionary_id: ${missionary.id}`,
-        );
-        console.log(
-          `[${requestId}] Period start date filter: ${periodStartDate}`,
-        );
-
         // Fetch hours for current month - get the latest one
         const { data: hoursDataArray, error: hoursError } = await supabaseServer
           .from("missionary_hours")
@@ -108,12 +85,6 @@ export async function GET(req) {
           .gte("period_start_date", periodStartDate)
           .order("created_at", { ascending: false })
           .limit(1);
-
-        console.log(
-          `[${requestId}] Hours query result:`,
-          JSON.stringify(hoursDataArray),
-        );
-        console.log(`[${requestId}] Hours query error:`, hoursError);
 
         if (hoursError) {
           console.error(
@@ -124,7 +95,11 @@ export async function GET(req) {
 
         hoursData = hoursDataArray?.[0] || null;
         const hours = hoursData?.total_hours || 0;
-        console.log(`[${requestId}] Final hours value: ${hours}`);
+
+        // Log phone and hours
+        console.log(
+          `[${requestId}] Phone: ${phone} | Missionary: ${missionary.first_name} | Hours: ${hours}`,
+        );
 
         if (hours > 0) {
           message = `Thank you for serving with myHometown Utah. You have reported ${hours} hours for the month of ${monthName}. If this is not accurate please update your hours here: https://www.myhometownut.com/admin-dashboard/hours-and-directory. Thank you!`;
@@ -132,13 +107,14 @@ export async function GET(req) {
           message = `Please submit your missionary hours for the month of ${monthName}. If you did not serve this month, please log 0 hours. You can do this by going to https://www.myhometownut.com/admin-dashboard/hours-and-directory and entering your email. Thank you!`;
         }
       } else {
+        // Log phone with no missionary found
+        console.log(
+          `[${requestId}] Phone: ${phone} | Missionary: Not Found | Hours: 0`,
+        );
+
         // Fallback message if missionary not found
         message = `Please submit your missionary hours for the month of ${monthName}. If you did not serve this month, please log 0 hours. You can do this by going to https://www.myhometownut.com/admin-dashboard/hours-and-directory and entering your email. Thank you!`;
       }
-
-      console.log(
-        `[${requestId}] Sending message to ${phone}: ${message.substring(0, 50)}...`,
-      );
 
       const result = await sendSimpleText({
         message,
