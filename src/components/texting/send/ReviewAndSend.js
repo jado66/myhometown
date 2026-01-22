@@ -103,7 +103,7 @@ const ReviewAndSend = ({
     // Expand and deduplicate (with section filtering)
     let expandedRecipients = expandGroups
       ? expandGroups(selectedRecipients, allContacts).flatMap(
-          (group) => group.contacts
+          (group) => group.contacts,
         )
       : selectedRecipients;
 
@@ -126,7 +126,7 @@ const ReviewAndSend = ({
 
     const recipientsForScheduling = [
       ...selectedRecipients.filter(
-        (r) => r.value && r.value.startsWith("group:")
+        (r) => r.value && r.value.startsWith("group:"),
       ),
       ...uniqueRecipients,
     ];
@@ -136,7 +136,7 @@ const ReviewAndSend = ({
       recipientsForScheduling,
       scheduledDateTime.toDate(),
       mediaUrls,
-      user
+      user,
     );
 
     if (!result.error) {
@@ -179,7 +179,7 @@ const ReviewAndSend = ({
     if (expandGroups) {
       const expandedRecipients = expandGroups(
         selectedRecipients,
-        allContacts
+        allContacts,
       ).flatMap((group) => group.contacts);
       const phoneNumberMap = new Map();
       const uniqueCount = expandedRecipients.filter((recipient) => {
@@ -258,7 +258,7 @@ const ReviewAndSend = ({
         </Box>
       )}
 
-      {!hasSent && (
+      {/* {!hasSent && (
         <FormControl component="fieldset" sx={{ mt: 2, mb: 2 }}>
           <RadioGroup
             aria-label="send-options"
@@ -280,7 +280,7 @@ const ReviewAndSend = ({
             />
           </RadioGroup>
         </FormControl>
-      )}
+      )} */}
 
       {!hasSent && sendOption === "now" && (
         <Button

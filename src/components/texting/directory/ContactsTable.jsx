@@ -50,6 +50,7 @@ export const ContactsTable = ({
   userId,
   groups,
   moveContact,
+  bulkDeleteContacts,
   userCommunities,
   userCities,
   tableName,
@@ -265,12 +266,13 @@ export const ContactsTable = ({
         <TableHead>
           <TableRow>
             <TableCell>
+              Select All
               <Checkbox
                 checked={selectedContacts.size === filteredContacts.length}
                 onChange={(e) => {
                   if (e.target.checked) {
                     setSelectedContacts(
-                      new Set(filteredContacts.map((c) => c.id))
+                      new Set(filteredContacts.map((c) => c.id)),
                     );
                   } else {
                     setSelectedContacts(new Set());

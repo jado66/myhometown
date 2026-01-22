@@ -28,10 +28,9 @@ import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import { useUserContacts } from "@/hooks/useUserContacts";
 import { ContactsTable } from "./ContactsTable";
 import ContactDialog from "./ContactDialog";
-import { isDuplicateContact } from "@/util/formatting/is-duplicate-contact";
-import { formatPhoneNumber } from "@/util/formatting/format-phone-number";
-import { toast } from "react-toastify";
 import ImportCsvHelpDialog from "./ImportCsvHelpDialog";
+import { exportContacts, parseGroups } from "./utils/csvHelpers";
+import { importContacts } from "./utils/importContacts";
 
 const ContactsManagement = ({ user, userCommunities, userCities }) => {
   const userId = user?.id || null;
@@ -40,6 +39,9 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
     loading,
     error,
     addContact,
+    bulkAddContacts,
+    bulkUpdateContacts,
+    bulkDeleteContacts,
     updateContact,
     deleteContact,
     moveContact,
@@ -47,7 +49,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
   } = useUserContacts(
     userId,
     (userCommunities || []).map((c) => c.id),
-    (userCities || []).map((c) => c.id)
+    (userCities || []).map((c) => c.id),
   );
 
   const [csvHelpOpen, setCsvHelpOpen] = useState(false);
@@ -152,7 +154,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
               }
             });
           });
-        }
+        },
       );
     }
 
@@ -176,7 +178,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
               }
             });
           });
-        }
+        },
       );
     }
 
@@ -252,9 +254,9 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
             return parsedGroups.some(
               (g) =>
                 (typeof g === "string" && g.toLowerCase().includes(query)) ||
-                (g?.label && g.label.toLowerCase().includes(query))
+                (g?.label && g.label.toLowerCase().includes(query)),
             );
-          })()
+          })(),
       );
     }
 
@@ -403,9 +405,10 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
       // Show loading indicator
       setLoading(true);
 
-      // Delete each contact
-      for (const id of contactIds) {
-        await deleteContact(id);
+      // Bulk delete contacts
+      const { error } = await bulkDeleteContacts(contactIds);
+      if (error) {
+        throw new Error(error);
       }
 
       // Refresh contacts to update the view
@@ -472,13 +475,15 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
   }
 
   const handleImportContact = async (event) => {
-    await importContacts(
+    return await importContacts(
       event,
       addContact,
+      bulkAddContacts,
+      bulkUpdateContacts,
       setFormError,
       refreshContacts,
       userId,
-      contacts
+      contacts,
     );
   };
 
@@ -512,6 +517,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
     userId,
     isNewContact,
     handleBulkDeleteClick,
+    bulkDeleteContacts,
     user,
   };
 
@@ -616,7 +622,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
                       (g) =>
                         (typeof g === "string" &&
                           g.toLowerCase().includes(query)) ||
-                        (g?.label && g.label.toLowerCase().includes(query))
+                        (g?.label && g.label.toLowerCase().includes(query)),
                     );
                   })()
                 );
@@ -637,6 +643,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
                   <Badge
                     badgeContent={filteredUserContacts.length}
                     color="primary"
+                    max={Infinity}
                     sx={{
                       "& .MuiBadge-badge": {
                         position: "static",
@@ -698,7 +705,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
                       (g) =>
                         (typeof g === "string" &&
                           g.toLowerCase().includes(query)) ||
-                        (g?.label && g.label.toLowerCase().includes(query))
+                        (g?.label && g.label.toLowerCase().includes(query)),
                     );
                   })()
                 );
@@ -720,6 +727,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
                   <Badge
                     badgeContent={filteredCommunityContacts.length}
                     color="primary"
+                    max={Infinity}
                     sx={{
                       "& .MuiBadge-badge": {
                         position: "static",
@@ -767,7 +775,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
                       (g) =>
                         (typeof g === "string" &&
                           g.toLowerCase().includes(query)) ||
-                        (g?.label && g.label.toLowerCase().includes(query))
+                        (g?.label && g.label.toLowerCase().includes(query)),
                     );
                   })()
                 );
@@ -787,6 +795,7 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
                   <Badge
                     badgeContent={filteredCityContacts.length}
                     color="primary"
+                    max={Infinity}
                     sx={{
                       "& .MuiBadge-badge": {
                         position: "static",
@@ -817,13 +826,13 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
           userCommunities.every(
             (community) =>
               getContactCount(
-                contacts.communityContacts?.[community.id] || []
-              ) === 0
+                contacts.communityContacts?.[community.id] || [],
+              ) === 0,
           )) &&
         (!userCities ||
           userCities.every(
             (city) =>
-              getContactCount(contacts.cityContacts?.[city.id] || []) === 0
+              getContactCount(contacts.cityContacts?.[city.id] || []) === 0,
           )) && (
           <Box sx={{ textAlign: "center", py: 4 }}>
             <Typography variant="h6" color="text.secondary">
@@ -870,334 +879,3 @@ const ContactsManagement = ({ user, userCommunities, userCities }) => {
 };
 
 export default ContactsManagement;
-
-// Helper function for exporting contacts to CSV
-const exportContacts = (contacts) => {
-  const header = "First Name,Middle Name,Last Name,Email,Phone,Groups\n";
-  const csv = contacts
-    .map(
-      (contact) =>
-        `${contact.first_name || ""},${contact.middle_name || ""},${
-          contact.last_name || ""
-        },${contact.email || ""},${contact.phone || ""},${
-          Array.isArray(contact.groups)
-            ? contact.groups.join(";")
-            : typeof contact.groups === "string"
-            ? contact.groups
-            : ""
-        }`
-    )
-    .join("\n");
-
-  const blob = new Blob([header + csv], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  if (link.download !== undefined) {
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", "contacts.csv");
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-};
-
-// Function to import contacts from CSV
-export const importContacts = async (
-  event,
-  addContact,
-  setFormError,
-  refreshContacts,
-  userId,
-  currentContacts
-) => {
-  const file = event.target.files[0];
-  if (!file) {
-    console.log("No file selected for import");
-    return;
-  }
-
-  console.log("Starting CSV import for file:", file.name);
-  toast.info("Starting CSV import...");
-
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    try {
-      const content = e.target.result;
-      console.log("File content length:", content.length);
-      const lines = content.split("\n").filter((line) => line.trim());
-      console.log("Total lines after filtering:", lines.length);
-
-      if (lines.length === 0) {
-        const errorMsg = "CSV file is empty";
-        console.error(errorMsg);
-        setFormError(errorMsg);
-        toast.error(errorMsg);
-        event.target.value = null; // Reset file input
-        return;
-      }
-
-      const errors = [];
-      const importedContacts = [];
-      const duplicates = [];
-
-      // Get and normalize headers
-      console.log("Raw headers:", lines[0]);
-      const allowedHeaders = [
-        "first_name",
-        "last_name",
-        "email",
-        "phone",
-        "groups",
-        "middle_name",
-      ];
-      const rawHeaders = lines[0].split(",").map((header) => header.trim());
-      const headerMapping = [];
-      const headers = [];
-
-      rawHeaders.forEach((header, index) => {
-        const normalized = normalizeHeader(header);
-        if (allowedHeaders.includes(normalized)) {
-          headers.push(normalized);
-          headerMapping.push({
-            originalIndex: index,
-            normalizedName: normalized,
-          });
-        } else {
-          console.warn(`Ignoring unknown column: ${header}`);
-        }
-      });
-
-      console.log("Normalized headers:", headers);
-      console.log("Header mapping:", headerMapping);
-
-      // Check for required headers
-      const requiredHeaders = ["first_name", "last_name", "phone"];
-      const missingHeaders = requiredHeaders.filter(
-        (header) => !headers.includes(header)
-      );
-
-      if (missingHeaders.length > 0) {
-        const errorMsg = `Missing required columns: ${missingHeaders.join(
-          ", "
-        )}`;
-        console.error(errorMsg);
-        setFormError(errorMsg);
-        toast.error(errorMsg);
-        event.target.value = null; // Reset the file input
-        return;
-      }
-
-      console.log("Processing", lines.length - 1, "data lines");
-
-      // Process each line
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i];
-        if (!line.trim()) continue; // Skip empty lines
-
-        console.log(`Processing line ${i + 1}:`, line);
-        const allValues = line.split(",").map((val) => val.trim());
-
-        // Extract only the values for columns we care about
-        const values = headerMapping.map(
-          (mapping) => allValues[mapping.originalIndex] || ""
-        );
-
-        console.log(`Extracted values for known columns:`, values);
-
-        // Check if we have fewer values than expected headers (missing data)
-        if (values.length < headers.length) {
-          const error = `Line ${i + 1}: Too few columns (expected ${
-            headers.length
-          }, got ${values.length})`;
-          console.error(error);
-          errors.push(error);
-          continue;
-        }
-
-        // Create contact object using header mapping
-        const contact = {
-          first_name: "",
-          last_name: "",
-          middle_name: "",
-          email: "",
-          phone: "",
-          owner_type: "user",
-          owner_id: userId,
-          groups: [],
-        };
-
-        // Map values to correct fields
-        headers.forEach((header, j) => {
-          if (header === "groups") {
-            const groupsArray = values[j].split(";").filter(Boolean);
-            contact.groups = groupsArray.map((group) => group.trim());
-          } else if (header === "phone") {
-            contact[header] = formatPhoneNumber(values[j]);
-          } else {
-            contact[header] = values[j];
-          }
-        });
-
-        console.log(`Contact created for line ${i + 1}:`, contact);
-
-        // Validate the contact
-        if (!contact.first_name || !contact.last_name || !contact.phone) {
-          const error = `Line ${i + 1}: Missing required fields (first_name: ${
-            contact.first_name
-          }, last_name: ${contact.last_name}, phone: ${contact.phone})`;
-          console.error(error);
-          errors.push(error);
-          continue;
-        }
-
-        // Check for duplicates
-        if (isDuplicateContact(contact, currentContacts)) {
-          const duplicate = `Line ${i + 1}: Duplicate phone number for ${
-            contact.first_name
-          } ${contact.last_name}`;
-          console.warn(duplicate);
-          duplicates.push(duplicate);
-          continue; // Skip adding this contact
-        }
-
-        try {
-          console.log(`Adding contact for line ${i + 1}:`, contact);
-          // Add contact through the API
-          const { data, error } = await addContact(contact);
-          if (error) {
-            const errorMsg = `Line ${i + 1}: ${error}`;
-            console.error(errorMsg);
-            errors.push(errorMsg);
-          } else if (data) {
-            console.log(`Successfully added contact for line ${i + 1}:`, data);
-            importedContacts.push(data);
-          } else {
-            const errorMsg = `Line ${i + 1}: No data returned from addContact`;
-            console.error(errorMsg);
-            errors.push(errorMsg);
-          }
-        } catch (err) {
-          const errorMsg = `Line ${i + 1}: ${err.message || "Unknown error"}`;
-          console.error(errorMsg, err);
-          errors.push(errorMsg);
-        }
-      }
-
-      // Display summary message
-      let message = "";
-      if (importedContacts.length > 0) {
-        message += `Successfully imported ${importedContacts.length} contacts. `;
-        console.log(
-          `Successfully imported ${importedContacts.length} contacts`
-        );
-      } else {
-        message += "No contacts were imported. ";
-        console.warn("No contacts were imported");
-      }
-
-      if (duplicates.length > 0) {
-        message += `Skipped ${duplicates.length} duplicate contacts. `;
-        console.warn(
-          `Skipped ${duplicates.length} duplicate contacts:`,
-          duplicates
-        );
-      }
-
-      if (errors.length > 0) {
-        console.error(`Import errors (${errors.length}):`, errors);
-        const errorMsg = `Import results: ${message}\nErrors:\n${errors.join(
-          "\n"
-        )}`;
-        setFormError(errorMsg);
-        toast.error(
-          `Import completed with ${errors.length} errors. Check console for details.`
-        );
-      } else {
-        console.log(`Import completed successfully: ${message}`);
-        setFormError(`Import results: ${message}`);
-        toast.success(message);
-      }
-
-      // Refresh contacts after import
-      if (importedContacts.length > 0) {
-        console.log("Refreshing contacts after import");
-        refreshContacts();
-      }
-
-      // Reset the file input to allow reimporting
-      event.target.value = null;
-    } catch (error) {
-      console.error("Error during CSV import:", error);
-      const errorMsg = `Import failed: ${error.message || "Unknown error"}`;
-      setFormError(errorMsg);
-      toast.error(errorMsg);
-      event.target.value = null;
-    }
-  };
-
-  reader.onerror = () => {
-    const errorMsg = "Error reading file";
-    console.error(errorMsg);
-    setFormError(errorMsg);
-    toast.error(errorMsg);
-    event.target.value = null; // Reset file input
-  };
-
-  reader.readAsText(file);
-};
-
-const normalizeHeader = (header) => {
-  // Remove special characters and spaces, convert to lowercase
-  const normalized = header.toLowerCase().trim();
-
-  // Map various possible header names to standard format
-  const headerMap = {
-    "first name": "first_name",
-    firstname: "first_name",
-    "last name": "last_name",
-    lastname: "last_name",
-    "middle name": "middle_name",
-    middlename: "middle_name",
-    "contact name": "name",
-    contactname: "name",
-    email: "email",
-    "email address": "email",
-    emailaddress: "email",
-    mail: "email",
-    phone: "phone",
-    "phone number": "phone",
-    phonenumber: "phone",
-    telephone: "phone",
-    tel: "phone",
-    mobile: "phone",
-    cell: "phone",
-    cellphone: "phone",
-    group: "groups",
-    groups: "groups",
-    category: "groups",
-    categories: "groups",
-    tags: "groups",
-  };
-
-  return headerMap[normalized] || normalized.replace(/[^a-z0-9]/g, "");
-};
-
-const parseGroups = (groupsData) => {
-  if (!groupsData) return [];
-
-  // If already an array, return it
-  if (Array.isArray(groupsData)) return groupsData;
-
-  // If it's a string, try to parse it as JSON
-  if (typeof groupsData === "string") {
-    try {
-      return JSON.parse(groupsData);
-    } catch (error) {
-      console.error("Failed to parse groups:", error);
-      return [];
-    }
-  }
-
-  return [];
-};

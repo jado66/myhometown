@@ -47,7 +47,7 @@ const AdminDashboardPages = () => {
                 align={"center"}
                 gutterBottom
               >
-                Select the login method you would like to use.
+                Select the tool you would like to use.
               </Box>
             </Box>
 
