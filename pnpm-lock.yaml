@@ -149,6 +149,9 @@ dependencies:
   lexical:
     specifier: ^0.31.2
     version: 0.31.2
+  libphonenumber-js:
+    specifier: ^1.12.35
+    version: 1.12.35
   material-react-table:
     specifier: ^3.0.1
     version: 3.2.1(@emotion/react@11.14.0)(@emotion/styled@11.14.1)(@mui/icons-material@5.18.0)(@mui/material@5.18.0)(@mui/x-date-pickers@7.29.4)(react-dom@18.3.1)(react@18.3.1)
@@ -5204,6 +5207,10 @@ packages:
     hasBin: true
     dependencies:
       isomorphic.js: 0.2.5
+    dev: false
+
+  /libphonenumber-js@1.12.35:
+    resolution: {integrity: sha512-T/Cz6iLcsZdb5jDncDcUNhSAJ0VlSC9TnsqtBNdpkaAmy24/R1RhErtNWVWBrcUZKs9hSgaVsBkc7HxYnazIfw==}
     dev: false
 
   /lines-and-columns@1.2.4:

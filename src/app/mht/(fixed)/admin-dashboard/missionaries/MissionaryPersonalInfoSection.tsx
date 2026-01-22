@@ -14,6 +14,145 @@ import {
 import PersonIcon from "@mui/icons-material/Person";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { Help } from "@mui/icons-material";
+import { parsePhoneNumber, isValidPhoneNumber } from "libphonenumber-js";
+
+// Validate phone number using libphonenumber-js
+const validatePhoneNumber = (phoneNumber: string): string | null => {
+  if (!phoneNumber) return "Phone number is required";
+
+  // Validate format and region (default to US)
+  if (!isValidPhoneNumber(phoneNumber, "US")) {
+    return "Please enter a valid phone number";
+  }
+
+  try {
+    const parsed = parsePhoneNumber(phoneNumber, "US");
+    if (!parsed) {
+      return "Please enter a valid phone number";
+    }
+
+    // Only allow +1 numbers
+    if (parsed.countryCallingCode !== "1") {
+      return "Only +1 numbers are allowed";
+    }
+
+    const nationalNumber = parsed.nationalNumber.toString();
+    const areaCode = nationalNumber.substring(0, 3);
+
+    // Reject specific number
+    if (nationalNumber === "2345678901") {
+      return "Please enter a valid phone number";
+    }
+
+    // Reject toll-free numbers (833, 844, 855, 866, 877, 888, 800)
+    const tollFreeAreaCodes = ["800", "833", "844", "855", "866", "877", "888"];
+    if (tollFreeAreaCodes.includes(areaCode)) {
+      return "Toll-free numbers are not allowed";
+    }
+
+    // Reject special service numbers (411, 511, 611, 711, 911)
+    const specialServiceNumbers = ["411", "511", "611", "711", "911"];
+    if (specialServiceNumbers.includes(areaCode)) {
+      return "Special service numbers are not allowed";
+    }
+
+    // Reject non-mainland US area codes (Canadian, Caribbean, US Territories)
+    const nonDomesticAreaCodes = [
+      // Canadian area codes
+      "368",
+      "403",
+      "587",
+      "780",
+      "825", // Alberta
+      "236",
+      "250",
+      "257",
+      "604",
+      "672",
+      "778", // British Columbia
+      "204",
+      "431",
+      "584", // Manitoba
+      "428",
+      "506", // New Brunswick
+      "709",
+      "879", // Newfoundland and Labrador
+      "867", // Northwest Territories/Nunavut/Yukon
+      "782",
+      "902", // Nova Scotia/Prince Edward Island
+      "226",
+      "249",
+      "289",
+      "343",
+      "365",
+      "382",
+      "416",
+      "437",
+      "519",
+      "548",
+      "613",
+      "647",
+      "683",
+      "705",
+      "742",
+      "753",
+      "807",
+      "905",
+      "942", // Ontario
+      "263",
+      "354",
+      "367",
+      "418",
+      "438",
+      "450",
+      "468",
+      "514",
+      "579",
+      "581",
+      "819",
+      "873", // Quebec
+      "306",
+      "474",
+      "639", // Saskatchewan
+      // Caribbean and Atlantic area codes
+      "264", // Anguilla
+      "268", // Antigua and Barbuda
+      "242", // Bahamas
+      "246", // Barbados
+      "441", // Bermuda
+      "284", // British Virgin Islands
+      "345", // Cayman Islands
+      "658", // Jamaica (overlay)
+      "649", // Turks and Caicos
+      "658", // Jamaica
+      "664", // Montserrat
+      "721", // Sint Maarten
+      "758", // Saint Lucia
+      "767", // Dominica
+      "784", // Saint Vincent and the Grenadines
+      "809", // Dominican Republic
+      "829", // Dominican Republic (overlay)
+      "849", // Dominican Republic (overlay)
+      "868", // Trinidad and Tobago
+      "869", // Saint Kitts and Nevis
+      "876", // Jamaica
+      // US Territory area codes
+      "340", // U.S. Virgin Islands
+      "670", // Northern Mariana Islands
+      "671", // Guam
+      "684", // American Samoa
+      "787", // Puerto Rico
+      "939", // Puerto Rico (overlay)
+    ];
+    if (nonDomesticAreaCodes.includes(areaCode)) {
+      return "International numbers are not allowed";
+    }
+
+    return null;
+  } catch {
+    return "Please enter a valid phone number";
+  }
+};
 
 interface MissionaryPersonalInfoSectionProps {
   formData: any;
@@ -59,8 +198,8 @@ const MissionaryPersonalInfoSection: React.FC<
                 bgcolor: errors.profile_picture_url
                   ? "#d32f2f"
                   : formData.profile_picture_url
-                  ? "transparent"
-                  : "grey.300",
+                    ? "transparent"
+                    : "grey.300",
               }}
             >
               {errors.profile_picture_url && (
@@ -97,8 +236,8 @@ const MissionaryPersonalInfoSection: React.FC<
                   {uploadLoading
                     ? "Uploading..."
                     : formData.profile_picture_url
-                    ? "Edit"
-                    : "Upload"}
+                      ? "Edit"
+                      : "Upload"}
                 </Button>
               </label>
               {formData.profile_picture_url && (
@@ -136,15 +275,15 @@ const MissionaryPersonalInfoSection: React.FC<
                     noSelectionYet
                       ? "error"
                       : isSelected
-                      ? "primary"
-                      : "inherit"
+                        ? "primary"
+                        : "inherit"
                   }
                   variant={
                     isSelected
                       ? "contained"
                       : noSelectionYet
-                      ? "outlined"
-                      : "outlined"
+                        ? "outlined"
+                        : "outlined"
                   }
                   onClick={() =>
                     setFormData((prev: any) => ({
@@ -227,14 +366,21 @@ const MissionaryPersonalInfoSection: React.FC<
                 required
                 size="small"
                 value={formData.contact_number}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const phoneError = validatePhoneNumber(value);
                   setFormData((prev: any) => ({
                     ...prev,
-                    contact_number: e.target.value,
-                  }))
+                    contact_number: value,
+                    _phoneValidationError: phoneError,
+                  }));
+                }}
+                error={
+                  !!(errors.contact_number || formData._phoneValidationError)
                 }
-                error={!!errors.contact_number}
-                helperText={errors.contact_number}
+                helperText={
+                  errors.contact_number || formData._phoneValidationError
+                }
               />
             </Grid>
             <Grid item xs={12}>

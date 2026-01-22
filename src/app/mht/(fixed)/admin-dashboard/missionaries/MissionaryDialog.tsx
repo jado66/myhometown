@@ -232,7 +232,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
       setErrors({});
       setFormData(initalFormData);
     }
-  }, [missionary]);
+  }, [missionary, open]);
 
   // Run validation when dialog opens if editing
   useEffect(() => {
@@ -414,6 +414,13 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
     }
     if (submitData.person_type === "volunteer") {
       submitData.stake_name = "";
+    }
+
+    // Check for phone validation errors first
+    if ((formData as any)._phoneValidationError) {
+      setErrors({ contact_number: (formData as any)._phoneValidationError });
+      setSaving(false);
+      return;
     }
 
     // Critical fields that MUST be present - cannot save without these
