@@ -13,7 +13,7 @@ export async function GET(req) {
     lastMonth.setMonth(lastMonth.getMonth() - 1);
     const monthName = lastMonth.toLocaleString("en-US", { month: "long" });
 
-    const phoneNumbers = ["18012548871", "13852508633", "18014554526"]; // Test phone numbers
+    const phoneNumbers = ["18012548871", "18014407878", "18014554526"]; // Test phone numbers
     const results = [];
     for (const phone of phoneNumbers) {
       const result = await sendSimpleText({
@@ -33,7 +33,7 @@ export async function GET(req) {
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   } catch (error) {
     console.error("Error in test-text cron job:", error);
@@ -47,7 +47,7 @@ export async function GET(req) {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 }
