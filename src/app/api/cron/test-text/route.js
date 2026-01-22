@@ -65,6 +65,19 @@ export async function GET(req) {
         .select("id, first_name, contact_number")
         .not("contact_number", "is", null);
 
+      console.log(
+        `[${requestId}] All missionaries count:`,
+        allMissionaries?.length || 0,
+      );
+      if (allMissionaries && allMissionaries.length > 0) {
+        allMissionaries.forEach((m) => {
+          const normalizedDbPhone = m.contact_number?.replace(/\D/g, "") || "";
+          console.log(
+            `[${requestId}] DB Phone: "${normalizedDbPhone}" vs search: "${searchPhone}" or "${normalizedPhone}" or "1${searchPhone}"`,
+          );
+        });
+      }
+
       // Find missionary by normalizing and comparing contact numbers
       const missionary = allMissionaries?.find((m) => {
         const normalizedDbPhone = m.contact_number?.replace(/\D/g, "") || "";
@@ -76,6 +89,7 @@ export async function GET(req) {
       });
 
       let message;
+      let hoursData = null;
 
       console.log(`[${requestId}] Processing phone: ${phone}`);
       console.log(`[${requestId}] Normalized search: ${searchPhone}`);
@@ -94,17 +108,18 @@ export async function GET(req) {
           `[${requestId}] Period start date filter: ${periodStartDate}`,
         );
 
-        // Fetch hours for current month
-        const { data: hoursData, error: hoursError } = await supabaseServer
+        // Fetch hours for current month - get the latest one
+        const { data: hoursDataArray, error: hoursError } = await supabaseServer
           .from("missionary_hours")
           .select("*")
           .eq("missionary_id", missionary.id)
           .gte("period_start_date", periodStartDate)
-          .maybeSingle();
+          .order("created_at", { ascending: false })
+          .limit(1);
 
         console.log(
           `[${requestId}] Hours query result:`,
-          JSON.stringify(hoursData),
+          JSON.stringify(hoursDataArray),
         );
         console.log(`[${requestId}] Hours query error:`, hoursError);
 
@@ -115,6 +130,7 @@ export async function GET(req) {
           );
         }
 
+        hoursData = hoursDataArray?.[0] || null;
         const hours = hoursData?.total_hours || 0;
         console.log(`[${requestId}] Final hours value: ${hours}`);
 
@@ -141,7 +157,7 @@ export async function GET(req) {
       results.push({
         phone,
         result,
-        hours: missionary ? hoursData?.total_hours || 0 : null,
+        hours: hoursData?.total_hours || 0,
         missionaryFound: !!missionary,
       });
     }
