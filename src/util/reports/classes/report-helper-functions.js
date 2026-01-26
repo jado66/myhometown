@@ -96,6 +96,7 @@ export const getDayOfWeek = (dateString) => {
 
 /**
  * Calculates attendance statistics for a given class based on actual class dates
+ * Only counts dates up to today (excludes future dates) for accurate percentages
  * @param {Object} classItem - The class object containing attendance data
  * @returns {Object} Statistics including enrollment and attendance metrics
  */
@@ -103,7 +104,12 @@ export const calculateAttendanceStats = (classItem) => {
   const studentsEnrolled =
     classItem.signups?.filter((signup) => !signup.isWaitlisted)?.length || 0;
 
-  const classDates = generateClassDates(classItem);
+  const allClassDates = generateClassDates(classItem);
+  
+  // Filter to only include dates up to today (not future dates)
+  const today = moment.utc().format("YYYY-MM-DD");
+  const classDates = allClassDates.filter((date) => date <= today);
+  
   const totalClassDays = classDates.length;
   const maxPossibleAttendance = studentsEnrolled * totalClassDays;
 
@@ -339,6 +345,10 @@ export const generateStudentAttendanceReportCSV = (semester) => {
 
   // Sort dates chronologically
   const sortedDates = Array.from(allDates).sort();
+  
+  // Filter to only include dates up to today for attendance calculations
+  const today = moment.utc().format("YYYY-MM-DD");
+  const pastAndTodayDates = sortedDates.filter((date) => date <= today);
 
   console.log("sortedDates", JSON.stringify(sortedDates, null, 2));
 
@@ -378,6 +388,7 @@ export const generateStudentAttendanceReportCSV = (semester) => {
     ];
 
     // Calculate attendance statistics for this student
+    // Only count past/today dates for accurate percentage
     let attendedCount = 0;
     let totalClassDays = 0;
 
@@ -385,14 +396,21 @@ export const generateStudentAttendanceReportCSV = (semester) => {
     sortedDates.forEach((date) => {
       // Check if this date is relevant for this student's class
       if (student.attendance[date]) {
-        totalClassDays++;
-        // Add X for present, leave blank for absent
+        const isPastOrToday = date <= today;
+        
+        // Add X for present, leave blank for absent, show future dates differently
         if (student.attendance[date].present) {
           row.push('"✓"');
-          attendedCount++;
+          if (isPastOrToday) attendedCount++;
+        } else if (!isPastOrToday) {
+          // Future date - mark as upcoming
+          row.push('"—"');
         } else {
           row.push("x");
         }
+        
+        // Only count past/today dates toward total
+        if (isPastOrToday) totalClassDays++;
       } else {
         // Date not relevant for this class
         row.push("- -");
