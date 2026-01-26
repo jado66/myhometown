@@ -394,7 +394,10 @@ const MissionaryPersonalInfoSection: React.FC<
                 <Typography sx={{ alignSelf: "center", mr: 1 }}>
                   Status:
                 </Typography>
-                {["pending", "active", "released"].map((status) => {
+                {(formData.person_type === "volunteer"
+                  ? ["active", "released"]
+                  : ["pending", "active", "released"]
+                ).map((status) => {
                   const isSelected =
                     (formData.assignment_status || "pending") === status;
                   return (
@@ -417,6 +420,28 @@ const MissionaryPersonalInfoSection: React.FC<
                   );
                 })}
               </Box>
+              {formData.person_type === "missionary" && (
+                <Typography
+                  sx={{
+                    alignSelf: "center",
+                    fontSize: "body2.fontSize",
+                    color: "text.secondary",
+                  }}
+                >
+                  • Pending missionaries are serving but still in the process of
+                  being called.
+                </Typography>
+              )}
+
+              <Typography
+                sx={{
+                  alignSelf: "center",
+                  fontSize: "body2.fontSize",
+                  color: "text.secondary",
+                }}
+              >
+                • The release date is the last day of service in myHometown.
+              </Typography>
             </Grid>
           </Grid>
         </Grid>

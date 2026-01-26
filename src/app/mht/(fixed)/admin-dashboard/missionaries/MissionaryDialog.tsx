@@ -99,7 +99,7 @@ const missionarySchema = yup.object().shape({
   assignment_level: yup.string().required("Assignment level is required"),
   contact_number: yup.string().required("Contact number is required"),
   group: yup.string().notRequired(),
-  start_date: yup.string().required("Start date is required"),
+  start_date: yup.string().required("Start and end date are required"),
   duration: yup.string().required("Duration is required"),
   stake_name: yup.string().when("person_type", {
     is: (val: string) => val === "missionary",
@@ -442,6 +442,28 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
       criticalFields.push("community_id");
     }
 
+    // If status is released, require start_date and end_date
+    if (submitData.assignment_status === "released") {
+      if (!submitData.start_date) {
+        criticalFields.push("start_date");
+      }
+      if (!submitData.end_date) {
+        criticalFields.push("end_date");
+      } else {
+        // Validate end_date is not in the future
+        const today = new Date();
+        const endDate = new Date(submitData.end_date);
+        // Only compare if endDate is valid
+        if (!isNaN(endDate.getTime()) && endDate > today) {
+          setErrors({
+            end_date: `${submitData.person_type === "volunteer" ? "End date" : "Release date"} cannot be in the future for released ${submitData.person_type === "volunteer" ? "volunteers" : "missionaries"}.`,
+          });
+          setSaving(false);
+          return;
+        }
+      }
+    }
+
     const missingCriticalFields = criticalFields.filter(
       (field) => !submitData[field as keyof MissionaryFormData],
     );
@@ -454,6 +476,8 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
         contact_number: "Phone Number",
         city_id: "City",
         community_id: "Community",
+        start_date: "Start Date",
+        end_date: "End Date",
       };
       const newErrors: { [key: string]: string } = {};
       missingCriticalFields.forEach((f) => {
@@ -601,6 +625,7 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
         </DialogTitle>
         <DialogContent dividers sx={{ py: 2 }}>
           <JsonViewer data={formData} />
+
           <Box component="form" onSubmit={handleSubmit}>
             <Grid container spacing={4}>
               <Grid item xs={12} md={7}>

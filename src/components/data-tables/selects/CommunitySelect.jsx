@@ -51,10 +51,12 @@ const CommunitySelect = ({
       if (typeof comm.city_name === "string" && comm.city_name) {
         city = comm.city_name;
       } else if (comm.cities && typeof comm.cities === "object") {
-        city = (typeof comm.cities.city_name === "string" && comm.cities.city_name)
-          || (typeof comm.cities.name === "string" && comm.cities.name)
-          || (typeof comm.city === "string" && comm.city)
-          || "Unknown";
+        city =
+          (typeof comm.cities.city_name === "string" &&
+            comm.cities.city_name) ||
+          (typeof comm.cities.name === "string" && comm.cities.name) ||
+          (typeof comm.city === "string" && comm.city) ||
+          "Unknown";
       } else {
         city = (typeof comm.city === "string" && comm.city) || "Unknown";
       }

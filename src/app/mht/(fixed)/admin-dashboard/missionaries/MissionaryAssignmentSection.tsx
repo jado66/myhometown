@@ -102,23 +102,23 @@ const MissionaryAssignmentSection: React.FC<
   const cityOptions = useMemo(() => getCityOptions(), [getCityOptions]);
   const communityOptions = useMemo(
     () => getCommunityOptions(),
-    [getCommunityOptions]
+    [getCommunityOptions],
   );
   const titleOptions = useMemo(() => getTitleOptions(), [getTitleOptions]);
   const availableCities = useMemo(
     () => getAvailableCities(),
-    [getAvailableCities]
+    [getAvailableCities],
   );
   const availableCommunities = useMemo(
     () => getAvailableCommunities(),
-    [getAvailableCommunities]
+    [getAvailableCommunities],
   );
 
   // Memoize selected values to maintain object reference stability
   const selectedCity = useMemo(() => {
     if (!formData.city_id) return null;
     const selected = availableCities.find(
-      (city: any) => (city._id || city.id) === formData.city_id
+      (city: any) => (city._id || city.id) === formData.city_id,
     );
     return selected
       ? {
@@ -133,7 +133,7 @@ const MissionaryAssignmentSection: React.FC<
   const selectedCommunity = useMemo(() => {
     if (!formData.community_id) return null;
     const selected = availableCommunities.find(
-      (comm: any) => (comm._id || comm.id) === formData.community_id
+      (comm: any) => (comm._id || comm.id) === formData.community_id,
     );
     return selected
       ? {
@@ -169,7 +169,7 @@ const MissionaryAssignmentSection: React.FC<
       } else {
         const calculatedEndDate = calculateEndDate(
           startDate,
-          `${rounded} months`
+          `${rounded} months`,
         );
         setFormData((prev: any) => ({
           ...prev,
@@ -177,7 +177,7 @@ const MissionaryAssignmentSection: React.FC<
           end_date: calculatedEndDate,
         }));
       }
-    }, 100)
+    }, 100),
   );
 
   const handleDurationChange = useCallback(
@@ -189,7 +189,7 @@ const MissionaryAssignmentSection: React.FC<
       }
       // else ignore input
     },
-    [formData.start_date]
+    [formData.start_date],
   );
 
   const handleEndDateChange = useCallback(
@@ -225,7 +225,7 @@ const MissionaryAssignmentSection: React.FC<
         end_date: endDate,
       }));
     },
-    [formData.start_date, setFormData]
+    [formData.start_date, setFormData],
   );
 
   const formattedDuration = formData.duration
@@ -534,13 +534,20 @@ const MissionaryAssignmentSection: React.FC<
                   ? formData.end_date.split("T")[0]
                   : calculateEndDate(
                       formData.start_date,
-                      formData.duration ? `${formData.duration} months` : ""
+                      formData.duration ? `${formData.duration} months` : "",
                     )
               }
               onChange={handleEndDateChange}
               InputLabelProps={{ shrink: true }}
             />
           </Grid>
+          {errors.end_date && (
+            <Box sx={{ m: 2 }}>
+              <Typography color="error" variant="body2">
+                {errors.end_date}
+              </Typography>
+            </Box>
+          )}
         </Grid>
       </CardContent>
     </Card>
