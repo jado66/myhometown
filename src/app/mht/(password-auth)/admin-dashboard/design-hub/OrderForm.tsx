@@ -55,13 +55,15 @@ export function OrderForm({
   };
 
   const isFormValid =
-    // formData.title &&
     formData.name &&
     formData.email &&
     formData.phone &&
     formData.locationType &&
     formData.authorizationType &&
-    hasItems;
+    hasItems &&
+    ((formData.locationType === "city" && formData.city) ||
+      (formData.locationType === "community" && formData.community) ||
+      formData.locationType === "myHometown Utah");
 
   return (
     <Card>

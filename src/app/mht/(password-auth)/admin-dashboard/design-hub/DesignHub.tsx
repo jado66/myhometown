@@ -134,7 +134,7 @@ export default function DesignHub() {
       <Grid container spacing={3}>
         {items.map((item) => {
           const alreadyAdded = promotionalCartItems.some(
-            (i) => i.id === item.id
+            (i) => i.id === item.id,
           );
           return (
             <Grid item xs={12} sm={6} md={4} key={item.id}>
@@ -381,23 +381,25 @@ export default function DesignHub() {
         },
       };
 
+      alert(JSON.stringify(emailData, null, 2));
+
       // Send to API
-      const response = await fetch(
-        "/api/communications/send-mail/to-design-hub",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(emailData),
-        }
-      );
+      // const response = await fetch(
+      //   "/api/communications/send-mail/to-design-hub",
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify(emailData),
+      //   }
+      // );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      // if (!response.ok) {
+      //   throw new Error(`HTTP error! status: ${response.status}`);
+      // }
 
-      const result = await response.json();
+      // const result = await response.json();
       console.log("Order submitted successfully:", result);
 
       // Reset carts after successful submission
@@ -405,12 +407,12 @@ export default function DesignHub() {
       setPromotionalCartItems([]);
 
       alert(
-        "Order submitted successfully! You will receive confirmation within 24 hours."
+        "Order submitted successfully! You will receive confirmation within 24 hours.",
       );
     } catch (error) {
       console.error("Error submitting order:", error);
       alert(
-        "There was an error submitting your order. Please try again or contact support."
+        "There was an error submitting your order. Please try again or contact support.",
       );
     } finally {
       setIsSubmitting(false);
@@ -429,7 +431,7 @@ export default function DesignHub() {
   const renderSingleAddButton = (
     type: "standard-print-items" | "signs-banners",
     title: string,
-    description: string
+    description: string,
   ) => (
     <Box
       sx={{
@@ -714,7 +716,7 @@ export default function DesignHub() {
                   {renderSingleAddButton(
                     "standard-print-items",
                     "Standard Print Item",
-                    "Create custom flyers, certificates, and other print materials for your community"
+                    "Create custom flyers, certificates, and other print materials for your community",
                   )}
                 </>
               )}
@@ -760,7 +762,7 @@ export default function DesignHub() {
                   {renderSingleAddButton(
                     "signs-banners",
                     "Sign/Banner",
-                    "Order custom designs for signs and banners"
+                    "Order custom designs for signs and banners",
                   )}
                 </>
               )}

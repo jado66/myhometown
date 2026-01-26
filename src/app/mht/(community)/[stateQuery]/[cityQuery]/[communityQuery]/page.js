@@ -390,8 +390,8 @@ const Page = ({ params }) => {
           maxEvents={5}
         />
         <Divider sx={{ my: 5 }} id="events" />
-        <EventsCalendar events={events} onSelectEvent={onSelectEvent} />
-        <Divider sx={{ my: 5 }} />
+        {/* <EventsCalendar events={events} onSelectEvent={onSelectEvent} /> */}
+        {/* <Divider sx={{ my: 5 }} /> */}
 
         <LoadedClassesProvider>
           <ClassesTreeView
@@ -444,7 +444,7 @@ const Page = ({ params }) => {
                   communityId={community._id}
                   communityName={`${communityQuery.replaceAll(
                     "-",
-                    " "
+                    " ",
                   )} Community`}
                 />
               </>

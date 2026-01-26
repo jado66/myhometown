@@ -146,7 +146,7 @@ const AdminDashboardPages = () => {
                   title: "Enter Missionary & Volunteers Hours",
                   subtitle: "View and manage your service hours.",
                   media: "/admin-icons/missionary-logs.png",
-                  href: rootUrl + "/admin-dashboard/log-hours",
+                  href: rootUrl + "/admin-dashboard/hours-and-directory",
                 },
               ].map((item, i) => (
                 <PermissionGuard

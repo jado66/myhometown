@@ -125,7 +125,7 @@ export default function MissionaryManagement() {
       "MissionaryManagement - communities:",
       communities,
       "length:",
-      communities?.length
+      communities?.length,
     );
   }, [communities]);
 
@@ -136,7 +136,7 @@ export default function MissionaryManagement() {
 
   const handleProfilePictureClick = (
     url: string | null,
-    profilePic: string | null
+    profilePic: string | null,
   ) => {
     if (url) {
       setProfilePicUrl(url);
@@ -164,7 +164,7 @@ export default function MissionaryManagement() {
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMissionary, setSelectedMissionary] = useState<any | undefined>(
-    undefined
+    undefined,
   );
 
   // Bulk import dialog state
@@ -202,7 +202,7 @@ export default function MissionaryManagement() {
   function validateAndMapRows(
     rows: any[],
     cities: City[],
-    communities: Community[]
+    communities: Community[],
   ) {
     const errors: string[] = [];
     const valid: any[] = [];
@@ -247,7 +247,7 @@ export default function MissionaryManagement() {
         errors.push(`Row ${rowNum}: Type is required.`);
       } else if (!["missionary", "volunteer"].includes(person_type_raw)) {
         errors.push(
-          `Row ${rowNum}: Type must be one of missionary, volunteer.`
+          `Row ${rowNum}: Type must be one of missionary, volunteer.`,
         );
       }
 
@@ -286,7 +286,7 @@ export default function MissionaryManagement() {
         !["active", "inactive", "pending"].includes(assignment_status_raw)
       ) {
         errors.push(
-          `Row ${rowNum}: Status must be one of active, inactive, pending.`
+          `Row ${rowNum}: Status must be one of active, inactive, pending.`,
         );
       }
 
@@ -296,7 +296,7 @@ export default function MissionaryManagement() {
         !["state", "city", "community"].includes(assignment_level_raw)
       ) {
         errors.push(
-          `Row ${rowNum}: Level is required and must be one of state, city, community.`
+          `Row ${rowNum}: Level is required and must be one of state, city, community.`,
         );
       }
 
@@ -321,30 +321,30 @@ export default function MissionaryManagement() {
         if (assignmentName) {
           // Find all communities matching the given name (case-insensitive)
           const matchingCommunities = communities.filter((c) =>
-            ciEquals(c.name, assignmentName)
+            ciEquals(c.name, assignmentName),
           );
           if (matchingCommunities.length === 0) {
             // Fallback: attempt fuzzy (includes) match if no exact match
             const fuzzy = communities.filter((c) =>
-              c.name.toLowerCase().includes(assignmentName.toLowerCase())
+              c.name.toLowerCase().includes(assignmentName.toLowerCase()),
             );
             if (fuzzy.length === 1) {
               community_id = fuzzy[0].id;
               city_id = fuzzy[0].city;
               console.debug(
-                `CSV import row ${rowNum}: Resolved community '${assignmentName}' via fuzzy match to '${fuzzy[0].name}'.`
+                `CSV import row ${rowNum}: Resolved community '${assignmentName}' via fuzzy match to '${fuzzy[0].name}'.`,
               );
             } else if (fuzzy.length > 1) {
               errors.push(
                 `Row ${rowNum}: Community '${assignmentName}' has multiple fuzzy matches (${fuzzy
                   .map((c) => c.name)
                   .join(
-                    ", "
-                  )}). Provide an Assignment City column to disambiguate.`
+                    ", ",
+                  )}). Provide an Assignment City column to disambiguate.`,
               );
             } else {
               errors.push(
-                `Row ${rowNum}: Community '${assignmentName}' not found.`
+                `Row ${rowNum}: Community '${assignmentName}' not found.`,
               );
             }
           } else if (matchingCommunities.length === 1) {
@@ -371,16 +371,16 @@ export default function MissionaryManagement() {
                 city_id = narrowed[0].city;
               } else if (narrowed.length === 0) {
                 errors.push(
-                  `Row ${rowNum}: Community '${assignmentName}' found in other cities but not in '${possibleCityName}'.`
+                  `Row ${rowNum}: Community '${assignmentName}' found in other cities but not in '${possibleCityName}'.`,
                 );
               } else {
                 errors.push(
-                  `Row ${rowNum}: Ambiguous community '${assignmentName}' in multiple cities. Provide an Assignment City column to disambiguate.`
+                  `Row ${rowNum}: Ambiguous community '${assignmentName}' in multiple cities. Provide an Assignment City column to disambiguate.`,
                 );
               }
             } else {
               errors.push(
-                `Row ${rowNum}: Community '${assignmentName}' exists in multiple cities. Add an 'Assignment City' column with the city name to disambiguate.`
+                `Row ${rowNum}: Community '${assignmentName}' exists in multiple cities. Add an 'Assignment City' column with the city name to disambiguate.`,
               );
             }
           }
@@ -389,7 +389,7 @@ export default function MissionaryManagement() {
         // For state level, Assignment must be 'Utah' (case-insensitive)
         if (assignmentName && assignmentName.toLowerCase() !== "utah") {
           errors.push(
-            `Row ${rowNum}: Assignment must be 'Utah' for Level 'state'.`
+            `Row ${rowNum}: Assignment must be 'Utah' for Level 'state'.`,
           );
         }
       }
@@ -403,11 +403,11 @@ export default function MissionaryManagement() {
         !community_id
       ) {
         errors.push(
-          `Row ${rowNum}: Could not resolve community '${assignmentName}'.`
+          `Row ${rowNum}: Could not resolve community '${assignmentName}'.`,
         );
       }
       const finalRowErrors = errors.filter((e) =>
-        e.startsWith(`Row ${rowNum}:`)
+        e.startsWith(`Row ${rowNum}:`),
       );
       if (finalRowErrors.length === 0) {
         const start_date = row["Start Date"] || "";
@@ -419,7 +419,7 @@ export default function MissionaryManagement() {
             const endDate = new Date(end_date);
             if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
               const diffTime = Math.abs(
-                endDate.getTime() - startDate.getTime()
+                endDate.getTime() - startDate.getTime(),
               );
               const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
               const months = Math.round(diffDays / 30.44);
@@ -493,7 +493,7 @@ export default function MissionaryManagement() {
 
   // Handler for missionary CSV import
   const handleImportMissionaryCsv = async (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = e.target.files?.[0] || null;
     setImportFile(file);
@@ -530,11 +530,11 @@ export default function MissionaryManagement() {
       const [citiesResp, communitiesResp] = await Promise.all([
         fetch(
           `${supabaseUrl}/rest/v1/cities?select=id,name,state,country&order=name`,
-          { headers }
+          { headers },
         ),
         fetch(
           `${supabaseUrl}/rest/v1/communities?select=id,name,city_id,state,country&order=name`,
-          { headers }
+          { headers },
         ),
       ]);
 
@@ -560,7 +560,7 @@ export default function MissionaryManagement() {
           id: c.id,
           name: c.name,
           city: c.city_id, // match existing interface (city holds city id)
-        })
+        }),
       );
 
       const results = validateAndMapRows(rows, allCities, allCommunities);
@@ -574,7 +574,7 @@ export default function MissionaryManagement() {
     } catch (err: any) {
       console.error("Bulk import: location fetch/validation error", err);
       setImportError(
-        err?.message || "Unexpected error fetching locations for validation."
+        err?.message || "Unexpected error fetching locations for validation.",
       );
     }
   };
@@ -638,7 +638,7 @@ export default function MissionaryManagement() {
       console.error("Bulk import unexpected error", err);
       toast.error("Unexpected error importing missionaries");
       setImportError(
-        (err as any)?.message || "Unexpected error importing missionaries"
+        (err as any)?.message || "Unexpected error importing missionaries",
       );
     } finally {
       setImporting(false);
@@ -665,7 +665,7 @@ export default function MissionaryManagement() {
   };
 
   const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const newSize = parseInt(event.target.value, 10);
     setRowsPerPage(newSize);
@@ -693,6 +693,10 @@ export default function MissionaryManagement() {
   }, [user]);
 
   const fetchMissionaries = async () => {
+    if (!user) {
+      // Prevent fetching if user is not loaded
+      return;
+    }
     try {
       const response = await fetch("/api/database/missionaries", {
         method: "POST",
@@ -783,14 +787,14 @@ export default function MissionaryManagement() {
   useEffect(() => {
     const maxPage = Math.max(
       0,
-      Math.ceil(filteredMissionaries.length / rowsPerPage) - 1
+      Math.ceil(filteredMissionaries.length / rowsPerPage) - 1,
     );
     if (page > maxPage) setPage(maxPage);
   }, [filteredMissionaries.length, rowsPerPage, page]);
 
   const paginatedMissionaries = filteredMissionaries.slice(
     page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
+    page * rowsPerPage + rowsPerPage,
   );
 
   // Fetch missionary hours
@@ -827,7 +831,7 @@ export default function MissionaryManagement() {
     // Helper function to calculate hours for a missionary
     const getHoursData = (missionaryId: string) => {
       const missionaryHours = (hours || []).filter(
-        (h) => h.missionary_id === missionaryId
+        (h) => h.missionary_id === missionaryId,
       );
 
       // Calculate total hours
@@ -933,7 +937,7 @@ export default function MissionaryManagement() {
     const csvContent = [
       header.join(","),
       ...rows.map((row) =>
-        header.map((h) => escapeCsv((row as any)[h])).join(",")
+        header.map((h) => escapeCsv((row as any)[h])).join(","),
       ),
     ].join("\r\n");
 
@@ -982,12 +986,12 @@ export default function MissionaryManagement() {
       // Normalize status & level to lowercase to satisfy DB CHECK constraints
       if (formData.assignment_status) {
         formData.assignment_status = String(
-          formData.assignment_status
+          formData.assignment_status,
         ).toLowerCase();
       }
       if (formData.assignment_level) {
         formData.assignment_level = String(
-          formData.assignment_level
+          formData.assignment_level,
         ).toLowerCase();
       }
       // Enforce Utah for state assignment automatically if user selected state level
@@ -1015,7 +1019,7 @@ export default function MissionaryManagement() {
         if (response.status === 409) {
           toast.error(
             errorData.error ||
-              "A missionary or volunteer with this email already exists."
+              "A missionary or volunteer with this email already exists.",
           );
         } else {
           toast.error(errorData.error || "Failed to save missionary");
@@ -1025,7 +1029,7 @@ export default function MissionaryManagement() {
 
       await fetchMissionaries();
       toast.success(
-        `Missionary ${selectedMissionary ? "updated" : "created"} successfully`
+        `Missionary ${selectedMissionary ? "updated" : "created"} successfully`,
       );
       handleCloseDialog();
     } catch (err) {
@@ -1037,7 +1041,7 @@ export default function MissionaryManagement() {
   // State for delete confirmation dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [missionaryToDelete, setMissionaryToDelete] = useState<any | null>(
-    null
+    null,
   );
   const [deleting, setDeleting] = useState(false);
 
@@ -1054,7 +1058,7 @@ export default function MissionaryManagement() {
         `/api/database/missionaries?id=${missionaryToDelete.id}`,
         {
           method: "DELETE",
-        }
+        },
       );
       if (!response.ok) throw new Error("Failed to delete missionary");
       toast.success("Missionary deleted successfully");
@@ -1075,7 +1079,7 @@ export default function MissionaryManagement() {
 
   const handleViewModeChange = (
     event: React.MouseEvent<HTMLElement>,
-    newViewMode: ViewMode | null
+    newViewMode: ViewMode | null,
   ) => {
     if (newViewMode !== null) {
       setViewMode(newViewMode);
@@ -1289,7 +1293,7 @@ export default function MissionaryManagement() {
                   {
                     label: "State Level",
                     value: filteredMissionaries.filter(
-                      (m) => m.assignment_level?.toLowerCase() === "state"
+                      (m) => m.assignment_level?.toLowerCase() === "state",
                     ).length,
                     color: "secondary.main",
                     icon: <Business sx={{ color: "#fff" }} />,
@@ -1297,7 +1301,7 @@ export default function MissionaryManagement() {
                   {
                     label: "City Level",
                     value: filteredMissionaries.filter(
-                      (m) => m.assignment_level?.toLowerCase() === "city"
+                      (m) => m.assignment_level?.toLowerCase() === "city",
                     ).length,
                     color: "secondary.main",
                     icon: <Business sx={{ color: "#fff" }} />,
@@ -1305,7 +1309,7 @@ export default function MissionaryManagement() {
                   {
                     label: "Community Level",
                     value: filteredMissionaries.filter(
-                      (m) => m.assignment_level?.toLowerCase() === "community"
+                      (m) => m.assignment_level?.toLowerCase() === "community",
                     ).length,
                     color: "secondary.main",
                     icon: <LocationCity sx={{ color: "#fff" }} />,

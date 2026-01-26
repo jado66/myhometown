@@ -208,7 +208,7 @@ const formattedDesignHubHtml = (html) => {
                       <div class="item-title">${item.itemTitle}</div>
                       <span class="item-type">${item.itemType.replace(
                         "-",
-                        " "
+                        " ",
                       )}</span>
                     </div>
                   </div>
@@ -265,7 +265,7 @@ const formattedDesignHubHtml = (html) => {
                     }
                   </div>
                 </div>
-              `
+              `,
                 )
                 .join("")}
             </div>
@@ -304,7 +304,7 @@ const formattedDesignHubHtml = (html) => {
                     <div class="item-detail-row">${item.description}</div>
                   </div>
                 </div>
-              `
+              `,
                 )
                 .join("")}
             </div>
@@ -345,37 +345,6 @@ const formattedDesignHubHtml = (html) => {
   `;
 };
 
-// Function to extract location information
-const parseLocationInfo = (html) => {
-  const locationString = html.location || "";
-
-  if (locationString === "myHometown Utah") {
-    return {
-      locationType: "myHometown Utah",
-      locationName: null,
-    };
-  }
-
-  if (locationString.startsWith("City: ")) {
-    return {
-      locationType: "city",
-      locationName: locationString.replace("City: ", "").trim(),
-    };
-  }
-
-  if (locationString.startsWith("Community: ")) {
-    return {
-      locationType: "community",
-      locationName: locationString.replace("Community: ", "").trim(),
-    };
-  }
-
-  return {
-    locationType: "unknown",
-    locationName: locationString,
-  };
-};
-
 export async function POST(request, res) {
   const requestBody = await request.json();
   const { subject, html } = requestBody;
@@ -410,7 +379,7 @@ export async function POST(request, res) {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
   } catch (error) {
     console.error("Email sending error:", error);
@@ -424,7 +393,7 @@ export async function POST(request, res) {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 }

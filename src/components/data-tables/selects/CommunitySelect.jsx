@@ -46,7 +46,18 @@ const CommunitySelect = ({
     }
 
     activeCommunities.forEach((comm, index) => {
-      const city = comm.city || "Unknown";
+      // Prefer comm.city_name (top-level), then comm.cities?.city_name, then comm.cities?.name, then comm.city, then "Unknown"
+      let city = "Unknown";
+      if (typeof comm.city_name === "string" && comm.city_name) {
+        city = comm.city_name;
+      } else if (comm.cities && typeof comm.cities === "object") {
+        city = (typeof comm.cities.city_name === "string" && comm.cities.city_name)
+          || (typeof comm.cities.name === "string" && comm.cities.name)
+          || (typeof comm.city === "string" && comm.city)
+          || "Unknown";
+      } else {
+        city = (typeof comm.city === "string" && comm.city) || "Unknown";
+      }
       const state = comm.state || "Unknown";
       const groupLabel = `${city}, ${state}`;
       if (!grouped[groupLabel]) grouped[groupLabel] = [];
@@ -54,7 +65,7 @@ const CommunitySelect = ({
         // Use a fallback for id - either comm.id, comm._id, or generate one
         value: comm.id || comm._id || `community-${index}`,
         label: concatCityName ? `${city} - ${comm.name}` : comm.name,
-        city: comm.city,
+        city: city,
         state: comm.state,
       });
     });
