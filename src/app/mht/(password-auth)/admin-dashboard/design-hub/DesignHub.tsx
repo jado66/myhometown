@@ -381,25 +381,23 @@ export default function DesignHub() {
         },
       };
 
-      alert(JSON.stringify(emailData, null, 2));
-
       // Send to API
-      // const response = await fetch(
-      //   "/api/communications/send-mail/to-design-hub",
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify(emailData),
-      //   }
-      // );
+      const response = await fetch(
+        "/api/communications/send-mail/to-design-hub",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(emailData),
+        },
+      );
 
-      // if (!response.ok) {
-      //   throw new Error(`HTTP error! status: ${response.status}`);
-      // }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      // const result = await response.json();
+      const result = await response.json();
       console.log("Order submitted successfully:", result);
 
       // Reset carts after successful submission
