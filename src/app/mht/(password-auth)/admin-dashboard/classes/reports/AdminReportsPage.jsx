@@ -42,7 +42,8 @@ import {
 // Mapping from new community IDs to old ones (same as in ClassPage)
 const newToOldCommunity = {
   "a78e8c7c-eca4-4f13-b6c8-e5603d1c36da": "66a811814800d08c300d88fd",
-  "a6c19a50-7fc3-4759-b386-6ebdeca3ed9e": "fb34e335-5cc6-4e6c-b5fc-2b64588fe921",
+  "a6c19a50-7fc3-4759-b386-6ebdeca3ed9e":
+    "fb34e335-5cc6-4e6c-b5fc-2b64588fe921",
   "b3381b98-e44f-4f1f-b067-04e575c515ca": "66df56bef05bd41ef9493f33",
   "7c446e80-323d-4268-b595-6945e915330f": "66df56e6f05bd41ef9493f34",
   "7c8731bc-1aee-406a-9847-7dc1e5255587": "66df5707f05bd41ef9493f35",
@@ -63,7 +64,10 @@ const newToOldCommunity = {
 
 const AdminReportsPage = () => {
   const { user, isLoading: userLoading, isAdmin } = useUser();
-  const { communities, hasLoaded: communitiesLoaded } = useCommunities(user, true);
+  const { communities, hasLoaded: communitiesLoaded } = useCommunities(
+    user,
+    true,
+  );
   const { getClassesByCommunity } = useClasses();
   const { getCommunity } = useCommunities();
 
@@ -76,7 +80,7 @@ const AdminReportsPage = () => {
   // Group communities by city for better organization
   const communitiesByCity = React.useMemo(() => {
     if (!communities || communities.length === 0) return {};
-    
+
     return communities.reduce((acc, community) => {
       const cityName = community.city || community.city_name || "Unknown";
       if (!acc[cityName]) {
@@ -108,12 +112,14 @@ const AdminReportsPage = () => {
   const handleSelectCity = (cityName) => {
     const cityCommunities = communitiesByCity[cityName] || [];
     const cityIds = cityCommunities.map((c) => c._id || c.id);
-    
+
     const allSelected = cityIds.every((id) => selectedCommunities.includes(id));
-    
+
     if (allSelected) {
       // Deselect all from this city
-      setSelectedCommunities((prev) => prev.filter((id) => !cityIds.includes(id)));
+      setSelectedCommunities((prev) =>
+        prev.filter((id) => !cityIds.includes(id)),
+      );
     } else {
       // Select all from this city
       setSelectedCommunities((prev) => {
@@ -140,49 +146,56 @@ const AdminReportsPage = () => {
     try {
       // Fetch all class data for selected communities
       const allSections = [];
-      
+
       for (const communityId of selectedCommunities) {
         const oldCommunityId = newToOldCommunity[communityId] || communityId;
-        
+
         // Fetch community data
-        const communityResponse = await fetch(`/api/database/communities/fetchByIds`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify([oldCommunityId]),
-        });
-        
+        const communityResponse = await fetch(
+          `/api/database/communities/fetchByIds`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify([oldCommunityId]),
+          },
+        );
+
         if (!communityResponse.ok) continue;
-        
+
         const communityData = await communityResponse.json();
         const community = communityData[0];
-        
+
         if (!community) continue;
-        
+
         // Fetch classes for this community
         const classesData = await getClassesByCommunity(oldCommunityId);
-        
+
         if (!classesData) continue;
-        
+
         // Create a map of classes for quick lookup
         const classesMap = new Map(
-          classesData.map((classItem) => [classItem.id, classItem])
+          classesData.map((classItem) => [classItem.id, classItem]),
         );
-        
+
         // Process each section/category from community data
         if (community.classes && Array.isArray(community.classes)) {
           community.classes.forEach((category) => {
-            if (category.type === "header" || category.visibility === false) return;
-            
-            const sectionClasses = (category.classes || []).map((communityClass) => {
-              const fullClassData = classesMap.get(communityClass.id);
-              return {
-                ...communityClass,
-                ...fullClassData,
-                title: communityClass.title || fullClassData?.title,
-                visibility: communityClass.visibility ?? fullClassData?.visibility,
-              };
-            }).filter((c) => c.visibility !== false);
-            
+            if (category.type === "header" || category.visibility === false)
+              return;
+
+            const sectionClasses = (category.classes || [])
+              .map((communityClass) => {
+                const fullClassData = classesMap.get(communityClass.id);
+                return {
+                  ...communityClass,
+                  ...fullClassData,
+                  title: communityClass.title || fullClassData?.title,
+                  visibility:
+                    communityClass.visibility ?? fullClassData?.visibility,
+                };
+              })
+              .filter((c) => c.visibility !== false);
+
             if (sectionClasses.length > 0) {
               allSections.push({
                 title: `${community.city || community.city_name} - ${community.name} - ${category.title}`,
@@ -208,21 +221,30 @@ const AdminReportsPage = () => {
 
       // Generate the selected report
       const today = new Date().toISOString().split("T")[0];
-      
+
       switch (selectedReport) {
         case "attendance": {
           const csvContent = generateDetailedCSV(combinedData);
-          downloadCSV(csvContent, `all_communities_attendance_report_${today}.csv`);
+          downloadCSV(
+            csvContent,
+            `all_communities_attendance_report_${today}.csv`,
+          );
           break;
         }
         case "studentAttendance": {
           const csvContent = generateStudentAttendanceReportCSV(combinedData);
-          downloadCSV(csvContent, `all_communities_student_attendance_${today}.csv`);
+          downloadCSV(
+            csvContent,
+            `all_communities_student_attendance_${today}.csv`,
+          );
           break;
         }
         case "capacity": {
           const csvContent = generateCapacityReportCSV(combinedData);
-          downloadCSV(csvContent, `all_communities_capacity_report_${today}.csv`);
+          downloadCSV(
+            csvContent,
+            `all_communities_capacity_report_${today}.csv`,
+          );
           break;
         }
         default:
@@ -261,73 +283,108 @@ const AdminReportsPage = () => {
         {/* Community Selection */}
         <Grid item xs={12} md={5}>
           <Paper sx={{ p: 3, height: "100%" }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
+              }}
+            >
               <Typography variant="h6">Select Communities</Typography>
               <Button
                 size="small"
                 onClick={handleSelectAll}
-                startIcon={selectedCommunities.length === communities.length ? <CheckBox /> : <CheckBoxOutlineBlank />}
+                startIcon={
+                  selectedCommunities.length === communities.length ? (
+                    <CheckBox />
+                  ) : (
+                    <CheckBoxOutlineBlank />
+                  )
+                }
               >
-                {selectedCommunities.length === communities.length ? "Deselect All" : "Select All"}
+                {selectedCommunities.length === communities.length
+                  ? "Deselect All"
+                  : "Select All"}
               </Button>
             </Box>
             <Divider sx={{ mb: 2 }} />
-            
+
             <Box sx={{ maxHeight: 400, overflow: "auto" }}>
-              {Object.entries(communitiesByCity).map(([cityName, cityCommunities]) => {
-                const cityIds = cityCommunities.map((c) => c._id || c.id);
-                const allCitySelected = cityIds.every((id) => selectedCommunities.includes(id));
-                const someCitySelected = cityIds.some((id) => selectedCommunities.includes(id));
-                
-                return (
-                  <Accordion key={cityName} defaultExpanded={false} sx={{ mb: 1 }}>
-                    <AccordionSummary expandIcon={<ExpandMore />}>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, width: "100%" }}>
-                        <Checkbox
-                          checked={allCitySelected}
-                          indeterminate={someCitySelected && !allCitySelected}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSelectCity(cityName);
+              {Object.entries(communitiesByCity).map(
+                ([cityName, cityCommunities]) => {
+                  const cityIds = cityCommunities.map((c) => c._id || c.id);
+                  const allCitySelected = cityIds.every((id) =>
+                    selectedCommunities.includes(id),
+                  );
+                  const someCitySelected = cityIds.some((id) =>
+                    selectedCommunities.includes(id),
+                  );
+
+                  return (
+                    <Accordion
+                      key={cityName}
+                      defaultExpanded={false}
+                      sx={{ mb: 1 }}
+                    >
+                      <AccordionSummary expandIcon={<ExpandMore />}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            width: "100%",
                           }}
-                          size="small"
-                        />
-                        <Typography fontWeight="medium">{cityName}</Typography>
-                        <Chip
-                          label={`${cityIds.filter((id) => selectedCommunities.includes(id)).length}/${cityCommunities.length}`}
-                          size="small"
-                          color={allCitySelected ? "primary" : "default"}
-                          sx={{ ml: "auto", mr: 1 }}
-                        />
-                      </Box>
-                    </AccordionSummary>
-                    <AccordionDetails sx={{ pt: 0 }}>
-                      {cityCommunities.map((community) => {
-                        const id = community._id || community.id;
-                        return (
-                          <FormControlLabel
-                            key={id}
-                            control={
-                              <Checkbox
-                                checked={selectedCommunities.includes(id)}
-                                onChange={() => handleCommunityToggle(id)}
-                                size="small"
-                              />
-                            }
-                            label={community.name}
-                            sx={{ display: "block", ml: 2 }}
+                        >
+                          <Checkbox
+                            checked={allCitySelected}
+                            indeterminate={someCitySelected && !allCitySelected}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSelectCity(cityName);
+                            }}
+                            size="small"
                           />
-                        );
-                      })}
-                    </AccordionDetails>
-                  </Accordion>
-                );
-              })}
+                          <Typography fontWeight="medium">
+                            {cityName}
+                          </Typography>
+                          <Chip
+                            label={`${cityIds.filter((id) => selectedCommunities.includes(id)).length}/${cityCommunities.length}`}
+                            size="small"
+                            color={allCitySelected ? "primary" : "default"}
+                            sx={{ ml: "auto", mr: 1 }}
+                          />
+                        </Box>
+                      </AccordionSummary>
+                      <AccordionDetails sx={{ pt: 0 }}>
+                        {cityCommunities.map((community) => {
+                          const id = community._id || community.id;
+                          return (
+                            <FormControlLabel
+                              key={id}
+                              control={
+                                <Checkbox
+                                  checked={selectedCommunities.includes(id)}
+                                  onChange={() => handleCommunityToggle(id)}
+                                  size="small"
+                                />
+                              }
+                              label={community.name}
+                              sx={{ display: "block", ml: 2 }}
+                            />
+                          );
+                        })}
+                      </AccordionDetails>
+                    </Accordion>
+                  );
+                },
+              )}
             </Box>
-            
+
             <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: "divider" }}>
               <Typography variant="body2" color="text.secondary">
-                {selectedCommunities.length} of {communities.length} communities selected
+                {selectedCommunities.length} of {communities.length} communities
+                selected
               </Typography>
             </Box>
           </Paper>
@@ -353,7 +410,10 @@ const AdminReportsPage = () => {
                     sx={{
                       p: 2,
                       border: selectedReport === "attendance" ? 2 : 1,
-                      borderColor: selectedReport === "attendance" ? "primary.main" : "divider",
+                      borderColor:
+                        selectedReport === "attendance"
+                          ? "primary.main"
+                          : "divider",
                       cursor: "pointer",
                       "&:hover": { borderColor: "primary.main", boxShadow: 1 },
                     }}
@@ -366,12 +426,21 @@ const AdminReportsPage = () => {
                         <Box>
                           <Box display="flex" alignItems="center" gap={1}>
                             <School color="primary" />
-                            <Typography variant="subtitle1" fontWeight="bold" color="primary">
+                            <Typography
+                              variant="subtitle1"
+                              fontWeight="bold"
+                              color="primary"
+                            >
                               Attendance Report
                             </Typography>
                           </Box>
-                          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                            Comprehensive report showing attendance statistics for each class across all selected communities.
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mt: 0.5 }}
+                          >
+                            Comprehensive report showing attendance statistics
+                            for each class across all selected communities.
                           </Typography>
                         </Box>
                       }
@@ -387,7 +456,10 @@ const AdminReportsPage = () => {
                     sx={{
                       p: 2,
                       border: selectedReport === "studentAttendance" ? 2 : 1,
-                      borderColor: selectedReport === "studentAttendance" ? "primary.main" : "divider",
+                      borderColor:
+                        selectedReport === "studentAttendance"
+                          ? "primary.main"
+                          : "divider",
                       cursor: "pointer",
                       "&:hover": { borderColor: "primary.main", boxShadow: 1 },
                     }}
@@ -400,12 +472,21 @@ const AdminReportsPage = () => {
                         <Box>
                           <Box display="flex" alignItems="center" gap={1}>
                             <AssignmentInd color="primary" />
-                            <Typography variant="subtitle1" fontWeight="bold" color="primary">
+                            <Typography
+                              variant="subtitle1"
+                              fontWeight="bold"
+                              color="primary"
+                            >
                               Student Attendance Report
                             </Typography>
                           </Box>
-                          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                            Detailed list of all students with their individual attendance records for each class session.
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mt: 0.5 }}
+                          >
+                            Detailed list of all students with their individual
+                            attendance records for each class session.
                           </Typography>
                         </Box>
                       }
@@ -421,7 +502,10 @@ const AdminReportsPage = () => {
                     sx={{
                       p: 2,
                       border: selectedReport === "capacity" ? 2 : 1,
-                      borderColor: selectedReport === "capacity" ? "primary.main" : "divider",
+                      borderColor:
+                        selectedReport === "capacity"
+                          ? "primary.main"
+                          : "divider",
                       cursor: "pointer",
                       "&:hover": { borderColor: "primary.main", boxShadow: 1 },
                     }}
@@ -434,12 +518,21 @@ const AdminReportsPage = () => {
                         <Box>
                           <Box display="flex" alignItems="center" gap={1}>
                             <Group color="primary" />
-                            <Typography variant="subtitle1" fontWeight="bold" color="primary">
+                            <Typography
+                              variant="subtitle1"
+                              fontWeight="bold"
+                              color="primary"
+                            >
                               CRC Capacity Report
                             </Typography>
                           </Box>
-                          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                            Daily attendance breakdown across all classes showing student counts by day.
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mt: 0.5 }}
+                          >
+                            Daily attendance breakdown across all classes
+                            showing student counts by day.
                           </Typography>
                         </Box>
                       }
@@ -457,7 +550,13 @@ const AdminReportsPage = () => {
                 variant="contained"
                 color="primary"
                 size="large"
-                startIcon={generating ? <CircularProgress size={20} color="inherit" /> : <FileDownload />}
+                startIcon={
+                  generating ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <FileDownload />
+                  )
+                }
                 onClick={handleGenerateReport}
                 disabled={generating || selectedCommunities.length === 0}
               >

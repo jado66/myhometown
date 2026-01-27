@@ -105,11 +105,11 @@ export const calculateAttendanceStats = (classItem) => {
     classItem.signups?.filter((signup) => !signup.isWaitlisted)?.length || 0;
 
   const allClassDates = generateClassDates(classItem);
-  
+
   // Filter to only include dates up to today (not future dates)
   const today = moment.utc().format("YYYY-MM-DD");
   const classDates = allClassDates.filter((date) => date <= today);
-  
+
   const totalClassDays = classDates.length;
   const maxPossibleAttendance = studentsEnrolled * totalClassDays;
 
@@ -144,8 +144,8 @@ export const calculateAttendanceStats = (classItem) => {
           maxPossibleAttendance, // For summary calculation
         },
         null,
-        2
-      )
+        2,
+      ),
     );
 
     return {
@@ -345,7 +345,7 @@ export const generateStudentAttendanceReportCSV = (semester) => {
 
   // Sort dates chronologically
   const sortedDates = Array.from(allDates).sort();
-  
+
   // Filter to only include dates up to today for attendance calculations
   const today = moment.utc().format("YYYY-MM-DD");
   const pastAndTodayDates = sortedDates.filter((date) => date <= today);
@@ -397,7 +397,7 @@ export const generateStudentAttendanceReportCSV = (semester) => {
       // Check if this date is relevant for this student's class
       if (student.attendance[date]) {
         const isPastOrToday = date <= today;
-        
+
         // Add X for present, leave blank for absent, show future dates differently
         if (student.attendance[date].present) {
           row.push('"✓"');
@@ -408,7 +408,7 @@ export const generateStudentAttendanceReportCSV = (semester) => {
         } else {
           row.push("x");
         }
-        
+
         // Only count past/today dates toward total
         if (isPastOrToday) totalClassDays++;
       } else {
@@ -696,7 +696,7 @@ export const generateCapacityReportCSV = (semester) => {
       const isClassDay = generateClassDates(
         semester.sections
           .flatMap((s) => s.classes)
-          .find((c) => c.id === classInfo.id) || {}
+          .find((c) => c.id === classInfo.id) || {},
       ).includes(date);
 
       // If class is scheduled that day, show the count (even if 0)

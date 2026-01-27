@@ -493,8 +493,8 @@ const MissionaryAssignmentSection: React.FC<
                 }))
               }
               InputLabelProps={{ shrink: true }}
-              error={!!errors.start_date}
-              helperText={errors.start_date}
+              error={formData.assignment_status === "released" && !!errors.start_date}
+              helperText={formData.assignment_status === "released" ? errors.start_date : ""}
             />
           </Grid>
           <Grid item xs={12} md={4}>
@@ -516,7 +516,7 @@ const MissionaryAssignmentSection: React.FC<
                   </Typography>
                 ),
               }}
-              error={!!errors.duration}
+              error={formData.assignment_status === "released" && !!errors.duration}
             />
           </Grid>
           <Grid item xs={12} md={4}>
@@ -541,7 +541,7 @@ const MissionaryAssignmentSection: React.FC<
               InputLabelProps={{ shrink: true }}
             />
           </Grid>
-          {errors.end_date && (
+          {formData.assignment_status === "released" && errors.end_date && formData.start_date && (
             <Box sx={{ m: 2 }}>
               <Typography color="error" variant="body2">
                 {errors.end_date}
