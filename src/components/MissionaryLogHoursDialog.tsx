@@ -97,8 +97,8 @@ interface MissionaryLogHoursDialogProps {
   onClose: () => void;
   entryMethod: "weekly" | "monthly" | "";
   setEntryMethod: (m: "weekly" | "monthly") => void;
-  selectedDate: Moment;
-  setSelectedDate: (d: Moment) => void;
+  selectedDate: Moment | null;
+  setSelectedDate: (d: Moment | null) => void;
   totalHours: string; // Keep for compatibility but not used for input
   setTotalHours: (h: string) => void; // Keep for compatibility
   activities: DetailedActivity[];
@@ -143,8 +143,8 @@ export default function MissionaryLogHoursDialog({
   resetForm,
   isVolunteer = true,
 }: MissionaryLogHoursDialogProps) {
-  const periodStart = selectedDate.clone().startOf("month");
-  const periodEnd = selectedDate.clone().endOf("month");
+  const periodStart = selectedDate?.clone().startOf("month");
+  const periodEnd = selectedDate?.clone().endOf("month");
 
   // Ensure we always have one activity object per defined category when the dialog opens.
   // Previous logic only initialized when activities.length === 0, but the parent provided
@@ -208,17 +208,21 @@ export default function MissionaryLogHoursDialog({
           <Grid container spacing={2} sx={{ mb: 2 }}>
             <Grid item xs={12}>
               <Typography variant="subtitle2" sx={{ mb: 0, fontWeight: 500 }}>
-                Select Month
+                Select Month <span style={{ color: 'red' }}>*</span>
               </Typography>
               <ThemedReactSelect
                 options={getMonthOptions()}
-                value={getMonthOptions().find((opt) =>
-                  moment(opt.value).isSame(selectedDate, "month")
-                )}
-                onChange={(option) =>
-                  option && setSelectedDate(moment(option.value))
+                value={
+                  selectedDate
+                    ? getMonthOptions().find((opt) =>
+                        moment(opt.value).isSame(selectedDate, "month")
+                      )
+                    : null
                 }
-                placeholder="Choose month..."
+                onChange={(option) =>
+                  option ? setSelectedDate(moment(option.value)) : setSelectedDate(null)
+                }
+                placeholder="Please select a month"
                 height={56}
               />
             </Grid>
@@ -330,6 +334,11 @@ export default function MissionaryLogHoursDialog({
             </Box>
           </Box>
 
+          {!selectedDate && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              Please select a month before submitting.
+            </Alert>
+          )}
           {error && (
             <Alert severity="error" sx={{ mt: 2 }}>
               {error}
@@ -349,7 +358,7 @@ export default function MissionaryLogHoursDialog({
         <Button
           variant="contained"
           onClick={handleSubmit}
-          disabled={submitting}
+          disabled={submitting || !selectedDate}
         >
           {submitting ? (
             <CircularProgress size={20} />

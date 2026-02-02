@@ -416,7 +416,9 @@ export function HoursOverview({
                   );
 
                   missionaryHours.forEach((h) => {
-                    const [year, month] = h.period_start_date.split("-").map(Number);
+                    const [year, month] = h.period_start_date
+                      .split("-")
+                      .map(Number);
                     if (year === currentYear && month >= 1 && month <= 12) {
                       monthlyHours[month - 1] += h.total_hours;
                     }
@@ -425,7 +427,8 @@ export function HoursOverview({
                   return {
                     Level: summary.missionary.assignment_level || "",
                     Assignment: summary.missionary.group || "",
-                    "Person Type": summary.missionary.person_type || "missionary",
+                    "Person Type":
+                      summary.missionary.person_type || "missionary",
                     Position: summary.missionary.title || "",
                     "First Name": summary.missionary.first_name,
                     "Last Name": summary.missionary.last_name,

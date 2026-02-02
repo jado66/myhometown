@@ -104,7 +104,7 @@ export default function MissionaryDashboard({
 
   // Form states
   const [entryMethod, setEntryMethod] = useState<"weekly" | "monthly" | "">("");
-  const [selectedDate, setSelectedDate] = useState<Moment>(moment());
+  const [selectedDate, setSelectedDate] = useState<Moment | null>(null);
   const [totalHours, setTotalHours] = useState("");
   const [activities, setActivities] = useState<DetailedActivity[]>([
     { id: crypto.randomUUID(), category: "", description: "", hours: "" },
@@ -154,7 +154,7 @@ export default function MissionaryDashboard({
 
   const resetForm = () => {
     setEntryMethod("");
-    setSelectedDate(moment());
+    setSelectedDate(null);
     setTotalHours("");
     setActivities([
       { id: crypto.randomUUID(), category: "", description: "", hours: "" },
