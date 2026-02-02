@@ -383,6 +383,10 @@ export function HoursOverview({
               startIcon={<Download />}
               onClick={() => {
                 const header = [
+                  "Level",
+                  "Assignment",
+                  "Person Type",
+                  "Position",
                   "First Name",
                   "Last Name",
                   "Email",
@@ -390,25 +394,60 @@ export function HoursOverview({
                   "Total CRC",
                   "Total DOS",
                   "Total Admin",
-                  "Month Hours",
-                  "Month CRC",
-                  "Month DOS",
-                  "Month Admin",
+                  "January Hours",
+                  "February Hours",
+                  "March Hours",
+                  "April Hours",
+                  "May Hours",
+                  "June Hours",
+                  "July Hours",
+                  "August Hours",
+                  "September Hours",
+                  "October Hours",
+                  "November Hours",
+                  "December Hours",
                 ];
 
-                const rows = missionaryHoursSummary.map((summary) => ({
-                  "First Name": summary.missionary.first_name,
-                  "Last Name": summary.missionary.last_name,
-                  Email: summary.missionary.email,
-                  "Total Hours": summary.totalHours,
-                  "Total CRC": summary.totalCRC,
-                  "Total DOS": summary.totalDOS,
-                  "Total Admin": summary.totalAdmin,
-                  "Month Hours": summary.monthTotal,
-                  "Month CRC": summary.monthCRC,
-                  "Month DOS": summary.monthDOS,
-                  "Month Admin": summary.monthAdmin,
-                }));
+                const rows = missionaryHoursSummary.map((summary) => {
+                  // Calculate hours by month for this missionary
+                  const monthlyHours = Array(12).fill(0);
+                  const missionaryHours = filteredHours.filter(
+                    (h) => h.missionary_id === summary.missionary.id,
+                  );
+
+                  missionaryHours.forEach((h) => {
+                    const [year, month] = h.period_start_date.split("-").map(Number);
+                    if (year === currentYear && month >= 1 && month <= 12) {
+                      monthlyHours[month - 1] += h.total_hours;
+                    }
+                  });
+
+                  return {
+                    Level: summary.missionary.assignment_level || "",
+                    Assignment: summary.missionary.group || "",
+                    "Person Type": summary.missionary.person_type || "missionary",
+                    Position: summary.missionary.title || "",
+                    "First Name": summary.missionary.first_name,
+                    "Last Name": summary.missionary.last_name,
+                    Email: summary.missionary.email,
+                    "Total Hours": summary.totalHours,
+                    "Total CRC": summary.totalCRC,
+                    "Total DOS": summary.totalDOS,
+                    "Total Admin": summary.totalAdmin,
+                    "January Hours": monthlyHours[0],
+                    "February Hours": monthlyHours[1],
+                    "March Hours": monthlyHours[2],
+                    "April Hours": monthlyHours[3],
+                    "May Hours": monthlyHours[4],
+                    "June Hours": monthlyHours[5],
+                    "July Hours": monthlyHours[6],
+                    "August Hours": monthlyHours[7],
+                    "September Hours": monthlyHours[8],
+                    "October Hours": monthlyHours[9],
+                    "November Hours": monthlyHours[10],
+                    "December Hours": monthlyHours[11],
+                  };
+                });
 
                 const escapeCsv = (val: any) => {
                   if (val === null || val === undefined) return "";
