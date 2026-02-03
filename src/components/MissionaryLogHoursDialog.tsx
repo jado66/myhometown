@@ -84,7 +84,7 @@ function getWeekOptions() {
       label:
         i === 0
           ? `This Week (${weekStart.format("MMM D ")} - ${weekEnd.format(
-              "MMM D, YYYY"
+              "MMM D, YYYY",
             )})`
           : `${weekStart.format("MMM D")} - ${weekEnd.format("MMM D, YYYY")}`,
     });
@@ -108,7 +108,7 @@ interface MissionaryLogHoursDialogProps {
   updateActivity: (
     id: string,
     field: keyof Omit<DetailedActivity, "id">,
-    value: string
+    value: string,
   ) => void;
   location: string;
   setLocation: (l: string) => void;
@@ -167,7 +167,7 @@ export default function MissionaryLogHoursDialog({
       });
       // Preserve any extra (legacy) activities whose category isn't in the current list
       const extras = prev.filter(
-        (a) => !categories.some((c) => c.value === a.category)
+        (a) => !categories.some((c) => c.value === a.category),
       );
       if (extras.length) {
         changed = true;
@@ -208,19 +208,21 @@ export default function MissionaryLogHoursDialog({
           <Grid container spacing={2} sx={{ mb: 2 }}>
             <Grid item xs={12}>
               <Typography variant="subtitle2" sx={{ mb: 0, fontWeight: 500 }}>
-                Select Month <span style={{ color: 'red' }}>*</span>
+                Select Month <span style={{ color: "red" }}>*</span>
               </Typography>
               <ThemedReactSelect
                 options={getMonthOptions()}
                 value={
                   selectedDate
                     ? getMonthOptions().find((opt) =>
-                        moment(opt.value).isSame(selectedDate, "month")
+                        moment(opt.value).isSame(selectedDate, "month"),
                       )
                     : null
                 }
                 onChange={(option) =>
-                  option ? setSelectedDate(moment(option.value)) : setSelectedDate(null)
+                  option
+                    ? setSelectedDate(moment(option.value))
+                    : setSelectedDate(null)
                 }
                 placeholder="Please select a month"
                 height={56}
@@ -240,7 +242,7 @@ export default function MissionaryLogHoursDialog({
           <Box sx={{ border: 1, borderColor: "divider", borderRadius: 1 }}>
             {categories.map((category, index) => {
               const activity = activities.find(
-                (a) => a.category === category.value
+                (a) => a.category === category.value,
               ) || {
                 id: category.value,
                 category: category.value,
@@ -298,7 +300,7 @@ export default function MissionaryLogHoursDialog({
                           updateActivity(
                             activity.id,
                             "description",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         placeholder={`Describe activities...`}

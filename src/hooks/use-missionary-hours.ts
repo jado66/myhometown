@@ -68,6 +68,7 @@ export function useMissionaryHours(options: UseHoursOptions = {}) {
       }
 
       const data = await response.json();
+
       if (isMounted.current) {
         setHours(data.hours || []);
       }
@@ -249,7 +250,7 @@ export function useMissionaryHours(options: UseHoursOptions = {}) {
 // Hook for getting period-based hours (commonly used filters)
 export function usePeriodHours(
   period: "week" | "month" | "quarter" | "year",
-  missionaryId?: string
+  missionaryId?: string,
 ) {
   const now = new Date();
   const startDate = new Date();

@@ -90,9 +90,11 @@ export function HoursOverview({
 
   // Calculate hours stats based on filtered missionaries
   const filteredHours = useMemo(() => {
-    return hours.filter((h) =>
+    const filtered = hours.filter((h) =>
       missionaries.some((m) => m.id === h.missionary_id),
     );
+
+    return filtered;
   }, [hours, missionaries]);
 
   const hoursStats = useMemo(() => {
@@ -193,6 +195,22 @@ export function HoursOverview({
         (sum, h) => sum + h.total_hours,
         0,
       );
+
+      if (missionaryHours.length > 0) {
+        console.log(
+          `[HoursOverview] ${missionary.first_name} ${missionary.last_name}:`,
+          {
+            entries: missionaryHours.length,
+            totalHours,
+            records: missionaryHours.map((h) => ({
+              id: h.id,
+              period: h.period_start_date,
+              hours: h.total_hours,
+              created: h.created_at,
+            })),
+          },
+        );
+      }
 
       // Calculate category breakdowns
       let totalCRC = 0;
@@ -424,9 +442,31 @@ export function HoursOverview({
                     }
                   });
 
+                  // Resolve assignment based on level
+                  let assignment = "";
+                  const m = summary.missionary;
+                  if (m.assignment_level?.toLowerCase() === "city") {
+                    assignment =
+                      cities.find((c) => c.id === m.city_id)?.name || "";
+                  } else if (
+                    m.assignment_level?.toLowerCase() === "community"
+                  ) {
+                    const community = communities.find(
+                      (c) => c.id === m.community_id,
+                    );
+                    const city = cities.find((c) => c.id === m.city_id);
+                    if (community && city) {
+                      assignment = `${community.name} (${city.name})`;
+                    } else if (community) {
+                      assignment = community.name;
+                    }
+                  } else if (m.assignment_level?.toLowerCase() === "state") {
+                    assignment = "Utah";
+                  }
+
                   return {
                     Level: summary.missionary.assignment_level || "",
-                    Assignment: summary.missionary.group || "",
+                    Assignment: assignment,
                     "Person Type":
                       summary.missionary.person_type || "missionary",
                     Position: summary.missionary.title || "",

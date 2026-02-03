@@ -142,7 +142,7 @@ export default function MissionaryDashboard({
     const now = moment();
     const totalHours = hoursData.reduce(
       (sum, h) => sum + Number(h.total_hours),
-      0
+      0,
     );
 
     const thisMonthHours = hoursData
@@ -191,7 +191,7 @@ export default function MissionaryDashboard({
           ...act,
           id: crypto.randomUUID(),
           hours: String(act.hours),
-        }))
+        })),
       );
       setLogDialogOpen(true);
     } catch (err: any) {
@@ -206,7 +206,7 @@ export default function MissionaryDashboard({
       // Calculate total hours from activities
       const totalActivityHours = activities.reduce(
         (sum, act) => sum + (Number(act.hours) || 0),
-        0
+        0,
       );
 
       // Validation
@@ -245,7 +245,7 @@ export default function MissionaryDashboard({
                 email: email,
                 date: selectedDate.toISOString(),
                 updatePreference: !editingId, // Update preference for new entries
-              }
+              },
         ),
       });
 
@@ -272,10 +272,10 @@ export default function MissionaryDashboard({
   const updateActivity = (
     id: string,
     field: keyof Omit<DetailedActivity, "id">,
-    value: string
+    value: string,
   ) => {
     setActivities((prev) =>
-      prev.map((act) => (act.id === id ? { ...act, [field]: value } : act))
+      prev.map((act) => (act.id === id ? { ...act, [field]: value } : act)),
     );
   };
 
@@ -541,7 +541,7 @@ export default function MissionaryDashboard({
                         .sort(
                           (a, b) =>
                             new Date(b.period_start_date).getTime() -
-                            new Date(a.period_start_date).getTime()
+                            new Date(a.period_start_date).getTime(),
                         )
                         .slice(0, visibleHoursCount)
                         .map((entry, index, arr) => (
@@ -565,7 +565,7 @@ export default function MissionaryDashboard({
                                   <Grid item xs={12} sm={3}>
                                     <Typography variant="h6">
                                       {moment(entry.period_start_date).format(
-                                        "MMMM"
+                                        "MMMM",
                                       )}
                                     </Typography>
                                   </Grid>
@@ -581,7 +581,7 @@ export default function MissionaryDashboard({
                                       color="text.secondary"
                                     >
                                       {moment(entry.created_at).format(
-                                        "YYYY-MM-DD"
+                                        "YYYY-MM-DD",
                                       )}
                                     </Typography>
                                   </Grid>
