@@ -136,9 +136,13 @@ export function HoursOverview({
     let totalCRC = 0;
     let totalDOS = 0;
     let totalAdmin = 0;
+    let totalSchool = 0;
+    let totalEvents = 0;
     let monthCRC = 0;
     let monthDOS = 0;
     let monthAdmin = 0;
+    let monthSchool = 0;
+    let monthEvents = 0;
 
     const now = new Date();
     const currentYear = now.getFullYear();
@@ -165,6 +169,14 @@ export function HoursOverview({
             totalAdmin += hrs;
             if (isThisMonth) monthAdmin += hrs;
             break;
+          case "in-school-services":
+            totalSchool += hrs;
+            if (isThisMonth) monthSchool += hrs;
+            break;
+          case "community-events":
+            totalEvents += hrs;
+            if (isThisMonth) monthEvents += hrs;
+            break;
         }
       }
     }
@@ -173,9 +185,13 @@ export function HoursOverview({
       totalCRC,
       totalDOS,
       totalAdmin,
+      totalSchool,
+      totalEvents,
       monthCRC,
       monthDOS,
       monthAdmin,
+      monthSchool,
+      monthEvents,
     };
   }, [filteredHours]);
 
@@ -216,9 +232,13 @@ export function HoursOverview({
       let totalCRC = 0;
       let totalDOS = 0;
       let totalAdmin = 0;
+      let totalSchool = 0;
+      let totalEvents = 0;
       let monthCRC = 0;
       let monthDOS = 0;
       let monthAdmin = 0;
+      let monthSchool = 0;
+      let monthEvents = 0;
       let monthTotal = 0;
 
       for (const h of missionaryHours) {
@@ -246,6 +266,14 @@ export function HoursOverview({
               totalAdmin += hrs;
               if (isThisMonth) monthAdmin += hrs;
               break;
+            case "in-school-services":
+              totalSchool += hrs;
+              if (isThisMonth) monthSchool += hrs;
+              break;
+            case "community-events":
+              totalEvents += hrs;
+              if (isThisMonth) monthEvents += hrs;
+              break;
           }
         }
       }
@@ -258,10 +286,14 @@ export function HoursOverview({
           totalCRC,
           totalDOS,
           totalAdmin,
+          totalSchool,
+          totalEvents,
           monthTotal,
           monthCRC,
           monthDOS,
           monthAdmin,
+          monthSchool,
+          monthEvents,
         });
       }
     });
@@ -300,6 +332,18 @@ export function HoursOverview({
             icon: <TableChart sx={{ color: "#fff" }} />,
           },
           {
+            label: `Total School Hours (${currentYear})`,
+            value: categoryStats.totalSchool,
+            color: "primary.main",
+            icon: <BarChartIcon sx={{ color: "#fff" }} />,
+          },
+          {
+            label: `Total Events Hours (${currentYear})`,
+            value: categoryStats.totalEvents,
+            color: "primary.main",
+            icon: <Analytics sx={{ color: "#fff" }} />,
+          },
+          {
             label: "This Month Hours",
             value: hoursStats.thisMonth,
             color: "primary.main",
@@ -322,6 +366,18 @@ export function HoursOverview({
             value: categoryStats.monthAdmin,
             color: "primary.main",
             icon: <TableChart sx={{ color: "#fff" }} />,
+          },
+          {
+            label: "This Month School",
+            value: categoryStats.monthSchool,
+            color: "primary.main",
+            icon: <BarChartIcon sx={{ color: "#fff" }} />,
+          },
+          {
+            label: "This Month Events",
+            value: categoryStats.monthEvents,
+            color: "primary.main",
+            icon: <Analytics sx={{ color: "#fff" }} />,
           },
         ]}
       />
@@ -412,6 +468,8 @@ export function HoursOverview({
                   "Total CRC",
                   "Total DOS",
                   "Total Admin",
+                  "Total School",
+                  "Total Events",
                   "January Hours",
                   "February Hours",
                   "March Hours",
@@ -477,6 +535,8 @@ export function HoursOverview({
                     "Total CRC": summary.totalCRC,
                     "Total DOS": summary.totalDOS,
                     "Total Admin": summary.totalAdmin,
+                    "Total School": summary.totalSchool,
+                    "Total Events": summary.totalEvents,
                     "January Hours": monthlyHours[0],
                     "February Hours": monthlyHours[1],
                     "March Hours": monthlyHours[2],
@@ -538,49 +598,97 @@ export function HoursOverview({
                     >
                       Name
                     </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
-                    >
-                      Total Hours
-                    </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
-                    >
-                      Total CRC
-                    </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
-                    >
-                      Total DOS
-                    </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ borderRight: "3px solid", borderColor: "divider" }}
-                    >
-                      Total Admin
-                    </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
-                    >
-                      Month Hours
-                    </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
-                    >
-                      Month CRC
-                    </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
-                    >
-                      Month DOS
-                    </TableCell>
-                    <TableCell align="center">Month Admin</TableCell>
+                    <Tooltip title="Total Hours">
+                      <TableCell
+                        align="center"
+                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                      >
+                        Total Hrs
+                      </TableCell>
+                    </Tooltip>
+                    <Tooltip title="Total Community Resource Center Hours">
+                      <TableCell
+                        align="center"
+                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                      >
+                        Total CRC
+                      </TableCell>
+                    </Tooltip>
+                    <Tooltip title="Total Days of Service Hours">
+                      <TableCell
+                        align="center"
+                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                      >
+                        Total DOS
+                      </TableCell>
+                    </Tooltip>
+                    <Tooltip title="Total Administrative Hours">
+                      <TableCell
+                        align="center"
+                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                      >
+                        Total Admin
+                      </TableCell>
+                    </Tooltip>
+                    <Tooltip title="Total In School Services Hours">
+                      <TableCell
+                        align="center"
+                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                      >
+                        Total School
+                      </TableCell>
+                    </Tooltip>
+                    <Tooltip title="Total Community Events Hours">
+                      <TableCell
+                        align="center"
+                        sx={{ borderRight: "3px solid", borderColor: "divider" }}
+                      >
+                        Total Events
+                      </TableCell>
+                    </Tooltip>
+                    <Tooltip title="Current Month Total Hours">
+                      <TableCell
+                        align="center"
+                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                      >
+                        Month Hrs
+                      </TableCell>
+                    </Tooltip>
+                    <Tooltip title="Current Month CRC Hours">
+                      <TableCell
+                        align="center"
+                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                      >
+                        Month CRC
+                      </TableCell>
+                    </Tooltip>
+                    <Tooltip title="Current Month DOS Hours">
+                      <TableCell
+                        align="center"
+                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                      >
+                        Month DOS
+                      </TableCell>
+                    </Tooltip>
+                    <Tooltip title="Current Month Administrative Hours">
+                      <TableCell
+                        align="center"
+                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                      >
+                        Month Admin
+                      </TableCell>
+                    </Tooltip>
+                    <Tooltip title="Current Month School Hours">
+                      <TableCell
+                        align="center"
+                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                      >
+                        Month School
+                      </TableCell>
+                    </Tooltip>
+                    <Tooltip title="Current Month Events Hours">
+                      <TableCell align="center">Month Events</TableCell>
+                    </Tooltip>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -687,12 +795,34 @@ export function HoursOverview({
                       <TableCell
                         align="center"
                         sx={{
-                          borderRight: "3px solid",
+                          borderRight: "1px solid",
                           borderColor: "divider",
                         }}
                       >
                         <Typography variant="body2" fontWeight="medium">
                           {formatNumber(summary.totalAdmin)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
+                      >
+                        <Typography variant="body2" fontWeight="medium">
+                          {formatNumber(summary.totalSchool)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          borderRight: "3px solid",
+                          borderColor: "divider",
+                        }}
+                      >
+                        <Typography variant="body2" fontWeight="medium">
+                          {formatNumber(summary.totalEvents)}
                         </Typography>
                       </TableCell>
                       <TableCell
@@ -732,9 +862,31 @@ export function HoursOverview({
                           {formatNumber(summary.monthDOS)}
                         </Typography>
                       </TableCell>
-                      <TableCell align="center">
+                      <TableCell
+                        align="center"
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
+                      >
                         <Typography variant="body2" fontWeight="medium">
                           {formatNumber(summary.monthAdmin)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
+                      >
+                        <Typography variant="body2" fontWeight="medium">
+                          {formatNumber(summary.monthSchool)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body2" fontWeight="medium">
+                          {formatNumber(summary.monthEvents)}
                         </Typography>
                       </TableCell>
                     </TableRow>
@@ -793,12 +945,38 @@ export function HoursOverview({
                     </TableCell>
                     <TableCell
                       align="center"
-                      sx={{ borderRight: "3px solid", borderColor: "divider" }}
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
                     >
                       <Typography variant="body2" fontWeight="bold">
                         {formatNumber(
                           missionaryHoursSummary.reduce(
                             (sum, s) => sum + s.totalAdmin,
+                            0,
+                          ),
+                        )}
+                      </Typography>
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                    >
+                      <Typography variant="body2" fontWeight="bold">
+                        {formatNumber(
+                          missionaryHoursSummary.reduce(
+                            (sum, s) => sum + s.totalSchool,
+                            0,
+                          ),
+                        )}
+                      </Typography>
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "3px solid", borderColor: "divider" }}
+                    >
+                      <Typography variant="body2" fontWeight="bold">
+                        {formatNumber(
+                          missionaryHoursSummary.reduce(
+                            (sum, s) => sum + s.totalEvents,
                             0,
                           ),
                         )}
@@ -847,11 +1025,37 @@ export function HoursOverview({
                         )}
                       </Typography>
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                    >
                       <Typography variant="body2" fontWeight="bold">
                         {formatNumber(
                           missionaryHoursSummary.reduce(
                             (sum, s) => sum + s.monthAdmin,
+                            0,
+                          ),
+                        )}
+                      </Typography>
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                    >
+                      <Typography variant="body2" fontWeight="bold">
+                        {formatNumber(
+                          missionaryHoursSummary.reduce(
+                            (sum, s) => sum + s.monthSchool,
+                            0,
+                          ),
+                        )}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body2" fontWeight="bold">
+                        {formatNumber(
+                          missionaryHoursSummary.reduce(
+                            (sum, s) => sum + s.monthEvents,
                             0,
                           ),
                         )}

@@ -71,6 +71,8 @@ const categoryDisplay: { [key: string]: { label: string } } = {
   crc: { label: "Community Resource Center" },
   dos: { label: "Days Of Service" },
   administrative: { label: "Administrative Work" },
+  "in-school-services": { label: "In-School Services" },
+  "community-events": { label: "Community Events" },
 };
 
 export default function MissionaryDashboard({

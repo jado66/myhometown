@@ -39,23 +39,31 @@ const categories: Category[] = [
     value: "crc",
     label: "Community Resource Center",
     description:
-      "Log any hours associated with Community Resource Center activities, including community events, tutoring, meetings, planning, travel, etc.",
+      "Log hours associated with Community Resource Center activities such as community events, tutoring, meetings, planning, travel, etc.",
   },
   {
     value: "dos",
     label: "Days Of Service",
     description:
-      "Log any hours associated with Days Of Service activities, including meeting, planning, travel, etc.",
+      "Log hours associated with Days Of Service activities such as meeting, planning, travel, etc.",
+  },
+  {
+    value: "in-school-services",
+    label: "In-School Services",
+    description:
+      "Log hours associated with In-School Service activities such as tutoring, mentoring, classroom support, planning, travel, etc.",
+  },
+  {
+    value: "community-events",
+    label: "Community Events",
+    description:
+      "Log hours associated with Community Events such as event planning, execution, coordination, travel, etc.",
   },
   {
     value: "administrative",
     label: "Administrative Work",
-    description: (
-      <>
-        <strong>ONLY</strong> log hours in this category if you are a myHometown
-        Utah, City, or Community Executive.
-      </>
-    ),
+    description:
+      "Log hours associated with administration activities such as planning, coordinating, devotionals, and meetings. ",
   },
 ];
 
@@ -184,7 +192,7 @@ export default function MissionaryLogHoursDialog({
         onClose();
         resetForm();
       }}
-      maxWidth="md"
+      maxWidth="lg"
       fullWidth
     >
       <DialogTitle sx={{ display: "flex", alignItems: "center", pr: 8 }}>
@@ -239,7 +247,17 @@ export default function MissionaryLogHoursDialog({
             blank)
           </Typography>
 
-          <Box sx={{ border: 1, borderColor: "divider", borderRadius: 1 }}>
+          <Box
+            sx={{
+              border: 1,
+              borderRightWidth: 0,
+              borderLeftWidth: 0,
+              borderBottomWidth: 0,
+              borderColor: "divider",
+              borderRadius: 1,
+              pt: 2,
+            }}
+          >
             {categories.map((category, index) => {
               const activity = activities.find(
                 (a) => a.category === category.value,
@@ -254,9 +272,7 @@ export default function MissionaryLogHoursDialog({
                 <Box
                   key={category.value}
                   sx={{
-                    p: 2,
-                    borderBottom: index !== categories.length - 1 ? 1 : 0,
-                    borderColor: "divider",
+                    py: 0.5,
                     "&:hover": { bgcolor: "action.hover" },
                   }}
                 >
@@ -273,12 +289,12 @@ export default function MissionaryLogHoursDialog({
                       <Typography
                         variant="body2"
                         color="text.secondary"
-                        sx={{}}
+                        sx={{ ml: 2 }}
                       >
                         {category.description}
                       </Typography>
                     </Grid>
-                    <Grid item xs={6} sm={2}>
+                    <Grid item xs={6} sm={2} sx={{ ml: 2 }}>
                       <TextField
                         fullWidth
                         type="number"

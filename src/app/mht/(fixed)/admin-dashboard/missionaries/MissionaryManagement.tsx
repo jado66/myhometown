@@ -1105,7 +1105,7 @@ export default function MissionaryManagement() {
   }
 
   return (
-    <Grid container item sm={12} display="flex">
+    <Grid container item sm={12} display="flex" maxWidth="xl">
       <AskYesNoDialog
         open={deleteDialogOpen}
         title={`Delete ${missionaryToDelete?.type} ${missionaryToDelete?.first_name} ${missionaryToDelete?.last_name}?`}
