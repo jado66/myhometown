@@ -4,17 +4,9 @@ import { ObjectId } from "mongodb";
 export async function PATCH(req, { params }) {
   const { id } = params;
 
-  // Validate ObjectId format
-  if (!ObjectId.isValid(id)) {
-    return new Response(
-      JSON.stringify({ error: "Invalid community ID format" }),
-      { status: 400 }
-    );
-  }
-
-  // Create query using ObjectId
+  // Create query - handle both ObjectId and string formats (e.g., UUIDs)
   const query = {
-    _id: new ObjectId(id),
+    _id: ObjectId.isValid(id) ? new ObjectId(id) : id,
   };
 
   // Get partial update data from request body
@@ -39,7 +31,7 @@ export async function PATCH(req, { params }) {
     console.error("Error occurred while connecting to MongoDB", e);
     return new Response(
       JSON.stringify({ error: "Error occurred while connecting to MongoDB" }),
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -56,7 +48,7 @@ export async function PATCH(req, { params }) {
     console.error("Error occurred while updating community", e);
     return new Response(
       JSON.stringify({ error: "Error occurred while updating community" }),
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -65,6 +57,6 @@ export async function PATCH(req, { params }) {
       modifiedCount: result.modifiedCount,
       message: "Community updated successfully",
     }),
-    { status: 200 }
+    { status: 200 },
   );
 }

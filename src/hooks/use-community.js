@@ -7,7 +7,7 @@ export default function useCommunity(
   cityQuery,
   stateQuery,
   template = {},
-  isEditing = false
+  isEditing = false,
 ) {
   const [community, setCommunity] = useState({});
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -45,7 +45,7 @@ export default function useCommunity(
             "Content-Type": "application/json",
           },
           body: JSON.stringify(updates),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -69,13 +69,13 @@ export default function useCommunity(
     const fetchCommunity = async () => {
       try {
         const res = await fetch(
-          `/api/database/communities/${stateQuery}/${cityQuery}/${communityQuery}?isEditMode=${isEditMode}`
+          `/api/database/communities/${stateQuery}/${cityQuery}/${communityQuery}?isEditMode=${isEditMode}`,
         );
 
         if (res.status === 404 || res.status === 403) {
           console.error(
             "Unable to access the requested resource. Status Code:",
-            res.status
+            res.status,
           );
           setCommunity(null);
           setError({ status: res.status });

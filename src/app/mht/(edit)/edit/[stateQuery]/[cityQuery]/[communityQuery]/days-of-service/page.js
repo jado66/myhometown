@@ -35,7 +35,7 @@ const DaysOfServicePage = ({ params }) => {
     cityQuery,
     stateQuery,
     communityTemplate,
-    true
+    true,
   );
 
   // Fetch the existing form if available
@@ -56,6 +56,8 @@ const DaysOfServicePage = ({ params }) => {
   // Handle saving content changes
   const handleContentSave = async (contentData) => {
     if (!community) return;
+
+    console.log("Saving content data:", JSON.stringify(contentData, null, 2));
 
     try {
       // Ensure all fields, including mapUrl, are included in the update
@@ -89,7 +91,7 @@ const DaysOfServicePage = ({ params }) => {
     toast.success(
       community.isDaysOfServiceVisibilityFormVisible
         ? "Days of Service form is now hidden"
-        : "Days of Service form is now visible"
+        : "Days of Service form is now visible",
     );
   };
 
@@ -137,7 +139,7 @@ const DaysOfServicePage = ({ params }) => {
         savedForm = await addForm(
           "Volunteer Sign Up Form",
           formConfig.formConfig,
-          formConfig.fieldOrder
+          formConfig.fieldOrder,
         );
 
         // If the form was saved successfully, update the community with the form ID
