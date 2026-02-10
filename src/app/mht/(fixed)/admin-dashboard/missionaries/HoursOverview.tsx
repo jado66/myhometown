@@ -20,6 +20,7 @@ import {
   TableHead,
   TableRow,
   Tooltip,
+  TablePagination,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -64,6 +65,11 @@ const formatNumber = (num: number): string => {
   return num.toLocaleString();
 };
 
+const formatHoursValue = (num: number, hasEntries: boolean): string => {
+  if (!hasEntries) return "-";
+  return formatNumber(num);
+};
+
 interface HoursOverviewProps {
   missionaries: Missionary[];
   filters: FilterState;
@@ -86,6 +92,8 @@ export function HoursOverview({
   const [activeTab, setActiveTab] = useState(0);
   const [selectedMissionary, setSelectedMissionary] = useState<any>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
   const currentYear = new Date().getFullYear();
 
   // Calculate hours stats based on filtered missionaries
@@ -207,6 +215,7 @@ export function HoursOverview({
       const missionaryHours = filteredHours.filter(
         (h) => h.missionary_id === missionary.id,
       );
+      const hasEntries = missionaryHours.length > 0;
       const totalHours = missionaryHours.reduce(
         (sum, h) => sum + h.total_hours,
         0,
@@ -278,29 +287,53 @@ export function HoursOverview({
         }
       }
 
-      if (totalHours > 0) {
-        summary.set(missionary.id, {
-          missionary,
-          totalHours,
-          entries: missionaryHours.length,
-          totalCRC,
-          totalDOS,
-          totalAdmin,
-          totalSchool,
-          totalEvents,
-          monthTotal,
-          monthCRC,
-          monthDOS,
-          monthAdmin,
-          monthSchool,
-          monthEvents,
-        });
-      }
+      summary.set(missionary.id, {
+        missionary,
+        totalHours,
+        entries: missionaryHours.length,
+        hasEntries,
+        totalCRC,
+        totalDOS,
+        totalAdmin,
+        totalSchool,
+        totalEvents,
+        monthTotal,
+        monthCRC,
+        monthDOS,
+        monthAdmin,
+        monthSchool,
+        monthEvents,
+      });
     });
-    return Array.from(summary.values()).sort(
-      (a, b) => b.totalHours - a.totalHours,
-    );
+    return Array.from(summary.values()).sort((a, b) => {
+      if (a.hasEntries !== b.hasEntries) {
+        return a.hasEntries ? -1 : 1;
+      }
+      return b.totalHours - a.totalHours;
+    });
   }, [filteredHours, missionaries]);
+
+  const loggingCount = useMemo(() => {
+    return missionaryHoursSummary.filter((s) => s.hasEntries).length;
+  }, [missionaryHoursSummary]);
+
+  const paginatedMissionaryHoursSummary = useMemo(() => {
+    const start = page * rowsPerPage;
+    const end = start + rowsPerPage;
+    return missionaryHoursSummary.slice(start, end);
+  }, [missionaryHoursSummary, page, rowsPerPage]);
+
+  const handleChangePage = (_: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const newSize = parseInt(event.target.value, 10);
+    setRowsPerPage(newSize);
+    setPage(0);
+  };
 
   return (
     <Box>
@@ -443,11 +476,12 @@ export function HoursOverview({
                 color="text.secondary"
                 sx={{ ml: 2, fontWeight: "bold" }}
               >
-                {missionaryHoursSummary.length} Individuals Logging Hours -
+                {loggingCount} Individuals Logging Hours -
                 {"  "}
                 {(
-                  (missionaryHoursSummary.length / missionaries.length) *
-                  100
+                  missionaries.length > 0
+                    ? (loggingCount / missionaries.length) * 100
+                    : 0
                 ).toFixed(0)}
                 %
               </Typography>
@@ -457,6 +491,11 @@ export function HoursOverview({
               variant="outlined"
               startIcon={<Download />}
               onClick={() => {
+                const formatExportHours = (
+                  value: number,
+                  hasEntries: boolean,
+                ) => (hasEntries ? value : "-");
+
                 const header = [
                   "Level",
                   "Assignment",
@@ -532,24 +571,78 @@ export function HoursOverview({
                     "First Name": summary.missionary.first_name,
                     "Last Name": summary.missionary.last_name,
                     Email: summary.missionary.email,
-                    "Total Hours": summary.totalHours,
-                    "Total CRC": summary.totalCRC,
-                    "Total DOS": summary.totalDOS,
-                    "Total Admin": summary.totalAdmin,
-                    "Total School": summary.totalSchool,
-                    "Total Events": summary.totalEvents,
-                    "January Hours": monthlyHours[0],
-                    "February Hours": monthlyHours[1],
-                    "March Hours": monthlyHours[2],
-                    "April Hours": monthlyHours[3],
-                    "May Hours": monthlyHours[4],
-                    "June Hours": monthlyHours[5],
-                    "July Hours": monthlyHours[6],
-                    "August Hours": monthlyHours[7],
-                    "September Hours": monthlyHours[8],
-                    "October Hours": monthlyHours[9],
-                    "November Hours": monthlyHours[10],
-                    "December Hours": monthlyHours[11],
+                    "Total Hours": formatExportHours(
+                      summary.totalHours,
+                      summary.hasEntries,
+                    ),
+                    "Total CRC": formatExportHours(
+                      summary.totalCRC,
+                      summary.hasEntries,
+                    ),
+                    "Total DOS": formatExportHours(
+                      summary.totalDOS,
+                      summary.hasEntries,
+                    ),
+                    "Total Admin": formatExportHours(
+                      summary.totalAdmin,
+                      summary.hasEntries,
+                    ),
+                    "Total School": formatExportHours(
+                      summary.totalSchool,
+                      summary.hasEntries,
+                    ),
+                    "Total Events": formatExportHours(
+                      summary.totalEvents,
+                      summary.hasEntries,
+                    ),
+                    "January Hours": formatExportHours(
+                      monthlyHours[0],
+                      summary.hasEntries,
+                    ),
+                    "February Hours": formatExportHours(
+                      monthlyHours[1],
+                      summary.hasEntries,
+                    ),
+                    "March Hours": formatExportHours(
+                      monthlyHours[2],
+                      summary.hasEntries,
+                    ),
+                    "April Hours": formatExportHours(
+                      monthlyHours[3],
+                      summary.hasEntries,
+                    ),
+                    "May Hours": formatExportHours(
+                      monthlyHours[4],
+                      summary.hasEntries,
+                    ),
+                    "June Hours": formatExportHours(
+                      monthlyHours[5],
+                      summary.hasEntries,
+                    ),
+                    "July Hours": formatExportHours(
+                      monthlyHours[6],
+                      summary.hasEntries,
+                    ),
+                    "August Hours": formatExportHours(
+                      monthlyHours[7],
+                      summary.hasEntries,
+                    ),
+                    "September Hours": formatExportHours(
+                      monthlyHours[8],
+                      summary.hasEntries,
+                    ),
+                    "October Hours": formatExportHours(
+                      monthlyHours[9],
+                      summary.hasEntries,
+                    ),
+                    "November Hours": formatExportHours(
+                      monthlyHours[10],
+                      summary.hasEntries,
+                    ),
+                    "December Hours": formatExportHours(
+                      monthlyHours[11],
+                      summary.hasEntries,
+                    ),
                   };
                 });
 
@@ -726,7 +819,7 @@ export function HoursOverview({
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {missionaryHoursSummary.map((summary, index) => (
+                  {paginatedMissionaryHoursSummary.map((summary, index) => (
                     <TableRow
                       key={summary.missionary.id}
                       hover
@@ -801,7 +894,10 @@ export function HoursOverview({
                           fontWeight="bold"
                           color="primary.main"
                         >
-                          {formatNumber(summary.totalHours)}
+                          {formatHoursValue(
+                            summary.totalHours,
+                            summary.hasEntries,
+                          )}
                         </Typography>
                       </TableCell>
                       <TableCell
@@ -812,7 +908,7 @@ export function HoursOverview({
                         }}
                       >
                         <Typography variant="body2" fontWeight="medium">
-                          {formatNumber(summary.totalCRC)}
+                          {formatHoursValue(summary.totalCRC, summary.hasEntries)}
                         </Typography>
                       </TableCell>
                       <TableCell
@@ -823,7 +919,7 @@ export function HoursOverview({
                         }}
                       >
                         <Typography variant="body2" fontWeight="medium">
-                          {formatNumber(summary.totalDOS)}
+                          {formatHoursValue(summary.totalDOS, summary.hasEntries)}
                         </Typography>
                       </TableCell>
                       <TableCell
@@ -834,7 +930,10 @@ export function HoursOverview({
                         }}
                       >
                         <Typography variant="body2" fontWeight="medium">
-                          {formatNumber(summary.totalAdmin)}
+                          {formatHoursValue(
+                            summary.totalAdmin,
+                            summary.hasEntries,
+                          )}
                         </Typography>
                       </TableCell>
                       <TableCell
@@ -845,7 +944,10 @@ export function HoursOverview({
                         }}
                       >
                         <Typography variant="body2" fontWeight="medium">
-                          {formatNumber(summary.totalSchool)}
+                          {formatHoursValue(
+                            summary.totalSchool,
+                            summary.hasEntries,
+                          )}
                         </Typography>
                       </TableCell>
                       <TableCell
@@ -856,7 +958,10 @@ export function HoursOverview({
                         }}
                       >
                         <Typography variant="body2" fontWeight="medium">
-                          {formatNumber(summary.totalEvents)}
+                          {formatHoursValue(
+                            summary.totalEvents,
+                            summary.hasEntries,
+                          )}
                         </Typography>
                       </TableCell>
                       <TableCell
@@ -871,7 +976,10 @@ export function HoursOverview({
                           fontWeight="bold"
                           color="secondary.main"
                         >
-                          {formatNumber(summary.monthTotal)}
+                          {formatHoursValue(
+                            summary.monthTotal,
+                            summary.hasEntries,
+                          )}
                         </Typography>
                       </TableCell>
                       <TableCell
@@ -882,7 +990,10 @@ export function HoursOverview({
                         }}
                       >
                         <Typography variant="body2" fontWeight="medium">
-                          {formatNumber(summary.monthCRC)}
+                          {formatHoursValue(
+                            summary.monthCRC,
+                            summary.hasEntries,
+                          )}
                         </Typography>
                       </TableCell>
                       <TableCell
@@ -893,7 +1004,10 @@ export function HoursOverview({
                         }}
                       >
                         <Typography variant="body2" fontWeight="medium">
-                          {formatNumber(summary.monthDOS)}
+                          {formatHoursValue(
+                            summary.monthDOS,
+                            summary.hasEntries,
+                          )}
                         </Typography>
                       </TableCell>
                       <TableCell
@@ -904,7 +1018,10 @@ export function HoursOverview({
                         }}
                       >
                         <Typography variant="body2" fontWeight="medium">
-                          {formatNumber(summary.monthAdmin)}
+                          {formatHoursValue(
+                            summary.monthAdmin,
+                            summary.hasEntries,
+                          )}
                         </Typography>
                       </TableCell>
                       <TableCell
@@ -915,12 +1032,18 @@ export function HoursOverview({
                         }}
                       >
                         <Typography variant="body2" fontWeight="medium">
-                          {formatNumber(summary.monthSchool)}
+                          {formatHoursValue(
+                            summary.monthSchool,
+                            summary.hasEntries,
+                          )}
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
                         <Typography variant="body2" fontWeight="medium">
-                          {formatNumber(summary.monthEvents)}
+                          {formatHoursValue(
+                            summary.monthEvents,
+                            summary.hasEntries,
+                          )}
                         </Typography>
                       </TableCell>
                     </TableRow>
@@ -931,7 +1054,7 @@ export function HoursOverview({
                       sx={{ borderRight: "3px solid", borderColor: "divider" }}
                     >
                       <Typography variant="subtitle2" fontWeight="bold">
-                        Total ({missionaryHoursSummary.length} missionaries)
+                        Page Total ({paginatedMissionaryHoursSummary.length} missionaries)
                       </Typography>
                     </TableCell>
                     <TableCell
@@ -944,7 +1067,7 @@ export function HoursOverview({
                         color="primary.main"
                       >
                         {formatNumber(
-                          missionaryHoursSummary.reduce(
+                          paginatedMissionaryHoursSummary.reduce(
                             (sum, s) => sum + s.totalHours,
                             0,
                           ),
@@ -957,7 +1080,7 @@ export function HoursOverview({
                     >
                       <Typography variant="body2" fontWeight="bold">
                         {formatNumber(
-                          missionaryHoursSummary.reduce(
+                          paginatedMissionaryHoursSummary.reduce(
                             (sum, s) => sum + s.totalCRC,
                             0,
                           ),
@@ -970,7 +1093,7 @@ export function HoursOverview({
                     >
                       <Typography variant="body2" fontWeight="bold">
                         {formatNumber(
-                          missionaryHoursSummary.reduce(
+                          paginatedMissionaryHoursSummary.reduce(
                             (sum, s) => sum + s.totalDOS,
                             0,
                           ),
@@ -983,7 +1106,7 @@ export function HoursOverview({
                     >
                       <Typography variant="body2" fontWeight="bold">
                         {formatNumber(
-                          missionaryHoursSummary.reduce(
+                          paginatedMissionaryHoursSummary.reduce(
                             (sum, s) => sum + s.totalAdmin,
                             0,
                           ),
@@ -996,7 +1119,7 @@ export function HoursOverview({
                     >
                       <Typography variant="body2" fontWeight="bold">
                         {formatNumber(
-                          missionaryHoursSummary.reduce(
+                          paginatedMissionaryHoursSummary.reduce(
                             (sum, s) => sum + s.totalSchool,
                             0,
                           ),
@@ -1009,7 +1132,7 @@ export function HoursOverview({
                     >
                       <Typography variant="body2" fontWeight="bold">
                         {formatNumber(
-                          missionaryHoursSummary.reduce(
+                          paginatedMissionaryHoursSummary.reduce(
                             (sum, s) => sum + s.totalEvents,
                             0,
                           ),
@@ -1026,7 +1149,7 @@ export function HoursOverview({
                         color="secondary.main"
                       >
                         {formatNumber(
-                          missionaryHoursSummary.reduce(
+                          paginatedMissionaryHoursSummary.reduce(
                             (sum, s) => sum + s.monthTotal,
                             0,
                           ),
@@ -1039,7 +1162,7 @@ export function HoursOverview({
                     >
                       <Typography variant="body2" fontWeight="bold">
                         {formatNumber(
-                          missionaryHoursSummary.reduce(
+                          paginatedMissionaryHoursSummary.reduce(
                             (sum, s) => sum + s.monthCRC,
                             0,
                           ),
@@ -1052,7 +1175,7 @@ export function HoursOverview({
                     >
                       <Typography variant="body2" fontWeight="bold">
                         {formatNumber(
-                          missionaryHoursSummary.reduce(
+                          paginatedMissionaryHoursSummary.reduce(
                             (sum, s) => sum + s.monthDOS,
                             0,
                           ),
@@ -1065,7 +1188,7 @@ export function HoursOverview({
                     >
                       <Typography variant="body2" fontWeight="bold">
                         {formatNumber(
-                          missionaryHoursSummary.reduce(
+                          paginatedMissionaryHoursSummary.reduce(
                             (sum, s) => sum + s.monthAdmin,
                             0,
                           ),
@@ -1078,7 +1201,7 @@ export function HoursOverview({
                     >
                       <Typography variant="body2" fontWeight="bold">
                         {formatNumber(
-                          missionaryHoursSummary.reduce(
+                          paginatedMissionaryHoursSummary.reduce(
                             (sum, s) => sum + s.monthSchool,
                             0,
                           ),
@@ -1088,7 +1211,7 @@ export function HoursOverview({
                     <TableCell align="center">
                       <Typography variant="body2" fontWeight="bold">
                         {formatNumber(
-                          missionaryHoursSummary.reduce(
+                          paginatedMissionaryHoursSummary.reduce(
                             (sum, s) => sum + s.monthEvents,
                             0,
                           ),
@@ -1098,6 +1221,16 @@ export function HoursOverview({
                   </TableRow>
                 </TableBody>
               </Table>
+              <TablePagination
+                component="div"
+                count={missionaryHoursSummary.length}
+                page={page}
+                onPageChange={handleChangePage}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                rowsPerPageOptions={[10, 25, 50, 100, 250]}
+                labelRowsPerPage="Rows per page"
+              />
             </TableContainer>
           ) : (
             <Box sx={{ textAlign: "center", py: 8 }}>

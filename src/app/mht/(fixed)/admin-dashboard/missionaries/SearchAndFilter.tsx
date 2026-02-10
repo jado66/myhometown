@@ -195,7 +195,7 @@ export function SearchAndFilter({
           <Grid item xs={12} md={4}>
             <TextField
               fullWidth
-              label="Search missionaries..."
+              label="Search..."
               variant="outlined"
               value={filters.searchTerm}
               onChange={(e) => updateFilter("searchTerm", e.target.value)}
