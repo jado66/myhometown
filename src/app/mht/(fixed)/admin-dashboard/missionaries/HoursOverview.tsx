@@ -476,12 +476,10 @@ export function HoursOverview({
                 color="text.secondary"
                 sx={{ ml: 2, fontWeight: "bold" }}
               >
-                {loggingCount} Individuals Logging Hours -
-                {"  "}
-                {(
-                  missionaries.length > 0
-                    ? (loggingCount / missionaries.length) * 100
-                    : 0
+                {loggingCount} Individuals Logging Hours -{"  "}
+                {(missionaries.length > 0
+                  ? (loggingCount / missionaries.length) * 100
+                  : 0
                 ).toFixed(0)}
                 %
               </Typography>
@@ -908,7 +906,10 @@ export function HoursOverview({
                         }}
                       >
                         <Typography variant="body2" fontWeight="medium">
-                          {formatHoursValue(summary.totalCRC, summary.hasEntries)}
+                          {formatHoursValue(
+                            summary.totalCRC,
+                            summary.hasEntries,
+                          )}
                         </Typography>
                       </TableCell>
                       <TableCell
@@ -919,7 +920,10 @@ export function HoursOverview({
                         }}
                       >
                         <Typography variant="body2" fontWeight="medium">
-                          {formatHoursValue(summary.totalDOS, summary.hasEntries)}
+                          {formatHoursValue(
+                            summary.totalDOS,
+                            summary.hasEntries,
+                          )}
                         </Typography>
                       </TableCell>
                       <TableCell
@@ -1054,7 +1058,8 @@ export function HoursOverview({
                       sx={{ borderRight: "3px solid", borderColor: "divider" }}
                     >
                       <Typography variant="subtitle2" fontWeight="bold">
-                        Page Total ({paginatedMissionaryHoursSummary.length} missionaries)
+                        Page Total ({paginatedMissionaryHoursSummary.length}{" "}
+                        missionaries)
                       </Typography>
                     </TableCell>
                     <TableCell

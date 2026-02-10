@@ -67,6 +67,16 @@ const categories: Category[] = [
   },
 ];
 
+const formatQuarterHours = (value: string): string => {
+  if (!value.trim()) return "";
+  const parsed = Number(value);
+  if (Number.isNaN(parsed)) return "";
+  const clamped = Math.max(0, parsed);
+  const rounded = Math.round(clamped * 4) / 4;
+  // Keep up to 2 decimals without trailing zeros for cleaner display.
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+};
+
 function getMonthOptions() {
   const options = [];
   const currentYear = moment().year();
@@ -301,7 +311,11 @@ export default function MissionaryLogHoursDialog({
                         label="Hours"
                         value={activity.hours}
                         onChange={(e) =>
-                          updateActivity(activity.id, "hours", e.target.value)
+                          updateActivity(
+                            activity.id,
+                            "hours",
+                            formatQuarterHours(e.target.value),
+                          )
                         }
                         inputProps={{ step: "0.25", min: "0" }}
                         size="small"
