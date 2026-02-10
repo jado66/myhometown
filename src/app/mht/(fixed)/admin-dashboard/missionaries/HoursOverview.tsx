@@ -93,7 +93,7 @@ export function HoursOverview({
   const [selectedMissionary, setSelectedMissionary] = useState<any>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(25);
+  const [rowsPerPage, setRowsPerPage] = useState(250);
   const currentYear = new Date().getFullYear();
 
   // Calculate hours stats based on filtered missionaries
@@ -249,6 +249,7 @@ export function HoursOverview({
       let monthSchool = 0;
       let monthEvents = 0;
       let monthTotal = 0;
+      let monthHasEntries = false;
 
       for (const h of missionaryHours) {
         // Parse the date string directly to avoid timezone issues
@@ -257,6 +258,7 @@ export function HoursOverview({
 
         if (isThisMonth) {
           monthTotal += h.total_hours;
+          monthHasEntries = true;
         }
 
         for (const a of h.activities || []) {
@@ -298,6 +300,7 @@ export function HoursOverview({
         totalSchool,
         totalEvents,
         monthTotal,
+        monthHasEntries,
         monthCRC,
         monthDOS,
         monthAdmin,
@@ -525,6 +528,7 @@ export function HoursOverview({
                 const rows = missionaryHoursSummary.map((summary) => {
                   // Calculate hours by month for this missionary
                   const monthlyHours = Array(12).fill(0);
+                  const monthlyHasEntries = Array(12).fill(false);
                   const missionaryHours = filteredHours.filter(
                     (h) => h.missionary_id === summary.missionary.id,
                   );
@@ -535,6 +539,7 @@ export function HoursOverview({
                       .map(Number);
                     if (year === currentYear && month >= 1 && month <= 12) {
                       monthlyHours[month - 1] += h.total_hours;
+                      monthlyHasEntries[month - 1] = true;
                     }
                   });
 
@@ -595,51 +600,51 @@ export function HoursOverview({
                     ),
                     "January Hours": formatExportHours(
                       monthlyHours[0],
-                      summary.hasEntries,
+                      monthlyHasEntries[0],
                     ),
                     "February Hours": formatExportHours(
                       monthlyHours[1],
-                      summary.hasEntries,
+                      monthlyHasEntries[1],
                     ),
                     "March Hours": formatExportHours(
                       monthlyHours[2],
-                      summary.hasEntries,
+                      monthlyHasEntries[2],
                     ),
                     "April Hours": formatExportHours(
                       monthlyHours[3],
-                      summary.hasEntries,
+                      monthlyHasEntries[3],
                     ),
                     "May Hours": formatExportHours(
                       monthlyHours[4],
-                      summary.hasEntries,
+                      monthlyHasEntries[4],
                     ),
                     "June Hours": formatExportHours(
                       monthlyHours[5],
-                      summary.hasEntries,
+                      monthlyHasEntries[5],
                     ),
                     "July Hours": formatExportHours(
                       monthlyHours[6],
-                      summary.hasEntries,
+                      monthlyHasEntries[6],
                     ),
                     "August Hours": formatExportHours(
                       monthlyHours[7],
-                      summary.hasEntries,
+                      monthlyHasEntries[7],
                     ),
                     "September Hours": formatExportHours(
                       monthlyHours[8],
-                      summary.hasEntries,
+                      monthlyHasEntries[8],
                     ),
                     "October Hours": formatExportHours(
                       monthlyHours[9],
-                      summary.hasEntries,
+                      monthlyHasEntries[9],
                     ),
                     "November Hours": formatExportHours(
                       monthlyHours[10],
-                      summary.hasEntries,
+                      monthlyHasEntries[10],
                     ),
                     "December Hours": formatExportHours(
                       monthlyHours[11],
-                      summary.hasEntries,
+                      monthlyHasEntries[11],
                     ),
                   };
                 });
@@ -982,7 +987,7 @@ export function HoursOverview({
                         >
                           {formatHoursValue(
                             summary.monthTotal,
-                            summary.hasEntries,
+                            summary.monthHasEntries,
                           )}
                         </Typography>
                       </TableCell>
@@ -996,7 +1001,7 @@ export function HoursOverview({
                         <Typography variant="body2" fontWeight="medium">
                           {formatHoursValue(
                             summary.monthCRC,
-                            summary.hasEntries,
+                            summary.monthHasEntries,
                           )}
                         </Typography>
                       </TableCell>
@@ -1010,7 +1015,7 @@ export function HoursOverview({
                         <Typography variant="body2" fontWeight="medium">
                           {formatHoursValue(
                             summary.monthDOS,
-                            summary.hasEntries,
+                            summary.monthHasEntries,
                           )}
                         </Typography>
                       </TableCell>
@@ -1024,7 +1029,7 @@ export function HoursOverview({
                         <Typography variant="body2" fontWeight="medium">
                           {formatHoursValue(
                             summary.monthAdmin,
-                            summary.hasEntries,
+                            summary.monthHasEntries,
                           )}
                         </Typography>
                       </TableCell>
@@ -1038,7 +1043,7 @@ export function HoursOverview({
                         <Typography variant="body2" fontWeight="medium">
                           {formatHoursValue(
                             summary.monthSchool,
-                            summary.hasEntries,
+                            summary.monthHasEntries,
                           )}
                         </Typography>
                       </TableCell>
@@ -1046,7 +1051,7 @@ export function HoursOverview({
                         <Typography variant="body2" fontWeight="medium">
                           {formatHoursValue(
                             summary.monthEvents,
-                            summary.hasEntries,
+                            summary.monthHasEntries,
                           )}
                         </Typography>
                       </TableCell>

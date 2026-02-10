@@ -658,7 +658,7 @@ export default function MissionaryManagement() {
 
   // Pagination state
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(25);
+  const [rowsPerPage, setRowsPerPage] = useState(250);
 
   const handleChangePage = (_: any, newPage: number) => {
     setPage(newPage);
