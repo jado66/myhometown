@@ -81,7 +81,7 @@ const Page = ({ params }) => {
     cityQuery,
     stateQuery,
     communityTemplate,
-    true
+    true,
   );
 
   const {
@@ -114,8 +114,8 @@ const Page = ({ params }) => {
         Math.max(
           ...Object.keys(community.content)
             .filter((key) => key.startsWith("marketingImage"))
-            .map((key) => parseInt(key.replace("marketingImage", "")) || 0)
-        )
+            .map((key) => parseInt(key.replace("marketingImage", "")) || 0),
+        ),
       );
 
       async function loadCommunityEvents() {
@@ -357,7 +357,7 @@ const Page = ({ params }) => {
   const onCreateSubclass = async (
     classCategoryId,
     basicClassInfo,
-    signupForm
+    signupForm,
   ) => {
     try {
       if (!signupForm || !signupForm.formConfig || !signupForm.fieldOrder) {
@@ -386,7 +386,7 @@ const Page = ({ params }) => {
                 ...classCategory,
                 classes: [...(classCategory.classes || []), newSubclass],
               }
-            : classCategory
+            : classCategory,
         ),
       }));
 
@@ -456,7 +456,7 @@ const Page = ({ params }) => {
 
       // Find the class category and subclass to get the title
       const category = communityData.classes.find(
-        (cat) => cat.id === classCategoryId
+        (cat) => cat.id === classCategoryId,
       );
       const subclass = category?.classes.find((cls) => cls.id === subclassId);
 
@@ -502,7 +502,7 @@ const Page = ({ params }) => {
   const onDeleteClassCategory = (classCategoryId) => {
     // First, find the category to check if it has any classes
     const categoryToDelete = communityData.classes.find(
-      (category) => category.id === classCategoryId
+      (category) => category.id === classCategoryId,
     );
 
     // If category not found, show error and return
@@ -514,7 +514,7 @@ const Page = ({ params }) => {
     // Check if the category has any classes
     if (categoryToDelete.classes && categoryToDelete.classes.length > 0) {
       toast.error(
-        "Cannot delete category that contains classes. Please delete or move all classes first."
+        "Cannot delete category that contains classes. Please delete or move all classes first.",
       );
       return;
     }
@@ -528,7 +528,7 @@ const Page = ({ params }) => {
         // Delete the category
         setCommunityData((prevState) => {
           const updatedClasses = prevState.classes.filter(
-            (classCategory) => classCategory.id !== classCategoryId
+            (classCategory) => classCategory.id !== classCategoryId,
           );
 
           return {
@@ -592,13 +592,13 @@ const Page = ({ params }) => {
   const shiftUpClassCategory = (classCategoryId) => {
     setCommunityData((prevState) => {
       const index = prevState.classes.findIndex(
-        (classCategory) => classCategory.id === classCategoryId
+        (classCategory) => classCategory.id === classCategoryId,
       );
       if (index > 0) {
         const updatedClasses = swapArrayElements(
           prevState.classes,
           index,
-          index - 1
+          index - 1,
         );
         return {
           ...prevState,
@@ -612,13 +612,13 @@ const Page = ({ params }) => {
   const shiftDownClassCategory = (classCategoryId) => {
     setCommunityData((prevState) => {
       const index = prevState.classes.findIndex(
-        (classCategory) => classCategory.id === classCategoryId
+        (classCategory) => classCategory.id === classCategoryId,
       );
       if (index < prevState.classes.length - 1) {
         const updatedClasses = swapArrayElements(
           prevState.classes,
           index,
-          index + 1
+          index + 1,
         );
         return {
           ...prevState,
@@ -634,7 +634,7 @@ const Page = ({ params }) => {
       const updatedClasses = prevState.classes.map((classCategory) => {
         if (classCategory.id === classCategoryId) {
           const index = classCategory.classes.findIndex(
-            (subclass) => subclass.id === subclassId
+            (subclass) => subclass.id === subclassId,
           );
           if (index > 0) {
             return {
@@ -642,7 +642,7 @@ const Page = ({ params }) => {
               classes: swapArrayElements(
                 classCategory.classes,
                 index,
-                index - 1
+                index - 1,
               ),
             };
           }
@@ -662,7 +662,7 @@ const Page = ({ params }) => {
       const updatedClasses = prevState.classes.map((classCategory) => {
         if (classCategory.id === classCategoryId) {
           const index = classCategory.classes.findIndex(
-            (subclass) => subclass.id === subclassId
+            (subclass) => subclass.id === subclassId,
           );
           if (index < classCategory.classes.length - 1) {
             return {
@@ -670,7 +670,7 @@ const Page = ({ params }) => {
               classes: swapArrayElements(
                 classCategory.classes,
                 index,
-                index + 1
+                index + 1,
               ),
             };
           }
@@ -718,7 +718,7 @@ const Page = ({ params }) => {
   const onDeleteSubclass = (
     classCategoryId,
     subclassId,
-    closeStepperFunction
+    closeStepperFunction,
   ) => {
     if (!classCategoryId || !subclassId) {
       alert(JSON.stringify({ classCategoryId, subclassId }));
@@ -728,7 +728,7 @@ const Page = ({ params }) => {
 
     // Find the class category and subclass to get the title
     const category = communityData.classes.find(
-      (cat) => cat.id === classCategoryId
+      (cat) => cat.id === classCategoryId,
     );
     const subclass = category?.classes.find((cls) => cls.id === subclassId);
 
@@ -762,7 +762,7 @@ const Page = ({ params }) => {
               return {
                 ...classCategory,
                 classes: classCategory.classes.filter(
-                  (cls) => cls.id !== subclassId
+                  (cls) => cls.id !== subclassId,
                 ),
               };
             }
@@ -790,7 +790,7 @@ const Page = ({ params }) => {
     // Prevent deletion if there are only 2 or fewer items
     if (marketingImageCount <= 2) {
       toast.error(
-        "Cannot delete marketing item. At least 2 items must remain."
+        "Cannot delete marketing item. At least 2 items must remain.",
       );
       return;
     }
@@ -798,7 +798,7 @@ const Page = ({ params }) => {
     // Create a confirmation dialog before deleting
     if (
       !window.confirm(
-        `Are you sure you want to delete marketing item ${indexToDelete}?`
+        `Are you sure you want to delete marketing item ${indexToDelete}?`,
       )
     ) {
       return;
@@ -1130,7 +1130,7 @@ const Page = ({ params }) => {
                 // copy to clipboard
                 () => {
                   navigator.clipboard.writeText(
-                    `${window.location.href}#flyers`.replace(/edit\//g, "")
+                    `${window.location.href}#flyers`.replace(/edit\//g, ""),
                   );
                   toast.success("Link copied to clipboard");
                 }
@@ -1250,15 +1250,15 @@ const Page = ({ params }) => {
           onAdd={startCreatingNewEvent}
         />
         <Divider sx={{ my: 5 }} />
-        <EventsCalendar
+        {/* <EventsCalendar
           events={events}
           onSelectEvent={onSelectEvent}
           onSelectSlot={(slot) => setSelectedEvent(slot)}
           onAdd={startCreatingNewEvent}
           startCreatingNewEvent={startCreatingNewEvent}
           isEdit
-        />
-        <Divider sx={{ my: 5 }} />
+        /> */}
+        {/* <Divider sx={{ my: 5 }} /> */}
         <JsonViewer data={communityData.classes} />
         <LoadedClassesProvider isEdit stagedRequests={stagedClassRequests}>
           <ClassesTreeView
