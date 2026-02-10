@@ -55,11 +55,11 @@ export const pages = () => {
           requiredPermission: "texting",
         },
 
-        {
-          title: "Scheduled Messages",
-          href: rootUrl + "/admin-dashboard/texting/scheduled-messages",
-          requiredPermission: "texting",
-        },
+        // {
+        //   title: "Scheduled Messages",
+        //   href: rootUrl + "/admin-dashboard/texting/scheduled-messages",
+        //   requiredPermission: "texting",
+        // },
         {
           title: "Texting Logs",
           href: rootUrl + "/admin-dashboard/texting/logs",

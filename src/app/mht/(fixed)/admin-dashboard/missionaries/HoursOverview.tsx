@@ -601,7 +601,10 @@ export function HoursOverview({
                     <Tooltip title="Total Hours">
                       <TableCell
                         align="center"
-                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
                       >
                         Total Hrs
                       </TableCell>
@@ -609,7 +612,10 @@ export function HoursOverview({
                     <Tooltip title="Total Community Resource Center Hours">
                       <TableCell
                         align="center"
-                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
                       >
                         Total CRC
                       </TableCell>
@@ -617,7 +623,10 @@ export function HoursOverview({
                     <Tooltip title="Total Days of Service Hours">
                       <TableCell
                         align="center"
-                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
                       >
                         Total DOS
                       </TableCell>
@@ -625,7 +634,10 @@ export function HoursOverview({
                     <Tooltip title="Total Administrative Hours">
                       <TableCell
                         align="center"
-                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
                       >
                         Total Admin
                       </TableCell>
@@ -633,7 +645,10 @@ export function HoursOverview({
                     <Tooltip title="Total In School Services Hours">
                       <TableCell
                         align="center"
-                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
                       >
                         Total School
                       </TableCell>
@@ -641,7 +656,10 @@ export function HoursOverview({
                     <Tooltip title="Total Community Events Hours">
                       <TableCell
                         align="center"
-                        sx={{ borderRight: "3px solid", borderColor: "divider" }}
+                        sx={{
+                          borderRight: "3px solid",
+                          borderColor: "divider",
+                        }}
                       >
                         Total Events
                       </TableCell>
@@ -649,7 +667,10 @@ export function HoursOverview({
                     <Tooltip title="Current Month Total Hours">
                       <TableCell
                         align="center"
-                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
                       >
                         Month Hrs
                       </TableCell>
@@ -657,7 +678,10 @@ export function HoursOverview({
                     <Tooltip title="Current Month CRC Hours">
                       <TableCell
                         align="center"
-                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
                       >
                         Month CRC
                       </TableCell>
@@ -665,7 +689,10 @@ export function HoursOverview({
                     <Tooltip title="Current Month DOS Hours">
                       <TableCell
                         align="center"
-                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
                       >
                         Month DOS
                       </TableCell>
@@ -673,7 +700,10 @@ export function HoursOverview({
                     <Tooltip title="Current Month Administrative Hours">
                       <TableCell
                         align="center"
-                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
                       >
                         Month Admin
                       </TableCell>
@@ -681,7 +711,10 @@ export function HoursOverview({
                     <Tooltip title="Current Month School Hours">
                       <TableCell
                         align="center"
-                        sx={{ borderRight: "1px solid", borderColor: "divider" }}
+                        sx={{
+                          borderRight: "1px solid",
+                          borderColor: "divider",
+                        }}
                       >
                         Month School
                       </TableCell>
