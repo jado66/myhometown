@@ -15,7 +15,7 @@ export interface AggregateStatsProps {
   sx?: object;
 }
 
-export function AggregateStats({ cards, sx }: AggregateStatsProps) {
+export function AggregateStats({ cards, sx, size }: AggregateStatsProps) {
   const formatValue = (value: number | string) => {
     const num =
       typeof value === "number"
@@ -37,8 +37,8 @@ export function AggregateStats({ cards, sx }: AggregateStatsProps) {
   return (
     <Grid container spacing={3} justifyContent="center" sx={{ mb: 3, ...sx }}>
       {cards.map((card, idx) => (
-        <Grid item xs={12} sm={6} md={3} key={idx}>
-          <Card>
+        <Grid item xs={12} sm={6} md={size || 3} key={idx}>
+          <Card variant="outlined">
             <CardContent sx={{ textAlign: "center" }}>
               {card.icon && (
                 <Avatar

@@ -89,7 +89,7 @@ export function SearchAndFilter({
       "length:",
       communities?.length,
       "isArray:",
-      Array.isArray(communities)
+      Array.isArray(communities),
     );
   }, [communities]);
 
@@ -126,7 +126,7 @@ export function SearchAndFilter({
   const getFilteredCommunities = () => {
     if (!filters.selectedCityId) return [];
     const selectedCity = cities.find(
-      (city) => city._id === filters.selectedCityId
+      (city) => city._id === filters.selectedCityId,
     );
     if (!selectedCity) return [];
     return communities.filter((c) => c.city === selectedCity.name);
@@ -160,6 +160,7 @@ export function SearchAndFilter({
       expanded={expanded}
       onChange={() => setExpanded((prev) => !prev)}
       sx={{ mb: 4 }}
+      variant="outlined"
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -227,7 +228,7 @@ export function SearchAndFilter({
               label="Assignment Status"
               options={statusOptions}
               value={statusOptions.filter((opt) =>
-                filters.assignmentStatus?.includes(opt.value)
+                filters.assignmentStatus?.includes(opt.value),
               )}
               onChange={(selected: any) => {
                 const values = selected
@@ -236,7 +237,7 @@ export function SearchAndFilter({
                 // Reset to defaults if cleared completely
                 updateFilter(
                   "assignmentStatus",
-                  values.length === 0 ? ["pending", "active"] : values
+                  values.length === 0 ? ["pending", "active"] : values,
                 );
               }}
               placeholder="Assignment Status"
@@ -260,12 +261,12 @@ export function SearchAndFilter({
               label="Assignment Levels"
               options={levelOptions}
               value={levelOptions.filter((opt) =>
-                filters.assignmentLevels?.includes(opt.value)
+                filters.assignmentLevels?.includes(opt.value),
               )}
               onChange={(selected: any) =>
                 updateFilter(
                   "assignmentLevels",
-                  selected ? selected.map((s: any) => s.value) : []
+                  selected ? selected.map((s: any) => s.value) : [],
                 )
               }
               placeholder="Assignment Levels"

@@ -306,78 +306,79 @@ export function HoursOverview({
     <Box>
       {/* Hours Stats Cards (shared AggregateStats) */}
       <AggregateStats
+        size={2}
         cards={[
           {
             label: `Total Hours (${currentYear})`,
             value: hoursStats.total,
             color: "primary.main",
-            icon: <Schedule sx={{ color: "#fff" }} />,
+            // icon: <Schedule sx={{ color: "#fff" }} />,
           },
           {
             label: `Total CRC Hours (${currentYear})`,
             value: categoryStats.totalCRC,
             color: "primary.main",
-            icon: <BarChartIcon sx={{ color: "#fff" }} />,
+            // icon: <BarChartIcon sx={{ color: "#fff" }} />,
           },
           {
             label: `Total DOS Hours (${currentYear})`,
             value: categoryStats.totalDOS,
             color: "primary.main",
-            icon: <Analytics sx={{ color: "#fff" }} />,
+            // icon: <Analytics sx={{ color: "#fff" }} />,
           },
           {
-            label: `Total Administrative Hours (${currentYear})`,
+            label: `Total Admin Hours (${currentYear})`,
             value: categoryStats.totalAdmin,
             color: "primary.main",
-            icon: <TableChart sx={{ color: "#fff" }} />,
+            // icon: <TableChart sx={{ color: "#fff" }} />,
           },
           {
             label: `Total School Hours (${currentYear})`,
             value: categoryStats.totalSchool,
             color: "primary.main",
-            icon: <BarChartIcon sx={{ color: "#fff" }} />,
+            // icon: <BarChartIcon sx={{ color: "#fff" }} />,
           },
           {
             label: `Total Events Hours (${currentYear})`,
             value: categoryStats.totalEvents,
             color: "primary.main",
-            icon: <Analytics sx={{ color: "#fff" }} />,
+            // icon: <Analytics sx={{ color: "#fff" }} />,
           },
           {
             label: "This Month Hours",
             value: hoursStats.thisMonth,
             color: "primary.main",
-            icon: <Schedule sx={{ color: "#fff" }} />,
+            // icon: <Schedule sx={{ color: "#fff" }} />,
           },
           {
             label: "This Month CRC",
             value: categoryStats.monthCRC,
             color: "primary.main",
-            icon: <BarChartIcon sx={{ color: "#fff" }} />,
+            // icon: <BarChartIcon sx={{ color: "#fff" }} />,
           },
           {
             label: "This Month DOS",
             value: categoryStats.monthDOS,
             color: "primary.main",
-            icon: <Analytics sx={{ color: "#fff" }} />,
+            // icon: <Analytics sx={{ color: "#fff" }} />,
           },
           {
             label: "This Month Administrative",
             value: categoryStats.monthAdmin,
             color: "primary.main",
-            icon: <TableChart sx={{ color: "#fff" }} />,
+            // icon: <TableChart sx={{ color: "#fff" }} />,
           },
           {
             label: "This Month School",
             value: categoryStats.monthSchool,
             color: "primary.main",
-            icon: <BarChartIcon sx={{ color: "#fff" }} />,
+            // icon: <BarChartIcon sx={{ color: "#fff" }} />,
           },
           {
             label: "This Month Events",
             value: categoryStats.monthEvents,
             color: "primary.main",
-            icon: <Analytics sx={{ color: "#fff" }} />,
+            // icon: <Analytics sx={{ color: "#fff" }} />,
           },
         ]}
       />
