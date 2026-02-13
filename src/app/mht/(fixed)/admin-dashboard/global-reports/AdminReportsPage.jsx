@@ -28,6 +28,7 @@ import {
   ExpandMore,
   CheckBox,
   CheckBoxOutlineBlank,
+  AccessTime,
 } from "@mui/icons-material";
 import { useCommunities } from "@/hooks/use-communities";
 import { useClasses } from "@/hooks/use-classes";
@@ -39,6 +40,7 @@ import {
   generateCapacityReportCSV,
   generateStudentAttendanceReportCSV,
 } from "@/util/reports/classes/report-helper-functions";
+import { generateMVMSHoursReportCSV } from "@/util/reports/mvms/mvms-hours-report";
 
 // Mapping from new community IDs to old ones (same as in ClassPage)
 const newToOldCommunity = {
@@ -167,6 +169,39 @@ const AdminReportsPage = () => {
     setError(null);
 
     try {
+      // MVMS Hours Report uses its own dedicated data source
+      if (selectedReport === "mvmsHours") {
+        const response = await fetch("/api/database/mvms-hours-report", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            communityIds: selectedCommunities,
+            startDate: dateRange.startDate,
+            endDate: dateRange.endDate,
+          }),
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || "Failed to fetch MVMS data");
+        }
+
+        const { communities: commData, missionaries, hours } =
+          await response.json();
+
+        const csvContent = generateMVMSHoursReportCSV({
+          communities: commData,
+          missionaries,
+          hours,
+          dateRange,
+        });
+
+        const today = new Date().toISOString().split("T")[0];
+        downloadCSV(csvContent, `mvms_hours_report_${today}.csv`);
+        setGenerating(false);
+        return;
+      }
+
       // Fetch all class data for selected communities
       const allSections = [];
 
@@ -262,7 +297,10 @@ const AdminReportsPage = () => {
           break;
         }
         case "studentAttendance": {
-          const csvContent = generateStudentAttendanceReportCSV(combinedData, dateRange);
+          const csvContent = generateStudentAttendanceReportCSV(
+            combinedData,
+            dateRange,
+          );
           downloadCSV(
             csvContent,
             `all_communities_student_attendance_${today}.csv`,
@@ -275,6 +313,11 @@ const AdminReportsPage = () => {
             csvContent,
             `all_communities_capacity_report_${today}.csv`,
           );
+          break;
+        }
+        case "mvmsHours": {
+          // MVMS report uses its own data fetch (Supabase missionaries + hours)
+          // so we skip the class-based allSections logic and handle it here
           break;
         }
         default:
@@ -299,7 +342,7 @@ const AdminReportsPage = () => {
           Admin Reports
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Generate comprehensive reports across all communities and classes.
+          Generate comprehensive reports across all cities and communities.
         </Typography>
       </Box>
 
@@ -563,6 +606,52 @@ const AdminReportsPage = () => {
                           >
                             Daily attendance breakdown across all classes
                             showing student counts by day.
+                          </Typography>
+                        </Box>
+                      }
+                      sx={{ alignItems: "flex-start", m: 0 }}
+                    />
+                  </Paper>
+                </Grid>
+
+                {/* MVMS Hours Report */}
+                <Grid item xs={12}>
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      p: 2,
+                      border: selectedReport === "mvmsHours" ? 2 : 1,
+                      borderColor:
+                        selectedReport === "mvmsHours"
+                          ? "primary.main"
+                          : "divider",
+                      cursor: "pointer",
+                      "&:hover": { borderColor: "primary.main", boxShadow: 1 },
+                    }}
+                    onClick={() => setSelectedReport("mvmsHours")}
+                  >
+                    <FormControlLabel
+                      value="mvmsHours"
+                      control={<Radio color="primary" />}
+                      label={
+                        <Box>
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <AccessTime color="primary" />
+                            <Typography
+                              variant="subtitle1"
+                              fontWeight="bold"
+                              color="primary"
+                            >
+                              MVMS Hours Report
+                            </Typography>
+                          </Box>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mt: 0.5 }}
+                          >
+                            Missionary & volunteer hours summary by community
+                            and city, including logging rates and averages.
                           </Typography>
                         </Box>
                       }

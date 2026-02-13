@@ -84,6 +84,11 @@ export const pages = () => {
           title: "Days Of Service",
           href: rootUrl + "/admin-dashboard/days-of-service",
         },
+        {
+          title: "Global Reporting",
+          href: rootUrl + "/admin-dashboard/global-reports",
+          requiredPermission: "administrator",
+        },
         // {
         //   title: "Volunteer Signups",
         //   href: rootUrl + "/admin-dashboard/volunteer-signups",

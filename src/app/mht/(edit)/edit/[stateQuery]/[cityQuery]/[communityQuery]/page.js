@@ -1303,6 +1303,7 @@ const Page = ({ params }) => {
               : "Show Events Calendar"}
           </Button>
         </Grid>
+        <Divider sx={{ my: 5 }} />
 
         {isCalendarVisible && (
           <>

@@ -178,7 +178,8 @@ export const calculateAttendanceStats = (classItem, dateRange) => {
     classItem.attendance.forEach((record) => {
       if (record.present === true) {
         const d = record.date;
-        const inRange = !d || (d <= rangeEnd && (!rangeStart || d >= rangeStart));
+        const inRange =
+          !d || (d <= rangeEnd && (!rangeStart || d >= rangeStart));
         if (inRange) {
           uniqueAttendees.add(record.studentId);
           totalAttended++;
@@ -275,7 +276,7 @@ export const generateDetailedCSV = (semester, dateRange) => {
       const { cityName, communityName } = resolveCityCommunity(
         classItem,
         section,
-        semester
+        semester,
       );
 
       // Format basic class info
@@ -674,7 +675,7 @@ export const generateCapacityReportCSV = (semester, dateRange) => {
       const { cityName, communityName } = resolveCityCommunity(
         classItem,
         section,
-        semester
+        semester,
       );
       const classInfo = {
         id: classItem.id,
@@ -691,7 +692,9 @@ export const generateCapacityReportCSV = (semester, dateRange) => {
       if (classItem.attendance && Array.isArray(classItem.attendance)) {
         classItem.attendance.forEach((record) => {
           if (record.present === true && record.date) {
-            const inRange = record.date <= rangeEnd && (!rangeStart || record.date >= rangeStart);
+            const inRange =
+              record.date <= rangeEnd &&
+              (!rangeStart || record.date >= rangeStart);
             if (inRange) {
               allDates.add(record.date);
               classInfo.attendanceDates.add(record.date);

@@ -175,18 +175,6 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
 
         <JsonViewer data={{ user, groupedCommunities, authenticated }} />
 
-        <PermissionGuard requiredPermission="administrator" user={user}>
-          {/* Big button for generate Global Classes Reports */}
-          <Button
-            variant="contained"
-            color="secondary"
-            sx={{ mb: 3, fontSize: "1.5rem", py: 2, px: 4 }}
-            onClick={goToGlobalReports}
-          >
-            Generate Global Classes Report
-          </Button>
-        </PermissionGuard>
-
         {(groupedCommunities && Object.keys(groupedCommunities).length) > 0 ? (
           Object.entries(groupedCommunities).map(([city, cityCommunities]) => (
             <Box key={city} sx={{ mb: 4 }}>
