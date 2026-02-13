@@ -35,6 +35,7 @@ import { ExpandMore, Visibility, VisibilityOff } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import { useCommunitiesSupabase } from "@/hooks/use-communities-supabase";
 import JsonViewer from "../util/debug/DebugOutput";
+import PermissionGuard from "@/guards/permission-guard";
 
 const CommunitySelectionPage = ({ type = "classes" }) => {
   const searchParams = useSearchParams();
@@ -67,7 +68,7 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
     if (!city || isAdmin) return allCommunities;
     const normalized = city.replace(/-/g, " ").toLowerCase();
     return allCommunities.filter(
-      (c) => (c.city || c.city_name || "").toLowerCase() === normalized
+      (c) => (c.city || c.city_name || "").toLowerCase() === normalized,
     );
   }, [allCommunities, city, isAdmin]);
 
@@ -101,7 +102,7 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
           .toLowerCase()
           .replaceAll(" ", "-")}`,
       undefined,
-      { shallow: true }
+      { shallow: true },
     );
   };
 
@@ -121,7 +122,8 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
 
     if (isAuthenticated(legacyId, false, isDaysOfService) || canSkipAuth) {
       router.push(
-        process.env.NEXT_PUBLIC_DOMAIN + `/admin-dashboard/${route}/${legacyId}`
+        process.env.NEXT_PUBLIC_DOMAIN +
+          `/admin-dashboard/${route}/${legacyId}`,
       );
     } else {
       setSelectedCommunity(community);
@@ -142,12 +144,18 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
       setAuthenticated(city);
 
       router.push(
-        process.env.NEXT_PUBLIC_DOMAIN + `/admin-dashboard/${route}/${legacyId}`
+        process.env.NEXT_PUBLIC_DOMAIN +
+          `/admin-dashboard/${route}/${legacyId}`,
       );
     } else {
       setAuthError("Incorrect password");
       setPassword("");
     }
+  };
+
+  const goToGlobalReports = () => {
+    const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+    router.push(rootUrl + "/admin-dashboard/classes/global-reports");
   };
 
   if (!hasLoaded) return <Loading />;
@@ -161,10 +169,23 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
           gutterBottom
           sx={{ textTransform: "capitalize" }}
         >
-          Select a City to View {type.replace(/-/g, " ")}
+          Select a Community to Manage{" "}
+          {type === "classes" ? "Classes" : "Days of Service"}
         </Typography>
 
         <JsonViewer data={{ user, groupedCommunities, authenticated }} />
+
+        <PermissionGuard requiredPermission="administrator" user={user}>
+          {/* Big button for generate Global Classes Reports */}
+          <Button
+            variant="contained"
+            color="secondary"
+            sx={{ mb: 3, fontSize: "1.5rem", py: 2, px: 4 }}
+            onClick={goToGlobalReports}
+          >
+            Generate Global Classes Report
+          </Button>
+        </PermissionGuard>
 
         {(groupedCommunities && Object.keys(groupedCommunities).length) > 0 ? (
           Object.entries(groupedCommunities).map(([city, cityCommunities]) => (

@@ -372,6 +372,26 @@ const Page = ({ params }) => {
                 communityData={community}
               />
             )}
+
+            {community?.content?.marketingImage5 && (
+              <MarketingItem
+                index={5}
+                marginTop={6}
+                content={community?.content}
+                openImageDialog={openImageDialog}
+                communityData={community}
+              />
+            )}
+
+            {community?.content?.marketingImage6 && (
+              <MarketingItem
+                index={6}
+                marginTop={6}
+                content={community?.content}
+                openImageDialog={openImageDialog}
+                communityData={community}
+              />
+            )}
           </Grid>
 
           {/* Helper text for marketing images */}
@@ -390,8 +410,13 @@ const Page = ({ params }) => {
           maxEvents={5}
         />
         <Divider sx={{ my: 5 }} id="events" />
-        {/* <EventsCalendar events={events} onSelectEvent={onSelectEvent} /> */}
-        {/* <Divider sx={{ my: 5 }} /> */}
+
+        {community.showCalendar && (
+          <>
+            <EventsCalendar events={events} onSelectEvent={onSelectEvent} />
+            <Divider sx={{ my: 5 }} />
+          </>
+        )}
 
         <LoadedClassesProvider>
           <ClassesTreeView

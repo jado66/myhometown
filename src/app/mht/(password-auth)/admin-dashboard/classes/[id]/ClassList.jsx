@@ -287,7 +287,7 @@ const ClassSection = ({
 
   // Filter by search term only, not by visibility
   const filteredClasses = classes.filter((classItem) =>
-    classItem.title?.toLowerCase().includes((searchTerm || "").toLowerCase())
+    classItem.title?.toLowerCase().includes((searchTerm || "").toLowerCase()),
   );
 
   if (filteredClasses.length === 0) return null;
@@ -349,7 +349,7 @@ const SemesterAccordion = ({
 }) => {
   // Show all sections if showHidden is true, otherwise filter by visibility
   const filteredSections = semester.sections.filter(
-    (section) => showHidden || section.visibility !== false
+    (section) => showHidden || section.visibility !== false,
   );
   // If no sections after filtering, don't render
   if (filteredSections.length === 0) return null;
@@ -466,6 +466,8 @@ export default function ClassList({
     const semestersMap = {};
     let currentSemesterId = null;
     let hasFoundAnyHeaders = false;
+    const cityName = community?.city || community?.city_name || "";
+    const communityName = community?.name || community?.title || "";
 
     if (community?.classes && community.classes.length > 0) {
       community.classes.forEach((category) => {
@@ -477,6 +479,8 @@ export default function ClassList({
             title: category.title,
             sections: [],
             visibility: category.visibility !== false,
+            cityName,
+            communityName,
           };
         } else if (category.classes && category.classes.length > 0) {
           if (currentSemesterId && semestersMap[currentSemesterId]) {
@@ -486,6 +490,8 @@ export default function ClassList({
               classes: category.classes || [],
               icon: category.icon,
               visibility: category.visibility !== false,
+              cityName,
+              communityName,
             });
           } else {
             const defaultId = "default-semester";
@@ -495,6 +501,8 @@ export default function ClassList({
                 title: hasFoundAnyHeaders ? "Other Classes" : "All Classes",
                 sections: [],
                 visibility: true,
+                cityName,
+                communityName,
               };
             }
             semestersMap[defaultId].sections.push({
@@ -503,16 +511,24 @@ export default function ClassList({
               classes: category.classes || [],
               icon: category.icon,
               visibility: category.visibility !== false,
+              cityName,
+              communityName,
             });
           }
         }
       });
     }
     const filteredSemesters = Object.values(semestersMap).filter(
-      (semester) => semester.sections.length > 0
+      (semester) => semester.sections.length > 0,
     );
     return filteredSemesters.length > 0 ? filteredSemesters : [];
-  }, [community?.classes]);
+  }, [
+    community?.classes,
+    community?.city,
+    community?.city_name,
+    community?.name,
+    community?.title,
+  ]);
 
   // Cleaned semesters: only id and title fields
   const cleanedSemesters = useMemo(() => {

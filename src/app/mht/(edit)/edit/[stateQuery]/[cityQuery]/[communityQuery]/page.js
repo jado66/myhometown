@@ -857,6 +857,13 @@ const Page = ({ params }) => {
     }));
   };
 
+  const toggleCalendarVisibility = (newState) => {
+    setCommunityData((prevState) => ({
+      ...prevState,
+      showCalendar: newState,
+    }));
+  };
+
   const CategorySelectOptions = communityData?.classes?.map((category) => ({
     value: category.id,
     label: category.title,
@@ -898,6 +905,8 @@ const Page = ({ params }) => {
   const isHideVolunteerSection =
     typeof communityData?.isVolunteerSectionVisible !== "undefined" &&
     communityData?.isVolunteerSectionVisible === true;
+
+  const isCalendarVisible = communityData?.showCalendar === true;
 
   return (
     <>
@@ -1205,9 +1214,41 @@ const Page = ({ params }) => {
                 showDeleteButton={true} // This item can be deleted
               />
             )}
+
+            {/* Marketing Item 5 - Optional, can be deleted when more than 2 total */}
+            {(content?.marketingImage5 || marketingImageCount >= 5) && (
+              <MarketingItemEdit
+                index={5}
+                marginTop={6}
+                content={content}
+                handleMarketingHeaderChange={handleMarketingHeaderChange}
+                handleChangeMarketingImage={handleChangeMarketingImage}
+                UploadImage={UploadImage}
+                communityData={communityData}
+                onDelete={handleDeleteMarketingItem}
+                totalMarketingItems={marketingImageCount}
+                showDeleteButton={true} // This item can be deleted
+              />
+            )}
+
+            {/* Marketing Item 6 - Optional, can be deleted when more than 2 total */}
+            {(content?.marketingImage6 || marketingImageCount >= 6) && (
+              <MarketingItemEdit
+                index={6}
+                marginTop={6}
+                content={content}
+                handleMarketingHeaderChange={handleMarketingHeaderChange}
+                handleChangeMarketingImage={handleChangeMarketingImage}
+                UploadImage={UploadImage}
+                communityData={communityData}
+                onDelete={handleDeleteMarketingItem}
+                totalMarketingItems={marketingImageCount}
+                showDeleteButton={true} // This item can be deleted
+              />
+            )}
           </Grid>
 
-          {marketingImageCount < 4 && (
+          {marketingImageCount < 6 && (
             <Grid item xs={12} display="flex" justifyContent="center">
               <Button
                 variant="contained"
@@ -1250,15 +1291,33 @@ const Page = ({ params }) => {
           onAdd={startCreatingNewEvent}
         />
         <Divider sx={{ my: 5 }} />
-        {/* <EventsCalendar
-          events={events}
-          onSelectEvent={onSelectEvent}
-          onSelectSlot={(slot) => setSelectedEvent(slot)}
-          onAdd={startCreatingNewEvent}
-          startCreatingNewEvent={startCreatingNewEvent}
-          isEdit
-        /> */}
-        {/* <Divider sx={{ my: 5 }} /> */}
+
+        <Grid item md={12} sx={{ justifyContent: "center", display: "flex" }}>
+          <Button
+            variant="outlined"
+            onClick={() => toggleCalendarVisibility(!isCalendarVisible)}
+            startIcon={isCalendarVisible ? <VisibilityOff /> : <Visibility />}
+          >
+            {isCalendarVisible
+              ? "Hide Events Calendar"
+              : "Show Events Calendar"}
+          </Button>
+        </Grid>
+
+        {isCalendarVisible && (
+          <>
+            <EventsCalendar
+              events={events}
+              onSelectEvent={onSelectEvent}
+              onSelectSlot={(slot) => setSelectedEvent(slot)}
+              onAdd={startCreatingNewEvent}
+              startCreatingNewEvent={startCreatingNewEvent}
+              isEdit
+            />
+            <Divider sx={{ my: 5 }} />
+          </>
+        )}
+
         <JsonViewer data={communityData.classes} />
         <LoadedClassesProvider isEdit stagedRequests={stagedClassRequests}>
           <ClassesTreeView

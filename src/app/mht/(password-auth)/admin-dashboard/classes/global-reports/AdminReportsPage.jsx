@@ -18,6 +18,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Chip,
+  TextField,
 } from "@mui/material";
 import {
   FileDownload,
@@ -76,6 +77,12 @@ const AdminReportsPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [generating, setGenerating] = useState(false);
+
+  // Date range state
+  const todayStr = new Date().toISOString().split("T")[0];
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState(todayStr);
+  const [dateError, setDateError] = useState("");
 
   // Group communities by city for better organization
   const communitiesByCity = React.useMemo(() => {
@@ -140,6 +147,22 @@ const AdminReportsPage = () => {
       return;
     }
 
+    // Validate dates
+    if (endDate && endDate > todayStr) {
+      setDateError("End date cannot be in the future");
+      return;
+    }
+    if (startDate && endDate && startDate > endDate) {
+      setDateError("Start date must be before end date");
+      return;
+    }
+    setDateError("");
+
+    const dateRange = {
+      startDate: startDate || null,
+      endDate: endDate || todayStr,
+    };
+
     setGenerating(true);
     setError(null);
 
@@ -167,6 +190,9 @@ const AdminReportsPage = () => {
 
         if (!community) continue;
 
+        const cityName = community.city || community.city_name || "";
+        const communityName = community.name || "";
+
         // Fetch classes for this community
         const classesData = await getClassesByCommunity(oldCommunityId);
 
@@ -192,14 +218,18 @@ const AdminReportsPage = () => {
                   title: communityClass.title || fullClassData?.title,
                   visibility:
                     communityClass.visibility ?? fullClassData?.visibility,
+                  cityName,
+                  communityName,
                 };
               })
               .filter((c) => c.visibility !== false);
 
             if (sectionClasses.length > 0) {
               allSections.push({
-                title: `${community.city || community.city_name} - ${community.name} - ${category.title}`,
+                title: `${cityName} - ${communityName} - ${category.title}`,
                 visibility: true,
+                cityName,
+                communityName,
                 classes: sectionClasses,
               });
             }
@@ -224,7 +254,7 @@ const AdminReportsPage = () => {
 
       switch (selectedReport) {
         case "attendance": {
-          const csvContent = generateDetailedCSV(combinedData);
+          const csvContent = generateDetailedCSV(combinedData, dateRange);
           downloadCSV(
             csvContent,
             `all_communities_attendance_report_${today}.csv`,
@@ -232,7 +262,7 @@ const AdminReportsPage = () => {
           break;
         }
         case "studentAttendance": {
-          const csvContent = generateStudentAttendanceReportCSV(combinedData);
+          const csvContent = generateStudentAttendanceReportCSV(combinedData, dateRange);
           downloadCSV(
             csvContent,
             `all_communities_student_attendance_${today}.csv`,
@@ -240,7 +270,7 @@ const AdminReportsPage = () => {
           break;
         }
         case "capacity": {
-          const csvContent = generateCapacityReportCSV(combinedData);
+          const csvContent = generateCapacityReportCSV(combinedData, dateRange);
           downloadCSV(
             csvContent,
             `all_communities_capacity_report_${today}.csv`,
@@ -542,6 +572,53 @@ const AdminReportsPage = () => {
                 </Grid>
               </Grid>
             </RadioGroup>
+
+            <Divider sx={{ my: 3 }} />
+
+            {/* Date Range Section */}
+            <Typography variant="h6" gutterBottom>
+              Date Range
+            </Typography>
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Start Date"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    setDateError("");
+                  }}
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ min: "2026-01-01", max: endDate || todayStr }}
+                  fullWidth
+                  helperText="Earliest: Jan 1, 2026"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="End Date"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    setDateError("");
+                  }}
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{
+                    max: todayStr,
+                    min: startDate || undefined,
+                  }}
+                  fullWidth
+                  helperText="Cannot be in the future"
+                />
+              </Grid>
+              {dateError && (
+                <Grid item xs={12}>
+                  <Alert severity="error">{dateError}</Alert>
+                </Grid>
+              )}
+            </Grid>
 
             <Divider sx={{ my: 3 }} />
 

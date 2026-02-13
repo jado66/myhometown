@@ -94,21 +94,79 @@ export const getDayOfWeek = (dateString) => {
   return days[moment.utc(dateString).day()];
 };
 
+const getEnrolledCount = (classItem) =>
+  classItem.signups?.filter((signup) => !signup.isWaitlisted)?.length || 0;
+
+const shouldIncludeClass = (classItem, dateRange) => {
+  if (!classItem?.startDate) return false;
+
+  const classStart = moment.utc(classItem.startDate);
+  if (!classStart.isValid()) return false;
+
+  const rangeEnd = dateRange?.endDate || moment.utc().format("YYYY-MM-DD");
+  const rangeStart = dateRange?.startDate || null;
+
+  // Class must have started on or before the range end
+  if (classStart.isAfter(rangeEnd, "day")) return false;
+
+  // If a start date filter is set, the class's end date must be on or after rangeStart
+  if (rangeStart && classItem.endDate) {
+    const classEnd = moment.utc(classItem.endDate);
+    if (classEnd.isBefore(rangeStart, "day")) return false;
+  }
+
+  return getEnrolledCount(classItem) > 0;
+};
+
+const getClassDatesInRange = (classItem, dateRange) => {
+  const endDate = dateRange?.endDate || moment.utc().format("YYYY-MM-DD");
+  const startDate = dateRange?.startDate || null;
+  return generateClassDates(classItem).filter((date) => {
+    if (date > endDate) return false;
+    if (startDate && date < startDate) return false;
+    return true;
+  });
+};
+
+const resolveCityCommunity = (classItem, section, semester) => {
+  const cityName =
+    classItem?.cityName ||
+    classItem?.city ||
+    classItem?.city_name ||
+    section?.cityName ||
+    section?.city ||
+    section?.city_name ||
+    semester?.cityName ||
+    semester?.city ||
+    semester?.city_name ||
+    "";
+
+  const communityName =
+    classItem?.communityName ||
+    classItem?.community ||
+    section?.communityName ||
+    section?.community ||
+    semester?.communityName ||
+    semester?.community ||
+    "";
+
+  return { cityName, communityName };
+};
+
 /**
  * Calculates attendance statistics for a given class based on actual class dates
  * Only counts dates up to today (excludes future dates) for accurate percentages
  * @param {Object} classItem - The class object containing attendance data
  * @returns {Object} Statistics including enrollment and attendance metrics
  */
-export const calculateAttendanceStats = (classItem) => {
+export const calculateAttendanceStats = (classItem, dateRange) => {
   const studentsEnrolled =
     classItem.signups?.filter((signup) => !signup.isWaitlisted)?.length || 0;
 
-  const allClassDates = generateClassDates(classItem);
-
-  // Filter to only include dates up to today (not future dates)
-  const today = moment.utc().format("YYYY-MM-DD");
-  const classDates = allClassDates.filter((date) => date <= today);
+  // Filter to only include dates within the range
+  const classDates = getClassDatesInRange(classItem, dateRange);
+  const rangeEnd = dateRange?.endDate || moment.utc().format("YYYY-MM-DD");
+  const rangeStart = dateRange?.startDate || null;
 
   const totalClassDays = classDates.length;
   const maxPossibleAttendance = studentsEnrolled * totalClassDays;
@@ -119,8 +177,12 @@ export const calculateAttendanceStats = (classItem) => {
 
     classItem.attendance.forEach((record) => {
       if (record.present === true) {
-        uniqueAttendees.add(record.studentId);
-        totalAttended++;
+        const d = record.date;
+        const inRange = !d || (d <= rangeEnd && (!rangeStart || d >= rangeStart));
+        if (inRange) {
+          uniqueAttendees.add(record.studentId);
+          totalAttended++;
+        }
       }
     });
 
@@ -175,18 +237,19 @@ export const calculateAttendanceStats = (classItem) => {
  * @param {Object} semester - The semester object containing sections and classes
  * @returns {string} CSV formatted string
  */
-export const generateDetailedCSV = (semester) => {
+export const generateDetailedCSV = (semester, dateRange) => {
   // Define the CSV headers
   const headers = [
+    "City",
+    "Community",
     "Class Title",
     "Category",
     "Start Date",
     "End Date",
     "Location",
+    "Days Taught",
     "Students Enrolled",
     "Students Attended",
-    "Total Class Days",
-    "Total Attendance",
     "Attendance %",
   ];
 
@@ -206,20 +269,27 @@ export const generateDetailedCSV = (semester) => {
 
     section.classes.forEach((classItem) => {
       if (classItem.visibility === false) return;
+      if (!shouldIncludeClass(classItem, dateRange)) return;
 
-      const stats = calculateAttendanceStats(classItem);
+      const stats = calculateAttendanceStats(classItem, dateRange);
+      const { cityName, communityName } = resolveCityCommunity(
+        classItem,
+        section,
+        semester
+      );
 
       // Format basic class info
       const classInfo = [
+        `"${cityName.replace(/"/g, '""') || ""}"`,
+        `"${communityName.replace(/"/g, '""') || ""}"`,
         `"${classItem.title?.replace(/"/g, '""') || ""}"`,
         `"${section.title?.replace(/"/g, '""') || ""}"`,
         formatDate(classItem.startDate),
         formatDate(classItem.endDate),
         `"${classItem.location?.replace(/"/g, '""') || ""}"`,
+        stats.totalClassDays,
         stats.studentsEnrolled,
         stats.studentsAttended,
-        stats.totalClassDays,
-        `"${stats.totalAttendance}"`, // Keep quotes for x of y format
         stats.attendancePercentage,
       ];
 
@@ -267,7 +337,9 @@ export const generateDetailedCSV = (semester) => {
  * @param {Object} semester - The semester object containing sections and classes
  * @returns {string} CSV formatted string
  */
-export const generateStudentAttendanceReportCSV = (semester) => {
+export const generateStudentAttendanceReportCSV = (semester, dateRange) => {
+  const rangeEnd = dateRange?.endDate || moment.utc().format("YYYY-MM-DD");
+  const rangeStart = dateRange?.startDate || null;
   // First collect all student data and attendance records
   const studentsData = [];
 
@@ -279,9 +351,10 @@ export const generateStudentAttendanceReportCSV = (semester) => {
     section.classes.forEach((classItem) => {
       // Skip hidden classes
       if (classItem.visibility === false) return;
+      if (!shouldIncludeClass(classItem, dateRange)) return;
 
-      // Get all dates for this class
-      const classDates = generateClassDates(classItem);
+      // Get all dates for this class within the date range
+      const classDates = getClassDatesInRange(classItem, dateRange);
 
       // Process each student in the class
       if (classItem.signups && classItem.signups.length > 0) {
@@ -293,6 +366,7 @@ export const generateStudentAttendanceReportCSV = (semester) => {
             classStartDate: classItem.startDate || "",
             classEndDate: classItem.endDate || "",
             classLocation: classItem.location || "",
+            ...resolveCityCommunity(classItem, section, semester),
             studentId: signup.id,
             firstName: signup.firstName || "",
             lastName: signup.lastName || "",
@@ -346,14 +420,12 @@ export const generateStudentAttendanceReportCSV = (semester) => {
   // Sort dates chronologically
   const sortedDates = Array.from(allDates).sort();
 
-  // Filter to only include dates up to today for attendance calculations
-  const today = moment.utc().format("YYYY-MM-DD");
-  const pastAndTodayDates = sortedDates.filter((date) => date <= today);
-
   console.log("sortedDates", JSON.stringify(sortedDates, null, 2));
 
   // Create CSV headers
   const headers = [
+    "City",
+    "Community",
     "Class",
     "Category",
     "Student Name",
@@ -378,6 +450,8 @@ export const generateStudentAttendanceReportCSV = (semester) => {
   // Add rows for each student
   studentsData.forEach((student) => {
     const row = [
+      `"${student.cityName.replace(/"/g, '""')}"`,
+      `"${student.communityName.replace(/"/g, '""')}"`,
       `"${student.classTitle.replace(/"/g, '""')}"`,
       `"${student.classCategory.replace(/"/g, '""')}"`,
       `"${student.fullName.replace(/"/g, '""')}"`,
@@ -396,21 +470,14 @@ export const generateStudentAttendanceReportCSV = (semester) => {
     sortedDates.forEach((date) => {
       // Check if this date is relevant for this student's class
       if (student.attendance[date]) {
-        const isPastOrToday = date <= today;
-
-        // Add X for present, leave blank for absent, show future dates differently
+        // Add X for present, leave blank for absent
         if (student.attendance[date].present) {
           row.push('"✓"');
-          if (isPastOrToday) attendedCount++;
-        } else if (!isPastOrToday) {
-          // Future date - mark as upcoming
-          row.push('"—"');
         } else {
           row.push("x");
         }
 
-        // Only count past/today dates toward total
-        if (isPastOrToday) totalClassDays++;
+        totalClassDays++;
       } else {
         // Date not relevant for this class
         row.push("- -");
@@ -586,7 +653,9 @@ export const generateClassScheduleReportCSV = (semester) => {
  * @param {Object} semester - The semester object containing sections and classes
  * @returns {string} CSV formatted string
  */
-export const generateCapacityReportCSV = (semester) => {
+export const generateCapacityReportCSV = (semester, dateRange) => {
+  const rangeEnd = dateRange?.endDate || moment.utc().format("YYYY-MM-DD");
+  const rangeStart = dateRange?.startDate || null;
   // Find all class dates from earliest to latest across all classes
   const allDates = new Set();
   const classesInfo = [];
@@ -599,29 +668,44 @@ export const generateCapacityReportCSV = (semester) => {
     section.classes.forEach((classItem) => {
       // Skip hidden classes
       if (classItem.visibility === false) return;
+      if (!shouldIncludeClass(classItem, dateRange)) return;
 
       // Store class info for later reference
+      const { cityName, communityName } = resolveCityCommunity(
+        classItem,
+        section,
+        semester
+      );
       const classInfo = {
         id: classItem.id,
         title: classItem.title || "",
         section: section.title || "",
+        cityName,
+        communityName,
         location: classItem.location || "",
         attendanceDates: new Set(),
+        classDates: new Set(),
       };
 
       // Collect dates with attendance
       if (classItem.attendance && Array.isArray(classItem.attendance)) {
         classItem.attendance.forEach((record) => {
           if (record.present === true && record.date) {
-            allDates.add(record.date);
-            classInfo.attendanceDates.add(record.date);
+            const inRange = record.date <= rangeEnd && (!rangeStart || record.date >= rangeStart);
+            if (inRange) {
+              allDates.add(record.date);
+              classInfo.attendanceDates.add(record.date);
+            }
           }
         });
       }
 
       // Also add scheduled dates
-      const classDates = generateClassDates(classItem);
-      classDates.forEach((date) => allDates.add(date));
+      const classDates = getClassDatesInRange(classItem, dateRange);
+      classDates.forEach((date) => {
+        allDates.add(date);
+        classInfo.classDates.add(date);
+      });
 
       classesInfo.push(classInfo);
     });
@@ -638,6 +722,7 @@ export const generateCapacityReportCSV = (semester) => {
 
     section.classes.forEach((classItem) => {
       if (classItem.visibility === false) return;
+      if (!shouldIncludeClass(classItem, dateRange)) return;
 
       // Skip if no attendance data
       if (!classItem.attendance || !Array.isArray(classItem.attendance)) return;
@@ -648,6 +733,8 @@ export const generateCapacityReportCSV = (semester) => {
         if (record.present !== true) return;
 
         const date = record.date;
+        const inRange = date <= rangeEnd && (!rangeStart || date >= rangeStart);
+        if (!inRange) return;
 
         if (!dateAttendanceCounts[date]) {
           dateAttendanceCounts[date] = {};
@@ -663,7 +750,7 @@ export const generateCapacityReportCSV = (semester) => {
   });
 
   // Create CSV headers (Class, Section, followed by dates)
-  const headers = ["Class", "Section"];
+  const headers = ["City", "Community", "Class", "Section"];
 
   // Add dates as column headers
   sortedDates.forEach((date) => {
@@ -683,6 +770,8 @@ export const generateCapacityReportCSV = (semester) => {
   // Add rows for each class
   classesInfo.forEach((classInfo) => {
     const row = [
+      `"${classInfo.cityName.replace(/"/g, '""')}"`,
+      `"${classInfo.communityName.replace(/"/g, '""')}"`,
       `"${classInfo.title.replace(/"/g, '""')}"`,
       `"${classInfo.section.replace(/"/g, '""')}"`,
     ];
@@ -693,11 +782,7 @@ export const generateCapacityReportCSV = (semester) => {
     // Add attendance count for each date
     sortedDates.forEach((date) => {
       // Check if this class is scheduled for this date
-      const isClassDay = generateClassDates(
-        semester.sections
-          .flatMap((s) => s.classes)
-          .find((c) => c.id === classInfo.id) || {},
-      ).includes(date);
+      const isClassDay = classInfo.classDates.has(date);
 
       // If class is scheduled that day, show the count (even if 0)
       // If class is not scheduled that day, show "-"
@@ -718,7 +803,7 @@ export const generateCapacityReportCSV = (semester) => {
   });
 
   // Add a summary row with totals by date
-  const totalRow = ["TOTAL", ""];
+  const totalRow = ["TOTAL", "", "", ""];
   let grandTotal = 0;
 
   // Calculate total for each date
