@@ -10,6 +10,8 @@ import {
   useTheme,
   Tabs,
   Tab,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 import { Assignment, Lock, LockOpen } from "@mui/icons-material";
 import { useCommunities } from "@/hooks/use-communities";
@@ -56,6 +58,9 @@ const CommunitySelectionPage = ({ params }) => {
   const [activeTab, setActiveTab] = useState(0);
 
   const [toggleOnCounter, setToggleOnCounter] = useState(0);
+  const [showPriorYears, setShowPriorYears] = useState(false);
+
+  const currentYear = moment().year();
 
   const toggleUnassignedProjects = () => {
     setToggleOnCounter((prev) => prev + 1);
@@ -488,13 +493,41 @@ const CommunitySelectionPage = ({ params }) => {
                 >
                   {daysOfService.length > 0 ? (
                     <>
-                      <Typography
-                        variant="subtitle1"
-                        sx={{ width: "100%", textAlign: "center", mb: 1 }}
+                      <Box
+                        sx={{
+                          width: "100%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 2,
+                          mb: 1,
+                          flexWrap: "wrap",
+                        }}
                       >
-                        Jump to a specific Day of Service:
-                      </Typography>
+                        <Typography variant="subtitle1" sx={{ textAlign: "center" }}>
+                          Jump to a specific Day of Service:
+                        </Typography>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={showPriorYears}
+                              onChange={(e) => setShowPriorYears(e.target.checked)}
+                              size="small"
+                            />
+                          }
+                          label={
+                            <Typography variant="caption">
+                              Show prior years
+                            </Typography>
+                          }
+                        />
+                      </Box>
                       {daysOfService
+                        .filter((day) =>
+                          showPriorYears
+                            ? true
+                            : moment(day.end_date).year() >= currentYear
+                        )
                         .sort((a, b) => {
                           const dateA = moment(b.end_date);
                           const dateB = moment(a.end_date);
@@ -513,10 +546,7 @@ const CommunitySelectionPage = ({ params }) => {
                               minWidth: "auto",
                             }}
                           >
-                            {
-                              // Format the date
-                              moment(day.end_date).format("MMM DD")
-                            }
+                            {moment(day.end_date).format("MMM DD, YYYY")}
                           </Button>
                         ))}
                     </>
@@ -553,6 +583,11 @@ const CommunitySelectionPage = ({ params }) => {
                   </Typography>
                 )}
                 {daysOfService
+                  .filter((day) =>
+                    showPriorYears
+                      ? true
+                      : moment(day.end_date).year() >= currentYear
+                  )
                   .sort((a, b) => new Date(a.end_date) - new Date(b.end_date))
                   .map((day, index) => (
                     <Box key={day.id} id={`day-of-service-${day.id}`}>
