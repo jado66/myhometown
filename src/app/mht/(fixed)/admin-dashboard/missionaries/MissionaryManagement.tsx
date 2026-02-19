@@ -804,6 +804,46 @@ export default function MissionaryManagement() {
     error: hoursError,
   } = useMissionaryHours();
 
+  // Pre-index hours by missionary_id so lookups are O(1)
+  const hoursMap = useMemo(() => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const defaultData = { totalHours: 0, currentMonthHours: 0, hasEntries: false, entryCount: 0 };
+
+    const map = new Map<string, typeof defaultData>();
+
+    for (const h of (hours || [])) {
+      const id = h.missionary_id;
+      if (!id) continue;
+
+      let entry = map.get(id);
+      if (!entry) {
+        entry = { totalHours: 0, currentMonthHours: 0, hasEntries: false, entryCount: 0 };
+        map.set(id, entry);
+      }
+
+      const hoursValue = h.total_hours || 0;
+      entry.totalHours += hoursValue;
+      entry.entryCount += 1;
+      entry.hasEntries = true;
+
+      if (h.period_start_date) {
+        const periodStart = new Date(h.period_start_date + "T00:00:00.000Z");
+        if (
+          periodStart.getUTCFullYear() === currentYear &&
+          periodStart.getUTCMonth() === currentMonth
+        ) {
+          entry.currentMonthHours += hoursValue;
+        }
+      }
+    }
+
+    return map;
+  }, [hours]);
+
+  const defaultHoursData = useMemo(() => ({ totalHours: 0, currentMonthHours: 0, hasEntries: false, entryCount: 0 }), []);
+
   // Fetch volunteer signups for badge count
   const { signups: volunteerSignups } = useVolunteerSignups(null, "", user);
   const uncontactedVolunteersCount = useMemo(() => {
@@ -1377,7 +1417,7 @@ export default function MissionaryManagement() {
                         missionary={missionary}
                         cities={cities}
                         communities={communities}
-                        hours={hours}
+                        hoursData={hoursMap.get(missionary.id) || defaultHoursData}
                         onEdit={handleOpenDialog}
                         onDelete={handleDeleteMissionary}
                         onProfilePictureClick={handleProfilePictureClick}
