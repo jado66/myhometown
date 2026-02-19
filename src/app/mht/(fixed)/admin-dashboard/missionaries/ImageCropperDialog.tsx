@@ -50,7 +50,8 @@ const ImageCropperDialog: React.FC<ImageCropperDialogProps> = ({
       const { blob, dataUrl } = await getCroppedImg(
         imageSrc,
         croppedAreaPixels,
-        0 // rotation disabled
+        0, // rotation disabled
+        512 // max output size in pixels — auto-shrinks large photos
       );
 
       if (blob) {

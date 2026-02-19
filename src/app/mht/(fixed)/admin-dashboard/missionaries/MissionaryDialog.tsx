@@ -569,6 +569,8 @@ const MissionaryDialog: React.FC<MissionaryDialogProps> = ({
   };
 
   // Handle file selection for cropping
+  // No file-size rejection — the cropper automatically resizes & compresses
+  // output to 512×512 WebP so even huge phone photos become tiny.
   const handleFileSelectForCrop = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {

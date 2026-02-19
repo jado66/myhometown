@@ -13,7 +13,7 @@ const getReleaseDate = (missionary: any) => {
     year: "numeric",
   });
 };
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -99,57 +99,65 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
     if (!m.zip_code) missing.push("Zip Code");
     return missing;
   };
-  // Calculate hours for a specific missionary
-  const getHoursData = (missionaryId: string) => {
-    console.log("List - Hours data:", hours); // Debug log
-    console.log("List - Looking for missionary ID:", missionaryId); // Debug log
-
-    const missionaryHours = hours.filter((h) => {
-      console.log("List - Comparing:", h.missionary_id, "with", missionaryId); // Debug log
-      return h.missionary_id === missionaryId;
-    });
-
-    console.log("List - Filtered hours for missionary:", missionaryHours); // Debug log
-
-    // Calculate total hours
-    const totalHours = missionaryHours.reduce((sum, h) => {
-      const hoursValue = h.total_hours || 0;
-      return sum + hoursValue;
-    }, 0);
-
-    // Calculate current month hours
+  // Pre-index hours by missionary_id so lookups are O(1) instead of O(n)
+  const hoursMap = useMemo(() => {
     const now = new Date();
     const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth(); // 0-based (0 = January, 9 = October)
+    const currentMonth = now.getMonth();
 
-    const currentMonthHours = missionaryHours
-      .filter((h) => {
-        if (!h.period_start_date) return false;
-        // Parse the date string (format: "2025-10-01")
+    const map = new Map<
+      string,
+      {
+        totalHours: number;
+        currentMonthHours: number;
+        hasEntries: boolean;
+        entryCount: number;
+      }
+    >();
+
+    for (const h of hours) {
+      const id = h.missionary_id;
+      if (!id) continue;
+
+      let entry = map.get(id);
+      if (!entry) {
+        entry = {
+          totalHours: 0,
+          currentMonthHours: 0,
+          hasEntries: false,
+          entryCount: 0,
+        };
+        map.set(id, entry);
+      }
+
+      const hoursValue = h.total_hours || 0;
+      entry.totalHours += hoursValue;
+      entry.entryCount += 1;
+      entry.hasEntries = true;
+
+      if (h.period_start_date) {
         const periodStart = new Date(h.period_start_date + "T00:00:00.000Z");
-        const periodYear = periodStart.getUTCFullYear();
-        const periodMonth = periodStart.getUTCMonth();
-        return periodYear === currentYear && periodMonth === currentMonth;
-      })
-      .reduce((sum, h) => sum + (h.total_hours || 0), 0);
+        if (
+          periodStart.getUTCFullYear() === currentYear &&
+          periodStart.getUTCMonth() === currentMonth
+        ) {
+          entry.currentMonthHours += hoursValue;
+        }
+      }
+    }
 
-    const hasEntries = missionaryHours.length > 0;
+    return map;
+  }, [hours]);
 
-    console.log(
-      "List - Total hours:",
-      totalHours,
-      "Current month:",
-      currentMonthHours,
-      "Has entries:",
-      hasEntries
-    ); // Debug log
+  const defaultHoursData = {
+    totalHours: 0,
+    currentMonthHours: 0,
+    hasEntries: false,
+    entryCount: 0,
+  };
 
-    return {
-      totalHours,
-      currentMonthHours,
-      hasEntries,
-      entryCount: missionaryHours.length,
-    };
+  const getHoursData = (missionaryId: string) => {
+    return hoursMap.get(missionaryId) || defaultHoursData;
   };
 
   // Calculate days left using end_date (for upcoming view)
@@ -165,13 +173,13 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
   const [selectedMissionary, setSelectedMissionary] = React.useState<any>(null);
   const [detailsOpen, setDetailsOpen] = React.useState(false);
   const [noteAnchorEl, setNoteAnchorEl] = React.useState<null | HTMLElement>(
-    null
+    null,
   );
   const [noteForMissionary, setNoteForMissionary] = React.useState<any>(null);
 
   const handleMenuOpen = (
     event: React.MouseEvent<HTMLElement>,
-    missionary: any
+    missionary: any,
   ) => {
     setAnchorEl(event.currentTarget);
     setSelectedMissionary(missionary);
@@ -184,7 +192,7 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
 
   const handleNoteOpen = (
     event: React.MouseEvent<HTMLElement>,
-    missionary: any
+    missionary: any,
   ) => {
     setNoteAnchorEl(event.currentTarget);
     setNoteForMissionary(missionary);
@@ -212,7 +220,7 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
       // Otherwise, look up from cities array
       if (!Array.isArray(cities)) return "";
       const city = cities.find(
-        (c) => c._id === missionary.city_id || c.id === missionary.city_id
+        (c) => c._id === missionary.city_id || c.id === missionary.city_id,
       );
       return city ? `${city.name}, ${city.state}` : "";
     } else if (missionary.assignment_level === "community") {
@@ -237,7 +245,7 @@ export const MissionaryListView: React.FC<MissionaryListViewProps> = ({
       if (!Array.isArray(communities)) return "";
       const community = communities.find(
         (c) =>
-          c._id === missionary.community_id || c.id === missionary.community_id
+          c._id === missionary.community_id || c.id === missionary.community_id,
       );
       return community ? `${community.name} (${community.city})` : "";
     }

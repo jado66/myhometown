@@ -11,7 +11,8 @@ export const createImage = (url: string): Promise<HTMLImageElement> =>
 export const getCroppedImg = async (
   imageSrc: string,
   pixelCrop: { x: number; y: number; width: number; height: number },
-  rotation = 0
+  rotation = 0,
+  maxSize?: number
 ): Promise<{ blob: Blob | null; dataUrl: string }> => {
   const image = await createImage(imageSrc);
   const canvas = document.createElement("canvas");
@@ -69,12 +70,31 @@ export const getCroppedImg = async (
     pixelCrop.height
   );
 
-  // set canvas to the size of the cropped image
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
+  // set canvas to the size of the cropped image, scaling down if maxSize is set
+  let outWidth = pixelCrop.width;
+  let outHeight = pixelCrop.height;
 
-  // draw the cropped image onto the new canvas
-  ctx.putImageData(data, 0, 0);
+  if (maxSize && (outWidth > maxSize || outHeight > maxSize)) {
+    const scale = maxSize / Math.max(outWidth, outHeight);
+    outWidth = Math.round(outWidth * scale);
+    outHeight = Math.round(outHeight * scale);
+  }
+
+  canvas.width = outWidth;
+  canvas.height = outHeight;
+
+  // draw the cropped image onto the new canvas (scaled if needed)
+  if (outWidth !== pixelCrop.width || outHeight !== pixelCrop.height) {
+    // Need a temp canvas to hold the cropped pixel data at original size
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = pixelCrop.width;
+    tempCanvas.height = pixelCrop.height;
+    const tempCtx = tempCanvas.getContext("2d")!;
+    tempCtx.putImageData(data, 0, 0);
+    ctx.drawImage(tempCanvas, 0, 0, outWidth, outHeight);
+  } else {
+    ctx.putImageData(data, 0, 0);
+  }
 
   return new Promise((resolve) => {
     canvas.toBlob(

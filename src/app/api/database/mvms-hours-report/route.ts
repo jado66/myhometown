@@ -41,7 +41,10 @@ export async function POST(request: NextRequest) {
         )
         .in("id", uuidIds);
       if (error) {
-        console.error("[mvms-hours-report] Error fetching communities by id:", error);
+        console.error(
+          "[mvms-hours-report] Error fetching communities by id:",
+          error,
+        );
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
       if (data) communities = communities.concat(data);
@@ -55,7 +58,10 @@ export async function POST(request: NextRequest) {
         )
         .in("mongo_id", mongoIds);
       if (error) {
-        console.error("[mvms-hours-report] Error fetching communities by mongo_id:", error);
+        console.error(
+          "[mvms-hours-report] Error fetching communities by mongo_id:",
+          error,
+        );
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
       if (data) communities = communities.concat(data);
@@ -87,7 +93,10 @@ export async function POST(request: NextRequest) {
         .range(from, from + pageSize - 1);
 
       if (error) {
-        console.error("[mvms-hours-report] Error fetching missionaries:", error);
+        console.error(
+          "[mvms-hours-report] Error fetching missionaries:",
+          error,
+        );
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
 
@@ -116,7 +125,9 @@ export async function POST(request: NextRequest) {
         while (hoursHasMore) {
           let query = supabase
             .from("missionary_hours")
-            .select("id, missionary_id, total_hours, period_start_date, entry_method")
+            .select(
+              "id, missionary_id, total_hours, period_start_date, entry_method",
+            )
             .in("missionary_id", idChunk)
             .range(hoursFrom, hoursFrom + pageSize - 1);
 

@@ -86,7 +86,7 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [detailsOpen, setDetailsOpen] = React.useState(false);
   const [noteAnchorEl, setNoteAnchorEl] = React.useState<null | HTMLElement>(
-    null
+    null,
   );
 
   // Calculate hours for this missionary
@@ -127,7 +127,7 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
       "Current month:",
       currentMonthHours,
       "Has entries:",
-      hasEntries
+      hasEntries,
     ); // Debug log
 
     return {
@@ -186,7 +186,7 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
       }
       // Otherwise, look up from cities array
       const city = cities.find(
-        (c) => c._id === missionary.city_id || c.id === missionary.city_id
+        (c) => c._id === missionary.city_id || c.id === missionary.city_id,
       );
       return city ? `${city.name}, ${city.state}` : "Unknown City";
     }
@@ -210,7 +210,7 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
       // Otherwise, look up from communities array
       const community = communities.find(
         (c) =>
-          c._id === missionary.community_id || c.id === missionary.community_id
+          c._id === missionary.community_id || c.id === missionary.community_id,
       );
       return community
         ? `${community.name} (${community.city})`
@@ -294,7 +294,7 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
             alignItems="flex-start"
             sx={{ mb: 2 }}
           >
-            <Avatar
+            {/* <Avatar
               src={missionary.profile_picture_url}
               alt={fullName}
               sx={{
@@ -328,7 +328,7 @@ export const MissionaryCard: React.FC<MissionaryCardProps> = ({
                   {initials}
                 </Typography>
               )}
-            </Avatar>
+            </Avatar> */}
 
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography variant="h6" component="h3" noWrap sx={{ mb: 0.5 }}>

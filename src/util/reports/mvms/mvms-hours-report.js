@@ -56,8 +56,10 @@ function computeRowStats(missionaries, hoursEntries, months, weeks) {
     missionaryIdsWithHours.has(m.id),
   ).length;
   const notLoggedCount = count - loggedCount;
-  const pctLogged = count > 0 ? ((loggedCount / count) * 100).toFixed(1) : "0.0";
-  const avgMonthly = count > 0 ? (totalHours / count / months).toFixed(1) : "0.0";
+  const pctLogged =
+    count > 0 ? ((loggedCount / count) * 100).toFixed(1) : "0.0";
+  const avgMonthly =
+    count > 0 ? (totalHours / count / months).toFixed(1) : "0.0";
   const avgWeekly = count > 0 ? (totalHours / count / weeks).toFixed(1) : "0.0";
 
   return {
@@ -113,7 +115,7 @@ export function generateMVMSHoursReportCSV({
     "Missionary & Volunteer Count",
     "Missionary & Volunteer Hours",
     "Missionary & Volunteers who logged hours",
-    "Missionary & Volunteers didn't log hours",
+    "Missionary & Volunteers who didn't log hours",
     "% of Missionary & Volunteers who logged hours",
     "AVG Monthly Hours",
     "AVG Weekly Hours",
@@ -146,7 +148,11 @@ export function generateMVMSHoursReportCSV({
     const cityName = c.cities?.name || "Unknown";
     const cityState = c.cities?.state || "Unknown";
     if (!citiesMap[cityId]) {
-      citiesMap[cityId] = { name: cityName, state: cityState, communityIds: [] };
+      citiesMap[cityId] = {
+        name: cityName,
+        state: cityState,
+        communityIds: [],
+      };
     }
     citiesMap[cityId].communityIds.push(c.id);
   });
@@ -202,10 +208,7 @@ export function generateMVMSHoursReportCSV({
     });
 
     // Accumulate for state
-    if (
-      cityInfo.state &&
-      cityInfo.state.toLowerCase().includes("utah")
-    ) {
+    if (cityInfo.state && cityInfo.state.toLowerCase().includes("utah")) {
       utahMissionaries = utahMissionaries.concat(cityMissionaries);
       utahHours = utahHours.concat(cityHoursEntries);
     }
@@ -219,7 +222,12 @@ export function generateMVMSHoursReportCSV({
 
   // City rows
   for (const city of cityRows) {
-    const cityStats = computeRowStats(city.missionaries, city.hours, months, weeks);
+    const cityStats = computeRowStats(
+      city.missionaries,
+      city.hours,
+      months,
+      weeks,
+    );
     rows.push(statsToRow(city.name, cityStats));
   }
 
@@ -228,7 +236,12 @@ export function generateMVMSHoursReportCSV({
 
   // Utah subtotal
   if (utahMissionaries.length > 0) {
-    const utahStats = computeRowStats(utahMissionaries, utahHours, months, weeks);
+    const utahStats = computeRowStats(
+      utahMissionaries,
+      utahHours,
+      months,
+      weeks,
+    );
     rows.push(statsToRow("Utah", utahStats));
     rows.push("");
   }

@@ -29,6 +29,7 @@ import {
   CheckBox,
   CheckBoxOutlineBlank,
   AccessTime,
+  Dashboard,
 } from "@mui/icons-material";
 import { useCommunities } from "@/hooks/use-communities";
 import { useClasses } from "@/hooks/use-classes";
@@ -41,6 +42,7 @@ import {
   generateStudentAttendanceReportCSV,
 } from "@/util/reports/classes/report-helper-functions";
 import { generateMVMSHoursReportCSV } from "@/util/reports/mvms/mvms-hours-report";
+import { generateOverviewReportCSV } from "@/util/reports/mvms/overview-report";
 
 // Mapping from new community IDs to old ones (same as in ClassPage)
 const newToOldCommunity = {
@@ -186,8 +188,11 @@ const AdminReportsPage = () => {
           throw new Error(errData.error || "Failed to fetch MVMS data");
         }
 
-        const { communities: commData, missionaries, hours } =
-          await response.json();
+        const {
+          communities: commData,
+          missionaries,
+          hours,
+        } = await response.json();
 
         const csvContent = generateMVMSHoursReportCSV({
           communities: commData,
@@ -198,6 +203,46 @@ const AdminReportsPage = () => {
 
         const today = new Date().toISOString().split("T")[0];
         downloadCSV(csvContent, `mvms_hours_report_${today}.csv`);
+        setGenerating(false);
+        return;
+      }
+
+      // MyHometown Overview Report uses its own dedicated data source
+      if (selectedReport === "overview") {
+        const response = await fetch("/api/database/overview-report", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            communityIds: selectedCommunities,
+            startDate: dateRange.startDate,
+            endDate: dateRange.endDate,
+          }),
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || "Failed to fetch overview data");
+        }
+
+        const {
+          communities: commData,
+          missionaries,
+          hours,
+          dosProjects,
+          classCounts,
+        } = await response.json();
+
+        const csvContent = generateOverviewReportCSV({
+          communities: commData,
+          missionaries,
+          hours,
+          dosProjects,
+          classCounts,
+          dateRange,
+        });
+
+        const today = new Date().toISOString().split("T")[0];
+        downloadCSV(csvContent, `myhometown_overview_report_${today}.csv`);
         setGenerating(false);
         return;
       }
@@ -652,6 +697,53 @@ const AdminReportsPage = () => {
                           >
                             Missionary & volunteer hours summary by community
                             and city, including logging rates and averages.
+                          </Typography>
+                        </Box>
+                      }
+                      sx={{ alignItems: "flex-start", m: 0 }}
+                    />
+                  </Paper>
+                </Grid>
+
+                {/* MyHometown Overview Report */}
+                <Grid item xs={12}>
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      p: 2,
+                      border: selectedReport === "overview" ? 2 : 1,
+                      borderColor:
+                        selectedReport === "overview"
+                          ? "primary.main"
+                          : "divider",
+                      cursor: "pointer",
+                      "&:hover": { borderColor: "primary.main", boxShadow: 1 },
+                    }}
+                    onClick={() => setSelectedReport("overview")}
+                  >
+                    <FormControlLabel
+                      value="overview"
+                      control={<Radio color="primary" />}
+                      label={
+                        <Box>
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <Dashboard color="primary" />
+                            <Typography
+                              variant="subtitle1"
+                              fontWeight="bold"
+                              color="primary"
+                            >
+                              MyHometown Overview Report
+                            </Typography>
+                          </Box>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mt: 0.5 }}
+                          >
+                            Comprehensive overview including service hours by
+                            category, CRC classes, DOS community stats, and
+                            total volunteer counts.
                           </Typography>
                         </Box>
                       }
