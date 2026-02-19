@@ -62,7 +62,10 @@ export async function POST(request: NextRequest) {
         )
         .in("id", uuidIds);
       if (error) {
-        console.error("[overview-report] Error fetching communities by id:", error);
+        console.error(
+          "[overview-report] Error fetching communities by id:",
+          error,
+        );
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
       if (data) communities = communities.concat(data);
@@ -76,7 +79,10 @@ export async function POST(request: NextRequest) {
         )
         .in("mongo_id", mongoIds);
       if (error) {
-        console.error("[overview-report] Error fetching communities by mongo_id:", error);
+        console.error(
+          "[overview-report] Error fetching communities by mongo_id:",
+          error,
+        );
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
       if (data) communities = communities.concat(data);
@@ -195,7 +201,10 @@ export async function POST(request: NextRequest) {
           const { data, error } = await query;
 
           if (error) {
-            console.error("[overview-report] Error fetching DOS projects:", error);
+            console.error(
+              "[overview-report] Error fetching DOS projects:",
+              error,
+            );
             return NextResponse.json({ error: error.message }, { status: 500 });
           }
 

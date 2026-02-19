@@ -12,7 +12,7 @@ export const getCroppedImg = async (
   imageSrc: string,
   pixelCrop: { x: number; y: number; width: number; height: number },
   rotation = 0,
-  maxSize?: number
+  maxSize?: number,
 ): Promise<{ blob: Blob | null; dataUrl: string }> => {
   const image = await createImage(imageSrc);
   const canvas = document.createElement("canvas");
@@ -67,7 +67,7 @@ export const getCroppedImg = async (
     pixelCrop.x + (rotatedWidth - sWidth) / 2, // Adjust for translation
     pixelCrop.y + (rotatedHeight - sHeight) / 2, // Adjust for translation
     pixelCrop.width,
-    pixelCrop.height
+    pixelCrop.height,
   );
 
   // set canvas to the size of the cropped image, scaling down if maxSize is set
@@ -102,7 +102,7 @@ export const getCroppedImg = async (
         resolve({ blob, dataUrl: canvas.toDataURL("image/webp") });
       },
       "image/webp",
-      0.8
+      0.8,
     ); // Convert to WebP with 80% quality
   });
 };

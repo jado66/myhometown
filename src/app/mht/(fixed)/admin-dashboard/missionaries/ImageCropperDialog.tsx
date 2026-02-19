@@ -40,7 +40,7 @@ const ImageCropperDialog: React.FC<ImageCropperDialogProps> = ({
     (croppedArea: any, croppedAreaPixels: any) => {
       setCroppedAreaPixels(croppedAreaPixels);
     },
-    []
+    [],
   );
 
   const handleSave = async () => {
@@ -51,7 +51,7 @@ const ImageCropperDialog: React.FC<ImageCropperDialogProps> = ({
         imageSrc,
         croppedAreaPixels,
         0, // rotation disabled
-        512 // max output size in pixels — auto-shrinks large photos
+        512, // max output size in pixels — auto-shrinks large photos
       );
 
       if (blob) {
