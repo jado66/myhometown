@@ -80,7 +80,12 @@ const IconText: React.FC<{
   </Box>
 );
 
-const defaultHoursData: HoursData = { totalHours: 0, currentMonthHours: 0, hasEntries: false, entryCount: 0 };
+const defaultHoursData: HoursData = {
+  totalHours: 0,
+  currentMonthHours: 0,
+  hasEntries: false,
+  entryCount: 0,
+};
 
 export const MissionaryCard: React.FC<MissionaryCardProps> = ({
   missionary,
