@@ -30,6 +30,7 @@ import {
   CheckBoxOutlineBlank,
   AccessTime,
   Dashboard,
+  VolunteerActivism,
 } from "@mui/icons-material";
 import { useCommunities } from "@/hooks/use-communities";
 import { useClasses } from "@/hooks/use-classes";
@@ -43,6 +44,7 @@ import {
 } from "@/util/reports/classes/report-helper-functions";
 import { generateMVMSHoursReportCSV } from "@/util/reports/mvms/mvms-hours-report";
 import { generateOverviewReportCSV } from "@/util/reports/mvms/overview-report";
+import { generateDOSReportCSV } from "@/util/reports/days-of-service/dos-global-report";
 
 // Mapping from new community IDs to old ones (same as in ClassPage)
 const newToOldCommunity = {
@@ -90,7 +92,8 @@ const AdminReportsPage = () => {
 
   // Group communities by city for better organization
   const communitiesByCity = React.useMemo(() => {
-    if (!communities || !Array.isArray(communities) || communities.length === 0) return {};
+    if (!communities || !Array.isArray(communities) || communities.length === 0)
+      return {};
 
     return communities.reduce((acc, community) => {
       const cityName = community.city || community.city_name || "Unknown";
@@ -171,6 +174,42 @@ const AdminReportsPage = () => {
     setError(null);
 
     try {
+      // Days of Service Report uses its own dedicated data source
+      if (selectedReport === "daysOfService") {
+        const response = await fetch("/api/database/dos-report", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            communityIds: selectedCommunities,
+            startDate: dateRange.startDate,
+            endDate: dateRange.endDate,
+          }),
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || "Failed to fetch Days of Service data");
+        }
+
+        const {
+          communities: commData,
+          daysOfService,
+          projects,
+        } = await response.json();
+
+        const csvContent = generateDOSReportCSV({
+          communities: commData,
+          daysOfService,
+          projects,
+          dateRange,
+        });
+
+        const today = new Date().toISOString().split("T")[0];
+        downloadCSV(csvContent, `days_of_service_report_${today}.csv`);
+        setGenerating(false);
+        return;
+      }
+
       // MVMS Hours Report uses its own dedicated data source
       if (selectedReport === "mvmsHours") {
         const response = await fetch("/api/database/mvms-hours-report", {
@@ -697,6 +736,54 @@ const AdminReportsPage = () => {
                           >
                             Missionary & volunteer hours summary by community
                             and city, including logging rates and averages.
+                          </Typography>
+                        </Box>
+                      }
+                      sx={{ alignItems: "flex-start", m: 0 }}
+                    />
+                  </Paper>
+                </Grid>
+
+                {/* Days of Service Report */}
+                <Grid item xs={12}>
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      p: 2,
+                      border: selectedReport === "daysOfService" ? 2 : 1,
+                      borderColor:
+                        selectedReport === "daysOfService"
+                          ? "primary.main"
+                          : "divider",
+                      cursor: "pointer",
+                      "&:hover": { borderColor: "primary.main", boxShadow: 1 },
+                    }}
+                    onClick={() => setSelectedReport("daysOfService")}
+                  >
+                    <FormControlLabel
+                      value="daysOfService"
+                      control={<Radio color="primary" />}
+                      label={
+                        <Box>
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <VolunteerActivism color="primary" />
+                            <Typography
+                              variant="subtitle1"
+                              fontWeight="bold"
+                              color="primary"
+                            >
+                              Days of Service Report
+                            </Typography>
+                          </Box>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mt: 0.5 }}
+                          >
+                            All Day of Service projects across selected
+                            communities, including partner organizations,
+                            resource couples, volunteer counts, and project
+                            details.
                           </Typography>
                         </Box>
                       }
