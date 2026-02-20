@@ -474,6 +474,7 @@ export const generateStudentAttendanceReportCSV = (semester, dateRange) => {
         // Add X for present, leave blank for absent
         if (student.attendance[date].present) {
           row.push('"✓"');
+          attendedCount++;
         } else {
           row.push("x");
         }

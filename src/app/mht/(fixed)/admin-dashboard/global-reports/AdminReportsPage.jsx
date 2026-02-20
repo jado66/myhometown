@@ -90,7 +90,7 @@ const AdminReportsPage = () => {
 
   // Group communities by city for better organization
   const communitiesByCity = React.useMemo(() => {
-    if (!communities || communities.length === 0) return {};
+    if (!communities || !Array.isArray(communities) || communities.length === 0) return {};
 
     return communities.reduce((acc, community) => {
       const cityName = community.city || community.city_name || "Unknown";
