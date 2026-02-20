@@ -12,6 +12,10 @@ import {
   Tab,
   Switch,
   FormControlLabel,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { Assignment, Lock, LockOpen } from "@mui/icons-material";
 import { useCommunities } from "@/hooks/use-communities";
@@ -43,7 +47,6 @@ const CommunitySelectionPage = ({ params }) => {
   const [daysOfService, setDaysOfService] = useState([]);
   const [showServiceDayDialog, setShowServiceDayDialog] = useState(false);
   const [selectedServiceDay, setSelectedServiceDay] = useState(null);
-  const [selectedDayId, setSelectedDayId] = useState(null);
   const [showStakeDialog, setShowStakeDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [stakeToDelete, setStakeToDelete] = useState(null);
@@ -59,8 +62,13 @@ const CommunitySelectionPage = ({ params }) => {
 
   const [toggleOnCounter, setToggleOnCounter] = useState(0);
   const [showPriorYears, setShowPriorYears] = useState(false);
+  const [selectedDayId, setSelectedDayId] = useState("");
 
   const currentYear = moment().year();
+
+  const filteredDaysOfService = showPriorYears
+    ? daysOfService
+    : daysOfService.filter((day) => moment(day.end_date).year() >= currentYear);
 
   const toggleUnassignedProjects = () => {
     setToggleOnCounter((prev) => prev + 1);
@@ -184,15 +192,15 @@ const CommunitySelectionPage = ({ params }) => {
 
       setDaysOfService((prevDays) =>
         prevDays.map((day) =>
-          day.id === daysOfServiceId ? { ...day, is_locked: isLocked } : day
-        )
+          day.id === daysOfServiceId ? { ...day, is_locked: isLocked } : day,
+        ),
       );
 
       toast.success("Day of Service has been locked. ");
     } catch (error) {
       console.error("Unexpected error in toggleLock:", error);
       toast.error(
-        error instanceof Error ? error.message : "Unknown error occurred"
+        error instanceof Error ? error.message : "Unknown error occurred",
       );
     }
   };
@@ -225,7 +233,7 @@ const CommunitySelectionPage = ({ params }) => {
       process.env.NEXT_PUBLIC_DOMAIN
     }/admin-dashboard/days-of-service/${day.short_id.replaceAll(
       "_",
-      "/"
+      "/",
     )}/stake/${stake.id}`;
 
     // alert(url);
@@ -318,7 +326,7 @@ const CommunitySelectionPage = ({ params }) => {
   const handleGenerateDayOfServiceReport = async (
     stakeId,
     date,
-    dayOfService
+    dayOfService,
   ) => {
     if (!dayOfService?.id) {
       toast.error("Day of Service ID not available");
@@ -419,22 +427,21 @@ const CommunitySelectionPage = ({ params }) => {
           textAlign: "center",
         }}
       >
-        Organization Summary Page
+        Days Of Service Management
       </Typography>
       <Box sx={{ position: "relative" }}>
         <Typography
-          variant="h6"
+          variant="h5"
           gutterBottom
           sx={{
             textTransform: "capitalize",
             mb: 2,
             textAlign: "center",
+            color: "primary.main",
           }}
         >
-          {community.city_name} - {community.name} Days of Service
+          {community.city_name} - {community.name}
         </Typography>
-
-        <Divider sx={{ mb: 2 }} />
 
         {!isSmallScreen && (
           <Box sx={{ position: "absolute", top: 0, right: 0, zIndex: 1 }}>
@@ -460,22 +467,76 @@ const CommunitySelectionPage = ({ params }) => {
         )}
 
         <Box sx={{ width: "100%", mt: 3 }}>
-          <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+            }}
+          >
             <Tabs
               value={activeTab}
               onChange={handleTabChange}
               aria-label="community sections"
-              variant="fullWidth"
               sx={{
+                borderBottom: "2px solid #e0e0e0",
+                flexGrow: 1,
+                overflow: "visible",
+                "& .MuiTabs-scroller": {
+                  overflow: "visible !important",
+                },
+                "& .MuiTabs-flexContainer": {
+                  overflow: "visible",
+                },
                 "& .MuiTab-root": {
-                  fontSize: { xs: "0.875rem", sm: "1rem" },
-                  fontWeight: "bold",
+                  fontSize: { xs: "0.9rem", sm: "1.1rem" },
+                  fontWeight: 600,
+                  minHeight: "64px",
+                  py: 2,
+                  overflow: "visible",
+                  textTransform: "none",
+                  borderTopLeftRadius: "8px",
+                  borderTopRightRadius: "8px",
+                  marginRight: "4px",
+                  backgroundColor: "#e8e8e8",
+                  color: "#666",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    backgroundColor: "#d8d8d8",
+                  },
+                  "&.Mui-selected": {
+                    backgroundColor: "#fff",
+                    color: "primary.main",
+                    fontWeight: 700,
+                    borderTop: "3px solid",
+                    borderTopColor: "primary.main",
+                    borderLeft: "1px solid #e0e0e0",
+                    borderRight: "1px solid #e0e0e0",
+                  },
+                },
+                "& .MuiTabs-indicator": {
+                  display: "none",
                 },
               }}
             >
-              <Tab label="Days of Service and Organizations" />
-              <Tab label="Days of Service Volunteers" />
+              <Tab label="Project Planning" />
+              <Tab label="Summary of Projects" />
+              <Tab label="Community Volunteer Detail" />
             </Tabs>
+            <Box sx={{ pb: 1, pl: 2, flexShrink: 0 }}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={showPriorYears}
+                    onChange={(e) => setShowPriorYears(e.target.checked)}
+                    size="small"
+                  />
+                }
+                label={
+                  <Typography variant="caption">Show prior years</Typography>
+                }
+              />
+            </Box>
           </Box>
 
           {/* Tab 1: Days of Service and Organizations */}
@@ -497,37 +558,20 @@ const CommunitySelectionPage = ({ params }) => {
                         sx={{
                           width: "100%",
                           display: "flex",
-                          alignItems: "center",
                           justifyContent: "center",
-                          gap: 2,
+                          alignItems: "center",
+                          mt: 2,
                           mb: 1,
-                          flexWrap: "wrap",
                         }}
                       >
-                        <Typography variant="subtitle1" sx={{ textAlign: "center" }}>
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ textAlign: "center" }}
+                        >
                           Jump to a specific Day of Service:
                         </Typography>
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={showPriorYears}
-                              onChange={(e) => setShowPriorYears(e.target.checked)}
-                              size="small"
-                            />
-                          }
-                          label={
-                            <Typography variant="caption">
-                              Show prior years
-                            </Typography>
-                          }
-                        />
                       </Box>
-                      {daysOfService
-                        .filter((day) =>
-                          showPriorYears
-                            ? true
-                            : moment(day.end_date).year() >= currentYear
-                        )
+                      {filteredDaysOfService
                         .sort((a, b) => {
                           const dateA = moment(b.end_date);
                           const dateB = moment(a.end_date);
@@ -582,12 +626,7 @@ const CommunitySelectionPage = ({ params }) => {
                     new Day of Service to get started.
                   </Typography>
                 )}
-                {daysOfService
-                  .filter((day) =>
-                    showPriorYears
-                      ? true
-                      : moment(day.end_date).year() >= currentYear
-                  )
+                {filteredDaysOfService
                   .sort((a, b) => new Date(a.end_date) - new Date(b.end_date))
                   .map((day, index) => (
                     <Box key={day.id} id={`day-of-service-${day.id}`}>
@@ -625,16 +664,31 @@ const CommunitySelectionPage = ({ params }) => {
             )}
           </Box>
 
-          {/* Tab 2: Days of Service Volunteers */}
+          {/* Tab 2: Summary of Projects */}
           <Box role="tabpanel" hidden={activeTab !== 1}>
             {activeTab === 1 && (
-              <>
-                <VolunteerSignups
-                  params={params}
-                  daysOfService={daysOfService}
-                  generateCommunityReport={generateCommunityReport}
-                />
-              </>
+              <VolunteerSignups
+                params={params}
+                cityName={community.city_name}
+                daysOfService={filteredDaysOfService}
+                generateCommunityReport={generateCommunityReport}
+                view="summary"
+                selectedDayId={selectedDayId || null}
+              />
+            )}
+          </Box>
+
+          {/* Tab 3: Volunteer Details */}
+          <Box role="tabpanel" hidden={activeTab !== 2}>
+            {activeTab === 2 && (
+              <VolunteerSignups
+                params={params}
+                cityName={community.city_name}
+                daysOfService={filteredDaysOfService}
+                generateCommunityReport={generateCommunityReport}
+                view="volunteers"
+                selectedDayId={selectedDayId || null}
+              />
             )}
           </Box>
         </Box>

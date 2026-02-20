@@ -8,8 +8,6 @@ import {
   Box,
   Paper,
   Typography,
-  Tabs,
-  Tab,
   Divider,
   Table,
   TableContainer,
@@ -19,7 +17,7 @@ import {
   TableRow,
   Chip,
 } from "@mui/material";
-import { EventAvailable, People, Warning } from "@mui/icons-material";
+import { People, Warning } from "@mui/icons-material";
 
 // Define types based on the actual data structure
 interface Project {
@@ -87,15 +85,9 @@ export default function VolunteerNeededChart({
   daysOfService,
   responses,
 }: VolunteerNeedsTableProps) {
-  const [currentDayTab, setCurrentDayTab] = useState(0);
   const [sortType, setSortType] = useState<"alphabetical" | "percentage">(
     "alphabetical"
   );
-
-  // Handle tab change
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setCurrentDayTab(newValue);
-  };
 
   // Handle sort change
   const handleSortChange = (event: React.ChangeEvent<{ value: unknown }>) => {
@@ -111,16 +103,19 @@ export default function VolunteerNeededChart({
         day.name ||
         `Service Day (${new Date(day.end_date).toLocaleDateString()})`,
       date: day.end_date,
-      dateFormatted: new Date(day.end_date).toLocaleDateString(),
+      dateFormatted: new Date(day.end_date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      }),
       projects: [] as ProcessedProject[],
     }));
 
     // Assign projects to their respective days of service
-    projects.forEach((project) => {
+    projects.forEach((project: any) => {
       const dayToUse =
-        formattedDays.find(
-          (day) => day.id === "297799fc-7f7d-4ac7-89f0-055bf6190d12"
-        ) || formattedDays[0];
+        formattedDays.find((day) => day.id === project.dayOfServiceId) ||
+        formattedDays[0];
 
       if (dayToUse) {
         // Count volunteers that have this project's ID in their whoAreYou.projectId
@@ -165,12 +160,12 @@ export default function VolunteerNeededChart({
     return formattedDays;
   }, [projects, daysOfService, responses]);
 
-  // Prepare data for the current day's table
+  // Prepare data for the current day's table (always shows first/only day)
   const currentDayData = useMemo(() => {
-    if (!processedData[currentDayTab] || !processedData[currentDayTab].projects)
+    if (!processedData[0] || !processedData[0].projects)
       return [];
 
-    const projects = [...processedData[currentDayTab].projects];
+    const projects = [...processedData[0].projects];
     if (sortType === "alphabetical") {
       projects.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortType === "percentage") {
@@ -186,18 +181,15 @@ export default function VolunteerNeededChart({
       });
     }
     return projects;
-  }, [processedData, currentDayTab, sortType]);
+  }, [processedData, sortType]);
 
   // Calculate summary statistics for the current day
   const currentDaySummary = useMemo(() => {
-    if (
-      !processedData[currentDayTab] ||
-      !processedData[currentDayTab].projects
-    ) {
+    if (!processedData[0] || !processedData[0].projects) {
       return { totalNeeded: 0, totalSignedUp: 0, projectsNeedingVolunteers: 0 };
     }
 
-    const projects = processedData[currentDayTab].projects;
+    const projects = processedData[0].projects;
 
     // For projects with volunteerCount of 0, assume 10 are needed
     const totalNeeded = projects.reduce(
@@ -213,7 +205,7 @@ export default function VolunteerNeededChart({
     ).length;
 
     return { totalNeeded, totalSignedUp, projectsNeedingVolunteers };
-  }, [processedData, currentDayTab]);
+  }, [processedData]);
 
   // If no data is available
   if (!daysOfService.length || !projects.length) {
@@ -226,30 +218,6 @@ export default function VolunteerNeededChart({
 
   return (
     <>
-      {/* Day of Service Tabs */}
-      <Paper sx={{ mb: 2 }}>
-        <Tabs
-          value={currentDayTab}
-          onChange={handleTabChange}
-          variant="scrollable"
-          scrollButtons="auto"
-          sx={{ borderBottom: 1, borderColor: "divider" }}
-        >
-          {processedData.map((day, index) => (
-            <Tab
-              key={day.id || index}
-              label={
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <EventAvailable fontSize="small" sx={{ mr: 1 }} />
-                  {day.name || day.dateFormatted}
-                </Box>
-              }
-              value={index}
-            />
-          ))}
-        </Tabs>
-      </Paper>
-
       {/* Sorting Filter */}
       <Box sx={{ mb: 2, minWidth: 200 }}>
         <FormControl fullWidth size="small">

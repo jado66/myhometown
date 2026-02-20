@@ -5,9 +5,6 @@ import {
   Typography,
   Box,
   Button,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   TableContainer,
   Table,
   TableHead,
@@ -16,17 +13,11 @@ import {
   TableBody,
   Paper,
 } from "@mui/material";
-import {
-  Assignment,
-  Warning,
-  ExpandMore as ExpandMoreIcon,
-} from "@mui/icons-material";
+import { Assignment, Warning } from "@mui/icons-material";
 import ServiceDayHeader from "./ServiceDayHeader";
 import TightedCell from "./TightedCell";
 
 const ProjectsSummarySection = ({
-  expanded,
-  onChange,
   projectSummary,
   generateCommunityReport,
 }) => {
@@ -47,15 +38,11 @@ const ProjectsSummarySection = ({
   });
 
   return (
-    <Accordion expanded={expanded} onChange={onChange} sx={{ mb: 2 }}>
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon />}
-        aria-controls="projects-summary-content"
-        id="projects-summary-header"
-      >
-        <Typography variant="h6">Days Of Service Summary</Typography>
-      </AccordionSummary>
-      <AccordionDetails>
+    <Box sx={{ mb: 2 }}>
+      <Typography variant="h6" sx={{ mb: 2 }}>
+        Days Of Service Summary
+      </Typography>
+      <Box>
         <Button
           variant="outlined"
           color="primary"
@@ -75,7 +62,7 @@ const ProjectsSummarySection = ({
             // Calculate total volunteer hours for this date
             const dateTotalHours = projectsOnDate.reduce(
               (total, project) => total + project.volunteerHours,
-              0
+              0,
             );
 
             // Group the projects on this date by stake
@@ -101,7 +88,7 @@ const ProjectsSummarySection = ({
                     // Calculate total volunteer hours for this stake on this date
                     const stakeTotalHours = projects.reduce(
                       (total, project) => total + project.volunteerHours,
-                      0
+                      0,
                     );
 
                     return (
@@ -123,24 +110,14 @@ const ProjectsSummarySection = ({
                         <ProjectsTable projects={projects} />
                       </Box>
                     );
-                  }
+                  },
                 )}
               </Box>
             );
           })
         )}
-      </AccordionDetails>
-      {/* Close Accordion Button */}
-      <Box sx={{ display: "flex", justifyContent: "flex-end", my: 3, mr: 3 }}>
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={() => onChange(false)}
-        >
-          Close
-        </Button>
       </Box>
-    </Accordion>
+    </Box>
   );
 };
 

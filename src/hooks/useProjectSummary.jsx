@@ -76,6 +76,7 @@ export const useProjectSummary = (daysOfService) => {
                       duration: project.actual_project_duration || 0,
                       volunteerHours: volunteerHours,
                       status: project.status || "Pending",
+                      dayOfServiceId: dayOfService.id || "unknown",
                     };
                   });
 

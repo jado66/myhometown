@@ -1,13 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Container,
   CircularProgress,
   Typography,
   Box,
   Paper,
+  Divider,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
+import moment from "moment";
 
 // Custom hooks
 import { useCommunityData } from "@/hooks/useCommunityData";
@@ -48,16 +54,12 @@ const DaysOfServicePage = ({
   params,
   daysOfService,
   generateCommunityReport,
+  cityName,
+  view = "summary",
+  selectedDayId = null,
 }) => {
   const { communityId } = params;
-
-  // Accordion state
-  const [volunteerAccordionOpen, setVolunteerAccordionOpen] = useState(false);
-  const [volunteersNeededAccordionOpen, setVolunteersNeededAccordionOpen] =
-    useState(false);
-  const [projectsAccordionOpen, setProjectsAccordionOpen] = useState(false);
-  const [organizationAccordionOpen, setOrganizationAccordionOpen] =
-    useState(false);
+  const [localDayId, setLocalDayId] = useState("");
 
   // Custom hooks
   const {
@@ -90,39 +92,27 @@ const DaysOfServicePage = ({
     handleConfirmDelete,
   } = useVolunteerResponses(community?.volunteerSignUpId);
 
-  // Load responses when accordion is opened
+  // Load responses when community is ready
   useEffect(() => {
-    if (
-      (volunteerAccordionOpen || volunteersNeededAccordionOpen) &&
-      !responsesLoaded &&
-      community?.volunteerSignUpId
-    ) {
+    if (!responsesLoaded && community?.volunteerSignUpId) {
       loadResponses();
     }
-  }, [
-    volunteerAccordionOpen,
-    volunteersNeededAccordionOpen,
-    responsesLoaded,
-    community,
-    loadResponses,
-  ]);
+  }, [responsesLoaded, community, loadResponses]);
 
-  // Accordion handlers
-  const handleVolunteerAccordionChange = (event, expanded) => {
-    setVolunteerAccordionOpen(expanded);
-  };
+  // Filter project summary and responses by selected day
+  const filteredProjectSummary = localDayId
+    ? projectSummary.filter((p) => p.dayOfServiceId === localDayId)
+    : projectSummary;
 
-  const handleVolunteersNeededAccordionChange = (event, expanded) => {
-    setVolunteersNeededAccordionOpen(expanded);
-  };
+  const filteredDaysOfService = localDayId
+    ? (daysOfService || []).filter((d) => d.id === localDayId)
+    : daysOfService || [];
 
-  const handleProjectsAccordionChange = (event, expanded) => {
-    setProjectsAccordionOpen(expanded);
-  };
-
-  const handleOrganizationAccordionChange = (event, expanded) => {
-    setOrganizationAccordionOpen(expanded);
-  };
+  const filteredResponses = localDayId
+    ? (responses || []).filter(
+        (r) => (r.response_data || r).dayOfService === localDayId,
+      )
+    : responses;
 
   // Loading state
   if (communityLoading || projectsLoading) {
@@ -144,57 +134,93 @@ const DaysOfServicePage = ({
     <Container maxWidth="2xl">
       {community?.volunteerSignUpId && formConfig ? (
         <>
-          <Paper elevation={1} sx={{ p: 3, mb: 4 }}>
+          <Paper elevation={0} sx={{ my: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom>
-              {community.name} Days Of Service
+              {cityName} {community.name} Days Of Service
             </Typography>
             <Typography variant="body1" color="textSecondary">
               Projects and volunteer participation overview
             </Typography>
             <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
               Total Community Volunteer Hours:{" "}
-              <strong>{totalVolunteerHours}</strong>
+              <strong>
+                {Number(totalVolunteerHours).toLocaleString(undefined, {
+                  maximumFractionDigits: 0,
+                })}
+              </strong>
             </Typography>
           </Paper>
 
-          {/* Projects Summary Section */}
-          <ProjectsSummarySection
-            expanded={projectsAccordionOpen}
-            onChange={handleProjectsAccordionChange}
-            projectSummary={projectSummary}
-            generateCommunityReport={generateCommunityReport}
-          />
+          <Divider sx={{ mb: 4 }} />
 
-          {/* Organization Summary Section */}
-          {/* <OrganizationSummarySection
-            expanded={organizationAccordionOpen}
-            onChange={handleOrganizationAccordionChange}
-            projectSummary={projectSummary}
-            generateCommunityReport={generateCommunityReport}
-          /> */}
+          {/* Projects Summary Section */}
+          {view === "summary" && (
+            <ProjectsSummarySection
+              projectSummary={filteredProjectSummary}
+              generateCommunityReport={generateCommunityReport}
+            />
+          )}
 
           {/* Volunteer Signups Section */}
-          <VolunteerSignupsSection
-            expanded={volunteerAccordionOpen}
-            onChange={handleVolunteerAccordionChange}
-            formId={community.volunteerSignUpId}
-            responses={responses}
-            formConfig={formConfig}
-            onViewResponse={handleViewResponse}
-            onDeleteResponse={handleDeleteClick}
-            daysOfService={daysOfService}
-            projectsMap={projectsMap}
-            isLoading={volunteerAccordionOpen && !responsesLoaded}
-          />
+          {view === "volunteers" && (
+            <>
+              {/* Day of Service Picker */}
+              {(daysOfService || []).length > 1 && (
+                <>
+                  <Typography
+                    variant="subtitle2"
+                    color="text.secondary"
+                    sx={{ mb: 1 }}
+                  >
+                    Filter by Day of Service
+                  </Typography>
+                  <FormControl size="small" sx={{ minWidth: 280, mb: 2 }}>
+                    <InputLabel id="volunteers-dos-label">
+                      Day of Service
+                    </InputLabel>
+                    <Select
+                      labelId="volunteers-dos-label"
+                      value={localDayId}
+                      label="Day of Service"
+                      onChange={(e) => setLocalDayId(e.target.value)}
+                    >
+                      {(daysOfService || [])
+                        .slice()
+                        .sort(
+                          (a, b) => new Date(a.end_date) - new Date(b.end_date),
+                        )
+                        .map((day) => (
+                          <MenuItem key={day.id} value={day.id}>
+                            {moment(day.end_date).format("MMM DD, YYYY")}
+                            {day.name ? ` — ${day.name}` : ""}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
+                  <Divider sx={{ mb: 3 }} />
+                </>
+              )}
 
-          {/* Volunteers Needed Chart Section */}
-          <VolunteersNeededSection
-            expanded={volunteersNeededAccordionOpen}
-            onChange={handleVolunteersNeededAccordionChange}
-            projects={projectSummary}
-            daysOfService={daysOfService}
-            responses={responses}
-          />
+              <VolunteersNeededSection
+                projects={filteredProjectSummary}
+                daysOfService={filteredDaysOfService}
+                responses={filteredResponses || []}
+              />
+
+              <Divider sx={{ my: 4 }} />
+
+              <VolunteerSignupsSection
+                formId={community.volunteerSignUpId}
+                responses={filteredResponses}
+                formConfig={formConfig}
+                onViewResponse={handleViewResponse}
+                onDeleteResponse={handleDeleteClick}
+                daysOfService={daysOfService}
+                projectsMap={projectsMap}
+                isLoading={!responsesLoaded}
+              />
+            </>
+          )}
 
           {/* Response Details Dialog */}
           <ResponseDetailsDialog

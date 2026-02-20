@@ -15,8 +15,6 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Tabs,
-  Tab,
   Button,
 } from "@mui/material";
 import {
@@ -26,13 +24,10 @@ import {
   People,
   Delete as DeleteIcon,
   FilterList,
-  ImportExport,
   ExpandMore as ExpandMoreIcon,
-  Event as EventIcon,
   Assignment,
 } from "@mui/icons-material";
 import moment from "moment";
-import JsonViewer from "./util/debug/DebugOutput";
 
 /**
  * Enhanced Volunteer Response Table using MaterialReactTable
@@ -51,7 +46,6 @@ export const FormResponseTable = ({
   // State for grouped data
   const [groupedData, setGroupedData] = useState({});
   const [daysOfServiceList, setDaysOfServiceList] = useState([]);
-  const [currentDayTab, setCurrentDayTab] = useState(0);
   const [processedData, setProcessedData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState({
@@ -93,14 +87,14 @@ export const FormResponseTable = ({
       minorCount: 100,
       hasPrepDay: 100,
       actions: 100,
-    })
+    }),
   );
 
   const [pagination, setPagination] = useState(
     getStoredState("volunteerTablePagination", {
       pageIndex: 0,
       pageSize: 10,
-    })
+    }),
   );
 
   const [columnVisibility, setColumnVisibility] = useState(
@@ -115,19 +109,19 @@ export const FormResponseTable = ({
       minorCount: true,
       hasPrepDay: true,
       actions: true,
-    })
+    }),
   );
 
   const [sorting, setSorting] = useState(
-    getStoredState("volunteerTableSorting", [])
+    getStoredState("volunteerTableSorting", []),
   );
 
   const [density, setDensity] = useState(
-    getStoredState("volunteerTableDensity", "comfortable")
+    getStoredState("volunteerTableDensity", "comfortable"),
   );
 
   const [columnFilters, setColumnFilters] = useState(
-    getStoredState("volunteerTableFilters", [])
+    getStoredState("volunteerTableFilters", []),
   );
 
   // Process volunteer data and group by day of service
@@ -160,7 +154,7 @@ export const FormResponseTable = ({
         const dayOfServiceDate =
           serviceDayInfo?.end_date || serviceDayInfo?.date
             ? moment(serviceDayInfo.end_date || serviceDayInfo.date).format(
-                "ddd, MM/DD/yy"
+                "MMM DD, YYYY",
               )
             : null;
 
@@ -187,7 +181,7 @@ export const FormResponseTable = ({
         const submittedAtFormatted =
           response.submittedAt || response.created_at
             ? moment(response.submittedAt || response.created_at).format(
-                "MM/DD/YY"
+                "MM/DD/YY",
               )
             : "-";
 
@@ -240,7 +234,7 @@ export const FormResponseTable = ({
         // Sort by date if available
         if (a.date && b.date) {
           return moment(a.date, "ddd, MM/DD/yy").diff(
-            moment(b.date, "ddd, MM/DD/yy")
+            moment(b.date, "ddd, MM/DD/yy"),
           );
         }
         // Otherwise sort by name
@@ -275,7 +269,7 @@ export const FormResponseTable = ({
 
           return acc;
         },
-        { totalPeople: 0, daysSet: new Set(), dayTotals: {} }
+        { totalPeople: 0, daysSet: new Set(), dayTotals: {} },
       );
 
       // Update state with processed data
@@ -289,28 +283,19 @@ export const FormResponseTable = ({
         dayTotals: stats.dayTotals,
       });
 
-      // Set default tab if available
-      if (daysList.length > 0 && currentDayTab >= daysList.length) {
-        setCurrentDayTab(0);
-      }
     } catch (error) {
       console.error("Error processing responses:", error);
     } finally {
       setLoading(false);
     }
-  }, [responses, formData, daysOfService, projectsData, currentDayTab]); // Include projectsData in dependency array
-
-  // Handle tab change
-  const handleTabChange = (event, newValue) => {
-    setCurrentDayTab(newValue);
-  };
+  }, [responses, formData, daysOfService, projectsData]); // Include projectsData in dependency array
 
   // Export to CSV function for specific day
   const exportToCSV = (dayData) => {
     const visibleColumns = columns.filter(
       (col) =>
         columnVisibility[col.accessorKey] !== false &&
-        col.accessorKey !== "actions"
+        col.accessorKey !== "actions",
     );
 
     // Modify the type column to split and capitalize its value
@@ -319,7 +304,7 @@ export const FormResponseTable = ({
       return value
         .split(/(?=[A-Z])|_/)
         .map(
-          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
         )
         .join(" ");
     };
@@ -346,7 +331,7 @@ export const FormResponseTable = ({
           })
           // These are validated on the form and you can't submit the form without it.
           .concat('"Yes"', '"Yes"')
-          .join(",")
+          .join(","),
       )
       .join("\n");
 
@@ -411,7 +396,7 @@ export const FormResponseTable = ({
                     .map(
                       (word) =>
                         word.charAt(0).toUpperCase() +
-                        word.slice(1).toLowerCase()
+                        word.slice(1).toLowerCase(),
                     )
                     .join(" ")
                 : "Unknown"
@@ -522,7 +507,7 @@ export const FormResponseTable = ({
         ),
       },
     ],
-    [columnSizing, formId, onViewResponse, onDeleteResponse]
+    [columnSizing, formId, onViewResponse, onDeleteResponse],
   );
 
   // Handle state changes
@@ -716,67 +701,15 @@ export const FormResponseTable = ({
     );
   }
 
-  // If there's only one day of service or no days defined, show a single table
-  if (daysOfServiceList.length <= 1) {
-    return (
-      <Box sx={{ width: "100%", mb: 4 }}>
-        <Paper sx={{ mb: 2, p: 2 }}>
-          <Typography variant="h6">
-            {daysOfServiceList.length === 1
-              ? daysOfServiceList[0].formatted
-              : "All Volunteers"}
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            Total: {summary.total} volunteers, {summary.totalPeople} people
-            including minors
-          </Typography>
-        </Paper>
-        {daysOfServiceList.length === 1 ? (
-          <DayTable dayData={daysOfServiceList[0]} />
-        ) : (
-          <DayTable dayData={{ key: "all", volunteers: processedData }} />
-        )}
-      </Box>
-    );
-  }
-
-  // Multiple days of service - use tabs
+  // Always render a single flat table (day filtering is handled by the parent)
   return (
     <Box sx={{ width: "100%", mb: 4 }}>
-      <JsonViewer data={responses} />
-
-      <Paper sx={{ mb: 2 }}>
-        <Tabs
-          value={currentDayTab}
-          onChange={handleTabChange}
-          variant="scrollable"
-          scrollButtons="auto"
-          sx={{ borderBottom: 1, borderColor: "divider" }}
-        >
-          {daysOfServiceList.map((day, index) => (
-            <Tab
-              key={day.key}
-              label={
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <EventIcon fontSize="small" sx={{ mr: 1 }} />
-                  {day.name}
-                  <Chip
-                    label={summary.dayTotals[day.key]?.volunteers || 0}
-                    size="small"
-                    sx={{ ml: 1 }}
-                  />
-                </Box>
-              }
-              value={index}
-            />
-          ))}
-        </Tabs>
-      </Paper>
-
-      {/* Show the selected day's table */}
-      {daysOfServiceList.length > currentDayTab && (
-        <DayTable dayData={daysOfServiceList[currentDayTab]} />
-      )}
+      <DayTable
+        dayData={{
+          key: "all",
+          volunteers: processedData,
+        }}
+      />
     </Box>
   );
 };
