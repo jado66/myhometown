@@ -282,7 +282,6 @@ export const FormResponseTable = ({
         uniqueDays: stats.daysSet.size,
         dayTotals: stats.dayTotals,
       });
-
     } catch (error) {
       console.error("Error processing responses:", error);
     } finally {

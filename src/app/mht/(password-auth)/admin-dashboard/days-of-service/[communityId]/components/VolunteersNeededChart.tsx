@@ -86,7 +86,7 @@ export default function VolunteerNeededChart({
   responses,
 }: VolunteerNeedsTableProps) {
   const [sortType, setSortType] = useState<"alphabetical" | "percentage">(
-    "alphabetical"
+    "alphabetical",
   );
 
   // Handle sort change
@@ -126,7 +126,7 @@ export default function VolunteerNeededChart({
             response.dayOfService === dayToUse.id &&
             response.whoAreYou &&
             "projectId" in response.whoAreYou &&
-            response.whoAreYou.projectId === project.id
+            response.whoAreYou.projectId === project.id,
         );
 
         // Count adult volunteers (one per response)
@@ -150,7 +150,7 @@ export default function VolunteerNeededChart({
             0,
             project.volunteerCount > 0
               ? project.volunteerCount - volunteersSignedUp
-              : 10 - volunteersSignedUp
+              : 10 - volunteersSignedUp,
           ),
           dayOfServiceId: dayToUse.id,
         });
@@ -162,8 +162,7 @@ export default function VolunteerNeededChart({
 
   // Prepare data for the current day's table (always shows first/only day)
   const currentDayData = useMemo(() => {
-    if (!processedData[0] || !processedData[0].projects)
-      return [];
+    if (!processedData[0] || !processedData[0].projects) return [];
 
     const projects = [...processedData[0].projects];
     if (sortType === "alphabetical") {
@@ -194,14 +193,14 @@ export default function VolunteerNeededChart({
     // For projects with volunteerCount of 0, assume 10 are needed
     const totalNeeded = projects.reduce(
       (sum, p) => sum + (p.volunteerCount > 0 ? p.volunteerCount : 10),
-      0
+      0,
     );
     const totalSignedUp = projects.reduce(
       (sum, p) => sum + p.volunteersSignedUp,
-      0
+      0,
     );
     const projectsNeedingVolunteers = projects.filter(
-      (p) => p.volunteersNeeded > 0
+      (p) => p.volunteersNeeded > 0,
     ).length;
 
     return { totalNeeded, totalSignedUp, projectsNeedingVolunteers };

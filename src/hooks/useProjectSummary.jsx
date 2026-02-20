@@ -35,7 +35,7 @@ export const useProjectSummary = (daysOfService) => {
                 // Fetch projects for this stake
                 const stakeProjects = await fetchProjectsByDaysOfStakeId(
                   stake.id,
-                  false
+                  false,
                 );
 
                 if (stakeProjects && stakeProjects.length > 0) {
@@ -48,7 +48,7 @@ export const useProjectSummary = (daysOfService) => {
 
                     // Create date object properly
                     const serviceDate = moment(
-                      dayOfService.date || dayOfService.end_date
+                      dayOfService.date || dayOfService.end_date,
                     );
 
                     // Add to project mapping for lookup by ID
@@ -104,7 +104,7 @@ export const useProjectSummary = (daysOfService) => {
   // Calculate total volunteer hours across all projects
   const totalVolunteerHours = projectSummary.reduce(
     (total, project) => total + project.volunteerHours,
-    0
+    0,
   );
 
   return {

@@ -22,6 +22,11 @@ export const pages = () => {
           href: rootUrl + "/admin-dashboard/communities",
           requiredPermission: "content_development",
         },
+        {
+          title: "DOS Property Release Forms",
+          href: rootUrl + "/edit/release-forms",
+          requiredPermission: "content_development",
+        },
       ],
     },
     {
