@@ -20,7 +20,7 @@ import SignatureCanvas from "react-signature-canvas";
 import { supabase } from "@/util/supabase";
 import { CheckCircleOutline } from "@mui/icons-material";
 
-//  Variable interpolation 
+//  Variable interpolation
 // Supported variables: {{name}}, {{date}}, {{address}}, {{organization}}, {{partner}}
 function interpolate(text, vars) {
   return text.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? `{{${key}}}`);
@@ -47,7 +47,7 @@ function RichParagraph({ text, vars, ...typographyProps }) {
   );
 }
 
-//  Component 
+//  Component
 const TermsOfServicePage = ({ params }) => {
   const projectId = params.formId;
 
@@ -72,7 +72,7 @@ const TermsOfServicePage = ({ params }) => {
 
   const searchParams = useSearchParams();
 
-  //  Resize canvas to container width 
+  //  Resize canvas to container width
   useEffect(() => {
     if (!canvasContainerRef.current) return;
     const observer = new ResizeObserver((entries) => {
@@ -85,7 +85,7 @@ const TermsOfServicePage = ({ params }) => {
     return () => observer.disconnect();
   }, []);
 
-  //  Fetch release form for this project city (with default fallback) 
+  //  Fetch release form for this project city (with default fallback)
   const fetchReleaseForm = useCallback(async (cityId) => {
     if (cityId) {
       const { data: cityForm } = await supabase
@@ -110,7 +110,7 @@ const TermsOfServicePage = ({ params }) => {
     if (defaultForm) setReleaseForm(defaultForm);
   }, []);
 
-  //  Validate token + bootstrap data 
+  //  Validate token + bootstrap data
   useEffect(() => {
     const token = searchParams.get("token");
 
@@ -179,7 +179,7 @@ const TermsOfServicePage = ({ params }) => {
     bootstrap();
   }, [searchParams, projectId, fetchReleaseForm]);
 
-  //  Submit 
+  //  Submit
   const handleSubmit = async () => {
     if (!hasReadTerms) {
       alert("Please read and agree to the Terms of Service.");
@@ -252,7 +252,7 @@ const TermsOfServicePage = ({ params }) => {
     if (sigCanvas.current) sigCanvas.current.clear();
   };
 
-  //  Template variables 
+  //  Template variables
   const templateVars = {
     name: signature.trim() || "__________________________",
     date: new Date().toLocaleDateString(),
@@ -261,7 +261,7 @@ const TermsOfServicePage = ({ params }) => {
     partner: releaseForm?.partner_name ?? "",
   };
 
-  //  Render: loading 
+  //  Render: loading
   if (tokenStatus === "validating") {
     return (
       <Container maxWidth="sm" sx={{ mt: 4, mb: 4, px: { xs: 1, sm: 3 } }}>
@@ -273,7 +273,7 @@ const TermsOfServicePage = ({ params }) => {
     );
   }
 
-  //  Render: thank you 
+  //  Render: thank you
   if (formSubmitted) {
     return (
       <Container maxWidth="sm" sx={{ mt: 4, mb: 4, px: { xs: 1, sm: 3 } }}>
@@ -286,7 +286,9 @@ const TermsOfServicePage = ({ params }) => {
             background: "linear-gradient(to bottom, #ffffff, #f9f9f9)",
           }}
         >
-          <CheckCircleOutline sx={{ fontSize: 72, color: "success.main", mb: 2 }} />
+          <CheckCircleOutline
+            sx={{ fontSize: 72, color: "success.main", mb: 2 }}
+          />
           <Typography variant="h4" gutterBottom color="primary.main">
             Thank You!
           </Typography>
@@ -309,7 +311,7 @@ const TermsOfServicePage = ({ params }) => {
     );
   }
 
-  //  Render: access denied 
+  //  Render: access denied
   if (!isValidToken) {
     const isUsed = tokenStatus === "used";
     return (
@@ -328,15 +330,25 @@ const TermsOfServicePage = ({ params }) => {
     );
   }
 
-  //  Render: main form 
+  //  Render: main form
   const formTitle = releaseForm?.title ?? "Property Owner Release Form";
   const orgName = "myHometown";
-  const paragraphs = Array.isArray(releaseForm?.content) ? releaseForm.content : [];
+  const paragraphs = Array.isArray(releaseForm?.content)
+    ? releaseForm.content
+    : [];
 
   return (
-    <Container maxWidth="sm" sx={{ mt: { xs: 2, sm: 4 }, mb: 4, px: { xs: 1, sm: 3 } }}>
+    <Container
+      maxWidth="sm"
+      sx={{ mt: { xs: 2, sm: 4 }, mb: 4, px: { xs: 1, sm: 3 } }}
+    >
       <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 } }}>
-        <Typography variant="h5" gutterBottom align="center" sx={{ fontWeight: 700 }}>
+        <Typography
+          variant="h5"
+          gutterBottom
+          align="center"
+          sx={{ fontWeight: 700 }}
+        >
           {formTitle}
         </Typography>
 
@@ -362,7 +374,11 @@ const TermsOfServicePage = ({ params }) => {
             title={`${orgName}\n${formTitle.toUpperCase()}`}
             titleTypographyProps={{
               variant: "subtitle2",
-              sx: { whiteSpace: "pre-line", fontWeight: 700, fontSize: "0.8rem" },
+              sx: {
+                whiteSpace: "pre-line",
+                fontWeight: 700,
+                fontSize: "0.8rem",
+              },
             }}
             sx={{ bgcolor: "#f5f5f5", pb: 1 }}
           />
@@ -373,8 +389,14 @@ const TermsOfServicePage = ({ params }) => {
               overflowY: "auto",
               px: { xs: 2, sm: 3 },
               "&::-webkit-scrollbar": { width: "6px" },
-              "&::-webkit-scrollbar-track": { backgroundColor: "#f1f1f1", borderRadius: "4px" },
-              "&::-webkit-scrollbar-thumb": { backgroundColor: "#bdbdbd", borderRadius: "4px" },
+              "&::-webkit-scrollbar-track": {
+                backgroundColor: "#f1f1f1",
+                borderRadius: "4px",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "#bdbdbd",
+                borderRadius: "4px",
+              },
             }}
           >
             {paragraphs.length > 0 ? (
@@ -407,9 +429,9 @@ const TermsOfServicePage = ({ params }) => {
                   )}
                 </Typography>
                 <Typography variant="body2" paragraph>
-                  I recognize that all services and work are provided &quot;as is,&quot; with NO
-                  WARRANTIES WHATSOEVER except as expressly agreed by the service provider in
-                  writing.
+                  I recognize that all services and work are provided &quot;as
+                  is,&quot; with NO WARRANTIES WHATSOEVER except as expressly
+                  agreed by the service provider in writing.
                 </Typography>
                 <Typography variant="body2">
                   {interpolate(
@@ -431,7 +453,9 @@ const TermsOfServicePage = ({ params }) => {
             />
           }
           label={
-            <Typography variant="body2">I have read and agree to the Release Form</Typography>
+            <Typography variant="body2">
+              I have read and agree to the Release Form
+            </Typography>
           }
           sx={{ mb: 1 }}
         />

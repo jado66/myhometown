@@ -274,7 +274,7 @@ export default function ReleaseFormsAdminPage() {
   // ── Preview vars ──────────────────────────────────────────────────────────
   const previewVars = {
     ...SAMPLE_VARS,
-    partner: editForm?.partner_name || "{{partner}}",
+    partner: editForm?.partner_name || "Some City",
     organization: "myHometown",
   };
 
