@@ -64,6 +64,7 @@ const TermsOfServicePage = ({ params }) => {
   // Release form content fetched from DB
   const [releaseForm, setReleaseForm] = useState(null);
   const [projectAddress, setProjectAddress] = useState("");
+  const [cityName, setCityName] = useState("");
 
   // Responsive canvas
   const sigCanvas = useRef(null);
@@ -159,6 +160,20 @@ const TermsOfServicePage = ({ params }) => {
               projectForm.address_zip_code,
             ].filter(Boolean);
             setProjectAddress(parts.join(", "));
+
+            // Fetch city name if city_id exists
+            if (projectForm.city_id) {
+              const { data: cityData } = await supabase
+                .from("cities")
+                .select("name")
+                .eq("id", projectForm.city_id)
+                .maybeSingle();
+
+              if (cityData) {
+                setCityName(cityData.name);
+              }
+            }
+
             await fetchReleaseForm(projectForm.city_id);
           } else {
             await fetchReleaseForm(null);
@@ -258,13 +273,13 @@ const TermsOfServicePage = ({ params }) => {
     date: new Date().toLocaleDateString(),
     address: projectAddress || "__________________________",
     organization: "myHometown",
-    partner: releaseForm?.partner_name ?? "",
+    partner: cityName || releaseForm?.partner_name || "myHometown",
   };
 
   //  Render: loading
   if (tokenStatus === "validating") {
     return (
-      <Container maxWidth="sm" sx={{ mt: 4, mb: 4, px: { xs: 1, sm: 3 } }}>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4, px: { xs: 1, sm: 3 } }}>
         <Paper elevation={3} sx={{ p: 3, textAlign: "center" }}>
           <CircularProgress size={32} sx={{ mb: 2 }} />
           <Typography variant="h6">Validating access</Typography>
@@ -276,7 +291,7 @@ const TermsOfServicePage = ({ params }) => {
   //  Render: thank you
   if (formSubmitted) {
     return (
-      <Container maxWidth="sm" sx={{ mt: 4, mb: 4, px: { xs: 1, sm: 3 } }}>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4, px: { xs: 1, sm: 3 } }}>
         <Paper
           elevation={3}
           sx={{
@@ -315,7 +330,7 @@ const TermsOfServicePage = ({ params }) => {
   if (!isValidToken) {
     const isUsed = tokenStatus === "used";
     return (
-      <Container maxWidth="sm" sx={{ mt: 4, mb: 4, px: { xs: 1, sm: 3 } }}>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4, px: { xs: 1, sm: 3 } }}>
         <Paper elevation={3} sx={{ p: 3 }}>
           <Typography variant="h5" gutterBottom align="center">
             {isUsed ? "Form Already Submitted" : "Access Denied"}
@@ -339,7 +354,7 @@ const TermsOfServicePage = ({ params }) => {
 
   return (
     <Container
-      maxWidth="sm"
+      maxWidth="lg"
       sx={{ mt: { xs: 2, sm: 4 }, mb: 4, px: { xs: 1, sm: 3 } }}
     >
       <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 } }}>

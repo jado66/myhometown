@@ -41,10 +41,7 @@ export async function POST(request: NextRequest) {
         )
         .in("id", uuidIds);
       if (error) {
-        console.error(
-          "[dos-report] Error fetching communities by id:",
-          error,
-        );
+        console.error("[dos-report] Error fetching communities by id:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
       if (data) communities = communities.concat(data);
@@ -110,10 +107,7 @@ export async function POST(request: NextRequest) {
               "[dos-report] Error fetching days of service:",
               error,
             );
-            return NextResponse.json(
-              { error: error.message },
-              { status: 500 },
-            );
+            return NextResponse.json({ error: error.message }, { status: 500 });
           }
 
           if (data && data.length > 0) {
@@ -155,14 +149,8 @@ export async function POST(request: NextRequest) {
           const { data, error } = await query;
 
           if (error) {
-            console.error(
-              "[dos-report] Error fetching DOS projects:",
-              error,
-            );
-            return NextResponse.json(
-              { error: error.message },
-              { status: 500 },
-            );
+            console.error("[dos-report] Error fetching DOS projects:", error);
+            return NextResponse.json({ error: error.message }, { status: 500 });
           }
 
           if (data && data.length > 0) {

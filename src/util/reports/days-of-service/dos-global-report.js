@@ -154,9 +154,7 @@ export function generateDOSReportCSV({
     dateRange?.startDate || "All time",
     dateRange?.endDate || "Present",
   ].join(" to ");
-  rows.push(
-    escapeCSV(`Days of Service Report — ${dateRangeStr}`),
-  );
+  rows.push(escapeCSV(`Days of Service Report — ${dateRangeStr}`));
   rows.push("");
 
   // Header row
@@ -246,7 +244,9 @@ export function generateDOSReportCSV({
         escapeCSV(project.project_name || ""),
         escapeCSV(project.project_id || ""),
         escapeCSV(
-          project.status ? project.status.charAt(0).toUpperCase() + project.status.slice(1) : "",
+          project.status
+            ? project.status.charAt(0).toUpperCase() + project.status.slice(1)
+            : "",
         ),
         escapeCSV(project.property_owner || ""),
         escapeCSV(project.phone_number || ""),
@@ -281,7 +281,11 @@ export function generateDOSReportCSV({
   // Unassigned projects (no days_of_service_id)
   if (unassignedProjects.length > 0) {
     rows.push("");
-    rows.push(escapeCSV("--- Unassigned Projects (not linked to a Day of Service event) ---"));
+    rows.push(
+      escapeCSV(
+        "--- Unassigned Projects (not linked to a Day of Service event) ---",
+      ),
+    );
     rows.push(projectHeaders.map(escapeCSV).join(","));
 
     for (const project of unassignedProjects) {
@@ -299,7 +303,9 @@ export function generateDOSReportCSV({
         escapeCSV(project.project_name || ""),
         escapeCSV(project.project_id || ""),
         escapeCSV(
-          project.status ? project.status.charAt(0).toUpperCase() + project.status.slice(1) : "",
+          project.status
+            ? project.status.charAt(0).toUpperCase() + project.status.slice(1)
+            : "",
         ),
         escapeCSV(project.property_owner || ""),
         escapeCSV(project.phone_number || ""),
