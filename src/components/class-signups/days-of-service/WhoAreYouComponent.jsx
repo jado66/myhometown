@@ -50,16 +50,16 @@ export const WhoAreYouComponent = ({
 
   const [activeTab, setActiveTab] = useState(-1);
   const [organization, setOrganization] = useState(
-    value?.type === "groupMember" ? value?.value?.split(" - ")[0] : ""
+    value?.type === "groupMember" ? value?.value?.split(" - ")[0] : "",
   );
   const [group, setGroup] = useState(
-    value?.type === "groupMember" ? value?.value?.split(" - ")[1] : ""
+    value?.type === "groupMember" ? value?.value?.split(" - ")[1] : "",
   );
   const [otherText, setOtherText] = useState(
     value?.type === "other" &&
       !["City Staff", "Family Member/Friend"].includes(value?.value)
       ? value?.value
-      : ""
+      : "",
   );
 
   const { dayOfServiceId } = useDayOfServiceId();
@@ -98,14 +98,13 @@ export const WhoAreYouComponent = ({
     if (dayOfServiceId) {
       const fetchDayOfServiceById = async () => {
         try {
-          const { data: daysOfService } = await fetchDayOfService(
-            dayOfServiceId
-          );
+          const { data: daysOfService } =
+            await fetchDayOfService(dayOfServiceId);
           setDayOfService(daysOfService);
 
           const projects = await fetchProjectsByDaysOfServiceId(
             daysOfService.id,
-            false
+            false,
           );
 
           if (projects) {
@@ -224,7 +223,7 @@ export const WhoAreYouComponent = ({
 
       try {
         const selectedProject = projects.find(
-          (project) => project.id === selectedOption.value
+          (project) => project.id === selectedOption.value,
         );
         hasPrepDay = selectedProject.has_prep_day;
       } catch (error) {
@@ -294,7 +293,7 @@ export const WhoAreYouComponent = ({
         color="text.primary"
         sx={{ mb: 2, fontWeight: 600, color: "#318D43" }}
       >
-        {config.label} *
+        {config.label}
       </Typography>
       {config.helpText && activeTab < 0 && (
         <FormHelperText

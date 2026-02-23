@@ -31,7 +31,7 @@ const concatenateAddress = (project: any) => {
 const anonymizeText = (
   text: string | null | undefined,
   isPII: boolean,
-  settings?: any
+  settings?: any,
 ): string => {
   if (!text) return "N/A";
   if (!settings || !settings.anonymizePII || !isPII) return text;
@@ -111,7 +111,7 @@ export const generateBeforeAndAfterReport = async (
   dateOfService: string,
   dayOfService: DayOfService,
   settings?: ReportSettings,
-  setLoading?: (loading: boolean) => void
+  setLoading?: (loading: boolean) => void,
 ) => {
   // Function to format date safely
   const formatSafeDate = (dateString: string): string => {
@@ -134,7 +134,7 @@ export const generateBeforeAndAfterReport = async (
   const anonymizeText = (
     text: string | null | undefined,
     shouldAnonymize: boolean,
-    settings?: ReportSettings
+    settings?: ReportSettings,
   ): string => {
     if (!text) return "N/A";
     if (!settings?.anonymizePII || !shouldAnonymize) return text;
@@ -152,7 +152,7 @@ export const generateBeforeAndAfterReport = async (
 
   // Filter out projects without reporting data
   const projectsWithReporting = projectsData.filter(
-    (project: Project) => project.reported_tasks || project.report_rich_text
+    (project: Project) => project.reported_tasks || project.report_rich_text,
   );
 
   if (projectsWithReporting.length === 0) {
@@ -161,7 +161,7 @@ export const generateBeforeAndAfterReport = async (
   }
 
   const partnerStake = dayOfService?.partner_stakes.find(
-    (stake: PartnerStake) => stake.id === stakeId
+    (stake: PartnerStake) => stake.id === stakeId,
   );
   const formattedDate = formatSafeDate(dateOfService);
 
@@ -223,7 +223,7 @@ export const generateBeforeAndAfterReport = async (
         pageWidth - logoWidth - margin,
         yPosition,
         logoWidth,
-        logoHeight
+        logoHeight,
       );
     } else {
       doc.setFontSize(8);
@@ -239,7 +239,7 @@ export const generateBeforeAndAfterReport = async (
       doc.text(
         `Partner Organization: ${partnerStake?.name || "N/A"}`,
         margin,
-        yPosition
+        yPosition,
       );
       yPosition += 5;
     }
@@ -249,7 +249,7 @@ export const generateBeforeAndAfterReport = async (
     doc.text(
       `Total Projects Completed: ${projectsWithReporting.length}`,
       margin,
-      yPosition
+      yPosition,
     );
     yPosition += 6;
     dividerLine(yPosition);
@@ -269,7 +269,7 @@ export const generateBeforeAndAfterReport = async (
   // Function to add images
   const addProjectImages = async (
     project: Project,
-    startY: number
+    startY: number,
   ): Promise<number> => {
     let currentY = startY;
     const imageWidth = maxWidth / 2 - 5; // Half width for before/after side by side
@@ -301,10 +301,10 @@ export const generateBeforeAndAfterReport = async (
 
       // Organize images into before/after pairs
       const beforeImages = task.images.filter((img: TaskImage) =>
-        img.label?.toLowerCase().includes("before")
+        img.label?.toLowerCase().includes("before"),
       );
       const afterImages = task.images.filter((img: TaskImage) =>
-        img.label?.toLowerCase().includes("after")
+        img.label?.toLowerCase().includes("after"),
       );
 
       // Process image pairs
@@ -333,7 +333,7 @@ export const generateBeforeAndAfterReport = async (
               imageWidth,
               imageHeight,
               undefined,
-              "FAST"
+              "FAST",
             );
           } catch (imgError) {
             console.error("Failed to load before image:", imgError);
@@ -357,7 +357,7 @@ export const generateBeforeAndAfterReport = async (
               imageWidth,
               imageHeight,
               undefined,
-              "FAST"
+              "FAST",
             );
           } catch (imgError) {
             console.error("Failed to load after image:", imgError);
@@ -365,7 +365,7 @@ export const generateBeforeAndAfterReport = async (
             doc.text(
               "[Image not available]",
               margin + imageWidth + 10,
-              currentY + 20
+              currentY + 20,
             );
           }
         }
@@ -501,7 +501,7 @@ export const generatePDFReport = async (
   dayOfService: any,
   includeBudget = false,
   settings?: any,
-  setLoading?: (loading: boolean) => void
+  setLoading?: (loading: boolean) => void,
 ) => {
   if (setLoading) setLoading(true);
   try {
@@ -520,7 +520,7 @@ export const generatePDFReport = async (
 
     const project = data;
     const partner_stake = dayOfService?.partner_stakes.find(
-      (stake: any) => stake.id === project.partner_stake_id
+      (stake: any) => stake.id === project.partner_stake_id,
     );
 
     const doc = new jsPDF();
@@ -566,7 +566,7 @@ export const generatePDFReport = async (
         pageWidth - logoWidth - margin,
         yPosition,
         logoWidth,
-        logoHeight
+        logoHeight,
       );
     } else {
       doc.setFontSize(8);
@@ -587,7 +587,7 @@ export const generatePDFReport = async (
       doc.text(
         `Partner Organization: ${partner_stake?.name || "N/A"}`,
         margin,
-        yPosition
+        yPosition,
       );
       yPosition += 5;
       yPosition = checkForNewPage(yPosition);
@@ -597,7 +597,7 @@ export const generatePDFReport = async (
       doc.text(
         `Partner Group: ${project.partner_ward || "N/A"}`,
         margin,
-        yPosition
+        yPosition,
       );
       yPosition += 5;
       yPosition = checkForNewPage(yPosition);
@@ -607,7 +607,7 @@ export const generatePDFReport = async (
       doc.text(
         `Project Name: ${project.project_name || "N/A"}`,
         margin,
-        yPosition
+        yPosition,
       );
       yPosition += 5;
       yPosition = checkForNewPage(yPosition);
@@ -617,7 +617,7 @@ export const generatePDFReport = async (
       doc.text(
         `Volunteers Needed: ${project.volunteers_needed || "N/A"}`,
         margin,
-        yPosition
+        yPosition,
       );
     }
 
@@ -639,7 +639,7 @@ export const generatePDFReport = async (
           key.startsWith("property_owner") ||
           key.startsWith("address_") ||
           key === "phone_number" ||
-          key === "email"
+          key === "email",
       )
       .some((key) => shouldIncludeField(key, settings));
 
@@ -656,7 +656,7 @@ export const generatePDFReport = async (
         doc.text(
           `Homeowner: ${anonymizeText(project.property_owner, true, settings)}`,
           margin,
-          yPosition
+          yPosition,
         );
         yPosition += 4;
         yPosition = checkForNewPage(yPosition);
@@ -686,10 +686,10 @@ export const generatePDFReport = async (
           `Phone: ${anonymizeText(
             project.phone_number,
             true,
-            settings
+            settings,
           )} • Email: ${anonymizeText(project.email, true, settings)}`,
           margin,
-          yPosition
+          yPosition,
         );
       }
 
@@ -705,7 +705,7 @@ export const generatePDFReport = async (
       .filter(
         (key) =>
           key.startsWith("project_development_couple") ||
-          key.startsWith("host_")
+          key.startsWith("host_"),
       )
       .some((key) => shouldIncludeField(key, settings));
 
@@ -723,10 +723,10 @@ export const generatePDFReport = async (
           `Resource Couple: ${anonymizeText(
             project.project_development_couple,
             true,
-            settings
+            settings,
           )}`,
           margin,
-          yPosition
+          yPosition,
         );
         yPosition += 4;
         yPosition = checkForNewPage(yPosition);
@@ -740,14 +740,14 @@ export const generatePDFReport = async (
           `Phone 1: ${anonymizeText(
             project.project_development_couple_phone1,
             true,
-            settings
+            settings,
           )} • Email 1: ${anonymizeText(
             project.project_development_couple_email1,
             true,
-            settings
+            settings,
           )}`,
           margin,
-          yPosition
+          yPosition,
         );
         yPosition += 4;
         yPosition = checkForNewPage(yPosition);
@@ -761,14 +761,14 @@ export const generatePDFReport = async (
           `Phone 2: ${anonymizeText(
             project.project_development_couple_phone2,
             true,
-            settings
+            settings,
           )} • Email 2: ${anonymizeText(
             project.project_development_couple_email2,
             true,
-            settings
+            settings,
           )}`,
           margin,
-          yPosition
+          yPosition,
         );
         yPosition += 4;
         yPosition = checkForNewPage(yPosition);
@@ -778,7 +778,7 @@ export const generatePDFReport = async (
         doc.text(
           `Host: ${anonymizeText(project.host_name, true, settings)}`,
           margin,
-          yPosition
+          yPosition,
         );
         yPosition += 4;
         yPosition = checkForNewPage(yPosition);
@@ -792,14 +792,14 @@ export const generatePDFReport = async (
           `Host Phone: ${anonymizeText(
             project.host_phone,
             true,
-            settings
+            settings,
           )} • Host Email: ${anonymizeText(
             project.host_email,
             true,
-            settings
+            settings,
           )}`,
           margin,
-          yPosition
+          yPosition,
         );
       }
 
@@ -816,7 +816,7 @@ export const generatePDFReport = async (
         (key) =>
           key.startsWith("partner_ward") ||
           key === "volunteers_needed" ||
-          key === "actual_volunteers"
+          key === "actual_volunteers",
       )
       .some((key) => shouldIncludeField(key, settings));
 
@@ -834,7 +834,7 @@ export const generatePDFReport = async (
       doc.text(
         `Check-in Location: ${dayOfService?.check_in_location || "N/A"}`,
         margin,
-        yPosition
+        yPosition,
       );
       doc.setTextColor("#000000"); // Reset to black
       yPosition += 4;
@@ -844,7 +844,7 @@ export const generatePDFReport = async (
         doc.text(
           `Partner Group: ${project.partner_ward || "N/A"}`,
           margin,
-          yPosition
+          yPosition,
         );
         yPosition += 4;
         yPosition = checkForNewPage(yPosition);
@@ -852,13 +852,13 @@ export const generatePDFReport = async (
 
       if (shouldIncludeField("partner_ward_liaison", settings)) {
         doc.text(
-          `Group Liaison: ${anonymizeText(
+          `Group Contact: ${anonymizeText(
             project.partner_ward_liaison,
             true,
-            settings
+            settings,
           )}`,
           margin,
-          yPosition
+          yPosition,
         );
         yPosition += 4;
         yPosition = checkForNewPage(yPosition);
@@ -872,14 +872,14 @@ export const generatePDFReport = async (
           `Phone: ${anonymizeText(
             project.partner_ward_liaison_phone1,
             true,
-            settings
+            settings,
           )} • Email: ${anonymizeText(
             project.partner_ward_liaison_email1,
             true,
-            settings
+            settings,
           )}`,
           margin,
-          yPosition
+          yPosition,
         );
       }
 
@@ -924,7 +924,7 @@ export const generatePDFReport = async (
             project.materials_procured ? "X" : " "
           }] Yes • Tools Arranged: [${project.tools_arranged ? "X" : " "}] Yes`,
           margin,
-          yPosition
+          yPosition,
         );
         yPosition += 4;
         yPosition = checkForNewPage(yPosition);
@@ -998,7 +998,7 @@ export const generatePDFReport = async (
             ? equipmentNames.map((name: string) => `• ${name}`).join(" ")
             : "• N/A",
           margin + 3,
-          yPosition
+          yPosition,
         );
         yPosition += 4;
         yPosition = checkForNewPage(yPosition);
@@ -1014,7 +1014,7 @@ export const generatePDFReport = async (
             ? volunteerToolNames.map((name: string) => `• ${name}`).join(" ")
             : "• N/A",
           margin + 3,
-          yPosition
+          yPosition,
         );
         yPosition += 4;
         yPosition = checkForNewPage(yPosition);
@@ -1032,7 +1032,7 @@ export const generatePDFReport = async (
                 .join(" ")
             : "• N/A",
           margin + 3,
-          yPosition
+          yPosition,
         );
         yPosition += 4;
         yPosition = checkForNewPage(yPosition);
@@ -1048,7 +1048,7 @@ export const generatePDFReport = async (
             ? otherMaterialNames.map((name: string) => `• ${name}`).join(" ")
             : "• N/A",
           margin + 3,
-          yPosition
+          yPosition,
         );
       }
 
@@ -1070,7 +1070,7 @@ export const generatePDFReport = async (
 
       if (project.tasks?.tasks?.length > 0) {
         const sortedTasks = [...project.tasks.tasks].sort(
-          (a: any, b: any) => a.priority - b.priority
+          (a: any, b: any) => a.priority - b.priority,
         );
         for (let taskIndex = 0; taskIndex < sortedTasks.length; taskIndex++) {
           const task = sortedTasks[taskIndex];
@@ -1084,7 +1084,7 @@ export const generatePDFReport = async (
               ? task.todos.map((todo: string) => `• ${todo}`).join(" ")
               : "• No specific todos",
             margin + 3,
-            yPosition
+            yPosition,
           );
           yPosition += 4;
 
@@ -1141,7 +1141,7 @@ export const generatePDFReport = async (
           project.homeowner_ability_estimates || "N/A"
         }`,
         margin,
-        yPosition
+        yPosition,
       );
     }
 
@@ -1157,7 +1157,7 @@ export const generatePDFReport = async (
 
 const fetchProjectsByDaysOfStakeId = async (
   stakeId: string,
-  includeBudget = false
+  includeBudget = false,
 ) => {
   try {
     const { data, error } = await supabase
@@ -1182,7 +1182,7 @@ export const generateStakeSummaryReport = async (
   dateOfService: string,
   dayOfService: any,
   settings?: ReportSettings,
-  setLoading?: (loading: boolean) => void
+  setLoading?: (loading: boolean) => void,
 ) => {
   if (setLoading) setLoading(true);
   try {
@@ -1195,7 +1195,7 @@ export const generateStakeSummaryReport = async (
     }
 
     const partnerStake = dayOfService?.partner_stakes.find(
-      (stake: any) => stake.id === stakeId
+      (stake: any) => stake.id === stakeId,
     );
     const formattedDate = formatSafeDate(dateOfService);
 
@@ -1258,7 +1258,7 @@ export const generateStakeSummaryReport = async (
           pageWidth - logoWidth - margin,
           yPosition,
           logoWidth,
-          logoHeight
+          logoHeight,
         );
       } else {
         doc.setFontSize(8);
@@ -1308,7 +1308,7 @@ export const generateStakeSummaryReport = async (
         doc.text(
           `Partner Organization: ${partnerStake?.name || "N/A"}`,
           margin,
-          yPosition
+          yPosition,
         );
         yPosition += 5;
       }
@@ -1328,7 +1328,7 @@ export const generateStakeSummaryReport = async (
       doc.text(
         `Check-in Location: ${dayOfService?.check_in_location || "N/A"}`,
         margin,
-        yPosition
+        yPosition,
       );
       doc.setTextColor("#000000"); //black
       yPosition += 5;
@@ -1390,7 +1390,7 @@ export const generateStakeSummaryReport = async (
 
       if (shouldIncludeField("property_owner", settings)) {
         details.push(
-          `Homeowner: ${anonymizeText(project.property_owner, true, settings)}`
+          `Homeowner: ${anonymizeText(project.property_owner, true, settings)}`,
         );
       }
 
@@ -1400,7 +1400,7 @@ export const generateStakeSummaryReport = async (
           details.push(
             `Address: ${project.address_city || ""}, ${
               project.address_state || ""
-            }`
+            }`,
           );
         } else {
           details.push(`Address: ${concatenateAddress(project)}`);
@@ -1409,7 +1409,7 @@ export const generateStakeSummaryReport = async (
 
       if (shouldIncludeField("phone_number", settings)) {
         details.push(
-          `Phone: ${anonymizeText(project.phone_number, true, settings)}`
+          `Phone: ${anonymizeText(project.phone_number, true, settings)}`,
         );
       }
 
@@ -1422,7 +1422,7 @@ export const generateStakeSummaryReport = async (
             project.host_phone
               ? ` (${anonymizeText(project.host_phone, true, settings)})`
               : ""
-          }`
+          }`,
         );
       }
 
@@ -1445,13 +1445,13 @@ export const generateStakeSummaryReport = async (
         const tasks = project.tasks.tasks
           .slice(0, 3) // Limit to 3 tasks
           .map((task: any) =>
-            task.todos?.length > 0 ? task.todos[0].substring(0, 40) : "N/A"
+            task.todos?.length > 0 ? task.todos[0].substring(0, 40) : "N/A",
           );
 
         tasks.forEach((task: string) => {
           const wrappedTask = doc.splitTextToSize(
             `• ${task}${task.length > 40 ? "..." : ""}`,
-            colWidth - 15
+            colWidth - 15,
           );
           tempY += wrappedTask.slice(0, 1).length * 4;
         });
@@ -1476,12 +1476,12 @@ export const generateStakeSummaryReport = async (
             anonymizeText(
               project.partner_ward_liaison_phone1,
               true,
-              settings
+              settings,
             ) || "",
             anonymizeText(
               project.partner_ward_liaison_email1,
               true,
-              settings
+              settings,
             ) || "",
           ]
             .filter((item) => item && item !== "null")
@@ -1501,12 +1501,12 @@ export const generateStakeSummaryReport = async (
             anonymizeText(
               project.project_development_couple_phone1,
               true,
-              settings
+              settings,
             ) || "",
             anonymizeText(
               project.project_development_couple_email1,
               true,
-              settings
+              settings,
             ) || "",
           ]
             .filter((item) => item && item !== "null")
@@ -1553,7 +1553,7 @@ export const generateStakeSummaryReport = async (
 
       if (shouldIncludeField("partner_ward", settings)) {
         moreDetails.push(
-          `Partner Group: ${project.partner_ward || "(Not provided)"}`
+          `Partner Group: ${project.partner_ward || "(Not provided)"}`,
         );
       }
 
@@ -1623,7 +1623,7 @@ export const generateStakeSummaryReport = async (
         estimatedCardHeight,
         2, // Reduced corner radius from 3 to 2
         2, // Reduced corner radius from 3 to 2
-        "FD"
+        "FD",
       );
 
       // Now render all the content on top of the background
@@ -1655,7 +1655,7 @@ export const generateStakeSummaryReport = async (
           // Map and display tasks if they exist
           const tasks = project.tasks.tasks
             .map((task: any) =>
-              task.todos?.length > 0 ? task.todos[0].substring(0, 40) : ""
+              task.todos?.length > 0 ? task.todos[0].substring(0, 40) : "",
             )
             .filter((task: string) => task.trim()); // Filter out empty tasks
 
@@ -1664,7 +1664,7 @@ export const generateStakeSummaryReport = async (
             tasks.forEach((task: string) => {
               const wrappedTask = doc.splitTextToSize(
                 `• ${task}${task.length > 40 ? "..." : ""}`,
-                colWidth - 15
+                colWidth - 15,
               );
               wrappedTask.slice(0, 1).forEach((text: string) => {
                 doc.text(text, colX + 10, contentY);
@@ -1726,7 +1726,7 @@ export const generateStakeSummaryReport = async (
         pageHeight - 5,
         {
           align: "right",
-        }
+        },
       );
     }
 

@@ -1,5 +1,17 @@
 import React, { useState } from "react";
-import { Box, Typography, Divider, IconButton, Button } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Divider,
+  IconButton,
+  Button,
+  FormControl,
+  FormControlLabel,
+  Checkbox,
+  FormHelperText,
+  Alert,
+  InputAdornment,
+} from "@mui/material";
 import ProjectTextField from "./ProjectTextField";
 import { DayOfServiceAssignmentDialog } from "./DayOfServiceAssignmentDialog";
 import AddressFormFields from "@/components/days-of-service/form-components/AddressFormFields";
@@ -8,6 +20,7 @@ import { Info } from "@mui/icons-material";
 import moment from "moment";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { useProjectForm } from "@/contexts/ProjectFormProvider";
+import HomeOwnerEmailSection from "./HomeOwnerEmailSection";
 
 const Step1 = ({ date }) => {
   const [dayOfServiceDialogOpen, setDayOfServiceDialogOpen] = useState(false);
@@ -17,8 +30,10 @@ const Step1 = ({ date }) => {
   const {
     formData,
     handleInputChange,
+    handleNumberInputChange,
     community,
     isLocked,
+    isBudgetAuthenticated,
     setFormData,
     saveProject,
     assignProjectToServiceDay,
@@ -218,7 +233,7 @@ const Step1 = ({ date }) => {
       />
       <Divider />
       <Typography variant="h6" sx={{ mb: 0 }}>
-        Project Owner Information
+        Property Owner Information
       </Typography>
       <Typography variant="subtitle" sx={{ mb: 1 }}>
         The Property Owner is the person or couple who own the property where
@@ -263,6 +278,128 @@ const Step1 = ({ date }) => {
       />
       <Divider />
       <AddressFormFields />
+
+      <Divider />
+
+      <Typography variant="h6">Property Owner Release Information</Typography>
+
+      {!formData.signature_text && !isLocked && (
+        <Typography variant="subtitle1" color="primary">
+          The property owner has not yet signed the liability release form.
+          Click on &quot;Send Email&quot; to send the release form to the
+          property owner for signature.
+        </Typography>
+      )}
+
+      {!formData.signature_text && !isLocked && <HomeOwnerEmailSection />}
+
+      <Divider />
+      <FormControl component="fieldset">
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={formData.signature_text}
+              // readonly
+              disabled
+            />
+          }
+          // readonly
+          sx={{
+            "& .MuiFormControlLabel-label.Mui-disabled": {
+              color: "text.primary", // Keeps the label text in the normal color
+            },
+          }}
+          label="The home owner has reviewed and signed the liability release form"
+        />
+
+        {!formData.signature_text && !isLocked && (
+          <FormHelperText
+            sx={{
+              fontSize: "1rem",
+              mt: {
+                md: 0,
+                xs: 2,
+              },
+            }}
+          >
+            Once the property owner has signed the liability release form this
+            box will be checked
+          </FormHelperText>
+        )}
+      </FormControl>
+
+      {formData && formData.signature_image && (
+        <Box sx={{ mt: 2, display: "flex" }}>
+          <img
+            src={formData.signature_image || "/placeholder.svg"}
+            alt="Homeowner Signature"
+            style={{
+              maxWidth: "200px",
+              maxHeight: "60px",
+              padding: "4px",
+            }}
+          />
+        </Box>
+      )}
+
+      <Divider />
+
+      <Typography variant="h6">Budget Estimates</Typography>
+
+      <ProjectTextField
+        label="Resource Budget Description"
+        multiline
+        rows={4}
+        key="budget"
+        value={formData.budget}
+        onChange={(e) => handleInputChange("budget", e.target.value)}
+        helperText="This is a description of the budget for the project. This can include the source of the funds, the intended use of the funds, and any other relevant information."
+        isLocked={isLocked}
+      />
+      <ProjectTextField
+        label="Resource Budget Estimates"
+        type="number"
+        key="budget estimates"
+        min={0}
+        value={formData.budget_estimates}
+        onChange={(e) =>
+          handleNumberInputChange("budget_estimates", e.target.value)
+        }
+        hasInputAdornment
+        InputProps={{
+          startAdornment: <InputAdornment position="start">$</InputAdornment>,
+        }}
+        helperText="This is the total budget for the project in dollars. This also includes the property owner's ability to contribute to the project."
+        isLocked={isLocked}
+      />
+      <Divider sx={{ my: 1 }} />
+
+      <ProjectTextField
+        label="Property Owner's Ability Contribution"
+        multiline
+        rows={4}
+        key="homeowner ability"
+        value={formData.homeowner_ability}
+        onChange={(e) => handleInputChange("homeowner_ability", e.target.value)}
+        helperText="This is the property owner's ability to contribute to the project. This can be in the form of materials, tools, or other resources."
+        isLocked={isLocked}
+      />
+      <ProjectTextField
+        label="Property Owner's Ability Estimates"
+        type="number"
+        key="homeowner ability estimates"
+        value={formData.homeowner_ability_estimates}
+        min={0}
+        onChange={(e) =>
+          handleNumberInputChange("homeowner_ability_estimates", e.target.value)
+        }
+        hasInputAdornment
+        InputProps={{
+          startAdornment: <InputAdornment position="start">$</InputAdornment>,
+        }}
+        helperText="This is the property owner's financial ability to contribute to the project in dollars."
+        isLocked={isLocked}
+      />
     </Box>
   );
 };

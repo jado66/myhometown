@@ -15,7 +15,6 @@ import CollaborationSection from "./CollaborationSection";
 import { useProjectForm } from "@/contexts/ProjectFormProvider";
 import Loading from "@/components/util/Loading";
 import { useRouter } from "next/navigation";
-import { VisibilityOff } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
@@ -25,9 +24,7 @@ import { DayOfServiceAssignmentDialog } from "./DayOfServiceAssignmentDialog";
 const allSteps = [
   { label: "Project Information" },
   { label: "Detailed Planning" },
-  { label: "Budget Estimates" },
   { label: "Review Project Assignment" },
-  { label: "Partner Organization and Group Participation" },
   { label: "Resource Assessment" },
   { label: "Reporting" },
 ];
@@ -76,30 +73,6 @@ const ProjectForm = ({ date, communityId }) => {
   };
 
   const goToStep = (step) => {
-    if (step === 2 && isBudgetHidden) {
-      toast.info(
-        <div>
-          Budget access is hidden. Click{" "}
-          <a
-            href={
-              process.env.NEXT_PUBLIC_DOMAIN +
-              `/admin-dashboard/days-of-service/${communityId}`
-            }
-            style={{ color: "#1976d2", textDecoration: "underline" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            here
-          </a>{" "}
-          and find the Budget Access button to enter your password.
-        </div>,
-        {
-          toastId: "budget-hidden-toast",
-          autoClose: 10000, // Longer display time (10 seconds)
-          closeOnClick: false, // Prevents closing when clicking the link
-        },
-      );
-      return;
-    }
     checkAndHideBudget();
     setActiveStep(step);
   };
@@ -108,35 +81,16 @@ const ProjectForm = ({ date, communityId }) => {
     const projectFormPage = document.getElementById("project-form-page");
     if (projectFormPage) projectFormPage.scrollIntoView({ behavior: "smooth" });
 
-    // Get the total number of steps based on budget visibility
-    const totalSteps = getSteps(isBudgetHidden).length;
+    const totalSteps = getSteps().length;
 
     if (activeStep < totalSteps) {
-      if (isBudgetHidden && activeStep === 1) {
-        // Skip from Step 1 (Detailed Planning) to Step 3 (Review Project Assignment)
-        goToStep(activeStep + 2);
-      } else if (isBudgetHidden && activeStep === 2) {
-        // This case shouldn't occur since we skip step 2, but included for safety
-        goToStep(activeStep + 1);
-      } else {
-        // Normal progression
-        goToStep(activeStep + 1);
-      }
+      goToStep(activeStep + 1);
     }
   };
 
   const handleBack = () => {
     if (activeStep > 0) {
-      if (isBudgetHidden && activeStep === 3) {
-        // Skip from Step 3 (Review Project Assignment) back to Step 1 (Detailed Planning)
-        goToStep(activeStep - 2);
-      } else if (isBudgetHidden && activeStep === 2) {
-        // This case shouldn't occur since we skip step 2, but included for safety
-        goToStep(activeStep - 1);
-      } else {
-        // Normal progression
-        goToStep(activeStep - 1);
-      }
+      goToStep(activeStep - 1);
     }
   };
 
@@ -219,29 +173,17 @@ const ProjectForm = ({ date, communityId }) => {
               <Step
                 key={step.label}
                 sx={{
-                  cursor:
-                    isBudgetHidden && step.label === "Budget Estimates"
-                      ? "not-allowed"
-                      : "pointer",
+                  cursor: "pointer",
                 }}
                 onClick={() => goToStep(index)}
               >
                 <StepLabel
-                  icon={
-                    isBudgetHidden && step.label === "Budget Estimates" ? (
-                      <VisibilityOff />
-                    ) : undefined
-                  }
                   sx={{
                     "& .MuiStepLabel-label": {
                       display: {
                         xs: "none",
                         sm: "block",
                       },
-                      color:
-                        isBudgetHidden && step.label === "Budget Estimates"
-                          ? "grey.500"
-                          : "inherit",
                     },
                   }}
                 >
@@ -253,7 +195,6 @@ const ProjectForm = ({ date, communityId }) => {
           <StepContent
             activeStep={activeStep}
             date={date}
-            isBudgetHidden={!isBudgetHidden}
           />
           <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
             <Button

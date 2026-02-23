@@ -365,7 +365,7 @@ export const ProjectCard = ({
                 }}
               >
                 <Phone sx={{ mr: 1 }} />
-                Group Assignment &amp; Liaison Information
+                Group Assignment &amp; Contact Information
               </Typography>
 
               {!project.partner_ward && (

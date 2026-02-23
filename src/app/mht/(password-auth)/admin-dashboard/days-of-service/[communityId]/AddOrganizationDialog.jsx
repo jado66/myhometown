@@ -83,7 +83,7 @@ const AddOrganizationDialog = ({
             <Grid item xs={12} sm={5.8}>
               <TextField
                 margin="dense"
-                label="Liaison Name 1"
+                label="Contact Name 1"
                 fullWidth
                 value={currentStake?.liaison_name_1 || ""}
                 onChange={(e) =>
@@ -95,7 +95,7 @@ const AddOrganizationDialog = ({
               />
               <TextField
                 margin="dense"
-                label="Liaison Title 1"
+                label="Contact Title 1"
                 key="liaison_title_1"
                 fullWidth
                 value={currentStake?.partner_stake_liaison_title_1 || ""}
@@ -109,7 +109,7 @@ const AddOrganizationDialog = ({
 
               <TextField
                 margin="dense"
-                label="Liaison Email 1"
+                label="Contact Email 1"
                 fullWidth
                 value={currentStake?.liaison_email_1 || ""}
                 onChange={(e) =>
@@ -121,7 +121,7 @@ const AddOrganizationDialog = ({
               />
               <TextField
                 margin="dense"
-                label="Liaison Phone 1"
+                label="Contact Phone 1"
                 fullWidth
                 value={currentStake?.liaison_phone_1 || ""}
                 onChange={(e) =>
@@ -170,7 +170,7 @@ const AddOrganizationDialog = ({
             <Grid item xs={12} sm={5.8}>
               <TextField
                 margin="dense"
-                label="Liaison Name 2 (Optional)"
+                label="Contact Name 2 (Optional)"
                 fullWidth
                 value={currentStake?.liaison_name_2 || ""}
                 onChange={(e) =>
@@ -182,7 +182,7 @@ const AddOrganizationDialog = ({
               />
               <TextField
                 margin="dense"
-                label="Liaison Title 2 (Optional)"
+                label="Contact Title 2 (Optional)"
                 key="liaison_title_2"
                 fullWidth
                 value={currentStake?.partner_stake_liaison_title_2 || ""}
@@ -195,7 +195,7 @@ const AddOrganizationDialog = ({
               />
               <TextField
                 margin="dense"
-                label="Liaison Email 2 (Optional)"
+                label="Contact Email 2 (Optional)"
                 fullWidth
                 value={currentStake?.liaison_email_2 || ""}
                 onChange={(e) =>
@@ -207,7 +207,7 @@ const AddOrganizationDialog = ({
               />
               <TextField
                 margin="dense"
-                label="Liaison Phone 2 (Optional)"
+                label="Contact Phone 2 (Optional)"
                 fullWidth
                 value={currentStake?.liaison_phone_2 || ""}
                 onChange={(e) =>

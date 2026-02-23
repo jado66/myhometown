@@ -5,7 +5,7 @@ import { ExpandMore } from "@mui/icons-material";
 
 import { Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
 
-export const LiaisonAccordion = ({ stake, onViewProjects }) => {
+export const ContactAccordion = ({ stake, onViewProjects }) => {
   return (
     <Accordion square elevation={0} onClick={(e) => e.stopPropagation()}>
       <AccordionSummary expandIcon={<ExpandMore />} sx={{ px: 1, py: 1 }}>
@@ -23,7 +23,7 @@ export const LiaisonAccordion = ({ stake, onViewProjects }) => {
           </Button>
         </Grid>
         <Typography variant="h6" sx={{ fontSize: "16px !important;", ml: 1 }}>
-          Organization Liaison Information
+          Organization Contact Information
         </Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ px: 2, pt: 2, pb: 1 }}>

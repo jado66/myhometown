@@ -98,7 +98,7 @@ const defaultConfig = {
         visible: true,
         required: true,
         originalLabel: "Safety Video",
-        url: "",
+        url: "https://youtu.be/Dv2ZeWKZ3qg",
         helpText: "Watch the required safety video before proceeding",
         category: "Days of Service",
         validation: 'value === true ? null : "You must watch the safety video"',

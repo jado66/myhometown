@@ -32,7 +32,6 @@ import Loading from "@/components/util/Loading";
 import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
 import ServiceDayDialog from "./ServiceDayDialog";
 import AddOrganizationDialog from "./AddOrganizationDialog";
-import BudgetDialog from "./BudgetDialog";
 import VolunteerSignups from "./VolunteerSignups";
 import { DayOfServiceCard } from "./DayOfServiceCard";
 
@@ -60,7 +59,6 @@ const CommunitySelectionPage = ({ params }) => {
   const [stakeToDelete, setStakeToDelete] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const [showSpecialAccessDialog, setShowSpecialAccessDialog] = useState(false);
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -225,20 +223,6 @@ const CommunitySelectionPage = ({ params }) => {
       setDaysOfService((prev) => prev.filter((day) => day.id !== id));
     } catch (error) {
       console.error("Error deleting day of service:", error);
-    }
-  };
-
-  const handleAuthSubmit = () => {
-    const isAuthenticated = authenticateBudgetAccess(password);
-
-    if (isAuthenticated) {
-      setShowSpecialAccessDialog(false);
-      setPassword("");
-      setAuthError("");
-      toast.success("Access granted. You can now view the budget estimates.");
-      setIsAuthenticated(true);
-    } else {
-      setAuthError("Invalid password. Please try again.");
     }
   };
 
@@ -458,29 +442,6 @@ const CommunitySelectionPage = ({ params }) => {
             ? "Development / Testing Mode"
             : `${community.city_name} - ${community.name}`}
         </Typography>
-
-        {!isSmallScreen && (
-          <Box sx={{ position: "absolute", top: 0, right: 0, zIndex: 1 }}>
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={() => {
-                if (isAuthenticated) {
-                  toast.info("You are already authenticated.");
-                  return;
-                }
-                setShowSpecialAccessDialog(true);
-              }}
-            >
-              {isAuthenticated ? (
-                <LockOpen sx={{ mr: 1 }} />
-              ) : (
-                <Lock sx={{ mr: 1 }} />
-              )}
-              {isAuthenticated ? "Budget Access Granted" : "Budget Access"}
-            </Button>
-          </Box>
-        )}
 
         <Box sx={{ width: "100%", mt: 3 }}>
           <Box
@@ -718,29 +679,6 @@ const CommunitySelectionPage = ({ params }) => {
           )}
         </Box>
 
-        {isSmallScreen && (
-          <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={() => {
-                if (isAuthenticated) {
-                  toast.info("You are already authenticated.");
-                  return;
-                }
-                setShowSpecialAccessDialog(true);
-              }}
-            >
-              {isAuthenticated ? (
-                <LockOpen sx={{ mr: 1 }} />
-              ) : (
-                <Lock sx={{ mr: 1 }} />
-              )}
-              {isAuthenticated ? "Budget Access Granted" : "Budget Access"}
-            </Button>
-          </Box>
-        )}
-
         <ServiceDayDialog
           open={showServiceDayDialog}
           onClose={handleServiceDayDialogClose}
@@ -760,16 +698,7 @@ const CommunitySelectionPage = ({ params }) => {
           handleSaveStake={handleSaveStake}
           handleDeleteStake={handleDeleteStake}
         />
-        <BudgetDialog
-          open={showSpecialAccessDialog}
-          onClose={() => setShowSpecialAccessDialog(false)}
-          password={password}
-          setPassword={setPassword}
-          authError={authError}
-          handleAuthSubmit={handleAuthSubmit}
-          showPassword={showPassword}
-          setShowPassword={setShowPassword}
-        />
+
         <AskYesNoDialog
           open={showDeleteDialog}
           onClose={() => setShowDeleteDialog(false)}

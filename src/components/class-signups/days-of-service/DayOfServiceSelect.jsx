@@ -53,8 +53,6 @@ export const DayOfServiceSelect = ({
 
         const communityId = keyToCommunityId[key];
 
-        alert(key);
-
         const { data } = await fetchDaysOfServiceByCommunity(communityId);
 
         if (!data) {

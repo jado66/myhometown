@@ -849,7 +849,7 @@ export default function ProjectFormsPage({ params }) {
                             }}
                           >
                             <Phone sx={{ mr: 1 }} />
-                            Group Assignment &amp; Liaison Information
+                            Group Assignment &amp; Contact Information
                           </Typography>
 
                           {!project.partner_ward && (
@@ -1108,7 +1108,7 @@ export default function ProjectFormsPage({ params }) {
               <Grid item xs={12} sm={5.8}>
                 <TextField
                   margin="dense"
-                  label="Liaison Name 1"
+                  label="Contact Name 1"
                   fullWidth
                   value={partnerWardData.partner_ward_liaison}
                   onChange={(e) =>
@@ -1120,7 +1120,7 @@ export default function ProjectFormsPage({ params }) {
                 />
                 <TextField
                   margin="dense"
-                  label="Liaison Title 1"
+                  label="Contact Title 1"
                   fullWidth
                   value={partnerWardData.partner_ward_liaison_title}
                   onChange={(e) =>
@@ -1132,7 +1132,7 @@ export default function ProjectFormsPage({ params }) {
                 />
                 <TextField
                   margin="dense"
-                  label="Liaison Email 1"
+                  label="Contact Email 1"
                   fullWidth
                   value={partnerWardData.partner_ward_liaison_email1}
                   onChange={(e) =>
@@ -1144,7 +1144,7 @@ export default function ProjectFormsPage({ params }) {
                 />
                 <TextField
                   margin="dense"
-                  label="Liaison Phone 1"
+                  label="Contact Phone 1"
                   fullWidth
                   value={partnerWardData.partner_ward_liaison_phone1}
                   onChange={(e) =>
@@ -1193,7 +1193,7 @@ export default function ProjectFormsPage({ params }) {
               <Grid item xs={12} sm={5.8}>
                 <TextField
                   margin="dense"
-                  label="Liaison Name 2 (Optional)"
+                  label="Contact Name 2 (Optional)"
                   fullWidth
                   value={partnerWardData.partner_ward_liaison2}
                   onChange={(e) =>
@@ -1205,7 +1205,7 @@ export default function ProjectFormsPage({ params }) {
                 />
                 <TextField
                   margin="dense"
-                  label="Liaison Title 2 (Optional)"
+                  label="Contact Title 2 (Optional)"
                   fullWidth
                   value={partnerWardData.partner_ward_liaison_title2}
                   onChange={(e) =>
@@ -1217,7 +1217,7 @@ export default function ProjectFormsPage({ params }) {
                 />
                 <TextField
                   margin="dense"
-                  label="Liaison Email 2 (Optional)"
+                  label="Contact Email 2 (Optional)"
                   fullWidth
                   value={partnerWardData.partner_ward_liaison_email2}
                   onChange={(e) =>
@@ -1229,7 +1229,7 @@ export default function ProjectFormsPage({ params }) {
                 />
                 <TextField
                   margin="dense"
-                  label="Liaison Phone 2 (Optional)"
+                  label="Contact Phone 2 (Optional)"
                   fullWidth
                   value={partnerWardData.partner_ward_liaison_phone2}
                   onChange={(e) =>

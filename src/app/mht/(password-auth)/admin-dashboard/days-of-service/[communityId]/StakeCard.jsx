@@ -77,7 +77,7 @@ export const StakeCard = ({
                 whiteSpace: "nowrap",
               }}
             >
-              Liaison: {stake.liaison_name_1}
+              Contact: {stake.liaison_name_1}
             </Typography>
           ) : (
             <Typography

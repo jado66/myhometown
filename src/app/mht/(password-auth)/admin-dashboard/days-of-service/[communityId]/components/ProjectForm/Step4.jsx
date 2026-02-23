@@ -34,7 +34,7 @@ const Step4 = () => {
   } = useProjectForm();
 
   const partner_stake = dayOfService?.partner_stakes.find(
-    (stake) => stake.id === formData.partner_stake_id
+    (stake) => stake.id === formData.partner_stake_id,
   );
 
   const customStyles = {
@@ -108,7 +108,7 @@ const Step4 = () => {
         </Typography>
       </Box>
 
-      {/* Organization Liaison */}
+      {/* Organization Contact */}
       <Box
         sx={{
           display: "flex",
@@ -117,7 +117,7 @@ const Step4 = () => {
         }}
       >
         <Typography sx={{ mr: 1 }}>
-          <strong>Organization Liaison:</strong>{" "}
+          <strong>Organization Contact:</strong>{" "}
           {partner_stake?.liaison_name_1
             ? partner_stake?.liaison_name_1
             : "No assigned liaison. This can be added on the Days of Service page."}
@@ -130,7 +130,7 @@ const Step4 = () => {
               onClick={() => {
                 navigator.clipboard.writeText(partner_stake?.liaison_phone_1);
                 toast.success(
-                  `Phone number copied to clipboard: ${partner_stake?.liaison_phone_1}`
+                  `Phone number copied to clipboard: ${partner_stake?.liaison_phone_1}`,
                 );
               }}
             >
@@ -146,7 +146,7 @@ const Step4 = () => {
               onClick={() => {
                 navigator.clipboard.writeText(partner_stake?.liaison_email_1);
                 toast.success(
-                  `Email copied to clipboard: ${partner_stake?.liaison_email_1}`
+                  `Email copied to clipboard: ${partner_stake?.liaison_email_1}`,
                 );
               }}
             >
@@ -157,7 +157,7 @@ const Step4 = () => {
         </Stack>
       </Box>
 
-      {/* Organization Liaison 2 (if exists) */}
+      {/* Organization Contact 2 (if exists) */}
       {partner_stake?.liaison_name_2 && (
         <Box
           sx={{
@@ -167,7 +167,7 @@ const Step4 = () => {
           }}
         >
           <Typography sx={{ mr: 1 }}>
-            <strong>Organization Liaison 2:</strong>{" "}
+            <strong>Organization Contact 2:</strong>{" "}
             {partner_stake?.liaison_name_2}
           </Typography>
           <Stack direction="row" spacing={1}>
@@ -178,7 +178,7 @@ const Step4 = () => {
                 onClick={() => {
                   navigator.clipboard.writeText(partner_stake?.liaison_phone_2);
                   toast.success(
-                    `Phone number copied to clipboard: ${partner_stake?.liaison_phone_2}`
+                    `Phone number copied to clipboard: ${partner_stake?.liaison_phone_2}`,
                   );
                 }}
               >
@@ -194,7 +194,7 @@ const Step4 = () => {
                 onClick={() => {
                   navigator.clipboard.writeText(partner_stake?.liaison_email_2);
                   toast.success(
-                    `Email copied to clipboard: ${partner_stake?.liaison_email_2}`
+                    `Email copied to clipboard: ${partner_stake?.liaison_email_2}`,
                   );
                 }}
               >
@@ -227,7 +227,7 @@ const Step4 = () => {
 
       <Divider />
 
-      {/* Partner Group Liaison */}
+      {/* Partner Group Contact */}
       <Box
         sx={{
           display: "flex",
@@ -237,7 +237,7 @@ const Step4 = () => {
         }}
       >
         <Typography sx={{ mr: 1 }}>
-          <strong>Partner Group Liaison:</strong>{" "}
+          <strong>Partner Group Contact:</strong>{" "}
           {formData.partner_ward_liaison
             ? formData.partner_ward_liaison
             : "No assigned liaison. This can be added on the projects page"}
@@ -249,10 +249,10 @@ const Step4 = () => {
               color="primary"
               onClick={() => {
                 navigator.clipboard.writeText(
-                  formData.partner_ward_liaison_phone1
+                  formData.partner_ward_liaison_phone1,
                 );
                 toast.success(
-                  `Phone number copied to clipboard: ${formData.partner_ward_liaison_phone1}`
+                  `Phone number copied to clipboard: ${formData.partner_ward_liaison_phone1}`,
                 );
               }}
             >
@@ -267,10 +267,10 @@ const Step4 = () => {
               color="primary"
               onClick={() => {
                 navigator.clipboard.writeText(
-                  formData.partner_ward_liaison_email1
+                  formData.partner_ward_liaison_email1,
                 );
                 toast.success(
-                  `Email copied to clipboard: ${formData.partner_ward_liaison_email1}`
+                  `Email copied to clipboard: ${formData.partner_ward_liaison_email1}`,
                 );
               }}
             >
@@ -281,7 +281,7 @@ const Step4 = () => {
         </Stack>
       </Box>
 
-      {/* Partner Group Liaison 2 (if exists) */}
+      {/* Partner Group Contact 2 (if exists) */}
       {formData.partner_ward_liaison2 && (
         <Box
           sx={{
@@ -291,7 +291,7 @@ const Step4 = () => {
           }}
         >
           <Typography sx={{ mr: 1 }}>
-            <strong>Partner Group Liaison 2:</strong>{" "}
+            <strong>Partner Group Contact 2:</strong>{" "}
             {formData.partner_ward_liaison2}
           </Typography>
           <Stack direction="row" spacing={1}>
@@ -301,10 +301,10 @@ const Step4 = () => {
                 color="primary"
                 onClick={() => {
                   navigator.clipboard.writeText(
-                    formData.partner_ward_liaison_phone2
+                    formData.partner_ward_liaison_phone2,
                   );
                   toast.success(
-                    `Phone number copied to clipboard: ${formData.partner_ward_liaison_phone2}`
+                    `Phone number copied to clipboard: ${formData.partner_ward_liaison_phone2}`,
                   );
                 }}
               >
@@ -319,10 +319,10 @@ const Step4 = () => {
                 color="primary"
                 onClick={() => {
                   navigator.clipboard.writeText(
-                    formData.partner_ward_liaison_email2
+                    formData.partner_ward_liaison_email2,
                   );
                   toast.success(
-                    `Email copied to clipboard: ${formData.partner_ward_liaison_email2}`
+                    `Email copied to clipboard: ${formData.partner_ward_liaison_email2}`,
                   );
                 }}
               >
@@ -381,13 +381,13 @@ const Step4 = () => {
               onChange={(e) =>
                 handleInputChange(
                   "site_visit_done_with_partner",
-                  e.target.checked
+                  e.target.checked,
                 )
               }
               disabled={isLocked}
             />
           }
-          label="The Group Liaison has done a site visit"
+          label="The Group Contact has done a site visit"
         />
       </Box>
     </Box>

@@ -5,7 +5,7 @@
  * Uses FE labels (not raw DB column names) per the field renaming:
  *
  *   partner_ward           → Partner Group
- *   partner_ward_liaison   → Partner Group Liaison
+ *   partner_ward_liaison   → Partner Group Contact
  *   project_development_couple → Resource Couple
  *   project_development_couple_ward → Encompassing Area
  *   partner_stake           → Partner Organization
@@ -136,9 +136,9 @@ export function generateDOSReportCSV({
     "Host Name",
     "Host Phone",
     "Host Email",
-    "Partner Group Liaison",
-    "Partner Group Liaison Phone",
-    "Partner Group Liaison Email",
+    "Partner Group Contact",
+    "Partner Group Contact Phone",
+    "Partner Group Contact Email",
     "Needed # of Volunteers",
     "Actual # of Volunteers",
     "Actual # of Hours",

@@ -478,7 +478,7 @@ export const AVAILABLE_FIELDS = {
     visible: true,
     required: true,
     originalLabel: "Safety Video",
-    url: "",
+    url: "https://www.youtube.com/watch?v=Dv2ZeWKZ3qg",
     helpText: "Watch the required safety video before proceeding",
     category: "Days of Service",
     validation: (value) =>

@@ -79,15 +79,15 @@ const FIELD_CATEGORIES = {
     label: "Group & Volunteer Info",
     fields: [
       { id: "partner_ward", label: "Partner Group", isPII: false },
-      { id: "partner_ward_liaison", label: "Group Liaison", isPII: true },
+      { id: "partner_ward_liaison", label: "Group Contact", isPII: true },
       {
         id: "partner_ward_liaison_phone1",
-        label: "Liaison Phone",
+        label: "Contact Phone",
         isPII: true,
       },
       {
         id: "partner_ward_liaison_email1",
-        label: "Liaison Email",
+        label: "Contact Email",
         isPII: true,
       },
       { id: "volunteers_needed", label: "Volunteers Needed", isPII: false },
@@ -170,7 +170,7 @@ export function ReportSettingsDialog({
         });
         return acc;
       },
-      {} as Record<string, boolean>
+      {} as Record<string, boolean>,
     ),
     anonymizePII: false,
   };
@@ -178,7 +178,7 @@ export function ReportSettingsDialog({
   // Load settings from localStorage
   const [savedSettings, setSavedSettings] = useLocalStorage(
     storageKey,
-    defaultSettings
+    defaultSettings,
   );
 
   // Local state for current dialog session
@@ -204,7 +204,7 @@ export function ReportSettingsDialog({
   const handleCategoryToggle = (categoryFields: { id: string }[]) => {
     // Check if all fields in category are currently selected
     const allSelected = categoryFields.every(
-      (field) => settings.includedFields[field.id]
+      (field) => settings.includedFields[field.id],
     );
 
     // Toggle all fields in the category
@@ -231,11 +231,11 @@ export function ReportSettingsDialog({
           acc[fieldId] =
             isIncluded &&
             !FIELD_CATEGORIES.projectCoordination.fields.some(
-              (field) => field.id === fieldId
+              (field) => field.id === fieldId,
             );
           return acc;
         },
-        {} as Record<string, boolean>
+        {} as Record<string, boolean>,
       ),
     }));
   };
@@ -289,7 +289,7 @@ export function ReportSettingsDialog({
   // Check if some (but not all) fields in a category are selected
   const isCategoryIndeterminate = (categoryFields: { id: string }[]) => {
     const selectedCount = categoryFields.filter(
-      (field) => settings.includedFields[field.id]
+      (field) => settings.includedFields[field.id],
     ).length;
     return selectedCount > 0 && selectedCount < categoryFields.length;
   };

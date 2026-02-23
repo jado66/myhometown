@@ -22,16 +22,7 @@ const BudgetStep = () => {
       <Divider />
 
       <Typography variant="h6">Budget Estimates</Typography>
-      {!isBudgetAuthenticated && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          <Typography>
-            Once you enter this budget information and navigate away from this
-            step you will not be able to see this again. Talk to a Resource
-            Developer, or Neighborhood Services Director if this needs to be
-            changed after the fact.
-          </Typography>
-        </Alert>
-      )}
+
       <ProjectTextField
         label="Resource Budget Description"
         multiline

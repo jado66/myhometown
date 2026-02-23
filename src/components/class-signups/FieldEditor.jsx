@@ -17,6 +17,7 @@ import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useImageUpload } from "@/hooks/use-upload-image";
 import { FIELD_TYPES } from "./FieldTypes";
+import { AVAILABLE_FIELDS } from "./AvailableFields";
 import { Upload } from "@mui/icons-material";
 
 export const FieldEditor = ({
@@ -147,6 +148,16 @@ export const FieldEditor = ({
     }
 
     if (config.type === FIELD_TYPES.externalLink) {
+      const isValidUrl = (url) => {
+        if (!url) return false;
+        try {
+          const parsed = new URL(url);
+          return ["http:", "https:"].includes(parsed.protocol);
+        } catch {
+          return false;
+        }
+      };
+      const urlError = config.url && !isValidUrl(config.url) ? "Please enter a valid URL (e.g. https://example.com)" : "";
       return (
         <Stack spacing={2} sx={{ width: "100%" }}>
           <TextField
@@ -163,7 +174,15 @@ export const FieldEditor = ({
             onChange={(e) =>
               onUpdate(field, { ...config, url: e.target.value })
             }
+            onBlur={(e) => {
+              if (!e.target.value.trim()) {
+                const defaultUrl = AVAILABLE_FIELDS[field]?.url || "";
+                onUpdate(field, { ...config, url: defaultUrl });
+              }
+            }}
             label="URL"
+            error={!!urlError}
+            helperText={urlError}
           />
         </Stack>
       );
