@@ -248,7 +248,7 @@ const CommunitySelectionPage = ({ params }) => {
     }/admin-dashboard/days-of-service/${day.short_id.replaceAll(
       "_",
       "/",
-    )}/stake/${stake.id}`;
+    )}/organization/${stake.id}`;
 
     // alert(url);
 

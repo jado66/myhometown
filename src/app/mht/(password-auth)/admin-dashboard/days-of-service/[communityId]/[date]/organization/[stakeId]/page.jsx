@@ -156,8 +156,8 @@ export default function ProjectFormsPage({ params }) {
 
       setProjects((prev) =>
         prev.map((p) =>
-          p.id === selectedProject.id ? { ...p, ...partnerWardData } : p
-        )
+          p.id === selectedProject.id ? { ...p, ...partnerWardData } : p,
+        ),
       );
       toast.success("Partner Group information updated successfully");
       setPartnerWardDialogOpen(false);
@@ -183,7 +183,7 @@ export default function ProjectFormsPage({ params }) {
     const fetchDays = async () => {
       try {
         const { data, error } = await fetchDayOfServiceByShortId(
-          `${communityId}_${date}`
+          `${communityId}_${date}`,
         );
 
         if (error) throw error;
@@ -246,7 +246,7 @@ export default function ProjectFormsPage({ params }) {
   const handleProjectClick = (id) => {
     router.push(
       process.env.NEXT_PUBLIC_DOMAIN +
-        `/admin-dashboard/days-of-service/${communityId}/${date}/project/${id}`
+        `/admin-dashboard/days-of-service/${communityId}/${date}/project/${id}`,
     );
   };
 
@@ -260,11 +260,11 @@ export default function ProjectFormsPage({ params }) {
     setCreatingProject(true);
 
     try {
-    const newId = uuidv4();
-    await addProject(
-      newId,
-      dayOfService.community_id,
-      dayOfService.city_id || null,
+      const newId = uuidv4();
+      await addProject(
+        newId,
+        dayOfService.community_id,
+        dayOfService.city_id || null,
       );
 
       // Wait for 1.5 seconds to allow for data processing
@@ -272,7 +272,7 @@ export default function ProjectFormsPage({ params }) {
 
       // Redirect to the project form page with all necessary IDs
       router.push(
-        `${process.env.NEXT_PUBLIC_DOMAIN}/admin-dashboard/days-of-service/${communityId}/${date}/project/${newId}`
+        `${process.env.NEXT_PUBLIC_DOMAIN}/admin-dashboard/days-of-service/${communityId}/${date}/project/${newId}`,
       );
     } catch (error) {
       console.error("Error creating new project:", error);
@@ -295,10 +295,10 @@ export default function ProjectFormsPage({ params }) {
         setDeleteDialogOpen(false);
         setProjectToDelete(null);
         setSelectedProjects((prev) =>
-          prev.filter((id) => id !== projectToDelete.id)
+          prev.filter((id) => id !== projectToDelete.id),
         );
         setProjects((prev) =>
-          prev.filter((project) => project.id !== projectToDelete.id)
+          prev.filter((project) => project.id !== projectToDelete.id),
         );
         toast.success("Project deleted successfully");
       } catch (error) {
@@ -318,7 +318,7 @@ export default function ProjectFormsPage({ params }) {
     setSelectedProjects((prev) =>
       prev.includes(projectId)
         ? prev.filter((id) => id !== projectId)
-        : [...prev, projectId]
+        : [...prev, projectId],
     );
   };
 
@@ -331,8 +331,8 @@ export default function ProjectFormsPage({ params }) {
     router.push(
       process.env.NEXT_PUBLIC_DOMAIN +
         `/admin-dashboard/days-of-service/${communityId}/${date}/view-timeline?projects=${selectedProjects.join(
-          ","
-        )}`
+          ",",
+        )}`,
     );
   };
 
@@ -378,7 +378,7 @@ export default function ProjectFormsPage({ params }) {
           // Otherwise, assume MM-DD-YYYY and convert to YYYY-MM-DD for better browser compatibility
           parsedDate = moment(
             `${parts[2]}-${parts[0]}-${parts[1]}`,
-            "YYYY-MM-DD"
+            "YYYY-MM-DD",
           );
         }
       }
@@ -409,7 +409,7 @@ export default function ProjectFormsPage({ params }) {
 
   // Find the current Partner Organization
   const partnerStake = dayOfService?.partner_stakes?.find(
-    (stake) => stake.id === stakeId
+    (stake) => stake.id === stakeId,
   );
 
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -631,7 +631,7 @@ export default function ProjectFormsPage({ params }) {
                           {/* Add debug output */}
                           {console.log(
                             `Menu anchor for ${project.id}:`,
-                            menuAnchorEl[project.id]
+                            menuAnchorEl[project.id],
                           )}
                           <Menu
                             id={`action-menu-${project.id}`}
@@ -977,7 +977,7 @@ export default function ProjectFormsPage({ params }) {
                             <Chip
                               icon={<CalendarToday />}
                               label={`Created: ${formatDate(
-                                project.created_at
+                                project.created_at,
                               )}`}
                               size={isMobile ? "small" : "medium"}
                               sx={{ mb: 1 }}
@@ -987,7 +987,7 @@ export default function ProjectFormsPage({ params }) {
                                 <Chip
                                   icon={<CalendarToday />}
                                   label={`Updated: ${formatDate(
-                                    project.updated_at
+                                    project.updated_at,
                                   )}`}
                                   size={isMobile ? "small" : "medium"}
                                   sx={{ mb: 1 }}
@@ -1114,7 +1114,7 @@ export default function ProjectFormsPage({ params }) {
                   onChange={(e) =>
                     handlePartnerWardChange(
                       "partner_ward_liaison",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                 />
@@ -1126,7 +1126,7 @@ export default function ProjectFormsPage({ params }) {
                   onChange={(e) =>
                     handlePartnerWardChange(
                       "partner_ward_liaison_title",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                 />
@@ -1138,7 +1138,7 @@ export default function ProjectFormsPage({ params }) {
                   onChange={(e) =>
                     handlePartnerWardChange(
                       "partner_ward_liaison_email1",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                 />
@@ -1150,7 +1150,7 @@ export default function ProjectFormsPage({ params }) {
                   onChange={(e) =>
                     handlePartnerWardChange(
                       "partner_ward_liaison_phone1",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                 />
@@ -1199,7 +1199,7 @@ export default function ProjectFormsPage({ params }) {
                   onChange={(e) =>
                     handlePartnerWardChange(
                       "partner_ward_liaison2",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                 />
@@ -1211,7 +1211,7 @@ export default function ProjectFormsPage({ params }) {
                   onChange={(e) =>
                     handlePartnerWardChange(
                       "partner_ward_liaison_title2",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                 />
@@ -1223,7 +1223,7 @@ export default function ProjectFormsPage({ params }) {
                   onChange={(e) =>
                     handlePartnerWardChange(
                       "partner_ward_liaison_email2",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                 />
@@ -1235,7 +1235,7 @@ export default function ProjectFormsPage({ params }) {
                   onChange={(e) =>
                     handlePartnerWardChange(
                       "partner_ward_liaison_phone2",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                 />
@@ -1294,7 +1294,7 @@ const formatSafeDate = (dateString) => {
         // Otherwise, assume MM-DD-YYYY and convert to YYYY-MM-DD for better browser compatibility
         parsedDate = moment(
           `${parts[2]}-${parts[0]}-${parts[1]}`,
-          "YYYY-MM-DD"
+          "YYYY-MM-DD",
         );
       }
     }

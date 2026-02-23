@@ -96,7 +96,7 @@ const ProjectForm = ({ date, communityId }) => {
           toastId: "budget-hidden-toast",
           autoClose: 10000, // Longer display time (10 seconds)
           closeOnClick: false, // Prevents closing when clicking the link
-        }
+        },
       );
       return;
     }
@@ -143,7 +143,7 @@ const ProjectForm = ({ date, communityId }) => {
   const saveAndExit = () => {
     const route = date
       ? process.env.NEXT_PUBLIC_DOMAIN +
-        `/admin-dashboard/days-of-service/${communityId}/${date}/stake/${formData.partner_stake_id}`
+        `/admin-dashboard/days-of-service/${communityId}/${date}/organization/${formData.partner_stake_id}`
       : process.env.NEXT_PUBLIC_DOMAIN +
         `/admin-dashboard/days-of-service/${communityId}`;
 

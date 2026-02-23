@@ -50,7 +50,7 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
   sx,
 }) => {
   const [windowWidth, setWindowWidth] = useState<number>(
-    typeof window !== "undefined" ? window.innerWidth : 0
+    typeof window !== "undefined" ? window.innerWidth : 0,
   );
 
   const pathname = usePathname();
@@ -65,7 +65,7 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
 
   const generateBreadcrumbsData = useCallback((): string[] => {
     const stake = dayOfService?.partner_stakes?.find(
-      (stake) => stake.id === stakeId
+      (stake) => stake.id === stakeId,
     );
 
     const isSmallScreen = windowWidth < 600;
@@ -82,12 +82,10 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
     } else if (dayOfService) {
       const cityName = dayOfService.city_name;
       const communityName = dayOfService.community_name || "Community";
-      
+
       if (cityName) {
         base.push(
-          isSmallScreen
-            ? communityName
-            : `${cityName} - ${communityName}`
+          isSmallScreen ? communityName : `${cityName} - ${communityName}`,
         );
       } else {
         base.push(communityName);
@@ -117,7 +115,7 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
               // Otherwise assume MM-DD-YYYY and convert to YYYY-MM-DD
               parsedDate = moment(
                 `${parts[2]}-${parts[0]}-${parts[1]}`,
-                "YYYY-MM-DD"
+                "YYYY-MM-DD",
               );
             }
           }
@@ -134,10 +132,10 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
         : date; // Fallback to original string if parsing fails
 
       // Build the date breadcrumb with optional stake name
-      const dateBreadcrumb = stake?.name 
+      const dateBreadcrumb = stake?.name
         ? `${dayOfService.name || formattedDate} - ${stake.name}`
         : dayOfService.name || formattedDate;
-      
+
       base.push(dateBreadcrumb);
 
       if (pathnames.includes("view-timeline") && !isProjectView) {
@@ -172,7 +170,7 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
   ]);
 
   const [pathTitles, setPathTitles] = useState<string[]>(
-    generateBreadcrumbsData()
+    generateBreadcrumbsData(),
   );
 
   useEffect(() => {
@@ -255,7 +253,7 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
       if (community.length > maxLength / 2) {
         return `${city.substring(0, 3)} - ${community.substring(
           0,
-          maxLength / 2
+          maxLength / 2,
         )}...`;
       }
     }

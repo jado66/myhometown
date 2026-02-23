@@ -92,15 +92,25 @@ const TermsOfServicePage = ({ params }) => {
       const { data: cityForm } = await supabase
         .from("property_release_forms")
         .select("title, partner_name, content")
+        .eq("city_id", cityId)
         .eq("is_active", true)
         .maybeSingle();
 
       if (cityForm) {
-        setReleaseForm(cityForm);
+        // Parse content if it's a JSON string
+        const parsedForm = {
+          ...cityForm,
+          content:
+            typeof cityForm.content === "string"
+              ? JSON.parse(cityForm.content)
+              : cityForm.content,
+        };
+        setReleaseForm(parsedForm);
         return;
       }
     }
 
+    // Fallback to default form (city_id is null)
     const { data: defaultForm } = await supabase
       .from("property_release_forms")
       .select("title, partner_name, content")
@@ -108,7 +118,17 @@ const TermsOfServicePage = ({ params }) => {
       .eq("is_active", true)
       .maybeSingle();
 
-    if (defaultForm) setReleaseForm(defaultForm);
+    if (defaultForm) {
+      // Parse content if it's a JSON string
+      const parsedForm = {
+        ...defaultForm,
+        content:
+          typeof defaultForm.content === "string"
+            ? JSON.parse(defaultForm.content)
+            : defaultForm.content,
+      };
+      setReleaseForm(parsedForm);
+    }
   }, []);
 
   //  Validate token + bootstrap data
