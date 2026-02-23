@@ -344,21 +344,6 @@ export default function UnassignedProjects({
                         sx={{
                           position: "absolute",
                           top: 10,
-                          left: 8,
-                          zIndex: 1,
-                        }}
-                      >
-                        <Checkbox
-                          checked={selectedProjects.includes(project.id)}
-                          onChange={(e) => handleCheckboxChange(e, project.id)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </Box>
-
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: 10,
                           right: 8,
                           display: "flex",
                           zIndex: 1,

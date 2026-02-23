@@ -73,17 +73,28 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
 
     // Handle community level breadcrumb
     if (communityData) {
-      base.push(
-        `${communityData.city_name || communityData.city} - ${
-          communityData.name
-        }`
-      );
+      const cityName = communityData.city_name || communityData.city;
+      if (cityName) {
+        base.push(`${cityName} - ${communityData.name}`);
+      } else {
+        base.push(communityData.name);
+      }
     } else if (dayOfService) {
-      base.push(
-        isSmallScreen
-          ? `${dayOfService.community_name} `
-          : `${dayOfService.city_name} - ${dayOfService.community_name} Community`
-      );
+      const cityName = dayOfService.city_name;
+      const communityName = dayOfService.community_name || "Community";
+      
+      if (cityName) {
+        base.push(
+          isSmallScreen
+            ? communityName
+            : `${cityName} - ${communityName}`
+        );
+      } else {
+        base.push(communityName);
+      }
+    } else if (isProjectView) {
+      // In dev or orphaned projects, just show "Projects"
+      base.push("Projects");
     }
 
     // Handle standard day of service path
@@ -122,11 +133,12 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
           : parsedDate.format("dddd, MMMM Do, YYYY")
         : date; // Fallback to original string if parsing fails
 
-      if (isSmallScreen) {
-        base.push(`${dayOfService.name || formattedDate} - ${stake?.name} `);
-      } else {
-        base.push(`${dayOfService.name || formattedDate} - ${stake?.name} `);
-      }
+      // Build the date breadcrumb with optional stake name
+      const dateBreadcrumb = stake?.name 
+        ? `${dayOfService.name || formattedDate} - ${stake.name}`
+        : dayOfService.name || formattedDate;
+      
+      base.push(dateBreadcrumb);
 
       if (pathnames.includes("view-timeline") && !isProjectView) {
         base.push("View Timeline");
@@ -176,6 +188,11 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
     const getUrl = (segments: string[]): string => {
       return `${baseUrl}/${segments.join("/")}`;
     };
+
+    // If no community ID, return current pathname (non-clickable)
+    if (!communityId) {
+      return pathname;
+    }
 
     switch (index) {
       case 0: // Community Level
@@ -283,13 +300,14 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
         {pathTitles.map((title, index) => {
           const last = index === pathTitles.length - 1;
           const href = generateHref(index);
+          const isClickable = href !== pathname;
 
-          return last ? (
+          return last || !isClickable ? (
             <Typography
               color="textPrimary"
               key={`breadcrumb-${index}`}
               sx={{
-                fontWeight: "bold",
+                fontWeight: last ? "bold" : "normal",
                 textTransform: "capitalize",
                 fontSize: { xs: "0.75rem", sm: "0.875rem", md: "1rem" },
                 lineHeight: 1.2,

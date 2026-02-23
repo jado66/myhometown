@@ -16,8 +16,16 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Chip,
+  alpha,
 } from "@mui/material";
-import { Assignment, Lock, LockOpen } from "@mui/icons-material";
+import {
+  Assignment,
+  Lock,
+  LockOpen,
+  CalendarMonth,
+  Add,
+} from "@mui/icons-material";
 import { useCommunities } from "@/hooks/use-communities";
 import { useDaysOfService } from "@/hooks/useDaysOfService";
 import Loading from "@/components/util/Loading";
@@ -554,72 +562,86 @@ const CommunitySelectionPage = ({ params }) => {
           <Box role="tabpanel" hidden={activeTab !== 0}>
             {activeTab === 0 && (
               <>
-                {daysOfService.length > 0 && (
+                {filteredDaysOfService.length > 0 && (
                   <Box
                     sx={{
-                      mb: 4,
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: 2,
-                      justifyContent: "center",
+                      mb: 3,
+                      p: 2,
+                      mt: 3,
+                      borderRadius: 2,
+                      bgcolor: (t) => alpha(t.palette.primary.main, 0.04),
+                      border: "1px solid",
+                      borderColor: (t) => alpha(t.palette.primary.main, 0.1),
                     }}
                   >
                     <Box
                       sx={{
-                        width: "100%",
                         display: "flex",
-                        justifyContent: "center",
+                        justifyContent: "space-between",
                         alignItems: "center",
-                        mt: 2,
-                        mb: 1,
+                        mb: 1.5,
                       }}
                     >
                       <Typography
-                        variant="subtitle1"
-                        sx={{ textAlign: "center" }}
+                        variant="caption"
+                        sx={{
+                          fontWeight: 700,
+                          letterSpacing: 0.8,
+                          textTransform: "uppercase",
+                          color: "text.secondary",
+                        }}
                       >
-                        Jump to a specific Day of Service:
+                        Jump to Date
                       </Typography>
                     </Box>
-                    {filteredDaysOfService
-                      .sort((a, b) => {
-                        const dateA = moment(b.end_date);
-                        const dateB = moment(a.end_date);
-                        return dateB.isValid() && dateA.isValid()
-                          ? dateB.diff(dateA)
-                          : 0; // Default to no change if dates are invalid
-                      })
-                      .map((day) => (
-                        <Button
-                          key={`nav-${day.id}`}
-                          variant="outlined"
-                          onClick={() => scrollToDay(day.id)}
-                          sx={{
-                            borderRadius: "20px",
-                            textTransform: "none",
-                            minWidth: "auto",
-                          }}
-                        >
-                          {moment(day.end_date).format("MMM DD, YYYY")}
-                        </Button>
-                      ))}
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={handleCreateNewDay}
-                      sx={{
-                        borderRadius: "20px",
-                        textTransform: "none",
-                        minWidth: "auto",
-                      }}
-                    >
-                      Create New Day Of Service
-                    </Button>
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                      {filteredDaysOfService
+                        .sort(
+                          (a, b) =>
+                            new Date(a.end_date).getTime() -
+                            new Date(b.end_date).getTime(),
+                        )
+                        .map((day) => (
+                          <Chip
+                            key={`nav-${day.id}`}
+                            icon={<CalendarMonth sx={{ fontSize: 14 }} />}
+                            label={moment(day.end_date).format("MMM DD, YYYY")}
+                            variant="outlined"
+                            size="small"
+                            onClick={() => scrollToDay(day.id)}
+                            sx={{
+                              cursor: "pointer",
+                              fontWeight: 500,
+                              borderRadius: 1.5,
+                              "&:hover": {
+                                bgcolor: (t) =>
+                                  alpha(t.palette.primary.main, 0.08),
+                                borderColor: "primary.main",
+                              },
+                            }}
+                          />
+                        ))}
+                      <Chip
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        icon={<Add />}
+                        onClick={handleCreateNewDay}
+                        label="Create New Day of Service"
+                        sx={{
+                          borderRadius: 1.5,
+                          textTransform: "none",
+                          fontWeight: 600,
+                        }}
+                      />
+                    </Box>
                   </Box>
                 )}
 
                 {daysOfService.length === 0 && (
-                  <Box sx={{ display: "flex", justifyContent: "center", mb: 5 }}>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "center", mb: 5 }}
+                  >
                     <Button
                       variant="contained"
                       color="primary"

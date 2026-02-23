@@ -4,17 +4,21 @@ import {
   Typography,
   Box,
   Card,
-  Grid,
   Button,
-  Divider,
-  ButtonGroup,
+  IconButton,
+  Tooltip,
+  Chip,
+  alpha,
 } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import {
   EditCalendar,
   LocationOn,
   Lock,
   LockOpen,
-  x,
+  Add,
+  CalendarMonth,
+  GroupWork,
 } from "@mui/icons-material";
 import moment from "moment";
 
@@ -32,129 +36,275 @@ export const DayOfServiceCard = ({
   handleEditStake,
   handleGenerateDayOfServiceReport,
   toggleLockDayOfService,
+  showLockControls = true,
 }) => {
   const { user } = useUser();
 
+  const formattedDate = isSmallScreen
+    ? moment(day.end_date).format("ddd, MM/DD/YY")
+    : moment(day.end_date).format("dddd, MMMM Do, YYYY");
+
   return (
     <Card
-      sx={{ backgroundColor: "grey.50", mb: 4, p: { xs: 2, sm: 4 } }}
       variant="outlined"
+      sx={{
+        mb: 3,
+        borderRadius: 2.5,
+        overflow: "hidden",
+        border: day.is_locked ? "1px solid" : "1px solid",
+        borderColor: day.is_locked ? "warning.light" : "divider",
+      }}
     >
+      {/* Header band */}
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 2,
+          px: { xs: 2, sm: 3 },
+          py: 2,
+          bgcolor: (theme) =>
+            day.is_locked
+              ? alpha(theme.palette.warning.main, 0.06)
+              : alpha(theme.palette.primary.main, 0.04),
+          borderBottom: "1px solid",
+          borderColor: "divider",
         }}
       >
-        {isSmallScreen ? (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 2,
+          }}
+        >
+          {/* Title area */}
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                mb: 0.5,
+                flexWrap: "wrap",
+              }}
+            >
+              <Typography
+                variant={isSmallScreen ? "subtitle1" : "h6"}
+                sx={{ fontWeight: 700, color: "text.primary" }}
+              >
+                {isSmallScreen
+                  ? day.name || "Day of Service"
+                  : `${community.name} ${day.name || "Day of Service"}`}
+              </Typography>
+              {day.is_locked && (
+                <Chip
+                  icon={<Lock sx={{ fontSize: 14 }} />}
+                  label="Locked"
+                  size="small"
+                  color="warning"
+                  variant="filled"
+                  sx={{ fontWeight: 600, height: 24, fontSize: "0.75rem" }}
+                />
+              )}
+            </Box>
+
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                flexWrap: "wrap",
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <CalendarMonth sx={{ fontSize: 16, color: "text.secondary" }} />
+                <Typography variant="body2" color="text.secondary">
+                  {formattedDate}
+                </Typography>
+              </Box>
+              {day.check_in_location && !isSmallScreen && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <LocationOn sx={{ fontSize: 16, color: "text.secondary" }} />
+                  <Typography variant="body2" color="text.secondary">
+                    Check-in: {day.check_in_location}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
+
+          {/* Actions */}
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
-              flexDirection: "column",
-              flexGrow: 1,
+              gap: 1,
+              flexShrink: 0,
             }}
           >
-            <Typography variant="h5" color="primary">
-              {day.name || "Day of Service"}
-            </Typography>
-            <Typography variant="subtitle" color="primary">
-              {moment(day.end_date).format("ddd, MM/DD/yy")}
-            </Typography>
+            <PermissionGuard requiredPermission="dos_admin" user={user}>
+              {showLockControls && (
+                <Tooltip
+                  title={
+                    day.is_locked
+                      ? "Unlock Day of Service"
+                      : "Lock Day of Service"
+                  }
+                >
+                  <IconButton
+                    size="small"
+                    onClick={() =>
+                      toggleLockDayOfService(day.id, !day.is_locked)
+                    }
+                    sx={{
+                      color: day.is_locked ? "warning.main" : "text.secondary",
+                    }}
+                  >
+                    {day.is_locked ? (
+                      <LockOpen fontSize="small" />
+                    ) : (
+                      <Lock fontSize="small" />
+                    )}
+                  </IconButton>
+                </Tooltip>
+              )}
+            </PermissionGuard>
+            <Tooltip
+              title={day.is_locked ? "Day is locked" : "Edit Day of Service"}
+            >
+              <span>
+                <IconButton
+                  size="small"
+                  onClick={() => handleEditDay(day)}
+                  disabled={day.is_locked}
+                  sx={{
+                    color: "primary.main",
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
+                    "&:hover": {
+                      bgcolor: (theme) =>
+                        alpha(theme.palette.primary.main, 0.16),
+                    },
+                  }}
+                >
+                  <EditCalendar fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
           </Box>
-        ) : (
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <Typography variant="h5" color="primary">
-              {community.name} {day.name || "Day of Service"} -{" "}
-              {moment(day.end_date).format("dddd, MMMM Do, YYYY")}
-            </Typography>
-            {day.check_in_location && (
-              <Typography
-                variant="h6"
-                sx={{ display: "flex", alignItems: "center", mb: 4 }}
-              >
-                <LocationOn sx={{ mr: 1 }} /> Check-in Location:{" "}
-                {day.check_in_location}
-              </Typography>
-            )}
-          </Box>
-        )}
-        <Button
-          onClick={() => handleEditDay(day)}
-          color="primary"
-          variant="contained"
-          disabled={day.is_locked}
-        >
-          <EditCalendar sx={{ mr: 1 }} />{" "}
-          {isSmallScreen ? "Edit" : "Edit Day of Service"}
-        </Button>
+        </Box>
       </Box>
 
-      <Divider sx={{ mb: 2, mx: 1 }} />
-      <Typography variant="h6" sx={{ my: 2, ml: 2 }}>
-        {day.partner_stakes.length === 0
-          ? "Please add a Partner Organization to this day of service"
-          : "Manage the projects for your Partner Organizations"}
-      </Typography>
-
-      <Grid
-        container
-        columnSpacing={{ xs: 1, md: 3 }}
-        rowSpacing={2}
-        sx={{ ml: 0 }}
-      >
-        {day.partner_stakes.map((stake) => (
-          <Grid item xs={12} sm={6} key={stake.id}>
-            <StakeCard
-              stake={stake}
-              day={day}
-              onClick={handlePartnerStakeClick}
-              onEdit={handleEditStake}
-              onGenerateReport={handleGenerateDayOfServiceReport}
+      {/* Body */}
+      <Box sx={{ px: { xs: 2, sm: 3 }, py: 2.5 }}>
+        {/* Partner Organizations Section */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 2,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography
+              variant="overline"
+              sx={{
+                letterSpacing: 1.2,
+                fontWeight: 700,
+                color: "text.secondary",
+              }}
+            >
+              Partner Organizations
+            </Typography>
+            <Chip
+              label={day.partner_stakes?.length || 0}
+              size="small"
+              sx={{
+                height: 20,
+                fontSize: "0.7rem",
+                fontWeight: 700,
+                bgcolor: "action.hover",
+              }}
             />
-          </Grid>
-        ))}
-      </Grid>
+          </Box>
+        </Box>
 
-      <Button
-        variant="contained"
-        color="secondary"
-        sx={{ mt: 4, ml: 2 }}
-        onClick={() => handleOpenAddStakeDialog(day.id)}
-        disabled={day.is_locked}
-      >
-        Add Partner Organization
-      </Button>
-
-      <PermissionGuard requiredPermission="dos_admin" user={user}>
-        {day.is_locked ? (
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<LockOpen />}
-            sx={{ mt: 4, ml: 2 }}
-            onClick={() => {
-              toggleLockDayOfService(day.id, false);
+        {day.partner_stakes?.length === 0 ? (
+          <Box
+            sx={{
+              py: 4,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 1.5,
+              border: "2px dashed",
+              borderColor: "divider",
+              borderRadius: 2,
+              bgcolor: "action.hover",
             }}
           >
-            Unlock Day Of Service
-          </Button>
+            <GroupWork sx={{ fontSize: 40, color: "text.disabled" }} />
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ textAlign: "center", maxWidth: 320 }}
+            >
+              No partner organizations yet. Add one to start planning projects
+              for this day of service.
+            </Typography>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<Add />}
+              onClick={() => handleOpenAddStakeDialog(day.id)}
+              disabled={day.is_locked}
+              sx={{ mt: 0.5, textTransform: "none", borderRadius: 2 }}
+            >
+              Add Partner Organization
+            </Button>
+          </Box>
         ) : (
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<Lock />}
-            sx={{ mt: 4, ml: 2 }}
-            onClick={() => {
-              toggleLockDayOfService(day.id, true);
-            }}
-          >
-            Lock Day Of Service
-          </Button>
+          <>
+            <Grid container spacing={2}>
+              {day.partner_stakes.map((stake) => (
+                <Grid item xs={12} sm={6} key={stake.id}>
+                  <StakeCard
+                    stake={stake}
+                    day={day}
+                    onClick={handlePartnerStakeClick}
+                    onEdit={handleEditStake}
+                    onGenerateReport={handleGenerateDayOfServiceReport}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+
+            {/* Add partner button */}
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<Add />}
+              onClick={() => handleOpenAddStakeDialog(day.id)}
+              disabled={day.is_locked}
+              sx={{
+                mt: 2.5,
+                textTransform: "none",
+                borderRadius: 2,
+                borderStyle: "dashed",
+                color: "text.secondary",
+                borderColor: "divider",
+                "&:hover": {
+                  borderStyle: "dashed",
+                  borderColor: "primary.main",
+                  color: "primary.main",
+                  bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
+                },
+              }}
+            >
+              Add Partner Organization
+            </Button>
+          </>
         )}
-      </PermissionGuard>
+      </Box>
     </Card>
   );
 };

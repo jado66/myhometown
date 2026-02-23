@@ -260,18 +260,11 @@ export default function ProjectFormsPage({ params }) {
     setCreatingProject(true);
 
     try {
-      if (!dayOfService.city_id) {
-        throw new Error("City ID is required");
-      }
-
-      const newId = uuidv4();
-      await addProject(
-        newId,
-        dayOfService.community_id,
-        dayOfService.city_id,
-        `${communityId}_${date}`,
-        stakeId,
-        user
+    const newId = uuidv4();
+    await addProject(
+      newId,
+      dayOfService.community_id,
+      dayOfService.city_id || null,
       );
 
       // Wait for 1.5 seconds to allow for data processing

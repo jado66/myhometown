@@ -24,7 +24,7 @@ const AddOrganizationDialog = ({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
-        {currentStake.id
+        {currentStake?.id
           ? `Edit Organization: ${currentStake.name}`
           : "Add New Organization"}
       </DialogTitle>
@@ -38,7 +38,7 @@ const AddOrganizationDialog = ({
                 margin="dense"
                 label="Organization Name"
                 fullWidth
-                value={currentStake.name}
+                value={currentStake?.name || ""}
                 onChange={(e) =>
                   setCurrentStake({ ...currentStake, name: e.target.value })
                 }
@@ -52,7 +52,7 @@ const AddOrganizationDialog = ({
                 label="Estimated Number of Projects"
                 fullWidth
                 type="number"
-                value={currentStake.number_of_projects}
+                value={currentStake?.number_of_projects || ""}
                 onChange={(e) =>
                   setCurrentStake({
                     ...currentStake,
@@ -85,7 +85,7 @@ const AddOrganizationDialog = ({
                 margin="dense"
                 label="Liaison Name 1"
                 fullWidth
-                value={currentStake.liaison_name_1}
+                value={currentStake?.liaison_name_1 || ""}
                 onChange={(e) =>
                   setCurrentStake({
                     ...currentStake,
@@ -98,7 +98,7 @@ const AddOrganizationDialog = ({
                 label="Liaison Title 1"
                 key="liaison_title_1"
                 fullWidth
-                value={currentStake.partner_stake_liaison_title_1}
+                value={currentStake?.partner_stake_liaison_title_1 || ""}
                 onChange={(e) =>
                   setCurrentStake({
                     ...currentStake,
@@ -111,7 +111,7 @@ const AddOrganizationDialog = ({
                 margin="dense"
                 label="Liaison Email 1"
                 fullWidth
-                value={currentStake.liaison_email_1}
+                value={currentStake?.liaison_email_1 || ""}
                 onChange={(e) =>
                   setCurrentStake({
                     ...currentStake,
@@ -123,7 +123,7 @@ const AddOrganizationDialog = ({
                 margin="dense"
                 label="Liaison Phone 1"
                 fullWidth
-                value={currentStake.liaison_phone_1}
+                value={currentStake?.liaison_phone_1 || ""}
                 onChange={(e) =>
                   setCurrentStake({
                     ...currentStake,
@@ -172,7 +172,7 @@ const AddOrganizationDialog = ({
                 margin="dense"
                 label="Liaison Name 2 (Optional)"
                 fullWidth
-                value={currentStake.liaison_name_2}
+                value={currentStake?.liaison_name_2 || ""}
                 onChange={(e) =>
                   setCurrentStake({
                     ...currentStake,
@@ -185,7 +185,7 @@ const AddOrganizationDialog = ({
                 label="Liaison Title 2 (Optional)"
                 key="liaison_title_2"
                 fullWidth
-                value={currentStake.partner_stake_liaison_title_2}
+                value={currentStake?.partner_stake_liaison_title_2 || ""}
                 onChange={(e) =>
                   setCurrentStake({
                     ...currentStake,
@@ -197,7 +197,7 @@ const AddOrganizationDialog = ({
                 margin="dense"
                 label="Liaison Email 2 (Optional)"
                 fullWidth
-                value={currentStake.liaison_email_2}
+                value={currentStake?.liaison_email_2 || ""}
                 onChange={(e) =>
                   setCurrentStake({
                     ...currentStake,
@@ -209,7 +209,7 @@ const AddOrganizationDialog = ({
                 margin="dense"
                 label="Liaison Phone 2 (Optional)"
                 fullWidth
-                value={currentStake.liaison_phone_2}
+                value={currentStake?.liaison_phone_2 || ""}
                 onChange={(e) =>
                   setCurrentStake({
                     ...currentStake,
@@ -222,7 +222,7 @@ const AddOrganizationDialog = ({
         </Box>
       </DialogContent>
       <DialogActions>
-        {currentStake.id && (
+        {currentStake?.id && (
           <Button
             onClick={handleDeleteStake}
             color="error"
@@ -239,9 +239,9 @@ const AddOrganizationDialog = ({
         <Button
           onClick={handleSaveStake}
           variant="contained"
-          disabled={!currentStake.name.trim() || isSaving}
+          disabled={!currentStake?.name?.trim() || isSaving}
         >
-          {currentStake.id ? "Update" : "Add"} Organization
+          {currentStake?.id ? "Update" : "Add"} Organization
         </Button>
       </DialogActions>
     </Dialog>
