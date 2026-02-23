@@ -20,8 +20,8 @@ interface DayOfService {
   start_date: string;
   end_date: string;
   name?: string;
-  city_id: string;
-  community_id: string;
+  city_id: string | null;
+  community_id: string | null;
   created_at: string;
   updated_at: string;
   short_id: string;
@@ -33,8 +33,8 @@ interface CreateDayOfService {
   start_date: string;
   end_date: string;
   name?: string;
-  city_id: string;
-  community_id: string;
+  city_id: string | null;
+  community_id: string | null;
   partner_stakes?: PartnerStake[];
   partner_wards?: string[];
 }
@@ -45,18 +45,19 @@ interface UpdateDayOfService {
   end_date?: string;
   short_id: string;
   name?: string;
-  city_id?: string;
-  community_id?: string;
+  city_id?: string | null;
+  community_id?: string | null;
   partner_stakes?: PartnerStake[];
   partner_wards?: string[];
 }
 
 const generateDayOfServiceId = (
-  communityId: string,
+  communityId: string | null,
   end_date: string
 ): string => {
   const formattedDate = moment(end_date).format("MM-DD-YYYY");
-  return `${communityId}_${formattedDate}`;
+  const prefix = communityId || "dev";
+  return `${prefix}_${formattedDate}`;
 };
 
 export const useDaysOfService = () => {
@@ -149,10 +150,18 @@ export const useDaysOfService = () => {
         setIsLoading(true);
         setError(null);
 
-        const { data, error: supabaseError } = await supabase
+        let query = supabase
           .from("days_of_service")
-          .select("*")
-          .eq("community_id", community_id);
+          .select("*");
+
+        // If community_id is "dev", fetch only days of service without a city_id
+        if (community_id === "dev") {
+          query = query.is("city_id", null);
+        } else {
+          query = query.eq("community_id", community_id);
+        }
+
+        const { data, error: supabaseError } = await query;
 
         if (supabaseError) throw supabaseError;
 

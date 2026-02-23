@@ -14,8 +14,8 @@ export const useDaysOfServiceProjects = () => {
 
   const addProject = async (
     newId: string,
-    community_id: string,
-    city_id: string,
+    community_id: string | null,
+    city_id: string | null,
     daysOfServiceShortId: string | null,
     partner_stake_id: string | null,
     user: any
@@ -64,14 +64,23 @@ export const useDaysOfServiceProjects = () => {
     }
   };
 
-  const fetchUnassignedCommunityProjects = async (communityId: string) => {
+  const fetchUnassignedCommunityProjects = async (communityId: string | null) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("days_of_service_project_forms")
         .select("*")
-        .eq("community_id", communityId)
         .is("days_of_service_id", null);
+
+      // If communityId is null (dev mode), filter by null city_id
+      // Otherwise, filter by the specific communityId
+      if (communityId === null) {
+        query = query.is("city_id", null);
+      } else {
+        query = query.eq("community_id", communityId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 

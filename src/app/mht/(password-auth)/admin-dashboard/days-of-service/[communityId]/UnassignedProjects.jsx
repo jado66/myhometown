@@ -52,7 +52,7 @@ import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import Loading from "@/components/util/Loading";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 
-export default function UnassignedProjects({ communityId, toggleOnCounter }) {
+export default function UnassignedProjects({ communityId, cityId: propCityId, toggleOnCounter }) {
   const router = useRouter();
   const { user } = useUser();
 
@@ -76,7 +76,7 @@ export default function UnassignedProjects({ communityId, toggleOnCounter }) {
     }
   }, [toggleOnCounter]);
 
-  const [cityId, setCityId] = useState(null);
+  const [cityId, setCityId] = useState(propCityId);
 
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -123,6 +123,11 @@ export default function UnassignedProjects({ communityId, toggleOnCounter }) {
   useEffect(() => {
     // Get city ID from supabase communities table
     const fetchCityId = async () => {
+      // Skip fetching if communityId is null or cityId is already provided
+      if (!communityId || propCityId !== undefined) {
+        return;
+      }
+
       const { data, error } = await fetchNewCommunities({
         query: (baseQuery) => baseQuery.eq("id", communityId),
       });
@@ -137,15 +142,13 @@ export default function UnassignedProjects({ communityId, toggleOnCounter }) {
     };
     fetchCityId();
 
-    if (communityId) {
-      const fetchProjects = async () => {
-        const data = await fetchUnassignedCommunityProjects(communityId);
-        setProjects(data);
-        setIsLoading(false);
-      };
-      fetchProjects();
-    }
-  }, [communityId]);
+    const fetchProjects = async () => {
+      const data = await fetchUnassignedCommunityProjects(communityId);
+      setProjects(data);
+      setIsLoading(false);
+    };
+    fetchProjects();
+  }, [communityId, propCityId]);
 
   // Event handlers
   const handleProjectClick = (id) => {
@@ -172,8 +175,10 @@ export default function UnassignedProjects({ communityId, toggleOnCounter }) {
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Redirect to the project form page with all necessary IDs
+      // Use "dev" as the communityId if it's null
+      const routeCommunityId = communityId || "dev";
       router.push(
-        `${process.env.NEXT_PUBLIC_DOMAIN}/admin-dashboard/days-of-service/${communityId}/project/${newId}`
+        `${process.env.NEXT_PUBLIC_DOMAIN}/admin-dashboard/days-of-service/${routeCommunityId}/project/${newId}`
       );
     } catch (error) {
       console.error("Error creating new project:", error);

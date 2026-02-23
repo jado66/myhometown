@@ -107,6 +107,17 @@ const CommunitySelectionPage = ({ params }) => {
   useEffect(() => {
     if (!communityId) return;
 
+    // Skip fetching community if communityId is "dev"
+    if (communityId === "dev") {
+      setCommunity({ 
+        id: "dev", 
+        name: "Dev Mode", 
+        city_name: "Development",
+        city_id: null 
+      });
+      return;
+    }
+
     const fetchCommunity = async () => {
       try {
         const { data, error } = await fetchNewCommunities({
@@ -417,7 +428,7 @@ const CommunitySelectionPage = ({ params }) => {
         mt: 4,
       }}
     >
-      <DosBreadcrumbs communityData={community} />
+      {communityId !== "dev" && <DosBreadcrumbs communityData={community} />}
       <Typography
         variant="h3"
         gutterBottom
@@ -427,7 +438,7 @@ const CommunitySelectionPage = ({ params }) => {
           textAlign: "center",
         }}
       >
-        Days Of Service Management
+        Days Of Service Management{communityId === "dev" ? " - Dev Mode" : ""}
       </Typography>
       <Box sx={{ position: "relative" }}>
         <Typography
@@ -440,7 +451,9 @@ const CommunitySelectionPage = ({ params }) => {
             color: "primary.main",
           }}
         >
-          {community.city_name} - {community.name}
+          {communityId === "dev" 
+            ? "Development / Testing Mode" 
+            : `${community.city_name} - ${community.name}`}
         </Typography>
 
         {!isSmallScreen && (
@@ -520,8 +533,8 @@ const CommunitySelectionPage = ({ params }) => {
               }}
             >
               <Tab label="Project Planning" />
-              <Tab label="Summary of Projects" />
-              <Tab label="Community Volunteer Detail" />
+              {communityId !== "dev" && <Tab label="Summary of Projects" />}
+              {communityId !== "dev" && <Tab label="Community Volunteer Detail" />}
             </Tabs>
             <Box sx={{ pb: 1, pl: 2, flexShrink: 0 }}>
               <FormControlLabel
@@ -610,8 +623,8 @@ const CommunitySelectionPage = ({ params }) => {
                 </Box>
 
                 <UnassignedProjects
-                  communityId={communityId}
-                  cityId={community.city_id}
+                  communityId={communityId === "dev" ? null : communityId}
+                  cityId={communityId === "dev" ? null : community.city_id}
                   toggleOnCounter={toggleOnCounter}
                 />
 
@@ -665,32 +678,36 @@ const CommunitySelectionPage = ({ params }) => {
           </Box>
 
           {/* Tab 2: Summary of Projects */}
-          <Box role="tabpanel" hidden={activeTab !== 1}>
-            {activeTab === 1 && (
-              <VolunteerSignups
-                params={params}
-                cityName={community.city_name}
-                daysOfService={filteredDaysOfService}
-                generateCommunityReport={generateCommunityReport}
-                view="summary"
-                selectedDayId={selectedDayId || null}
-              />
-            )}
-          </Box>
+          {communityId !== "dev" && (
+            <Box role="tabpanel" hidden={activeTab !== 1}>
+              {activeTab === 1 && (
+                <VolunteerSignups
+                  params={params}
+                  cityName={community.city_name}
+                  daysOfService={filteredDaysOfService}
+                  generateCommunityReport={generateCommunityReport}
+                  view="summary"
+                  selectedDayId={selectedDayId || null}
+                />
+              )}
+            </Box>
+          )}
 
           {/* Tab 3: Volunteer Details */}
-          <Box role="tabpanel" hidden={activeTab !== 2}>
-            {activeTab === 2 && (
-              <VolunteerSignups
-                params={params}
-                cityName={community.city_name}
-                daysOfService={filteredDaysOfService}
-                generateCommunityReport={generateCommunityReport}
-                view="volunteers"
-                selectedDayId={selectedDayId || null}
-              />
-            )}
-          </Box>
+          {communityId !== "dev" && (
+            <Box role="tabpanel" hidden={activeTab !== 2}>
+              {activeTab === 2 && (
+                <VolunteerSignups
+                  params={params}
+                  cityName={community.city_name}
+                  daysOfService={filteredDaysOfService}
+                  generateCommunityReport={generateCommunityReport}
+                  view="volunteers"
+                  selectedDayId={selectedDayId || null}
+                />
+              )}
+            </Box>
+          )}
         </Box>
 
         {isSmallScreen && (
@@ -719,12 +736,12 @@ const CommunitySelectionPage = ({ params }) => {
         <ServiceDayDialog
           open={showServiceDayDialog}
           onClose={handleServiceDayDialogClose}
-          cityId={community?.city_id}
-          communityId={community?.id}
+          cityId={communityId === "dev" ? null : community?.city_id}
+          communityId={communityId === "dev" ? null : community?.id}
           initialData={selectedServiceDay}
           fetchDays={fetchDays}
           handleDeleteDay={handleDeleteDay}
-          dayOfServicePrefix={community.name}
+          dayOfServicePrefix={communityId === "dev" ? "dev" : community.name}
         />
         <AddOrganizationDialog
           open={showStakeDialog}
