@@ -58,6 +58,7 @@
     "export-to-csv": "^1.4.0",
     "faker": "^6.6.6",
     "formik": "^2.2.9",
+    "googleapis": "^171.4.0",
     "js-cookie": "^3.0.5",
     "jspdf": "^3.0.0",
     "jspdf-autotable": "^5.0.2",

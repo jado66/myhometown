@@ -52,7 +52,11 @@ import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import Loading from "@/components/util/Loading";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 
-export default function UnassignedProjects({ communityId, cityId: propCityId, toggleOnCounter }) {
+export default function UnassignedProjects({
+  communityId,
+  cityId: propCityId,
+  toggleOnCounter,
+}) {
   const router = useRouter();
   const { user } = useUser();
 
@@ -154,7 +158,7 @@ export default function UnassignedProjects({ communityId, cityId: propCityId, to
   const handleProjectClick = (id) => {
     router.push(
       process.env.NEXT_PUBLIC_DOMAIN +
-        `/admin-dashboard/days-of-service/${communityId}/project/${id}`
+        `/admin-dashboard/days-of-service/${communityId}/project/${id}`,
     );
   };
 
@@ -178,7 +182,7 @@ export default function UnassignedProjects({ communityId, cityId: propCityId, to
       // Use "dev" as the communityId if it's null
       const routeCommunityId = communityId || "dev";
       router.push(
-        `${process.env.NEXT_PUBLIC_DOMAIN}/admin-dashboard/days-of-service/${routeCommunityId}/project/${newId}`
+        `${process.env.NEXT_PUBLIC_DOMAIN}/admin-dashboard/days-of-service/${routeCommunityId}/project/${newId}`,
       );
     } catch (error) {
       console.error("Error creating new project:", error);
@@ -201,10 +205,10 @@ export default function UnassignedProjects({ communityId, cityId: propCityId, to
         setDeleteDialogOpen(false);
         setProjectToDelete(null);
         setSelectedProjects((prev) =>
-          prev.filter((id) => id !== projectToDelete.id)
+          prev.filter((id) => id !== projectToDelete.id),
         );
         setProjects((prev) =>
-          prev.filter((project) => project.id !== projectToDelete.id)
+          prev.filter((project) => project.id !== projectToDelete.id),
         );
         toast.success("Project deleted successfully");
       } catch (error) {
@@ -224,7 +228,7 @@ export default function UnassignedProjects({ communityId, cityId: propCityId, to
     setSelectedProjects((prev) =>
       prev.includes(projectId)
         ? prev.filter((id) => id !== projectId)
-        : [...prev, projectId]
+        : [...prev, projectId],
     );
   };
 
@@ -463,7 +467,7 @@ export default function UnassignedProjects({ communityId, cityId: propCityId, to
                               {/* Add debug output */}
                               {console.log(
                                 `Menu anchor for ${project.id}:`,
-                                menuAnchorEl[project.id]
+                                menuAnchorEl[project.id],
                               )}
                               <Menu
                                 id={`action-menu-${project.id}`}
@@ -727,7 +731,7 @@ const formatSafeDate = (dateString) => {
         // Otherwise, assume MM-DD-YYYY and convert to YYYY-MM-DD for better browser compatibility
         parsedDate = moment(
           `${parts[2]}-${parts[0]}-${parts[1]}`,
-          "YYYY-MM-DD"
+          "YYYY-MM-DD",
         );
       }
     }

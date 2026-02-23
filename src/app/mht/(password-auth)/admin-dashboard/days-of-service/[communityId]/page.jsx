@@ -109,11 +109,11 @@ const CommunitySelectionPage = ({ params }) => {
 
     // Skip fetching community if communityId is "dev"
     if (communityId === "dev") {
-      setCommunity({ 
-        id: "dev", 
-        name: "Dev Mode", 
+      setCommunity({
+        id: "dev",
+        name: "Dev Mode",
         city_name: "Development",
-        city_id: null 
+        city_id: null,
       });
       return;
     }
@@ -451,8 +451,8 @@ const CommunitySelectionPage = ({ params }) => {
             color: "primary.main",
           }}
         >
-          {communityId === "dev" 
-            ? "Development / Testing Mode" 
+          {communityId === "dev"
+            ? "Development / Testing Mode"
             : `${community.city_name} - ${community.name}`}
         </Typography>
 
@@ -534,7 +534,9 @@ const CommunitySelectionPage = ({ params }) => {
             >
               <Tab label="Project Planning" />
               {communityId !== "dev" && <Tab label="Summary of Projects" />}
-              {communityId !== "dev" && <Tab label="Community Volunteer Detail" />}
+              {communityId !== "dev" && (
+                <Tab label="Community Volunteer Detail" />
+              )}
             </Tabs>
             <Box sx={{ pb: 1, pl: 2, flexShrink: 0 }}>
               <FormControlLabel

@@ -1,21 +1,23 @@
 import nodemailer from "nodemailer";
 
 export const citiesStrongTransporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+  service: "gmail",
   auth: {
-    user: process.env.CS_GMAIL_APP_USERNAME,
-    pass: process.env.CS_GMAIL_APP_PASSWORD,
+    type: "OAuth2",
+    user: process.env.CS_GMAIL_USER,
+    clientId: process.env.CS_GMAIL_CLIENT_ID,
+    clientSecret: process.env.CS_GMAIL_CLIENT_SECRET,
+    refreshToken: process.env.CS_GMAIL_REFRESH_TOKEN,
   },
 });
 
 export const myHometownTransporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+  service: "gmail",
   auth: {
-    user: process.env.MHT_GMAIL_APP_USERNAME,
-    pass: process.env.MHT_GMAIL_APP_PASSWORD,
+    type: "OAuth2",
+    user: process.env.MHT_GMAIL_USER,
+    clientId: process.env.MHT_GMAIL_CLIENT_ID,
+    clientSecret: process.env.MHT_GMAIL_CLIENT_SECRET,
+    refreshToken: process.env.MHT_GMAIL_REFRESH_TOKEN,
   },
 });

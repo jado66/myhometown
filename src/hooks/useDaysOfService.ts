@@ -53,7 +53,7 @@ interface UpdateDayOfService {
 
 const generateDayOfServiceId = (
   communityId: string | null,
-  end_date: string
+  end_date: string,
 ): string => {
   const formattedDate = moment(end_date).format("MM-DD-YYYY");
   const prefix = communityId || "dev";
@@ -80,7 +80,7 @@ export const useDaysOfService = () => {
               communities!community_id (
                 community_name:name
               )
-            `
+            `,
         )
         .eq("short_id", shortId)
         .single();
@@ -120,7 +120,7 @@ export const useDaysOfService = () => {
               communities!community_id (
                 community_name:name
               )
-            `
+            `,
         )
         .eq("id", id)
         .single();
@@ -150,9 +150,7 @@ export const useDaysOfService = () => {
         setIsLoading(true);
         setError(null);
 
-        let query = supabase
-          .from("days_of_service")
-          .select("*");
+        let query = supabase.from("days_of_service").select("*");
 
         // If community_id is "dev", fetch only days of service without a city_id
         if (community_id === "dev") {
@@ -175,7 +173,7 @@ export const useDaysOfService = () => {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   const addDayOfService = useCallback(
@@ -186,7 +184,7 @@ export const useDaysOfService = () => {
 
         const id = generateDayOfServiceId(
           newDayOfService.community_id,
-          newDayOfService.end_date
+          newDayOfService.end_date,
         );
 
         const { data, error: supabaseError } = await supabase
@@ -207,7 +205,7 @@ export const useDaysOfService = () => {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   const updateDayOfService = useCallback(
@@ -219,7 +217,7 @@ export const useDaysOfService = () => {
         if (updates.end_date && updates.community_id) {
           const newId = generateDayOfServiceId(
             updates.community_id,
-            updates.end_date
+            updates.end_date,
           );
           if (newId !== id) updates = { ...updates, short_id: newId };
         }
@@ -243,7 +241,7 @@ export const useDaysOfService = () => {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   const deleteDayOfService = useCallback(async (id: string) => {
@@ -272,7 +270,7 @@ export const useDaysOfService = () => {
       if (supabaseError) throw supabaseError;
 
       toast.success(
-        `Day of service deleted successfully. Removed ${deletedFormsCount} related project forms.`
+        `Day of service deleted successfully. Removed ${deletedFormsCount} related project forms.`,
       );
       return true;
     } catch (err) {
@@ -288,7 +286,7 @@ export const useDaysOfService = () => {
     async (
       id: string,
       type: "stake" | "ward",
-      value: PartnerStake | string // Stake is now an object, ward is still a string
+      value: PartnerStake | string, // Stake is now an object, ward is still a string
     ) => {
       try {
         setIsLoading(true);
@@ -348,7 +346,7 @@ export const useDaysOfService = () => {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   const updatePartnerStakeInDayOfService = useCallback(
@@ -379,7 +377,7 @@ export const useDaysOfService = () => {
 
         // Update the matching stake
         const updatedStakes = parsedStakes.map((stake) =>
-          stake.id === updatedStake.id ? updatedStake : stake
+          stake.id === updatedStake.id ? updatedStake : stake,
         );
 
         const { data, error: updateError } = await supabase
@@ -403,7 +401,7 @@ export const useDaysOfService = () => {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   const removePartnerStakeFromDayOfService = useCallback(
@@ -434,7 +432,7 @@ export const useDaysOfService = () => {
 
         // Filter out the stake with the matching ID
         const updatedStakes = parsedStakes.filter(
-          (stake) => stake.id !== stakeId
+          (stake) => stake.id !== stakeId,
         );
 
         const { data, error: updateError } = await supabase
@@ -458,7 +456,7 @@ export const useDaysOfService = () => {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   return {

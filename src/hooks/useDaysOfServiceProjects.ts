@@ -18,7 +18,7 @@ export const useDaysOfServiceProjects = () => {
     city_id: string | null,
     daysOfServiceShortId: string | null,
     partner_stake_id: string | null,
-    user: any
+    user: any,
   ) => {
     setLoading(true);
     try {
@@ -64,7 +64,9 @@ export const useDaysOfServiceProjects = () => {
     }
   };
 
-  const fetchUnassignedCommunityProjects = async (communityId: string | null) => {
+  const fetchUnassignedCommunityProjects = async (
+    communityId: string | null,
+  ) => {
     setLoading(true);
     try {
       let query = supabase
@@ -136,7 +138,7 @@ export const useDaysOfServiceProjects = () => {
 
   const fetchProjectsByDaysOfServiceId = async (
     daysOfServiceId: string,
-    summaryOnly = false
+    summaryOnly = false,
   ) => {
     setLoading(true);
     try {
@@ -145,7 +147,7 @@ export const useDaysOfServiceProjects = () => {
         .select(
           summaryOnly
             ? "id, status, project_name, project_development_couple, address_street1, address_street2, address_city, created_at, updated_at"
-            : "*"
+            : "*",
         )
         .eq("days_of_service_id", daysOfServiceId);
 
@@ -163,7 +165,7 @@ export const useDaysOfServiceProjects = () => {
 
   const fetchProjectsByDaysOfStakeId = async (
     stakeId: string,
-    summaryOnly = false
+    summaryOnly = false,
   ) => {
     setLoading(true);
     try {
@@ -172,7 +174,7 @@ export const useDaysOfServiceProjects = () => {
         .select(
           summaryOnly
             ? "id, status, project_name, project_development_couple, address_street1, address_street2, address_city, created_at, updated_at"
-            : "*"
+            : "*",
         )
         .eq("partner_stake_id", stakeId);
 
@@ -209,7 +211,7 @@ export const useDaysOfServiceProjects = () => {
     dateOfService: string,
     projectName: string,
     dayOfService: any,
-    includeBudget: boolean = false
+    includeBudget: boolean = false,
   ) => {
     // this function has been moved to reportGenerators.ts
   };
@@ -217,7 +219,7 @@ export const useDaysOfServiceProjects = () => {
   const generateStakeSummaryReport = async (
     stakeId,
     dateOfService,
-    dayOfService
+    dayOfService,
   ) => {
     setLoading(true);
     try {
@@ -230,7 +232,7 @@ export const useDaysOfServiceProjects = () => {
       }
 
       const partnerStake = dayOfService?.partner_stakes.find(
-        (stake) => stake.id === stakeId
+        (stake) => stake.id === stakeId,
       );
       const formattedDate = formatSafeDate(dateOfService);
 
@@ -293,7 +295,7 @@ export const useDaysOfServiceProjects = () => {
             pageWidth - logoWidth - margin,
             yPosition,
             logoWidth,
-            logoHeight
+            logoHeight,
           );
         } else {
           doc.setFontSize(8);
@@ -327,7 +329,7 @@ export const useDaysOfServiceProjects = () => {
         doc.text(
           `Partner Organization: ${partnerStake?.name || "N/A"}`,
           margin,
-          yPosition
+          yPosition,
         );
         yPosition += 5;
         doc.text(stakeContact, margin, yPosition);
@@ -341,7 +343,7 @@ export const useDaysOfServiceProjects = () => {
         doc.text(
           `Check-in Location: ${dayOfService?.check_in_location || "N/A"}`,
           margin,
-          yPosition
+          yPosition,
         );
         doc.setTextColor("#000000"); //black
         yPosition += 5;
@@ -416,13 +418,13 @@ export const useDaysOfServiceProjects = () => {
           const tasks = project.tasks.tasks
             .slice(0, 3) // Limit to 3 tasks
             .map((task) =>
-              task.todos?.length > 0 ? task.todos[0].substring(0, 40) : "N/A"
+              task.todos?.length > 0 ? task.todos[0].substring(0, 40) : "N/A",
             );
 
           tasks.forEach((task) => {
             const wrappedTask = doc.splitTextToSize(
               `• ${task}${task.length > 40 ? "..." : ""}`,
-              colWidth - 15
+              colWidth - 15,
             );
             tempY += wrappedTask.slice(0, 1).length * 4;
           });
@@ -537,7 +539,7 @@ export const useDaysOfServiceProjects = () => {
           estimatedCardHeight,
           2, // Reduced corner radius from 3 to 2
           2, // Reduced corner radius from 3 to 2
-          "FD"
+          "FD",
         );
 
         // Now render all the content on top of the background
@@ -568,7 +570,7 @@ export const useDaysOfServiceProjects = () => {
           // Map and display tasks if they exist
           const tasks = project.tasks.tasks
             .map((task) =>
-              task.todos?.length > 0 ? task.todos[0].substring(0, 40) : ""
+              task.todos?.length > 0 ? task.todos[0].substring(0, 40) : "",
             )
             .filter((task) => task.trim()); // Filter out empty tasks
 
@@ -577,7 +579,7 @@ export const useDaysOfServiceProjects = () => {
             tasks.forEach((task) => {
               const wrappedTask = doc.splitTextToSize(
                 `• ${task}${task.length > 40 ? "..." : ""}`,
-                colWidth - 15
+                colWidth - 15,
               );
               wrappedTask.slice(0, 1).forEach((text) => {
                 doc.text(text, colX + 10, contentY);
@@ -638,7 +640,7 @@ export const useDaysOfServiceProjects = () => {
           pageHeight - 5,
           {
             align: "right",
-          }
+          },
         );
       }
 
@@ -660,7 +662,7 @@ export const useDaysOfServiceProjects = () => {
     type: "single" | "multiple",
     identifier: string,
     dateOfService?: string,
-    filterType?: "cityId" | "communityId" | "daysOfServiceId"
+    filterType?: "cityId" | "communityId" | "daysOfServiceId",
   ) => {
     setLoading(true);
     try {
@@ -719,7 +721,7 @@ export const useDaysOfServiceProjects = () => {
 
   const generateCommunityReportCSV = async (
     community: any,
-    daysOfService: any
+    daysOfService: any,
   ) => {
     // Helper function to get project description
     const getProjectDescription = (project: any) => {
@@ -760,7 +762,7 @@ export const useDaysOfServiceProjects = () => {
     for (const day of daysOfService) {
       // Day header
       const dayHeader = `${day.name || "Day of Service"} - ${moment(
-        day.end_date
+        day.end_date,
       ).format("ddd, MM/DD/yy")}`;
       csvContent += `"${dayHeader}"\n`;
 
@@ -771,7 +773,7 @@ export const useDaysOfServiceProjects = () => {
       for (const stake of day.partner_stakes) {
         // Fetch projects for this stake
         const projects = (await fetchProjectsByDaysOfStakeId(
-          stake.id
+          stake.id,
         )) as any[];
 
         if (projects.length === 0) {
@@ -802,18 +804,18 @@ export const useDaysOfServiceProjects = () => {
             const escapedStakeName = stake.name.replace(/"/g, '""');
             const escapedGroup = (project.partner_ward || "").replace(
               /"/g,
-              '""'
+              '""',
             );
             const escapedOwner = (project.property_owner || "").replace(
               /"/g,
-              '""'
+              '""',
             );
             const escapedAddress = address.replace(/"/g, '""');
             const escapedStatus = status.replace(/"/g, '""');
             const escapedResourceCouple = resourceCouple.replace(/"/g, '""');
             const escapedProjectDescription = projectDescription.replace(
               /"/g,
-              '""'
+              '""',
             );
 
             // UPDATED: Add the row to CSV content with all new columns
