@@ -206,7 +206,7 @@ const CitySelectionPage = () => {
             <Divider sx={{ my: 4 }} />
             <Accordion>
               <AccordionSummary expandIcon={<ExpandMore />}>
-                <Typography variant="h6">City Passwords</Typography>
+                <Typography variant="h6">Community Passcodes</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <>

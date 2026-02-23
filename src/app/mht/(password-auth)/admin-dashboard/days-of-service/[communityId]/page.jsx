@@ -60,7 +60,6 @@ const CommunitySelectionPage = ({ params }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
 
-  const [toggleOnCounter, setToggleOnCounter] = useState(0);
   const [showPriorYears, setShowPriorYears] = useState(false);
   const [selectedDayId, setSelectedDayId] = useState("");
 
@@ -69,10 +68,6 @@ const CommunitySelectionPage = ({ params }) => {
   const filteredDaysOfService = showPriorYears
     ? daysOfService
     : daysOfService.filter((day) => moment(day.end_date).year() >= currentYear);
-
-  const toggleUnassignedProjects = () => {
-    setToggleOnCounter((prev) => prev + 1);
-  };
 
   const theme = useTheme();
 
@@ -533,6 +528,7 @@ const CommunitySelectionPage = ({ params }) => {
               }}
             >
               <Tab label="Project Planning" />
+              <Tab label="Unassigned Projects" />
               {communityId !== "dev" && <Tab label="Summary of Projects" />}
               {communityId !== "dev" && (
                 <Tab label="Community Volunteer Detail" />
@@ -558,88 +554,81 @@ const CommunitySelectionPage = ({ params }) => {
           <Box role="tabpanel" hidden={activeTab !== 0}>
             {activeTab === 0 && (
               <>
-                <Box
-                  sx={{
-                    mb: 4,
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 2,
-                    justifyContent: "center",
-                  }}
-                >
-                  {daysOfService.length > 0 ? (
-                    <>
-                      <Box
-                        sx={{
-                          width: "100%",
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          mt: 2,
-                          mb: 1,
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle1"
-                          sx={{ textAlign: "center" }}
-                        >
-                          Jump to a specific Day of Service:
-                        </Typography>
-                      </Box>
-                      {filteredDaysOfService
-                        .sort((a, b) => {
-                          const dateA = moment(b.end_date);
-                          const dateB = moment(a.end_date);
-                          return dateB.isValid() && dateA.isValid()
-                            ? dateB.diff(dateA)
-                            : 0; // Default to no change if dates are invalid
-                        })
-                        .map((day) => (
-                          <Button
-                            key={`nav-${day.id}`}
-                            variant="outlined"
-                            onClick={() => scrollToDay(day.id)}
-                            sx={{
-                              borderRadius: "20px",
-                              textTransform: "none",
-                              minWidth: "auto",
-                            }}
-                          >
-                            {moment(day.end_date).format("MMM DD, YYYY")}
-                          </Button>
-                        ))}
-                    </>
-                  ) : null}
-                  <Button
-                    variant="outlined"
-                    onClick={toggleUnassignedProjects}
+                {daysOfService.length > 0 && (
+                  <Box
                     sx={{
-                      bgcolor: "#e4f5e7",
-                      borderRadius: "20px",
-                      textTransform: "none",
-                      minWidth: "auto",
+                      mb: 4,
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 2,
+                      justifyContent: "center",
                     }}
                   >
-                    Unassigned Projects
-                  </Button>
-                </Box>
-
-                <UnassignedProjects
-                  communityId={communityId === "dev" ? null : communityId}
-                  cityId={communityId === "dev" ? null : community.city_id}
-                  toggleOnCounter={toggleOnCounter}
-                />
+                    <Box
+                      sx={{
+                        width: "100%",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        mt: 2,
+                        mb: 1,
+                      }}
+                    >
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ textAlign: "center" }}
+                      >
+                        Jump to a specific Day of Service:
+                      </Typography>
+                    </Box>
+                    {filteredDaysOfService
+                      .sort((a, b) => {
+                        const dateA = moment(b.end_date);
+                        const dateB = moment(a.end_date);
+                        return dateB.isValid() && dateA.isValid()
+                          ? dateB.diff(dateA)
+                          : 0; // Default to no change if dates are invalid
+                      })
+                      .map((day) => (
+                        <Button
+                          key={`nav-${day.id}`}
+                          variant="outlined"
+                          onClick={() => scrollToDay(day.id)}
+                          sx={{
+                            borderRadius: "20px",
+                            textTransform: "none",
+                            minWidth: "auto",
+                          }}
+                        >
+                          {moment(day.end_date).format("MMM DD, YYYY")}
+                        </Button>
+                      ))}
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleCreateNewDay}
+                      sx={{
+                        borderRadius: "20px",
+                        textTransform: "none",
+                        minWidth: "auto",
+                      }}
+                    >
+                      Create New Day Of Service
+                    </Button>
+                  </Box>
+                )}
 
                 {daysOfService.length === 0 && (
-                  <Typography
-                    variant="h6"
-                    color="primary"
-                    gutterBottom
-                    sx={{ mb: 5 }}
-                  >
-                    No Days of Service have been created yet. Please create a
-                    new Day of Service to get started.
-                  </Typography>
+                  <Box sx={{ display: "flex", justifyContent: "center", mb: 5 }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleCreateNewDay}
+                      sx={{ mt: 2 }}
+                    >
+                      Create New Day Of Service
+                    </Button>
+                  </Box>
                 )}
                 {filteredDaysOfService
                   .sort((a, b) => new Date(a.end_date) - new Date(b.end_date))
@@ -660,29 +649,24 @@ const CommunitySelectionPage = ({ params }) => {
                       />
                     </Box>
                   ))}
-
-                {daysOfService.length !== 0 && (
-                  <Divider sx={{ my: 3, width: "100%" }} />
-                )}
-
-                <Box sx={{ display: "flex", justifyContent: "center" }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    sx={{ mt: 4, mx: 2, display: "block" }}
-                    onClick={handleCreateNewDay}
-                  >
-                    Create New Day Of Service
-                  </Button>
-                </Box>
               </>
             )}
           </Box>
 
-          {/* Tab 2: Summary of Projects */}
+          {/* Tab 2: Unassigned Projects */}
+          <Box role="tabpanel" hidden={activeTab !== 1}>
+            {activeTab === 1 && (
+              <UnassignedProjects
+                communityId={communityId === "dev" ? null : communityId}
+                cityId={communityId === "dev" ? null : community.city_id}
+              />
+            )}
+          </Box>
+
+          {/* Tab 3: Summary of Projects */}
           {communityId !== "dev" && (
-            <Box role="tabpanel" hidden={activeTab !== 1}>
-              {activeTab === 1 && (
+            <Box role="tabpanel" hidden={activeTab !== 2}>
+              {activeTab === 2 && (
                 <VolunteerSignups
                   params={params}
                   cityName={community.city_name}
@@ -695,10 +679,10 @@ const CommunitySelectionPage = ({ params }) => {
             </Box>
           )}
 
-          {/* Tab 3: Volunteer Details */}
+          {/* Tab 4: Volunteer Details */}
           {communityId !== "dev" && (
-            <Box role="tabpanel" hidden={activeTab !== 2}>
-              {activeTab === 2 && (
+            <Box role="tabpanel" hidden={activeTab !== 3}>
+              {activeTab === 3 && (
                 <VolunteerSignups
                   params={params}
                   cityName={community.city_name}
