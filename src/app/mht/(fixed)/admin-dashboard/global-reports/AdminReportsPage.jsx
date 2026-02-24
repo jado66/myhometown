@@ -155,7 +155,7 @@ const AdminReportsPage = () => {
     }
 
     // Validate dates
-    if (endDate && endDate > todayStr) {
+    if (selectedReport !== "daysOfService" && endDate && endDate > todayStr) {
       setDateError("End date cannot be in the future");
       return;
     }
@@ -876,11 +876,11 @@ const AdminReportsPage = () => {
                   }}
                   InputLabelProps={{ shrink: true }}
                   inputProps={{
-                    max: todayStr,
+                    max: selectedReport !== "daysOfService" ? todayStr : undefined,
                     min: startDate || undefined,
                   }}
                   fullWidth
-                  helperText="Cannot be in the future"
+                  helperText={selectedReport !== "daysOfService" ? "Cannot be in the future" : undefined}
                 />
               </Grid>
               {dateError && (
