@@ -36,7 +36,7 @@ export const FieldEditor = ({
     // Handle structural elements (header, text block, divider)
     if (!config) {
       console.log(
-        `Error rendering field ${JSON.stringify({ field, config }, null, 4)}`
+        `Error rendering field ${JSON.stringify({ field, config }, null, 4)}`,
       );
       return null;
     }
@@ -95,8 +95,8 @@ export const FieldEditor = ({
               {loading
                 ? "Uploading..."
                 : config.url
-                ? "Change Image"
-                : "Upload Image"}
+                  ? "Change Image"
+                  : "Upload Image"}
               <input
                 type="file"
                 hidden
@@ -157,7 +157,10 @@ export const FieldEditor = ({
           return false;
         }
       };
-      const urlError = config.url && !isValidUrl(config.url) ? "Please enter a valid URL (e.g. https://example.com)" : "";
+      const urlError =
+        config.url && !isValidUrl(config.url)
+          ? "Please enter a valid URL (e.g. https://example.com)"
+          : "";
       return (
         <Stack spacing={2} sx={{ width: "100%" }}>
           <TextField

@@ -192,10 +192,7 @@ const ProjectForm = ({ date, communityId }) => {
               </Step>
             ))}
           </Stepper>
-          <StepContent
-            activeStep={activeStep}
-            date={date}
-          />
+          <StepContent activeStep={activeStep} date={date} />
           <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
             <Button
               variant="contained"
