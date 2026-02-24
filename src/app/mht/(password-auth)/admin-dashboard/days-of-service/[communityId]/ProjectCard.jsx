@@ -23,7 +23,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import {
-  Assignment,
+  Construction,
   Delete as DeleteIcon,
   Group,
   LocationOn,
@@ -85,23 +85,6 @@ export const ProjectCard = ({
       variant="outlined"
       onClick={() => onProjectClick(project.id)}
     >
-      {showCheckbox && (
-        <Box
-          sx={{
-            position: "absolute",
-            top: 10,
-            left: 8,
-            zIndex: 1,
-          }}
-        >
-          <Checkbox
-            checked={isSelected}
-            onChange={(e) => onCheckboxChange(e, project.id)}
-            onClick={(e) => e.stopPropagation()}
-          />
-        </Box>
-      )}
-
       <Box
         sx={{
           position: "absolute",
@@ -137,7 +120,7 @@ export const ProjectCard = ({
                 }}
                 sx={{ mr: 1 }}
               >
-                <Assignment sx={{ mr: 1 }} />
+                <Construction sx={{ mr: 1 }} />
                 Print
               </Button>
             </Tooltip>
@@ -193,7 +176,7 @@ export const ProjectCard = ({
                   onMenuClose(project.id);
                 }}
               >
-                <Assignment sx={{ mr: 1 }} />
+                <Construction sx={{ mr: 1 }} />
                 Print Report
               </MenuItem>
               <MenuItem
@@ -365,7 +348,7 @@ export const ProjectCard = ({
                 }}
               >
                 <Phone sx={{ mr: 1 }} />
-                Group Assignment &amp; Contact Information
+                Group Construction &amp; Contact Information
               </Typography>
 
               {!project.partner_ward && (

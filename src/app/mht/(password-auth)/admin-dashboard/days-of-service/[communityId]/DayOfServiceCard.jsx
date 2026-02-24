@@ -226,6 +226,28 @@ export const DayOfServiceCard = ({
               }}
             />
           </Box>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<Add />}
+            onClick={() => handleOpenAddStakeDialog(day.id)}
+            disabled={day.is_locked}
+            sx={{
+              textTransform: "none",
+              borderRadius: 2,
+              borderStyle: "dashed",
+              color: "text.secondary",
+              borderColor: "divider",
+              "&:hover": {
+                borderStyle: "dashed",
+                borderColor: "primary.main",
+                color: "primary.main",
+                bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
+              },
+            }}
+          >
+            Add Partner Organization
+          </Button>
         </Box>
 
         {day.partner_stakes?.length === 0 ? (
@@ -278,30 +300,6 @@ export const DayOfServiceCard = ({
               ))}
             </Grid>
 
-            {/* Add partner button */}
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<Add />}
-              onClick={() => handleOpenAddStakeDialog(day.id)}
-              disabled={day.is_locked}
-              sx={{
-                mt: 2.5,
-                textTransform: "none",
-                borderRadius: 2,
-                borderStyle: "dashed",
-                color: "text.secondary",
-                borderColor: "divider",
-                "&:hover": {
-                  borderStyle: "dashed",
-                  borderColor: "primary.main",
-                  color: "primary.main",
-                  bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
-                },
-              }}
-            >
-              Add Partner Organization
-            </Button>
           </>
         )}
       </Box>

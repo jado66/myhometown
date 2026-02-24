@@ -20,7 +20,6 @@ import {
   Divider,
   CircularProgress,
   Alert,
-  Checkbox,
   Tooltip,
   Menu,
   MenuItem,
@@ -65,6 +64,7 @@ import { useUser } from "@/hooks/use-user";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
 import Loading from "@/components/util/Loading";
+import { ProjectCard } from "./ProjectCard";
 
 export default function ProjectFormsPage({ params }) {
   const { stakeId, communityId, date } = params;
@@ -82,7 +82,7 @@ export default function ProjectFormsPage({ params }) {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
-  const [selectedProjects, setSelectedProjects] = useState([]);
+
   const [partnerWardDialogOpen, setPartnerWardDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -294,9 +294,6 @@ export default function ProjectFormsPage({ params }) {
         await deleteProject(projectToDelete.id);
         setDeleteDialogOpen(false);
         setProjectToDelete(null);
-        setSelectedProjects((prev) =>
-          prev.filter((id) => id !== projectToDelete.id),
-        );
         setProjects((prev) =>
           prev.filter((project) => project.id !== projectToDelete.id),
         );
@@ -311,29 +308,6 @@ export default function ProjectFormsPage({ params }) {
   const handleCancelDelete = () => {
     setDeleteDialogOpen(false);
     setProjectToDelete(null);
-  };
-
-  const handleCheckboxChange = (e, projectId) => {
-    e.stopPropagation();
-    setSelectedProjects((prev) =>
-      prev.includes(projectId)
-        ? prev.filter((id) => id !== projectId)
-        : [...prev, projectId],
-    );
-  };
-
-  const handleViewTimelines = () => {
-    if (selectedProjects.length === 0) {
-      toast.warning("Please select at least one project");
-      return;
-    }
-
-    router.push(
-      process.env.NEXT_PUBLIC_DOMAIN +
-        `/admin-dashboard/days-of-service/${communityId}/${date}/view-timeline?projects=${selectedProjects.join(
-          ",",
-        )}`,
-    );
   };
 
   const handleGenerateSingleReport = async (e, projectId) => {
@@ -480,9 +454,7 @@ export default function ProjectFormsPage({ params }) {
 
       {projects?.length !== 0 && (
         <Typography variant="h6" color="primary" gutterBottom sx={{ mb: 5 }}>
-          Click on a project to view or edit the project form. You can select
-          projects using the checkbox and generate reports or view selected
-          projects as timelines.
+          Click on a project to view or edit the project form.
         </Typography>
       )}
 
@@ -522,7 +494,7 @@ export default function ProjectFormsPage({ params }) {
         ) : projects?.length >= 1 ? (
           <Grid
             container
-            spacing={{ xs: 1, sm: 2, lg: 4 }}
+            spacing={{ xs: 1, sm: 2 }}
             sx={{ p: { lg: 3, md: 0 }, overflowY: "auto" }}
           >
             {projects
@@ -534,470 +506,26 @@ export default function ProjectFormsPage({ params }) {
                   : 0; // Default to no change if dates are invalid
               })
               .map((project) => (
-                <Grid item xs={12} sm={6} lg={6} key={project.id}>
-                  <Card
-                    sx={{
-                      cursor: "pointer",
-                      "&:hover": { boxShadow: 6 },
-                      position: "relative",
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      backgroundColor: theme.palette.grey[50],
-                      border:
-                        project.status === "completed"
-                          ? "2px solid #318D43"
-                          : "",
-                    }}
-                    variant="outlined"
-                    onClick={() => handleProjectClick(project.id)}
-                  >
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 10,
-                        left: 8,
-                        zIndex: 1,
-                      }}
-                    >
-                      <Checkbox
-                        checked={selectedProjects.includes(project.id)}
-                        onChange={(e) => handleCheckboxChange(e, project.id)}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </Box>
-
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 10,
-                        right: 8,
-                        display: "flex",
-                        zIndex: 1,
-                      }}
-                    >
-                      {/* Regular buttons for normal screens */}
-                      {!isSmallScreen && (
-                        <>
-                          <IconButton
-                            edge="end"
-                            aria-label="generate-report"
-                            onClick={(e) =>
-                              handleGenerateSingleReport(e, project.id)
-                            }
-                            sx={{ mr: 1 }}
-                          >
-                            <Tooltip title="Generate Report">
-                              <Assignment />
-                            </Tooltip>
-                          </IconButton>
-
-                          <IconButton
-                            edge="end"
-                            aria-label="delete"
-                            onClick={(e) => handleDeleteClick(e, project)}
-                            sx={{ mr: 1 }}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </>
-                      )}
-
-                      {/* Dropdown menu button for small screens */}
-                      {isSmallScreen && (
-                        <>
-                          {project.volunteers_needed &&
-                            project.volunteers_needed > 0 && (
-                              <Typography
-                                variant="body2"
-                                sx={{ display: "flex", alignItems: "center" }}
-                              >
-                                <Group sx={{ mr: 1 }} size="small" />
-                                {project.volunteers_needed}
-                              </Typography>
-                            )}
-                          <IconButton
-                            aria-label="more-actions"
-                            aria-controls={`action-menu-${project.id}`}
-                            aria-haspopup="true"
-                            onClick={(e) => {
-                              handleMenuClick(e, project.id);
-                              e.stopPropagation();
-                            }}
-                          >
-                            <MoreVertIcon />
-                          </IconButton>
-
-                          {/* Add debug output */}
-                          {console.log(
-                            `Menu anchor for ${project.id}:`,
-                            menuAnchorEl[project.id],
-                          )}
-                          <Menu
-                            id={`action-menu-${project.id}`}
-                            anchorEl={menuAnchorEl[project.id]}
-                            open={Boolean(menuAnchorEl[project.id])}
-                            onClose={() => handleMenuClose(project.id)}
-                            MenuListProps={{
-                              "aria-labelledby": `action-button-${project.id}`,
-                            }}
-                          >
-                            <MenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleGenerateSingleReport(e, project.id);
-                                handleMenuClose(project.id);
-                              }}
-                            >
-                              <Assignment sx={{ mr: 1 }} />
-                              Print Report
-                            </MenuItem>
-                            <MenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteClick(e, project);
-                                handleMenuClose(project.id);
-                              }}
-                            >
-                              <DeleteIcon sx={{ mr: 1 }} />
-                              Delete
-                            </MenuItem>
-                          </Menu>
-                        </>
-                      )}
-                    </Box>
-
-                    <CardHeader
-                      title={getProjectTitle(project)}
-                      subheader={
-                        project.address_street1 &&
-                        project.address_city && (
-                          <Box>
-                            <Typography
-                              variant="subtitle"
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                ml: -0.5,
-                              }}
-                            >
-                              <LocationOn
-                                color="primary"
-                                size="small"
-                                sx={{ mr: 1 }}
-                              />
-
-                              {`${project.address_street1}${
-                                project.address_street2
-                                  ? `, ${project.address_street2}`
-                                  : ""
-                              }, ${project.address_city}`}
-                            </Typography>
-                          </Box>
-                        )
-                      }
-                      sx={{
-                        pb: 0,
-                        pl: { xs: 6, sm: 6, md: 6 },
-                        pt: { xs: 2.5, sm: 3, md: 2 },
-                        "& .MuiCardHeader-title": {
-                          fontSize: { xs: "0.9rem", sm: "1rem", md: "1.5rem" },
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        },
-                        "& .MuiCardHeader-subheader": {
-                          fontSize: { xs: "0.5rem", sm: "0.875rem" },
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        },
-                      }}
-                    />
-
-                    <CardContent sx={{ pt: 2, flex: 1 }}>
-                      {project.project_developer && (
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ mb: 3 }}
-                        >
-                          {"Resource Couple: " +
-                            project.project_development_couple}
-                        </Typography>
-                      )}
-
-                      {project.project_id && (
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ mb: 3 }}
-                        >
-                          {project.project_id}
-                        </Typography>
-                      )}
-                      {project.status === "completed" && (
-                        <Chip
-                          label="Ready for Day of Service"
-                          color="success"
-                          size="small"
-                          sx={{
-                            textTransform: "capitalize",
-                            mb: 2,
-                          }}
-                        />
-                      )}
-
-                      <Grid container spacing={2} sx={{ mb: 1 }}>
-                        {/* Left column - First liaison */}
-                        <Grid item xs={12} md={6}>
-                          {project.is_dumpster_needed && (
-                            <Box sx={{ mt: 2 }}>
-                              <Typography
-                                variant="subtitle"
-                                gutterBottom
-                                sx={{ display: "flex", alignItems: "center" }}
-                              >
-                                <DumpsterIcon
-                                  color="primary"
-                                  size="small"
-                                  sx={{ mr: 1 }}
-                                />
-                                Dumpsters
-                                {project.is_second_dumpster_needed && (
-                                  <Chip
-                                    label={"x 2"}
-                                    color="primary"
-                                    size="small"
-                                    sx={{
-                                      ml: 1,
-                                      backgroundColor:
-                                        theme.palette.primary.light,
-                                    }}
-                                  />
-                                )}
-                              </Typography>
-                            </Box>
-                          )}
-                        </Grid>
-                        <Grid
-                          item
-                          xs={12}
-                          md={6}
-                          sx={{ display: "flex", justifyContent: "flex-end" }}
-                        >
-                          {project.are_blue_stakes_needed && (
-                            <Box sx={{ mt: 2 }}>
-                              <Typography
-                                variant="subtitle"
-                                gutterBottom
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  textAlign: "right",
-                                }}
-                              >
-                                {project.called_811 ? (
-                                  <CheckCircle
-                                    color="primary"
-                                    size="small"
-                                    sx={{ mr: 1 }}
-                                  />
-                                ) : (
-                                  <Flag
-                                    color="info"
-                                    size="small"
-                                    sx={{ mr: 1 }}
-                                  />
-                                )}
-                                Blue Stakes
-                              </Typography>
-                            </Box>
-                          )}
-                        </Grid>
-                      </Grid>
-
-                      <Accordion
-                        elevation={1}
-                        sx={{
-                          border: `1px solid ${theme.palette.divider}`,
-                          "&:before": {
-                            display: "none",
-                          },
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <AccordionSummary
-                          expandIcon={<ExpandMore />}
-                          aria-controls="contact-info-content"
-                          id="contact-info-header"
-                          sx={{
-                            backgroundColor: theme.palette.background.default,
-                            display: "flex",
-                          }}
-                        >
-                          <Typography
-                            variant="h6"
-                            sx={{
-                              fontSize: {
-                                xs: "0.75rem",
-                                sm: "1rem",
-                                md: "1rem",
-                              },
-                              display: "flex",
-                              alignItems: "center",
-                            }}
-                          >
-                            <Phone sx={{ mr: 1 }} />
-                            Group Assignment &amp; Contact Information
-                          </Typography>
-
-                          {!project.partner_ward && (
-                            <>
-                              <Box sx={{ flexGrow: 1 }} />
-                              <Typography
-                                variant="subtitle1"
-                                gutterBottom
-                                sx={{
-                                  color: "#cf6179",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  mt: 1,
-                                  mr: 2,
-                                }}
-                              >
-                                Partner Group not Assigned
-                              </Typography>
-                            </>
-                          )}
-                        </AccordionSummary>
-                        <AccordionDetails>
-                          <Box sx={{ position: "relative", mb: 2 }}>
-                            <Typography variant="subtitle1" gutterBottom>
-                              Partner Group: {project.partner_ward || "Not set"}
-                            </Typography>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              startIcon={<Edit />}
-                              onClick={(e) => handleEditPartnerWard(e, project)}
-                              sx={{ position: "absolute", top: 0, right: 0 }}
-                            >
-                              Edit
-                            </Button>
-                          </Box>
-
-                          <Divider sx={{ my: 2 }} />
-
-                          <Grid container spacing={2}>
-                            {/* Left column - First liaison */}
-
-                            {/* liaison 1 & 2, Resource Couple, host */}
-                            {/* dumpster and blue stakes */}
-
-                            <Grid item xs={12} md={6}>
-                              <Box sx={{ p: 1 }}>
-                                {project.partner_ward_liaison && (
-                                  <Typography variant="h6" gutterBottom>
-                                    {project.partner_ward_liaison}
-                                  </Typography>
-                                )}
-                                {project.partner_ward_liaison_title && (
-                                  <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                  >
-                                    Title: {project.partner_ward_liaison_title}
-                                  </Typography>
-                                )}
-                                {project.partner_ward_liaison_phone1 && (
-                                  <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                  >
-                                    Email: {project.partner_ward_liaison_email1}
-                                  </Typography>
-                                )}
-                                {project.partner_ward_liaison_email2 && (
-                                  <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                  >
-                                    Phone: {project.partner_ward_liaison_phone1}
-                                  </Typography>
-                                )}
-                              </Box>
-                            </Grid>
-
-                            {/* Right column - Second liaison */}
-                            <Grid item xs={12} md={6}>
-                              <Box sx={{ p: 1 }}>
-                                {project.partner_ward_liaison2 && (
-                                  <Typography variant="h6" gutterBottom>
-                                    {project.partner_ward_liaison2}
-                                  </Typography>
-                                )}
-
-                                {project.partner_ward_liaison_title2 && (
-                                  <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                  >
-                                    Title: {project.partner_ward_liaison_title2}
-                                  </Typography>
-                                )}
-                                {project.partner_ward_liaison_email2 && (
-                                  <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                  >
-                                    Email: {project.partner_ward_liaison_email2}
-                                  </Typography>
-                                )}
-                                {project.partner_ward_liaison_phone2 && (
-                                  <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                  >
-                                    Phone: {project.partner_ward_liaison_phone2}
-                                  </Typography>
-                                )}
-                              </Box>
-                            </Grid>
-                          </Grid>
-
-                          <Box
-                            sx={{
-                              mt: 2,
-                              display: "flex",
-                              justifyContent: "space-between",
-                              flexWrap: "wrap",
-                            }}
-                          >
-                            <Chip
-                              icon={<CalendarToday />}
-                              label={`Created: ${formatDate(
-                                project.created_at,
-                              )}`}
-                              size={isMobile ? "small" : "medium"}
-                              sx={{ mb: 1 }}
-                            />
-                            {project.updated_at &&
-                              project.updated_at !== project.created_at && (
-                                <Chip
-                                  icon={<CalendarToday />}
-                                  label={`Updated: ${formatDate(
-                                    project.updated_at,
-                                  )}`}
-                                  size={isMobile ? "small" : "medium"}
-                                  sx={{ mb: 1 }}
-                                />
-                              )}
-                          </Box>
-                        </AccordionDetails>
-                      </Accordion>
-                    </CardContent>
-                  </Card>
+                <Grid item xs={12} lg={6} key={project.id}>
+                  <ProjectCard
+                    project={project}
+                    onProjectClick={handleProjectClick}
+                    onGenerateReport={(p) =>
+                      handleGenerateSingleReport(
+                        { stopPropagation: () => {} },
+                        p.id,
+                      )
+                    }
+                    onDelete={(p) =>
+                      handleDeleteClick({ stopPropagation: () => {} }, p)
+                    }
+                    onEditPartnerWard={(p) =>
+                      handleEditPartnerWard({ stopPropagation: () => {} }, p)
+                    }
+                    menuAnchorEl={menuAnchorEl}
+                    onMenuOpen={handleMenuClick}
+                    onMenuClose={handleMenuClose}
+                  />
                 </Grid>
               ))}
           </Grid>
@@ -1034,17 +562,6 @@ export default function ProjectFormsPage({ params }) {
           sx={{ width: { xs: "100%", sm: "auto" } }}
         >
           {creatingProject ? "Creating Project..." : "New Project"}
-        </Button>
-
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={handleViewTimelines}
-          startIcon={<TimelineIcon />}
-          disabled={isLoading || selectedProjects.length === 0}
-          sx={{ width: { xs: "100%", sm: "auto" } }}
-        >
-          View Project Timelines
         </Button>
 
         <Button

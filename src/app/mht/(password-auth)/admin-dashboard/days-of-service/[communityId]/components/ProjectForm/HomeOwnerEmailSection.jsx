@@ -42,13 +42,13 @@ const HomeOwnerEmailSection = () => {
   }
   if (formData.project_development_couple_email1) {
     emailOptions.push({
-      value: formData.project_development_couple_email1,
+      value: formData.project_developer_email1,
       label: `Project Developer Email`,
     });
   }
   if (formData.project_development_couple_email2) {
     emailOptions.push({
-      value: formData.project_development_couple_email2,
+      value: formData.project_developer_phone2,
       label: `Project Developer Email 2`,
     });
   }
@@ -68,7 +68,7 @@ const HomeOwnerEmailSection = () => {
   const handleSendHomeownerEmail = async () => {
     if (!selectedEmail || !formData.property_owner) {
       toast.error(
-        "Please select an email and ensure Property Owner is filled."
+        "Please select an email and ensure Property Owner is filled.",
       );
       return;
     }
@@ -85,7 +85,7 @@ const HomeOwnerEmailSection = () => {
             to: selectedEmail, // Use selected email
             formId: formData.id,
           }),
-        }
+        },
       );
 
       if (response.ok) {
@@ -144,7 +144,7 @@ const HomeOwnerEmailSection = () => {
                 disabled={emailOptions.length === 0}
                 renderValue={(selected) => {
                   const option = emailOptions.find(
-                    (opt) => opt.value === selected
+                    (opt) => opt.value === selected,
                   );
                   return option ? option.value : "";
                 }}
@@ -184,8 +184,8 @@ const HomeOwnerEmailSection = () => {
             !formData.project_development_couple_email2 && (
               <Grid item xs={12} sm={12}>
                 <Typography variant="subtitle" color="error">
-                  *Please fill out at least one email field (Property Owner, Dev
-                  Couple 1, or Dev Couple 2) in Step 1 before sending an email.
+                  * Please fill out at least one email field for Property Owner,
+                  Project Developer, or Resource Couple.
                 </Typography>
               </Grid>
             )}
@@ -236,7 +236,7 @@ const HomeOwnerEmailSection = () => {
                         </Box>
                         {index !==
                           formData.collaborators.filter(
-                            (c) => c.type === "property-owner"
+                            (c) => c.type === "property-owner",
                           ).length -
                             1 && <Divider />}
                       </React.Fragment>

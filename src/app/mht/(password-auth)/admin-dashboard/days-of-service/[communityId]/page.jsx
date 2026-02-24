@@ -498,10 +498,8 @@ const CommunitySelectionPage = ({ params }) => {
             >
               <Tab label="Project Planning" />
               <Tab label="Unassigned Projects" />
-              {communityId !== "dev" && <Tab label="Summary of Projects" />}
-              {communityId !== "dev" && (
-                <Tab label="Community Volunteer Detail" />
-              )}
+              <Tab label="Summary of Projects" />
+              <Tab label="Community Volunteer Detail" />
             </Tabs>
             <Box sx={{ pb: 1, pl: 2, flexShrink: 0 }}>
               <FormControlLabel
@@ -647,36 +645,32 @@ const CommunitySelectionPage = ({ params }) => {
           </Box>
 
           {/* Tab 3: Summary of Projects */}
-          {communityId !== "dev" && (
-            <Box role="tabpanel" hidden={activeTab !== 2}>
-              {activeTab === 2 && (
-                <VolunteerSignups
-                  params={params}
-                  cityName={community.city_name}
-                  daysOfService={filteredDaysOfService}
-                  generateCommunityReport={generateCommunityReport}
-                  view="summary"
-                  selectedDayId={selectedDayId || null}
-                />
-              )}
-            </Box>
-          )}
+          <Box role="tabpanel" hidden={activeTab !== 2}>
+            {activeTab === 2 && (
+              <VolunteerSignups
+                params={params}
+                cityName={community.city_name}
+                daysOfService={filteredDaysOfService}
+                generateCommunityReport={generateCommunityReport}
+                view="summary"
+                selectedDayId={selectedDayId || null}
+              />
+            )}
+          </Box>
 
           {/* Tab 4: Volunteer Details */}
-          {communityId !== "dev" && (
-            <Box role="tabpanel" hidden={activeTab !== 3}>
-              {activeTab === 3 && (
-                <VolunteerSignups
-                  params={params}
-                  cityName={community.city_name}
-                  daysOfService={filteredDaysOfService}
-                  generateCommunityReport={generateCommunityReport}
-                  view="volunteers"
-                  selectedDayId={selectedDayId || null}
-                />
-              )}
-            </Box>
-          )}
+          <Box role="tabpanel" hidden={activeTab !== 3}>
+            {activeTab === 3 && (
+              <VolunteerSignups
+                params={params}
+                cityName={community.city_name}
+                daysOfService={filteredDaysOfService}
+                generateCommunityReport={generateCommunityReport}
+                view="volunteers"
+                selectedDayId={selectedDayId || null}
+              />
+            )}
+          </Box>
         </Box>
 
         <ServiceDayDialog
