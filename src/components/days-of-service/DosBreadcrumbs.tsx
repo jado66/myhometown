@@ -220,11 +220,7 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
     switch (index) {
       case 0: // Community Level - use the new/current community ID
         if (communityId) {
-          return getUrl([
-            "admin-dashboard",
-            "days-of-service",
-            communityId,
-          ]);
+          return getUrl(["admin-dashboard", "days-of-service", communityId]);
         } else if (isProjectView) {
           return getUrl([
             "admin-dashboard",

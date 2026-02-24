@@ -31,7 +31,20 @@ export const useProjectSummary = (daysOfService) => {
               dayOfService.partner_stakes &&
               dayOfService.partner_stakes.length > 0
             ) {
-              for (const stake of dayOfService.partner_stakes) {
+              const parsedStakes = dayOfService.partner_stakes
+                .map((s) => {
+                  if (typeof s === "string") {
+                    try {
+                      return JSON.parse(s);
+                    } catch {
+                      return null;
+                    }
+                  }
+                  return s;
+                })
+                .filter(Boolean);
+
+              for (const stake of parsedStakes) {
                 // Fetch projects for this stake
                 const stakeProjects = await fetchProjectsByDaysOfStakeId(
                   stake.id,

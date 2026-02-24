@@ -81,6 +81,8 @@ export const FormResponseTable = ({
       email: 180,
       phone: 140,
       whoAreYouType: 150,
+      whoAreYouValue: 180,
+      stakeName: 180,
       projectName: 200, // Renamed from projectId
       dayOfServiceFormatted: 200, // Added new column for day of service
       submittedAtFormatted: 140,
@@ -103,6 +105,8 @@ export const FormResponseTable = ({
       email: true,
       phone: true,
       whoAreYouType: true,
+      whoAreYouValue: true,
+      stakeName: true,
       projectName: true, // Renamed from projectId
       dayOfServiceFormatted: true, // Added for day of service column
       submittedAtFormatted: true,
@@ -167,6 +171,9 @@ export const FormResponseTable = ({
         const projectInfo = projectsData?.[projectId];
         const projectName = projectInfo?.name || "-";
 
+        // Use stakeName already resolved in projectsMap from useProjectSummary
+        const stakeName = projectInfo?.stakeName || "-";
+
         // Count minor volunteers
         const minorCount = Array.isArray(data.minorVolunteers)
           ? data.minorVolunteers.length
@@ -206,6 +213,8 @@ export const FormResponseTable = ({
           dayOfServiceFormatted: dayOfServiceDisplay,
           whoAreYouType: whoAreYou.type || "unknown",
           whoAreYouValue: whoAreYou.value || "",
+          stakeId: whoAreYou.stakeId || "",
+          stakeName,
           projectId: whoAreYou.projectId || "",
           projectName, // Add project name from project info
           hasPrepDay: whoAreYou.hasPrepDay || false,
@@ -408,6 +417,29 @@ export const FormResponseTable = ({
         ),
       },
       {
+        accessorKey: "stakeName",
+        header: "Organization",
+        size: columnSizing.stakeName,
+        minSize: 160,
+        Cell: ({ row }) => (
+          <Typography variant="body2" noWrap>
+            {row.original.stakeName || "-"}
+          </Typography>
+        ),
+      },
+      {
+        accessorKey: "whoAreYouValue",
+        header: "Group",
+        size: columnSizing.whoAreYouValue,
+        minSize: 140,
+        Cell: ({ row }) => (
+          <Typography variant="body2" noWrap>
+            {row.original.whoAreYouValue?.split("-")?.[0] || "-"}
+          </Typography>
+        ),
+      },
+
+      {
         accessorKey: "projectName", // Changed from projectId to projectName
         header: "Project", // Updated header
         size: columnSizing.projectName,
@@ -563,10 +595,13 @@ export const FormResponseTable = ({
       );
     }
 
-    // Get the day's statistics
-    const dayStats = summary.dayTotals[dayData.key] || {
-      volunteers: 0,
-      people: 0,
+    // Get the day's statistics — compute directly from volunteers so "all" key works too
+    const dayStats = {
+      volunteers: dayData.volunteers.length,
+      minors: dayData.volunteers.reduce((sum, v) => sum + (v.minorCount || 0), 0),
+      get people() {
+        return this.volunteers + this.minors;
+      },
     };
 
     // Use the hook at the component level (not in a conditional)
@@ -633,11 +668,21 @@ export const FormResponseTable = ({
                 size="small"
               />
             </Tooltip>
-            {dayStats.people > dayStats.volunteers && (
-              <Tooltip title="Total people (volunteers + minors) for this day">
+            {dayStats.minors > 0 && (
+              <Tooltip title="Total minors across all responses">
                 <Chip
                   icon={<People fontSize="small" />}
-                  label={`${dayStats.people} People`}
+                  label={`${dayStats.minors} Minor${dayStats.minors !== 1 ? "s" : ""}`}
+                  color="warning"
+                  size="small"
+                />
+              </Tooltip>
+            )}
+            {dayStats.minors > 0 && (
+              <Tooltip title="Total people (volunteers + minors)">
+                <Chip
+                  icon={<People fontSize="small" />}
+                  label={`${dayStats.people} Total People`}
                   color="info"
                   size="small"
                 />
@@ -646,6 +691,18 @@ export const FormResponseTable = ({
           </Box>
         </Box>
       ),
+
+      // Header cell props - prevent truncation
+      muiTableHeadCellProps: {
+        sx: {
+          "& .Mui-TableHeadCell-Content-Wrapper": {
+            overflow: "visible",
+            whiteSpace: "normal",
+            textOverflow: "unset",
+            wordBreak: "break-word",
+          },
+        },
+      },
 
       // Row props
       muiTableBodyRowProps: ({ row }) => ({
@@ -699,6 +756,16 @@ export const FormResponseTable = ({
       </Box>
     );
   }
+
+  // Debug: show stakes by project from projectsData
+  const debugStakesByProject = projectsData
+    ? Object.entries(projectsData).map(([id, p]) => ({
+        projectId: id,
+        projectName: p?.name,
+        stakeName: p?.stakeName,
+        partnerGroup: p?.partnerGroup,
+      }))
+    : [];
 
   // Always render a single flat table (day filtering is handled by the parent)
   return (
