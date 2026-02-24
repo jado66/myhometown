@@ -161,7 +161,14 @@ export default function UnassignedProjects({
 
     try {
       const newId = uuidv4();
-      const newProject = await addProject(newId, communityId, cityId, null, null, user);
+      const newProject = await addProject(
+        newId,
+        communityId,
+        cityId,
+        null,
+        null,
+        user,
+      );
 
       if (newProject) {
         setProjects((prev) => [newProject, ...prev]);

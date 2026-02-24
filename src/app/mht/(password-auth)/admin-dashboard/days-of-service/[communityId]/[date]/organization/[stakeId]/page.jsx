@@ -535,7 +535,11 @@ export default function ProjectFormsPage({ params }) {
             <Alert severity="error">{error}</Alert>
           </Box>
         ) : projects?.length >= 1 ? (
-          <Grid container spacing={{ xs: 1, sm: 2 }} sx={{ overflow: "visible", pt: 1.5, pr: 1 }}>
+          <Grid
+            container
+            spacing={{ xs: 1, sm: 2 }}
+            sx={{ overflow: "visible", pt: 1.5, pr: 1 }}
+          >
             {projects
               .sort((a, b) => {
                 const dateA = moment(a.created_at);
