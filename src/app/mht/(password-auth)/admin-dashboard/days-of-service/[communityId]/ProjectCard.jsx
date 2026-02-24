@@ -92,172 +92,174 @@ export const ProjectCard = ({
           alignItems: { xs: "flex-start", lg: "center" },
         }}
       >
-      <Box
-        sx={{
-          display: "flex",
-          flex: 1,
-          width: { xs: "100%", lg: "auto" },
-        }}
-      >
-      <CardHeader
-        title={getProjectTitle(project)}
-        subheader={
-          project.address_street1 &&
-          project.address_city && (
-            <Box>
-              <Typography
-                variant="subtitle"
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  ml: -0.5,
-                }}
-              >
-                <LocationOn color="primary" size="small" sx={{ mr: 1 }} />
-                {`${project.address_street1}${
-                  project.address_street2 ? `, ${project.address_street2}` : ""
-                }, ${project.address_city}`}
-              </Typography>
-            </Box>
-          )
-        }
-        sx={{
-          pb: 0,
-          flex: 1,
-          pl: {
-            xs: showCheckbox ? 6 : 2,
-            sm: showCheckbox ? 6 : 2,
-            md: showCheckbox ? 6 : 2,
-          },
-          pt: { xs: 2.5, sm: 3, md: 2 },
-          "& .MuiCardHeader-title": {
-            fontSize: { xs: "0.9rem", sm: "1rem", md: "1.5rem" },
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          },
-          "& .MuiCardHeader-subheader": {
-            fontSize: { xs: "0.5rem", sm: "0.875rem" },
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          },
-        }}
-      />
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          px: 1,
-          pb: { xs: 1, lg: 0 },
-          pt: { xs: 0, lg: 1 },
-          width: { xs: "100%", lg: "auto" },
-          flexWrap: "wrap",
-          zIndex: 1,
-        }}
-      >
-        {!isSmallScreen && (
-          <>
-            {project.volunteers_needed && (
-              <Tooltip title="Volunteers Needed">
+        <Box
+          sx={{
+            display: "flex",
+            flex: 1,
+            width: { xs: "100%", lg: "auto" },
+          }}
+        >
+          <CardHeader
+            title={getProjectTitle(project)}
+            subheader={
+              project.address_street1 &&
+              project.address_city && (
+                <Box>
+                  <Typography
+                    variant="subtitle"
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      ml: -0.5,
+                    }}
+                  >
+                    <LocationOn color="primary" size="small" sx={{ mr: 1 }} />
+                    {`${project.address_street1}${
+                      project.address_street2
+                        ? `, ${project.address_street2}`
+                        : ""
+                    }, ${project.address_city}`}
+                  </Typography>
+                </Box>
+              )
+            }
+            sx={{
+              pb: 0,
+              flex: 1,
+              pl: {
+                xs: showCheckbox ? 6 : 2,
+                sm: showCheckbox ? 6 : 2,
+                md: showCheckbox ? 6 : 2,
+              },
+              pt: { xs: 2.5, sm: 3, md: 2 },
+              "& .MuiCardHeader-title": {
+                fontSize: { xs: "0.9rem", sm: "1rem", md: "1.5rem" },
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              },
+              "& .MuiCardHeader-subheader": {
+                fontSize: { xs: "0.5rem", sm: "0.875rem" },
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              },
+            }}
+          />
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            px: 1,
+            pb: { xs: 1, lg: 0 },
+            pt: { xs: 0, lg: 1 },
+            width: { xs: "100%", lg: "auto" },
+            flexWrap: "wrap",
+            zIndex: 1,
+          }}
+        >
+          {!isSmallScreen && (
+            <>
+              {project.volunteers_needed && (
+                <Tooltip title="Volunteers Needed">
+                  <Button
+                    edge="end"
+                    aria-label="volunteers-needed"
+                    onClick={(e) => e.stopPropagation()}
+                    sx={{ mr: 1, color: "#686868" }}
+                  >
+                    <Group sx={{ mr: 1 }} />
+                    {project.volunteers_needed || "N/A"}
+                  </Button>
+                </Tooltip>
+              )}
+              <Tooltip title="Generate Report">
                 <Button
                   edge="end"
-                  aria-label="volunteers-needed"
-                  onClick={(e) => e.stopPropagation()}
-                  sx={{ mr: 1, color: "#686868" }}
+                  variant="outlined"
+                  aria-label="generate-report"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onGenerateReport(project);
+                  }}
+                  sx={{ mr: 1 }}
                 >
-                  <Group sx={{ mr: 1 }} />
-                  {project.volunteers_needed || "N/A"}
+                  <Construction sx={{ mr: 1 }} />
+                  Print
                 </Button>
               </Tooltip>
-            )}
-            <Tooltip title="Generate Report">
-              <Button
+              <IconButton
                 edge="end"
-                variant="outlined"
-                aria-label="generate-report"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onGenerateReport(project);
-                }}
-                sx={{ mr: 1 }}
-              >
-                <Construction sx={{ mr: 1 }} />
-                Print
-              </Button>
-            </Tooltip>
-            <IconButton
-              edge="end"
-              aria-label="delete"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(project);
-              }}
-              sx={{ mr: 1 }}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </>
-        )}
-
-        {isSmallScreen && (
-          <>
-            {project.volunteers_needed && project.volunteers_needed > 0 && (
-              <Typography
-                variant="body2"
-                sx={{ display: "flex", alignItems: "center" }}
-              >
-                <Group sx={{ mr: 1 }} size="small" />
-                {project.volunteers_needed}
-              </Typography>
-            )}
-            <IconButton
-              aria-label="more-actions"
-              aria-controls={`action-menu-${project.id}`}
-              aria-haspopup="true"
-              onClick={(e) => {
-                e.stopPropagation();
-                onMenuOpen(e, project.id);
-              }}
-            >
-              <MoreVertIcon />
-            </IconButton>
-            <Menu
-              id={`action-menu-${project.id}`}
-              anchorEl={menuAnchorEl?.[project.id]}
-              open={Boolean(menuAnchorEl?.[project.id])}
-              onClose={() => onMenuClose(project.id)}
-              MenuListProps={{
-                "aria-labelledby": `action-button-${project.id}`,
-              }}
-            >
-              <MenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onGenerateReport(project);
-                  onMenuClose(project.id);
-                }}
-              >
-                <Construction sx={{ mr: 1 }} />
-                Print Report
-              </MenuItem>
-              <MenuItem
+                aria-label="delete"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete(project);
-                  onMenuClose(project.id);
+                }}
+                sx={{ mr: 1 }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </>
+          )}
+
+          {isSmallScreen && (
+            <>
+              {project.volunteers_needed && project.volunteers_needed > 0 && (
+                <Typography
+                  variant="body2"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <Group sx={{ mr: 1 }} size="small" />
+                  {project.volunteers_needed}
+                </Typography>
+              )}
+              <IconButton
+                aria-label="more-actions"
+                aria-controls={`action-menu-${project.id}`}
+                aria-haspopup="true"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMenuOpen(e, project.id);
                 }}
               >
-                <DeleteIcon sx={{ mr: 1 }} />
-                Delete
-              </MenuItem>
-            </Menu>
-          </>
-        )}
-      </Box>
-      </Box> {/* end header + actions wrapper */}
-
+                <MoreVertIcon />
+              </IconButton>
+              <Menu
+                id={`action-menu-${project.id}`}
+                anchorEl={menuAnchorEl?.[project.id]}
+                open={Boolean(menuAnchorEl?.[project.id])}
+                onClose={() => onMenuClose(project.id)}
+                MenuListProps={{
+                  "aria-labelledby": `action-button-${project.id}`,
+                }}
+              >
+                <MenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onGenerateReport(project);
+                    onMenuClose(project.id);
+                  }}
+                >
+                  <Construction sx={{ mr: 1 }} />
+                  Print Report
+                </MenuItem>
+                <MenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(project);
+                    onMenuClose(project.id);
+                  }}
+                >
+                  <DeleteIcon sx={{ mr: 1 }} />
+                  Delete
+                </MenuItem>
+              </Menu>
+            </>
+          )}
+        </Box>
+      </Box>{" "}
+      {/* end header + actions wrapper */}
       <CardContent sx={{ pt: 2, flex: 1 }}>
         {project.project_developer && (
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>

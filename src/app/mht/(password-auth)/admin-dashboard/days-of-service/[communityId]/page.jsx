@@ -444,6 +444,28 @@ const CommunitySelectionPage = ({ params }) => {
         </Typography>
 
         <Box sx={{ width: "100%", mt: 3 }}>
+          {/* Prior years toggle — sits above tabs on mobile, inline on desktop */}
+          <Box
+            sx={{
+              display: { xs: "flex", sm: "none" },
+              justifyContent: "flex-end",
+              mb: 0.5,
+            }}
+          >
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={showPriorYears}
+                  onChange={(e) => setShowPriorYears(e.target.checked)}
+                  size="small"
+                />
+              }
+              label={
+                <Typography variant="caption">Show prior years</Typography>
+              }
+            />
+          </Box>
+
           <Box
             sx={{
               display: "flex",
@@ -455,21 +477,25 @@ const CommunitySelectionPage = ({ params }) => {
               value={activeTab}
               onChange={handleTabChange}
               aria-label="community sections"
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
               sx={{
                 borderBottom: "2px solid #e0e0e0",
                 flexGrow: 1,
-                overflow: "visible",
                 "& .MuiTabs-scroller": {
-                  overflow: "visible !important",
+                  // allow overflow only on desktop where tabs are fully visible
+                  overflow: { xs: "auto !important", sm: "visible !important" },
                 },
                 "& .MuiTabs-flexContainer": {
                   overflow: "visible",
                 },
                 "& .MuiTab-root": {
-                  fontSize: { xs: "0.9rem", sm: "1.1rem" },
+                  fontSize: { xs: "0.78rem", sm: "1.1rem" },
                   fontWeight: 600,
-                  minHeight: "64px",
-                  py: 2,
+                  minHeight: { xs: "48px", sm: "64px" },
+                  py: { xs: 1, sm: 2 },
+                  px: { xs: 1.5, sm: 2 },
                   overflow: "visible",
                   textTransform: "none",
                   borderTopLeftRadius: "8px",
@@ -478,6 +504,7 @@ const CommunitySelectionPage = ({ params }) => {
                   backgroundColor: "#e8e8e8",
                   color: "#666",
                   transition: "all 0.3s ease",
+                  whiteSpace: "nowrap",
                   "&:hover": {
                     backgroundColor: "#d8d8d8",
                   },
@@ -494,6 +521,13 @@ const CommunitySelectionPage = ({ params }) => {
                 "& .MuiTabs-indicator": {
                   display: "none",
                 },
+                "& .MuiTabScrollButton-root": {
+                  color: "primary.main",
+                  opacity: 1,
+                  "&.Mui-disabled": {
+                    opacity: 0.3,
+                  },
+                },
               }}
             >
               <Tab label="Project Planning" />
@@ -501,7 +535,8 @@ const CommunitySelectionPage = ({ params }) => {
               <Tab label="Summary of Projects" />
               <Tab label="Community Volunteer Detail" />
             </Tabs>
-            <Box sx={{ pb: 1, pl: 2, flexShrink: 0 }}>
+            {/* Toggle inline with tabs — hidden on mobile (shown above instead) */}
+            <Box sx={{ pb: 1, pl: 2, flexShrink: 0, display: { xs: "none", sm: "block" } }}>
               <FormControlLabel
                 control={
                   <Switch

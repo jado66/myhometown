@@ -48,84 +48,85 @@ export const StakeCard = ({
             width: { xs: "100%", lg: "auto" },
           }}
         >
-        {/* Icon */}
-        <Box
-          sx={{
-            width: 44,
-            height: 44,
-            borderRadius: 1.5,
-            bgcolor: "primary.main",
-            color: "primary.contrastText",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <Business fontSize="small" />
-        </Box>
-
-        {/* Info */}
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography
-            variant="subtitle2"
+          {/* Icon */}
+          <Box
             sx={{
-              fontWeight: 600,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              width: 44,
+              height: 44,
+              borderRadius: 1.5,
+              bgcolor: "primary.main",
+              color: "primary.contrastText",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
             }}
           >
-            {stake.name}
-          </Typography>
-          {stake.liaison_name_1 ? (
+            <Business fontSize="small" />
+          </Box>
+
+          {/* Info */}
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography
-              variant="caption"
-              color="text.secondary"
+              variant="subtitle2"
               sx={{
-                display: "block",
+                fontWeight: 600,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
               }}
             >
-              Contact: {stake.liaison_name_1}
+              {stake.name}
             </Typography>
-          ) : (
-            <Typography
-              variant="caption"
-              color="warning.main"
-              sx={{
-                display: "block",
-              }}
-            >
-              No contact info.{" "}
-              <Button
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(day.id, stake);
-                }}
-                disabled={day.is_locked}
+            {stake.liaison_name_1 ? (
+              <Typography
+                variant="caption"
+                color="text.secondary"
                 sx={{
-                  minWidth: 0,
-                  p: 0,
-                  fontSize: "inherit",
-                  textTransform: "none",
-                  textDecoration: "underline",
-                  verticalAlign: "baseline",
-                  "&:hover": {
-                    textDecoration: "underline",
-                    bgcolor: "transparent",
-                  },
+                  display: "block",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
                 }}
               >
-                Add contact
-              </Button>
-            </Typography>
-          )}
+                Contact: {stake.liaison_name_1}
+              </Typography>
+            ) : (
+              <Typography
+                variant="caption"
+                color="warning.main"
+                sx={{
+                  display: "block",
+                }}
+              >
+                No contact info.{" "}
+                <Button
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(day.id, stake);
+                  }}
+                  disabled={day.is_locked}
+                  sx={{
+                    minWidth: 0,
+                    p: 0,
+                    fontSize: "inherit",
+                    textTransform: "none",
+                    textDecoration: "underline",
+                    verticalAlign: "baseline",
+                    "&:hover": {
+                      textDecoration: "underline",
+                      bgcolor: "transparent",
+                    },
+                  }}
+                >
+                  Add contact
+                </Button>
+              </Typography>
+            )}
+          </Box>
         </Box>
-        </Box>{/* end Icon+Info wrapper */}
+        {/* end Icon+Info wrapper */}
 
         {/* Actions */}
         <Box

@@ -11,10 +11,7 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
-import {
-  Add as AddIcon,
-  CheckCircle,
-} from "@mui/icons-material";
+import { Add as AddIcon, CheckCircle } from "@mui/icons-material";
 import { v4 as uuidv4 } from "uuid";
 import moment from "moment";
 import { toast } from "react-toastify";
