@@ -21,20 +21,19 @@ import {
   DialogActions,
   RadioGroup,
   Radio,
-  useMediaQuery,
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { FIELD_TYPES } from "./FieldTypes";
 import { Check } from "@mui/icons-material";
 import { useImageUpload } from "@/hooks/use-upload-image";
-import SignaturePad from "react-signature-canvas";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { MultiLineTypography } from "../MultiLineTypography";
 import { MinorVolunteersComponent } from "./days-of-service/MinorVolunteersComponent";
 import { VolunteerHours } from "./days-of-service/VolunteerHours";
 import { WhoAreYouComponent } from "./days-of-service/WhoAreYouComponent";
 import { DayOfServiceSelect } from "./days-of-service/DayOfServiceSelect";
+import { SignatureField } from "./days-of-service/SignatureField";
 import { useClassSignup } from "./ClassSignupContext";
 // Form Field Component
 export const FormField = ({
@@ -46,17 +45,11 @@ export const FormField = ({
   isEditMode,
 }) => {
   const [open, setOpen] = useState(false);
-  const [sigPad, setSigPad] = useState(null);
 
-  const isMobile = useMediaQuery("(max-width:600px)");
   const { resetKey } = useClassSignup();
 
   useEffect(() => {
     if (resetKey) {
-      if (sigPad) {
-        sigPad.clear();
-      }
-
       onChange(field, null);
     }
   }, [resetKey]);
@@ -238,89 +231,15 @@ export const FormField = ({
         );
 
       case FIELD_TYPES.signature:
-        const containerRef = useRef(null);
-        const [padWidth, setPadWidth] = useState(500);
-
-        useEffect(() => {
-          const updateWidth = () => {
-            if (containerRef.current) {
-              // Get actual width of the container
-              const width = containerRef.current.clientWidth - 16;
-              // Cap it at 500px for larger screens if desired
-              setPadWidth(isMobile ? width : Math.min(width, 500));
-            }
-          };
-
-          // Set initial width
-          updateWidth();
-
-          // Update on resize
-          window.addEventListener("resize", updateWidth);
-          return () => window.removeEventListener("resize", updateWidth);
-        }, [isMobile]);
-
         return (
-          <Box
-            ref={containerRef}
-            sx={{
-              border: "1px solid #ccc",
-              borderRadius: 1,
-              p: 1,
-              width: "100%",
-            }}
-          >
-            <Typography>
-              {config.label}
-              {config.required && " *"}
-            </Typography>
-            <SignaturePad
-              backgroundColor="#edeff2"
-              canvasProps={{
-                className: "signature-canvas",
-
-                width: padWidth,
-
-                backgroundColor: "#edeff2",
-                //500,
-                height: 200,
-              }}
-              style={{ border: "1px solid #ccc" }}
-              ref={(ref) => {
-                setSigPad(ref);
-              }}
-              onEnd={() => {
-                if (sigPad) {
-                  // Store the signature as a base64 string instead of the entire ref
-                  const signatureData = sigPad.toDataURL();
-                  onChange(field, signatureData);
-                }
-              }}
-            />
-            <Stack direction="row" spacing={2} mt={1}>
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={() => {
-                  if (sigPad) {
-                    sigPad.clear();
-                    onChange(field, null);
-                  }
-                }}
-              >
-                Clear
-              </Button>
-            </Stack>
-            {value && (
-              <Typography variant="caption" color="success.main" mt={1}>
-                Signature captured
-              </Typography>
-            )}
-            {(error || config.helpText) && (
-              <FormHelperText error={!!error}>
-                {error || config.helpText}
-              </FormHelperText>
-            )}
-          </Box>
+          <SignatureField
+            field={field}
+            config={config}
+            value={value}
+            onChange={onChange}
+            error={error}
+            resetKey={resetKey}
+          />
         );
 
       case FIELD_TYPES.radioGroup:

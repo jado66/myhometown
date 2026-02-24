@@ -598,7 +598,10 @@ export const FormResponseTable = ({
     // Get the day's statistics — compute directly from volunteers so "all" key works too
     const dayStats = {
       volunteers: dayData.volunteers.length,
-      minors: dayData.volunteers.reduce((sum, v) => sum + (v.minorCount || 0), 0),
+      minors: dayData.volunteers.reduce(
+        (sum, v) => sum + (v.minorCount || 0),
+        0,
+      ),
       get people() {
         return this.volunteers + this.minors;
       },
