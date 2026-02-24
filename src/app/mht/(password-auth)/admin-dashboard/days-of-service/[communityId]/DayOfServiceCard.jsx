@@ -200,34 +200,22 @@ export const DayOfServiceCard = ({
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            gap: 1,
             mb: 2,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Typography
-              variant="overline"
-              sx={{
-                letterSpacing: 1.2,
-                fontWeight: 700,
-                color: "text.secondary",
-              }}
-            >
-              Partner Organizations
-            </Typography>
-            <Chip
-              label={day.partner_stakes?.length || 0}
-              size="small"
-              sx={{
-                height: 20,
-                fontSize: "0.7rem",
-                fontWeight: 700,
-                bgcolor: "action.hover",
-              }}
-            />
-          </Box>
+          <Typography
+            variant="overline"
+            sx={{
+              letterSpacing: 1.2,
+              fontWeight: 700,
+              color: "text.secondary",
+            }}
+          >
+            Partner Organizations
+          </Typography>
           <Button
-            variant="outlined"
+            variant="contained"
             size="small"
             startIcon={<Add />}
             onClick={() => handleOpenAddStakeDialog(day.id)}
@@ -236,13 +224,11 @@ export const DayOfServiceCard = ({
               textTransform: "none",
               borderRadius: 2,
               borderStyle: "dashed",
-              color: "text.secondary",
+
               borderColor: "divider",
               "&:hover": {
                 borderStyle: "dashed",
                 borderColor: "primary.main",
-                color: "primary.main",
-                bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
               },
             }}
           >
@@ -288,7 +274,7 @@ export const DayOfServiceCard = ({
           <>
             <Grid container spacing={2}>
               {day.partner_stakes.map((stake) => (
-                <Grid item xs={12} sm={6} key={stake.id}>
+                <Grid item xs={12} lg={6} key={stake.id}>
                   <StakeCard
                     stake={stake}
                     day={day}
@@ -299,7 +285,6 @@ export const DayOfServiceCard = ({
                 </Grid>
               ))}
             </Grid>
-
           </>
         )}
       </Box>

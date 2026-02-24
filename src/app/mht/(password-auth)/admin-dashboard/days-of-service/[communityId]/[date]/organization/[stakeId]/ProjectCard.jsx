@@ -330,14 +330,14 @@ export const ProjectCard = ({
                 <Button
                   variant="outlined"
                   size="small"
-                  startIcon={<ViewIcon />}
+                  startIcon={<EditIcon />}
                   onClick={(e) => {
                     e.stopPropagation();
                     onProjectClick(project.id);
                   }}
                   sx={{ textTransform: "none", fontSize: "0.75rem", px: 1 }}
                 >
-                  View Project
+                  Edit Project
                 </Button>
                 <Button
                   variant="outlined"
@@ -349,7 +349,7 @@ export const ProjectCard = ({
                   }}
                   sx={{ textTransform: "none", fontSize: "0.75rem", px: 1 }}
                 >
-                  Report
+                  Print Report
                 </Button>
                 <IconButton
                   size="small"

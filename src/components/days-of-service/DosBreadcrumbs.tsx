@@ -214,7 +214,7 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
             date,
           ];
           if (stakeId) {
-            segments.push("stake", stakeId);
+            segments.push("organization", stakeId);
           }
           return getUrl(segments);
         } else if (isProjectView && communityId) {

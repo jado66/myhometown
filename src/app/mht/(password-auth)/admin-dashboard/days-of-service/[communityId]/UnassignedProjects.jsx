@@ -5,34 +5,15 @@ import { useRouter } from "next/navigation";
 import {
   Typography,
   Box,
-  Card,
-  CardContent,
   Grid,
   Button,
-  IconButton,
   Paper,
-  Chip,
   CircularProgress,
   Alert,
-  Checkbox,
-  Tooltip,
-  Menu,
-  MenuItem,
-  CardHeader,
-  useTheme,
-  useMediaQuery,
-  SvgIcon,
-  Badge,
 } from "@mui/material";
 import {
   Add as AddIcon,
-  Assignment,
   CheckCircle,
-  Delete as DeleteIcon,
-  Flag,
-  Group,
-  LocationOn,
-  Warning,
 } from "@mui/icons-material";
 import { v4 as uuidv4 } from "uuid";
 import moment from "moment";
@@ -47,6 +28,7 @@ import { useUser } from "@/hooks/use-user";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import Loading from "@/components/util/Loading";
 import JsonViewer from "@/components/util/debug/DebugOutput";
+import { ProjectCard } from "./ProjectCard";
 
 export default function UnassignedProjects({
   communityId,
@@ -54,8 +36,6 @@ export default function UnassignedProjects({
 }) {
   const router = useRouter();
   const { user } = useUser();
-
-  const theme = useTheme();
 
   const [projects, setProjects] = useState([]);
   const [creatingProject, setCreatingProject] = useState(false);
@@ -65,8 +45,6 @@ export default function UnassignedProjects({
   const [selectedProjects, setSelectedProjects] = useState([]);
 
   const [cityId, setCityId] = useState(propCityId);
-
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [menuAnchorEl, setMenuAnchorEl] = useState({});
 
@@ -226,21 +204,6 @@ export default function UnassignedProjects({
     }
   };
 
-  const getProjectTitle = (project) => {
-    let projectTitle = "";
-
-    if (project.project_name) projectTitle += project.project_name;
-
-    if (!projectTitle) {
-      return `Project ${project.id.slice(0, 8)}...`;
-    }
-
-    // Truncate title if longer than 40 characters
-    return projectTitle.length > 25
-      ? `${projectTitle.substring(0, 25)}...`
-      : projectTitle;
-  };
-
   return (
     <Box sx={{ mb: 3 }} id="unassigned-projects">
       <Box sx={{ mb: 3 }}>
@@ -323,287 +286,22 @@ export default function UnassignedProjects({
                 })
                 .map((project) => (
                   <Grid item xs={12} sm={6} lg={6} key={project.id}>
-                    <Card
-                      sx={{
-                        cursor: "pointer",
-                        "&:hover": { boxShadow: 6 },
-                        position: "relative",
-                        height: "100%",
-                        display: "flex",
-                        flexDirection: "column",
-                        backgroundColor: theme.palette.grey[50],
-                        border:
-                          project.status === "completed"
-                            ? "2px solid #318D43"
-                            : "",
-                      }}
-                      variant="outlined"
-                      onClick={() => handleProjectClick(project.id)}
-                    >
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: 10,
-                          right: 8,
-                          display: "flex",
-                          zIndex: 1,
-                        }}
-                      >
-                        {/* Regular buttons for normal screens */}
-                        {!isSmallScreen && (
-                          <>
-                            <IconButton
-                              edge="end"
-                              aria-label="generate-report"
-                              onClick={(e) =>
-                                handleGenerateSingleReport(e, project.id)
-                              }
-                              sx={{ mr: 1 }}
-                            >
-                              <Tooltip title="Generate Report">
-                                <Assignment />
-                              </Tooltip>
-                            </IconButton>
-
-                            <IconButton
-                              edge="end"
-                              aria-label="delete"
-                              onClick={(e) => handleDeleteClick(e, project)}
-                              sx={{ mr: 1 }}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </>
-                        )}
-
-                        {/* Dropdown menu button for small screens */}
-                        {isSmallScreen && (
-                          <>
-                            {project.volunteers_needed &&
-                              project.volunteers_needed > 0 && (
-                                <Typography
-                                  variant="body2"
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <Group sx={{ mr: 1 }} size="small" />
-                                  {project.volunteers_needed}
-                                </Typography>
-                              )}
-                            <IconButton
-                              aria-label="more-actions"
-                              aria-controls={`action-menu-${project.id}`}
-                              aria-haspopup="true"
-                              onClick={(e) => {
-                                handleMenuClick(e, project.id);
-                                e.stopPropagation();
-                              }}
-                            >
-                              <MoreVertIcon />
-                            </IconButton>
-
-                            {/* Add debug output */}
-                            {console.log(
-                              `Menu anchor for ${project.id}:`,
-                              menuAnchorEl[project.id],
-                            )}
-                            <Menu
-                              id={`action-menu-${project.id}`}
-                              anchorEl={menuAnchorEl[project.id]}
-                              open={Boolean(menuAnchorEl[project.id])}
-                              onClose={() => handleMenuClose(project.id)}
-                              MenuListProps={{
-                                "aria-labelledby": `action-button-${project.id}`,
-                              }}
-                            >
-                              <MenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleGenerateSingleReport(e, project.id);
-                                  handleMenuClose(project.id);
-                                }}
-                              >
-                                <Assignment sx={{ mr: 1 }} />
-                                Print Report
-                              </MenuItem>
-                              <MenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteClick(e, project);
-                                  handleMenuClose(project.id);
-                                }}
-                              >
-                                <DeleteIcon sx={{ mr: 1 }} />
-                                Delete
-                              </MenuItem>
-                            </Menu>
-                          </>
-                        )}
-                      </Box>
-
-                      <CardHeader
-                        title={getProjectTitle(project)}
-                        subheader={
-                          project.address_street1 &&
-                          project.address_city && (
-                            <Box>
-                              <Typography
-                                variant="subtitle"
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  ml: -0.5,
-                                }}
-                              >
-                                <LocationOn
-                                  color="primary"
-                                  size="small"
-                                  sx={{ mr: 1 }}
-                                />
-
-                                {`${project.address_street1}${
-                                  project.address_street2
-                                    ? `, ${project.address_street2}`
-                                    : ""
-                                }, ${project.address_city}`}
-                              </Typography>
-                            </Box>
-                          )
-                        }
-                        sx={{
-                          pb: 0,
-                          pl: { xs: 6, sm: 6, md: 6 },
-                          pt: { xs: 2.5, sm: 3, md: 2 },
-                          "& .MuiCardHeader-title": {
-                            fontSize: {
-                              xs: "0.9rem",
-                              sm: "1rem",
-                              md: "1.5rem",
-                            },
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          },
-                          "& .MuiCardHeader-subheader": {
-                            fontSize: { xs: "0.5rem", sm: "0.875rem" },
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          },
-                        }}
-                      />
-
-                      <CardContent sx={{ pt: 2, flex: 1 }}>
-                        {project.project_developer && (
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ mb: 3 }}
-                          >
-                            {"Resource Couple: " +
-                              project.project_development_couple}
-                          </Typography>
-                        )}
-
-                        {project.project_id && (
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ mb: 3 }}
-                          >
-                            {project.project_id}
-                          </Typography>
-                        )}
-                        {project.status === "completed" && (
-                          <Chip
-                            label="Ready for Day of Service"
-                            color="success"
-                            size="small"
-                            sx={{
-                              textTransform: "capitalize",
-                              mb: 2,
-                            }}
-                          />
-                        )}
-
-                        <Grid container spacing={2} sx={{ mb: 1 }}>
-                          {/* Left column - First liaison */}
-                          <Grid item xs={12} md={6}>
-                            {project.is_dumpster_needed && (
-                              <Box sx={{ mt: 2 }}>
-                                <Typography
-                                  variant="subtitle"
-                                  gutterBottom
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <DumpsterIcon
-                                    color="primary"
-                                    size="small"
-                                    sx={{ mr: 1 }}
-                                  />
-                                  Dumpsters
-                                  {project.is_second_dumpster_needed && (
-                                    <Chip
-                                      label={"x 2"}
-                                      color="primary"
-                                      size="small"
-                                      sx={{
-                                        ml: 1,
-                                        backgroundColor:
-                                          theme.palette.primary.light,
-                                      }}
-                                    />
-                                  )}
-                                </Typography>
-                              </Box>
-                            )}
-                          </Grid>
-                          <Grid
-                            item
-                            xs={12}
-                            md={6}
-                            sx={{
-                              display: "flex",
-                              justifyContent: "flex-end",
-                            }}
-                          >
-                            {project.are_blue_stakes_needed && (
-                              <Box sx={{ mt: 2 }}>
-                                <Typography
-                                  variant="subtitle"
-                                  gutterBottom
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    textAlign: "right",
-                                  }}
-                                >
-                                  {project.called_811 ? (
-                                    <CheckCircle
-                                      color="primary"
-                                      size="small"
-                                      sx={{ mr: 1 }}
-                                    />
-                                  ) : (
-                                    <Flag
-                                      color="info"
-                                      size="small"
-                                      sx={{ mr: 1 }}
-                                    />
-                                  )}
-                                  Blue Stakes
-                                </Typography>
-                              </Box>
-                            )}
-                          </Grid>
-                        </Grid>
-                      </CardContent>
-                    </Card>
+                    <ProjectCard
+                      project={project}
+                      onProjectClick={handleProjectClick}
+                      onGenerateReport={(p) =>
+                        handleGenerateSingleReport(
+                          { stopPropagation: () => {} },
+                          p.id,
+                        )
+                      }
+                      onDelete={(p) =>
+                        handleDeleteClick({ stopPropagation: () => {} }, p)
+                      }
+                      menuAnchorEl={menuAnchorEl}
+                      onMenuOpen={handleMenuClick}
+                      onMenuClose={handleMenuClose}
+                    />
                   </Grid>
                 ))}
             </Grid>
@@ -644,14 +342,6 @@ export default function UnassignedProjects({
     </Box>
   );
 }
-
-const DumpsterIcon = (props) => {
-  return (
-    <SvgIcon {...props} viewBox="0 0 576 512">
-      <path d="M49.7 32c-10.5 0-19.8 6.9-22.9 16.9L.9 133c-.6 2-.9 4.1-.9 6.1C0 150.7 9.3 160 20.9 160l94 0L140.5 32 49.7 32zM272 160l0-128-98.9 0L147.5 160 272 160zm32 0l124.5 0L402.9 32 304 32l0 128zm157.1 0l94 0c11.5 0 20.9-9.3 20.9-20.9c0-2.1-.3-4.1-.9-6.1L549.2 48.9C546.1 38.9 536.8 32 526.3 32l-90.8 0 25.6 128zM32 192l4 32-4 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l12 0L64 448c0 17.7 14.3 32 32 32s32-14.3 32-32l320 0c0 17.7 14.3 32 32 32s32-14.3 32-32l20-160 12 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-4 0 4-32L32 192z" />
-    </SvgIcon>
-  );
-};
 
 const formatSafeDate = (dateString) => {
   if (!dateString) return "";

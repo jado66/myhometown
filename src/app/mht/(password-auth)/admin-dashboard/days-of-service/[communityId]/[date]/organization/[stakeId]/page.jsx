@@ -452,11 +452,18 @@ export default function ProjectFormsPage({ params }) {
           "No projects have been created yet. Please create a new project to get started."}
       </Typography>
 
-      {projects?.length !== 0 && (
-        <Typography variant="h6" color="primary" gutterBottom sx={{ mb: 5 }}>
-          Click on a project to view or edit the project form.
-        </Typography>
-      )}
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleNewProject}
+        startIcon={<AddIcon />}
+        disabled={isLoading || creatingProject}
+        sx={{ width: { xs: "100%", sm: "auto" } }}
+      >
+        {creatingProject ? "Creating Project..." : "Create New Project"}
+      </Button>
+
+      <Divider sx={{ my: 3 }} />
 
       {/* <JsonViewer data={projects} /> */}
 
@@ -492,11 +499,7 @@ export default function ProjectFormsPage({ params }) {
             <Alert severity="error">{error}</Alert>
           </Box>
         ) : projects?.length >= 1 ? (
-          <Grid
-            container
-            spacing={{ xs: 1, sm: 2 }}
-            sx={{ p: { lg: 3, md: 0 }, overflowY: "auto" }}
-          >
+          <Grid container spacing={{ xs: 1, sm: 2 }} sx={{ overflowY: "auto" }}>
             {projects
               .sort((a, b) => {
                 const dateA = moment(a.created_at);
@@ -542,38 +545,6 @@ export default function ProjectFormsPage({ params }) {
           ></Box>
         )}
       </Paper>
-
-      <Box
-        sx={{
-          mt: 5,
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          justifyContent: "center",
-          gap: 2,
-          width: { xs: "100%", sm: "auto" },
-        }}
-      >
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleNewProject}
-          startIcon={<AddIcon />}
-          disabled={isLoading || creatingProject}
-          sx={{ width: { xs: "100%", sm: "auto" } }}
-        >
-          {creatingProject ? "Creating Project..." : "New Project"}
-        </Button>
-
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={handleGenerateDayOfServiceReport}
-          startIcon={<Assignment />}
-          sx={{ width: { xs: "100%", sm: "auto" } }}
-        >
-          Generate Projects Summary
-        </Button>
-      </Box>
 
       <AskYesNoDialog
         open={deleteDialogOpen}

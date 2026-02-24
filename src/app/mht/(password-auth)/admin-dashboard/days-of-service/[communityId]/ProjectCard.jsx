@@ -87,10 +87,73 @@ export const ProjectCard = ({
     >
       <Box
         sx={{
-          position: "absolute",
-          top: 10,
-          right: 8,
           display: "flex",
+          flexDirection: { xs: "column", lg: "row" },
+          alignItems: { xs: "flex-start", lg: "center" },
+        }}
+      >
+      <Box
+        sx={{
+          display: "flex",
+          flex: 1,
+          width: { xs: "100%", lg: "auto" },
+        }}
+      >
+      <CardHeader
+        title={getProjectTitle(project)}
+        subheader={
+          project.address_street1 &&
+          project.address_city && (
+            <Box>
+              <Typography
+                variant="subtitle"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  ml: -0.5,
+                }}
+              >
+                <LocationOn color="primary" size="small" sx={{ mr: 1 }} />
+                {`${project.address_street1}${
+                  project.address_street2 ? `, ${project.address_street2}` : ""
+                }, ${project.address_city}`}
+              </Typography>
+            </Box>
+          )
+        }
+        sx={{
+          pb: 0,
+          flex: 1,
+          pl: {
+            xs: showCheckbox ? 6 : 2,
+            sm: showCheckbox ? 6 : 2,
+            md: showCheckbox ? 6 : 2,
+          },
+          pt: { xs: 2.5, sm: 3, md: 2 },
+          "& .MuiCardHeader-title": {
+            fontSize: { xs: "0.9rem", sm: "1rem", md: "1.5rem" },
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          },
+          "& .MuiCardHeader-subheader": {
+            fontSize: { xs: "0.5rem", sm: "0.875rem" },
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          },
+        }}
+      />
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          px: 1,
+          pb: { xs: 1, lg: 0 },
+          pt: { xs: 0, lg: 1 },
+          width: { xs: "100%", lg: "auto" },
+          flexWrap: "wrap",
           zIndex: 1,
         }}
       >
@@ -193,51 +256,7 @@ export const ProjectCard = ({
           </>
         )}
       </Box>
-
-      <CardHeader
-        title={getProjectTitle(project)}
-        subheader={
-          project.address_street1 &&
-          project.address_city && (
-            <Box>
-              <Typography
-                variant="subtitle"
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  ml: -0.5,
-                }}
-              >
-                <LocationOn color="primary" size="small" sx={{ mr: 1 }} />
-                {`${project.address_street1}${
-                  project.address_street2 ? `, ${project.address_street2}` : ""
-                }, ${project.address_city}`}
-              </Typography>
-            </Box>
-          )
-        }
-        sx={{
-          pb: 0,
-          pl: {
-            xs: showCheckbox ? 6 : 2,
-            sm: showCheckbox ? 6 : 2,
-            md: showCheckbox ? 6 : 2,
-          },
-          pt: { xs: 2.5, sm: 3, md: 2 },
-          "& .MuiCardHeader-title": {
-            fontSize: { xs: "0.9rem", sm: "1rem", md: "1.5rem" },
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          },
-          "& .MuiCardHeader-subheader": {
-            fontSize: { xs: "0.5rem", sm: "0.875rem" },
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          },
-        }}
-      />
+      </Box> {/* end header + actions wrapper */}
 
       <CardContent sx={{ pt: 2, flex: 1 }}>
         {project.project_developer && (

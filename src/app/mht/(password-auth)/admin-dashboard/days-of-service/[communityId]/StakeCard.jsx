@@ -31,11 +31,23 @@ export const StakeCard = ({
       <Box
         sx={{
           display: "flex",
-          alignItems: "center",
+          flexDirection: { xs: "column", lg: "row" },
+          alignItems: { xs: "flex-start", lg: "center" },
           gap: 2,
           p: 2,
         }}
       >
+        {/* Icon + Info wrapper for small screens */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            flex: 1,
+            minWidth: 0,
+            width: { xs: "100%", lg: "auto" },
+          }}
+        >
         {/* Icon */}
         <Box
           sx={{
@@ -113,6 +125,7 @@ export const StakeCard = ({
             </Typography>
           )}
         </Box>
+        </Box>{/* end Icon+Info wrapper */}
 
         {/* Actions */}
         <Box
@@ -120,7 +133,9 @@ export const StakeCard = ({
           sx={{
             display: "flex",
             alignItems: "center",
+            flexWrap: "wrap",
             gap: 0.5,
+            width: { xs: "100%", lg: "auto" },
           }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -138,7 +153,7 @@ export const StakeCard = ({
               px: 1,
             }}
           >
-            View Projects
+            View/Add Projects
           </Button>
           <Button
             variant="outlined"
@@ -152,7 +167,7 @@ export const StakeCard = ({
               px: 1,
             }}
           >
-            Edit
+            Edit Organization
           </Button>
           <Button
             variant="outlined"
@@ -168,7 +183,7 @@ export const StakeCard = ({
               px: 1,
             }}
           >
-            Print Report
+            Print Organization Report
           </Button>
         </Box>
       </Box>
