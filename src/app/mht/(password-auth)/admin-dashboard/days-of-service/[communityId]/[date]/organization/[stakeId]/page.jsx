@@ -64,8 +64,8 @@ import { useUser } from "@/hooks/use-user";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
 import Loading from "@/components/util/Loading";
-import { ProjectCard } from "./ProjectCard";
 import { generatePDFReport } from "@/util/reports/days-of-service/reportGenerators";
+import { ProjectCard } from "../../../ProjectCard";
 
 export default function ProjectFormsPage({ params }) {
   const { stakeId, communityId, date } = params;
@@ -89,6 +89,33 @@ export default function ProjectFormsPage({ params }) {
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [menuAnchorEl, setMenuAnchorEl] = useState({});
+
+  // Track newly created project IDs in localStorage
+  const LOCAL_STORAGE_KEY = "dos_new_project_ids";
+  const [newProjectIds, setNewProjectIds] = useState(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  });
+
+  const markProjectSeen = (projectId) => {
+    setNewProjectIds((prev) => {
+      const updated = prev.filter((id) => id !== projectId);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const addNewProjectId = (projectId) => {
+    setNewProjectIds((prev) => {
+      const updated = [...prev, projectId];
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   // Replace your current handleMenuClick and handleMenuClose functions with these
   const handleMenuClick = (event, projectId) => {
@@ -245,6 +272,7 @@ export default function ProjectFormsPage({ params }) {
 
   // Event handlers
   const handleProjectClick = (id) => {
+    markProjectSeen(id);
     router.push(
       process.env.NEXT_PUBLIC_DOMAIN +
         `/admin-dashboard/days-of-service/${communityId}/${date}/project/${id}`,
@@ -262,19 +290,20 @@ export default function ProjectFormsPage({ params }) {
 
     try {
       const newId = uuidv4();
-      await addProject(
+      const daysOfServiceShortId = `${communityId}_${date}`;
+      const newProject = await addProject(
         newId,
         dayOfService.community_id,
         dayOfService.city_id || null,
+        daysOfServiceShortId,
+        stakeId,
+        user,
       );
 
-      // Wait for 1.5 seconds to allow for data processing
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Redirect to the project form page with all necessary IDs
-      router.push(
-        `${process.env.NEXT_PUBLIC_DOMAIN}/admin-dashboard/days-of-service/${communityId}/${date}/project/${newId}`,
-      );
+      if (newProject) {
+        setProjects((prev) => [newProject, ...prev]);
+        addNewProjectId(newProject.id);
+      }
     } catch (error) {
       console.error("Error creating new project:", error);
       toast.error("Failed to create new project");
@@ -477,7 +506,7 @@ export default function ProjectFormsPage({ params }) {
       <Paper
         elevation={0}
         sx={{
-          overflow: "hidden",
+          overflow: "visible",
           display: "flex",
           flexDirection: "column",
           p: 0,
@@ -506,7 +535,7 @@ export default function ProjectFormsPage({ params }) {
             <Alert severity="error">{error}</Alert>
           </Box>
         ) : projects?.length >= 1 ? (
-          <Grid container spacing={{ xs: 1, sm: 2 }} sx={{ overflowY: "auto" }}>
+          <Grid container spacing={{ xs: 1, sm: 2 }} sx={{ overflow: "visible", pt: 1.5, pr: 1 }}>
             {projects
               .sort((a, b) => {
                 const dateA = moment(a.created_at);
@@ -519,6 +548,7 @@ export default function ProjectFormsPage({ params }) {
                 <Grid item xs={12} lg={6} key={project.id}>
                   <ProjectCard
                     project={project}
+                    isNew={newProjectIds.includes(project.id)}
                     onProjectClick={handleProjectClick}
                     onGenerateReport={(p) =>
                       handleGenerateSingleReport(

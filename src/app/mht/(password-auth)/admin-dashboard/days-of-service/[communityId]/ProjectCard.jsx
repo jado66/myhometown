@@ -3,49 +3,37 @@
 import {
   Box,
   Card,
-  CardContent,
-  CardHeader,
   Chip,
-  Grid,
-  IconButton,
-  Tooltip,
-  Typography,
-  Menu,
-  MenuItem,
-  Checkbox,
   Button,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Divider,
+  Typography,
+  Tooltip,
   SvgIcon,
   useTheme,
   useMediaQuery,
+  Menu,
+  MenuItem,
+  IconButton,
 } from "@mui/material";
 import {
   Construction,
+  CheckCircle,
   Delete as DeleteIcon,
+  Description as ReportIcon,
+  Edit as EditIcon,
+  FiberNew as FiberNewIcon,
+  Flag,
   Group,
   LocationOn,
-  CheckCircle,
-  Flag,
   MoreVert as MoreVertIcon,
-  ExpandMore,
-  Phone,
-  CalendarToday,
-  Edit,
+  Visibility as ViewIcon,
 } from "@mui/icons-material";
-import moment from "moment";
 
 export const ProjectCard = ({
   project,
+  isNew,
   onProjectClick,
   onGenerateReport,
   onDelete,
-  isSelected = false,
-  onCheckboxChange,
-  showCheckbox = false,
-  showAccordion = false,
   onEditPartnerWard,
   menuAnchorEl,
   onMenuOpen,
@@ -53,453 +41,417 @@ export const ProjectCard = ({
 }) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const getProjectTitle = (project) => {
-    let projectTitle = "";
-    if (project.project_name) projectTitle += project.project_name;
-    if (!projectTitle) {
-      return `Project ${project.id.slice(0, 8)}...`;
-    }
-    return projectTitle.length > 25
-      ? `${projectTitle.substring(0, 25)}...`
-      : projectTitle;
+    if (!project.project_name) return `Project ${project.id.slice(0, 8)}…`;
+    return project.project_name.length > 30
+      ? `${project.project_name.substring(0, 30)}…`
+      : project.project_name;
   };
 
-  const formatDate = (dateString) => {
-    return moment(dateString).format("MM/DD/YYYY");
-  };
+  const isCompleted = project.status === "completed";
 
   return (
     <Card
-      sx={{
-        cursor: "pointer",
-        "&:hover": { boxShadow: 6 },
-        position: "relative",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: theme.palette.grey[50],
-        border: project.status === "completed" ? "2px solid #318D43" : "",
-      }}
       variant="outlined"
+      sx={{
+        borderRadius: 2,
+        overflow: "visible",
+        position: "relative",
+        transition: "all 0.2s ease",
+        borderColor: isNew
+          ? "info.main"
+          : isCompleted
+            ? "success.main"
+            : undefined,
+        borderWidth: isNew ? 2 : isCompleted ? 2 : 1,
+        cursor: "pointer",
+        "&:hover": {
+          boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+          borderColor: isNew
+            ? "info.main"
+            : isCompleted
+              ? "success.main"
+              : "primary.light",
+        },
+      }}
       onClick={() => onProjectClick(project.id)}
     >
+      {isNew && (
+        <Chip
+          label="New"
+          color="info"
+          size="small"
+          sx={{
+            position: "absolute",
+            top: -10,
+            right: -6,
+            zIndex: 1,
+            fontWeight: 700,
+            fontSize: "0.7rem",
+            height: 22,
+            "& .MuiChip-icon": { fontSize: 16 },
+          }}
+        />
+      )}
       <Box
         sx={{
           display: "flex",
-          flexDirection: { xs: "column", lg: "row" },
-          alignItems: { xs: "flex-start", lg: "center" },
+          alignItems: "stretch",
+          gap: 1.5,
+          p: 1.5,
         }}
       >
+        {/* Colored icon */}
         <Box
           sx={{
-            display: "flex",
-            flex: 1,
-            width: { xs: "100%", lg: "auto" },
-          }}
-        >
-          <CardHeader
-            title={getProjectTitle(project)}
-            subheader={
-              project.address_street1 &&
-              project.address_city && (
-                <Box>
-                  <Typography
-                    variant="subtitle"
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      ml: -0.5,
-                    }}
-                  >
-                    <LocationOn color="primary" size="small" sx={{ mr: 1 }} />
-                    {`${project.address_street1}${
-                      project.address_street2
-                        ? `, ${project.address_street2}`
-                        : ""
-                    }, ${project.address_city}`}
-                  </Typography>
-                </Box>
-              )
-            }
-            sx={{
-              pb: 0,
-              flex: 1,
-              pl: {
-                xs: showCheckbox ? 6 : 2,
-                sm: showCheckbox ? 6 : 2,
-                md: showCheckbox ? 6 : 2,
-              },
-              pt: { xs: 2.5, sm: 3, md: 2 },
-              "& .MuiCardHeader-title": {
-                fontSize: { xs: "0.9rem", sm: "1rem", md: "1.5rem" },
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              },
-              "& .MuiCardHeader-subheader": {
-                fontSize: { xs: "0.5rem", sm: "0.875rem" },
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              },
-            }}
-          />
-        </Box>
-        <Box
-          sx={{
+            width: 40,
+            height: 40,
+            borderRadius: 1.5,
+            bgcolor: isCompleted ? "success.main" : "primary.main",
+            color: "primary.contrastText",
             display: "flex",
             alignItems: "center",
-            px: 1,
-            pb: { xs: 1, lg: 0 },
-            pt: { xs: 0, lg: 1 },
-            width: { xs: "100%", lg: "auto" },
-            flexWrap: "wrap",
-            zIndex: 1,
+            justifyContent: "center",
+            flexShrink: 0,
+            mt: 0.25,
           }}
         >
-          {!isSmallScreen && (
-            <>
-              {project.volunteers_needed && (
-                <Tooltip title="Volunteers Needed">
-                  <Button
-                    edge="end"
-                    aria-label="volunteers-needed"
-                    onClick={(e) => e.stopPropagation()}
-                    sx={{ mr: 1, color: "#686868" }}
-                  >
-                    <Group sx={{ mr: 1 }} />
-                    {project.volunteers_needed || "N/A"}
-                  </Button>
-                </Tooltip>
-              )}
-              <Tooltip title="Generate Report">
-                <Button
-                  edge="end"
-                  variant="outlined"
-                  aria-label="generate-report"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onGenerateReport(project);
-                  }}
-                  sx={{ mr: 1 }}
-                >
-                  <Construction sx={{ mr: 1 }} />
-                  Print
-                </Button>
-              </Tooltip>
-              <IconButton
-                edge="end"
-                aria-label="delete"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(project);
-                }}
-                sx={{ mr: 1 }}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </>
-          )}
-
-          {isSmallScreen && (
-            <>
-              {project.volunteers_needed && project.volunteers_needed > 0 && (
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center" }}
-                >
-                  <Group sx={{ mr: 1 }} size="small" />
-                  {project.volunteers_needed}
-                </Typography>
-              )}
-              <IconButton
-                aria-label="more-actions"
-                aria-controls={`action-menu-${project.id}`}
-                aria-haspopup="true"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onMenuOpen(e, project.id);
-                }}
-              >
-                <MoreVertIcon />
-              </IconButton>
-              <Menu
-                id={`action-menu-${project.id}`}
-                anchorEl={menuAnchorEl?.[project.id]}
-                open={Boolean(menuAnchorEl?.[project.id])}
-                onClose={() => onMenuClose(project.id)}
-                MenuListProps={{
-                  "aria-labelledby": `action-button-${project.id}`,
-                }}
-              >
-                <MenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onGenerateReport(project);
-                    onMenuClose(project.id);
-                  }}
-                >
-                  <Construction sx={{ mr: 1 }} />
-                  Print Report
-                </MenuItem>
-                <MenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(project);
-                    onMenuClose(project.id);
-                  }}
-                >
-                  <DeleteIcon sx={{ mr: 1 }} />
-                  Delete
-                </MenuItem>
-              </Menu>
-            </>
+          {isCompleted ? (
+            <CheckCircle fontSize="small" />
+          ) : (
+            <Construction fontSize="small" />
           )}
         </Box>
-      </Box>{" "}
-      {/* end header + actions wrapper */}
-      <CardContent sx={{ pt: 2, flex: 1 }}>
-        {project.project_developer && (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            {"Resource Couple: " + project.project_development_couple}
-          </Typography>
-        )}
 
-        {project.project_id && (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            {project.project_id}
-          </Typography>
-        )}
-
-        {project.status === "completed" && (
-          <Chip
-            label="Ready for Day of Service"
-            color="success"
-            size="small"
+        {/* Info */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          {/* Title row */}
+          <Box
             sx={{
-              textTransform: "capitalize",
-              mb: 2,
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              flexWrap: "wrap",
             }}
-          />
-        )}
-
-        <Grid container spacing={2} sx={{ mb: 1 }}>
-          <Grid item xs={12} md={6}>
-            {project.is_dumpster_needed && (
-              <Box sx={{ mt: 2 }}>
-                <Typography
-                  variant="subtitle"
-                  gutterBottom
-                  sx={{ display: "flex", alignItems: "center" }}
-                >
-                  <DumpsterIcon color="primary" size="small" sx={{ mr: 1 }} />
-                  Dumpsters
-                  {project.is_second_dumpster_needed && (
-                    <Chip
-                      label={"x 2"}
-                      color="primary"
-                      size="small"
-                      sx={{
-                        ml: 1,
-                        backgroundColor: theme.palette.primary.light,
-                      }}
-                    />
-                  )}
-                </Typography>
-              </Box>
-            )}
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            md={6}
-            sx={{ display: "flex", justifyContent: "flex-end" }}
           >
-            {project.are_blue_stakes_needed && (
-              <Box sx={{ mt: 2 }}>
-                <Typography
-                  variant="subtitle"
-                  gutterBottom
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    textAlign: "right",
-                  }}
-                >
-                  {project.called_811 ? (
-                    <CheckCircle color="primary" size="small" sx={{ mr: 1 }} />
-                  ) : (
-                    <Flag color="info" size="small" sx={{ mr: 1 }} />
-                  )}
-                  Blue Stakes
-                </Typography>
-              </Box>
-            )}
-          </Grid>
-        </Grid>
-
-        {showAccordion && onEditPartnerWard && (
-          <Accordion
-            elevation={1}
-            sx={{
-              border: `1px solid ${theme.palette.divider}`,
-              "&:before": {
-                display: "none",
-              },
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMore />}
-              aria-controls="contact-info-content"
-              id="contact-info-header"
+            <Typography
+              variant="subtitle2"
               sx={{
-                backgroundColor: theme.palette.background.default,
-                display: "flex",
+                fontWeight: 600,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
               }}
             >
+              {getProjectTitle(project)}
+            </Typography>
+            {isCompleted && (
+              <Chip
+                label="Ready"
+                color="success"
+                size="small"
+                sx={{ height: 18, fontSize: "0.65rem" }}
+              />
+            )}
+          </Box>
+
+          {/* Address row */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              flexWrap: "wrap",
+              mt: 0.25,
+            }}
+          >
+            {project.address_street1 && project.address_city ? (
               <Typography
-                variant="h6"
+                variant="caption"
+                color="text.secondary"
                 sx={{
-                  fontSize: { xs: "0.75rem", sm: "1rem", md: "1rem" },
                   display: "flex",
                   alignItems: "center",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
                 }}
               >
-                <Phone sx={{ mr: 1 }} />
-                Group Construction &amp; Contact Information
+                <LocationOn sx={{ fontSize: 13, mr: 0.25 }} />
+                {`${project.address_street1}, ${project.address_city}`}
               </Typography>
+            ) : (
+              <Typography variant="caption" color="warning.main">
+                No address set
+              </Typography>
+            )}
+          </Box>
 
-              {!project.partner_ward && (
-                <>
-                  <Box sx={{ flexGrow: 1 }} />
-                  <Typography
-                    variant="subtitle1"
-                    gutterBottom
+          {/* Partner group + contact row */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              flexWrap: "wrap",
+              mt: 0.25,
+            }}
+          >
+            {project.partner_ward ? (
+              <>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    display: "block",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Group: {project.partner_ward}
+                  {project.partner_ward_liaison &&
+                    ` · ${project.partner_ward_liaison}`}
+                </Typography>
+                {onEditPartnerWard && (
+                  <Button
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditPartnerWard(project);
+                    }}
                     sx={{
-                      color: "#cf6179",
-                      display: "flex",
-                      alignItems: "center",
-                      mt: 1,
-                      mr: 2,
+                      minWidth: 0,
+                      p: 0,
+                      fontSize: "0.65rem",
+                      textTransform: "none",
+                      textDecoration: "underline",
+                      verticalAlign: "baseline",
+                      "&:hover": {
+                        textDecoration: "underline",
+                        bgcolor: "transparent",
+                      },
                     }}
                   >
-                    Partner Group not Assigned
-                  </Typography>
-                </>
-              )}
-            </AccordionSummary>
-            <AccordionDetails>
-              <Box sx={{ position: "relative", mb: 2 }}>
-                <Typography variant="subtitle1" gutterBottom>
-                  Partner Group: {project.partner_ward || "Not set"}
-                </Typography>
+                    Edit
+                  </Button>
+                )}
+              </>
+            ) : (
+              <Typography
+                variant="caption"
+                color="warning.main"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                No group assigned.{" "}
+                {onEditPartnerWard && (
+                  <Button
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditPartnerWard(project);
+                    }}
+                    sx={{
+                      minWidth: 0,
+                      p: 0,
+                      ml: 0.5,
+                      fontSize: "inherit",
+                      textTransform: "none",
+                      textDecoration: "underline",
+                      verticalAlign: "baseline",
+                      "&:hover": {
+                        textDecoration: "underline",
+                        bgcolor: "transparent",
+                      },
+                    }}
+                  >
+                    Add group
+                  </Button>
+                )}
+              </Typography>
+            )}
+          </Box>
+        </Box>
+
+        {/* Right column: icons top, actions bottom */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+            flexShrink: 0,
+            gap: 1,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Sub-info icons — top right */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.75,
+            }}
+          >
+            {project.volunteers_needed > 0 && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center", gap: 0.25 }}
+              >
+                <Group sx={{ fontSize: 13 }} />
+                {project.volunteers_needed}
+              </Typography>
+            )}
+
+            {project.is_dumpster_needed && (
+              <Tooltip
+                title={
+                  project.is_second_dumpster_needed
+                    ? "2 Dumpsters"
+                    : "Dumpster needed"
+                }
+              >
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <DumpsterIcon color="primary" sx={{ fontSize: 14 }} />
+                  {project.is_second_dumpster_needed && (
+                    <Typography
+                      variant="caption"
+                      color="primary"
+                      sx={{ ml: 0.25 }}
+                    >
+                      ×2
+                    </Typography>
+                  )}
+                </Box>
+              </Tooltip>
+            )}
+
+            {project.are_blue_stakes_needed && (
+              <Tooltip
+                title={
+                  project.called_811
+                    ? "Blue Stakes — 811 called"
+                    : "Blue Stakes needed"
+                }
+              >
+                {project.called_811 ? (
+                  <CheckCircle color="primary" sx={{ fontSize: 14 }} />
+                ) : (
+                  <Flag color="info" sx={{ fontSize: 14 }} />
+                )}
+              </Tooltip>
+            )}
+          </Box>
+
+          {/* Actions — bottom right */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5,
+            }}
+          >
+            {!isSmallScreen ? (
+              <>
                 <Button
                   variant="outlined"
                   size="small"
-                  startIcon={<Edit />}
+                  startIcon={<EditIcon />}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onEditPartnerWard(project);
+                    onProjectClick(project.id);
                   }}
-                  sx={{ position: "absolute", top: 0, right: 0 }}
+                  sx={{ textTransform: "none", fontSize: "0.75rem", px: 1 }}
                 >
-                  Edit
+                  Edit Project
                 </Button>
-              </Box>
-
-              <Divider sx={{ my: 2 }} />
-
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  <Box sx={{ p: 1 }}>
-                    {project.partner_ward_liaison && (
-                      <Typography variant="h6" gutterBottom>
-                        {project.partner_ward_liaison}
-                      </Typography>
-                    )}
-                    {project.partner_ward_liaison_title && (
-                      <Typography variant="body2" color="text.secondary">
-                        Title: {project.partner_ward_liaison_title}
-                      </Typography>
-                    )}
-                    {project.partner_ward_liaison_phone1 && (
-                      <Typography variant="body2" color="text.secondary">
-                        Email: {project.partner_ward_liaison_email1}
-                      </Typography>
-                    )}
-                    {project.partner_ward_liaison_email2 && (
-                      <Typography variant="body2" color="text.secondary">
-                        Phone: {project.partner_ward_liaison_phone1}
-                      </Typography>
-                    )}
-                  </Box>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <Box sx={{ p: 1 }}>
-                    {project.partner_ward_liaison2 && (
-                      <Typography variant="h6" gutterBottom>
-                        {project.partner_ward_liaison2}
-                      </Typography>
-                    )}
-                    {project.partner_ward_liaison_title2 && (
-                      <Typography variant="body2" color="text.secondary">
-                        Title: {project.partner_ward_liaison_title2}
-                      </Typography>
-                    )}
-                    {project.partner_ward_liaison_email2 && (
-                      <Typography variant="body2" color="text.secondary">
-                        Email: {project.partner_ward_liaison_email2}
-                      </Typography>
-                    )}
-                    {project.partner_ward_liaison_phone2 && (
-                      <Typography variant="body2" color="text.secondary">
-                        Phone: {project.partner_ward_liaison_phone2}
-                      </Typography>
-                    )}
-                  </Box>
-                </Grid>
-              </Grid>
-
-              <Box
-                sx={{
-                  mt: 2,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  flexWrap: "wrap",
-                }}
-              >
-                <Chip
-                  icon={<CalendarToday />}
-                  label={`Created: ${formatDate(project.created_at)}`}
-                  size={isMobile ? "small" : "medium"}
-                  sx={{ mb: 1 }}
-                />
-                {project.updated_at &&
-                  project.updated_at !== project.created_at && (
-                    <Chip
-                      icon={<CalendarToday />}
-                      label={`Updated: ${formatDate(project.updated_at)}`}
-                      size={isMobile ? "small" : "medium"}
-                      sx={{ mb: 1 }}
-                    />
-                  )}
-              </Box>
-            </AccordionDetails>
-          </Accordion>
-        )}
-      </CardContent>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<ReportIcon />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onGenerateReport(project);
+                  }}
+                  sx={{ textTransform: "none", fontSize: "0.75rem", px: 1 }}
+                >
+                  Print Report
+                </Button>
+                <IconButton
+                  size="small"
+                  aria-label="delete"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(project);
+                  }}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </>
+            ) : (
+              <>
+                <IconButton
+                  size="small"
+                  aria-label="more-actions"
+                  aria-controls={`action-menu-${project.id}`}
+                  aria-haspopup="true"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMenuOpen(e, project.id);
+                  }}
+                >
+                  <MoreVertIcon fontSize="small" />
+                </IconButton>
+                <Menu
+                  id={`action-menu-${project.id}`}
+                  anchorEl={menuAnchorEl?.[project.id]}
+                  open={Boolean(menuAnchorEl?.[project.id])}
+                  onClose={() => onMenuClose(project.id)}
+                >
+                  <MenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onProjectClick(project.id);
+                      onMenuClose(project.id);
+                    }}
+                  >
+                    <ViewIcon sx={{ mr: 1 }} fontSize="small" />
+                    View
+                  </MenuItem>
+                  <MenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onGenerateReport(project);
+                      onMenuClose(project.id);
+                    }}
+                  >
+                    <Construction sx={{ mr: 1 }} fontSize="small" />
+                    Print Report
+                  </MenuItem>
+                  <MenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(project);
+                      onMenuClose(project.id);
+                    }}
+                  >
+                    <DeleteIcon sx={{ mr: 1 }} fontSize="small" />
+                    Delete
+                  </MenuItem>
+                </Menu>
+              </>
+            )}
+          </Box>
+        </Box>
+      </Box>
     </Card>
   );
 };
 
-const DumpsterIcon = (props) => {
-  return (
-    <SvgIcon {...props} viewBox="0 0 576 512">
-      <path d="M49.7 32c-10.5 0-19.8 6.9-22.9 16.9L.9 133c-.6 2-.9 4.1-.9 6.1C0 150.7 9.3 160 20.9 160l94 0L140.5 32 49.7 32zM272 160l0-128-98.9 0L147.5 160 272 160zm32 0l124.5 0L402.9 32 304 32l0 128zm157.1 0l94 0c11.5 0 20.9-9.3 20.9-20.9c0-2.1-.3-4.1-.9-6.1L549.2 48.9C546.1 38.9 536.8 32 526.3 32l-90.8 0 25.6 128zM32 192l4 32-4 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l12 0L64 448c0 17.7 14.3 32 32 32s32-14.3 32-32l320 0c0 17.7 14.3 32 32 32s32-14.3 32-32l20-160 12 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-4 0 4-32L32 192z" />
-    </SvgIcon>
-  );
-};
+const DumpsterIcon = (props) => (
+  <SvgIcon {...props} viewBox="0 0 576 512">
+    <path d="M49.7 32c-10.5 0-19.8 6.9-22.9 16.9L.9 133c-.6 2-.9 4.1-.9 6.1C0 150.7 9.3 160 20.9 160l94 0L140.5 32 49.7 32zM272 160l0-128-98.9 0L147.5 160 272 160zm32 0l124.5 0L402.9 32 304 32l0 128zm157.1 0l94 0c11.5 0 20.9-9.3 20.9-20.9c0-2.1-.3-4.1-.9-6.1L549.2 48.9C546.1 38.9 536.8 32 526.3 32l-90.8 0 25.6 128zM32 192l4 32-4 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l12 0L64 448c0 17.7 14.3 32 32 32s32-14.3 32-32l320 0c0 17.7 14.3 32 32 32s32-14.3 32-32l20-160 12 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-4 0 4-32L32 192z" />
+  </SvgIcon>
+);

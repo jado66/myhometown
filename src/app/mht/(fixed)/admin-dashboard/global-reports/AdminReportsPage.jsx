@@ -876,11 +876,16 @@ const AdminReportsPage = () => {
                   }}
                   InputLabelProps={{ shrink: true }}
                   inputProps={{
-                    max: selectedReport !== "daysOfService" ? todayStr : undefined,
+                    max:
+                      selectedReport !== "daysOfService" ? todayStr : undefined,
                     min: startDate || undefined,
                   }}
                   fullWidth
-                  helperText={selectedReport !== "daysOfService" ? "Cannot be in the future" : undefined}
+                  helperText={
+                    selectedReport !== "daysOfService"
+                      ? "Cannot be in the future"
+                      : undefined
+                  }
                 />
               </Grid>
               {dateError && (

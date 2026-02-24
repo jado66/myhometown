@@ -49,13 +49,15 @@ export const useDaysOfServiceProjects = () => {
         projectData.id = newId;
       }
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("days_of_service_project_forms")
-        .insert([projectData]);
+        .insert([projectData])
+        .select();
 
       if (error) throw error;
 
       toast.success("Project created successfully");
+      return data?.[0] || null;
     } catch (error) {
       console.error("Project creation error:", error);
       toast.error("Failed to save project");

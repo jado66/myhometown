@@ -46,6 +46,33 @@ export default function UnassignedProjects({
 
   const [menuAnchorEl, setMenuAnchorEl] = useState({});
 
+  // Track newly created project IDs in localStorage
+  const LOCAL_STORAGE_KEY = "dos_new_project_ids";
+  const [newProjectIds, setNewProjectIds] = useState(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  });
+
+  const markProjectSeen = (projectId) => {
+    setNewProjectIds((prev) => {
+      const updated = prev.filter((id) => id !== projectId);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const addNewProjectId = (projectId) => {
+    setNewProjectIds((prev) => {
+      const updated = [...prev, projectId];
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   // Replace your current handleMenuClick and handleMenuClose functions with these
   const handleMenuClick = (event, projectId) => {
     event.stopPropagation();
@@ -116,6 +143,7 @@ export default function UnassignedProjects({
 
   // Event handlers
   const handleProjectClick = (id) => {
+    markProjectSeen(id);
     router.push(
       process.env.NEXT_PUBLIC_DOMAIN +
         `/admin-dashboard/days-of-service/${communityId}/project/${id}`,
@@ -133,17 +161,12 @@ export default function UnassignedProjects({
 
     try {
       const newId = uuidv4();
-      await addProject(newId, communityId, cityId, null, null, user);
+      const newProject = await addProject(newId, communityId, cityId, null, null, user);
 
-      // Wait for 1.5 seconds to allow for data processing
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Redirect to the project form page with all necessary IDs
-      // Use "dev" as the communityId if it's null
-      const routeCommunityId = communityId || "dev";
-      router.push(
-        `${process.env.NEXT_PUBLIC_DOMAIN}/admin-dashboard/days-of-service/${routeCommunityId}/project/${newId}`,
-      );
+      if (newProject) {
+        setProjects((prev) => [newProject, ...prev]);
+        addNewProjectId(newProject.id);
+      }
     } catch (error) {
       console.error("Error creating new project:", error);
       toast.error("Failed to create new project");
@@ -238,7 +261,7 @@ export default function UnassignedProjects({
       <Paper
         elevation={0}
         sx={{
-          overflow: "hidden",
+          overflow: "visible",
           display: "flex",
           flexDirection: "column",
           p: 0,
@@ -278,7 +301,7 @@ export default function UnassignedProjects({
             <Grid
               container
               spacing={{ xs: 1, sm: 2, lg: 4 }}
-              sx={{ p: { lg: 3, md: 0 }, overflowY: "auto" }}
+              sx={{ p: { lg: 3, md: 0 }, overflow: "visible", pt: 1.5, pr: 1 }}
             >
               {projects
                 .sort((a, b) => {
@@ -292,6 +315,7 @@ export default function UnassignedProjects({
                   <Grid item xs={12} sm={6} lg={6} key={project.id}>
                     <ProjectCard
                       project={project}
+                      isNew={newProjectIds.includes(project.id)}
                       onProjectClick={handleProjectClick}
                       onGenerateReport={(p) =>
                         handleGenerateSingleReport(
