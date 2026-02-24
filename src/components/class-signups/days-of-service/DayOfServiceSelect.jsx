@@ -98,7 +98,6 @@ export const DayOfServiceSelect = ({
         <FormLabel id={`${field}-label`}>
           {config.label || "Day of Service"}
         </FormLabel>
-        <FormLabel id={`${field}-label`}>{}</FormLabel>
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", my: 2 }}>
             <CircularProgress size={24} />

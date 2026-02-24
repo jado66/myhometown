@@ -4,13 +4,14 @@ import { communityTemplate } from "@/constants/templates/communityTemplate";
 import useCommunity from "@/hooks/use-community";
 import { useEffect, useState } from "react";
 import { useCustomForms } from "@/hooks/useCustomForm";
-import JsonViewer from "@/components/util/debug/DebugOutput";
 import { SignUpForm } from "@/components/SignUpForm";
 import { Container, Typography, Box, Divider, Button } from "@mui/material";
 import { Alert, AlertTitle } from "@mui/material";
 import { CustomDaysOfServiceContent } from "@/views/dayOfService/CustomDaysOfService";
 import Loading from "@/components/util/Loading";
 import { useFormResponses } from "@/hooks/useFormResponses";
+
+const FIXED_DAY_OF_SERVICE_ID = "df2ede42-6c93-4a24-8a58-3344aa5d3f65";
 
 const DaysOfServicePage = ({ params }) => {
   const { stateQuery, cityQuery, communityQuery } = params;
@@ -67,7 +68,7 @@ const DaysOfServicePage = ({ params }) => {
       if (community?.volunteerSignUpId) {
         const formData = await getFormById(community.volunteerSignUpId);
         setForm(formData);
-        alert("Form loaded: " + formData.title);
+        console.log("Loaded form data:", JSON.stringify(formData, null, 2));
       }
     };
 
@@ -80,11 +81,26 @@ const DaysOfServicePage = ({ params }) => {
       return;
     }
 
+    if (formData.dayOfService && formData.dayOfService !== FIXED_DAY_OF_SERVICE_ID) {
+      const msg = "You must choose Monday, November 2nd, as the Day of Service.";
+      alert(msg);
+      setSubmitError(msg);
+      return;
+    }
+
+    const submissionData = {
+      ...formData,
+      dayOfService: FIXED_DAY_OF_SERVICE_ID,
+    };
+
     try {
-      const response = await submitResponse(
-        community.volunteerSignUpId,
-        formData,
+      alert(
+        "Form submitted with data: " + JSON.stringify(submissionData, null, 2),
       );
+      //   const response = await submitResponse(
+      //     community.volunteerSignUpId,
+      //     submissionData,
+      //   );
 
       if (response) {
         setSubmitSuccess(true);
@@ -121,59 +137,57 @@ const DaysOfServicePage = ({ params }) => {
 
   return (
     <Box className="min-h-screen bg-gray-50">
-      <CustomDaysOfServiceContent
-        isEditMode={false}
-        onSave={() => alert("Can't save in view mode")}
-        initialContent={community?.daysOfService || {}}
-      />
-
-      <>
-        <Divider sx={{ my: 4 }} />
-        <Container maxWidth="lg" className="p-8" id="form">
-          {submitSuccess ? (
-            <>
-              <Alert sx={{ my: 4 }}>
-                <AlertTitle>Success!</AlertTitle>
-                Thank you for signing up. Your volunteer registration has been
-                submitted successfully.
+      <Container
+        maxWidth="lg"
+        sx={{
+          py: {
+            xs: 4,
+            lg: 8,
+          },
+        }}
+        id="form"
+      >
+        {submitSuccess ? (
+          <>
+            <Alert sx={{ my: 4 }}>
+              <AlertTitle>Success!</AlertTitle>
+              Thank you for signing up. Your volunteer registration has been
+              submitted successfully.
+            </Alert>
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => {
+                  setSubmitSuccess(false);
+                  setSubmitError("");
+                }}
+              >
+                Sign Up Another Volunteer
+              </Button>
+            </Box>
+          </>
+        ) : (
+          <>
+            {submitError && (
+              <Alert variant="destructive" className="mb-8">
+                <AlertTitle>Error</AlertTitle>
+                {submitError}
               </Alert>
-              <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => {
-                    setSubmitSuccess(false);
-                    setSubmitError("");
-                  }}
-                >
-                  Sign Up Another Volunteer
-                </Button>
-              </Box>
-            </>
-          ) : (
-            <>
-              {submitError && (
-                <Alert variant="destructive" className="mb-8">
-                  <AlertTitle>Error</AlertTitle>
-                  {submitError}
-                </Alert>
-              )}
-              {form && (
-                <SignUpForm
-                  isEdit={false}
-                  form={form}
-                  signUpFormId={community?.volunteerSignUpId}
-                  handleSubmit={handleSubmit}
-                  defaultConfgig={{}}
-                  isFormVisible={
-                    community?.isDaysOfServiceVisibilityFormVisible
-                  }
-                />
-              )}
-            </>
-          )}
-        </Container>
-      </>
+            )}
+            {form && (
+              <SignUpForm
+                isEdit={false}
+                form={form}
+                signUpFormId={community?.volunteerSignUpId}
+                handleSubmit={handleSubmit}
+                defaultConfgig={{}}
+                isFormVisible={true}
+              />
+            )}
+          </>
+        )}
+      </Container>
     </Box>
   );
 };

@@ -665,9 +665,15 @@ export const useDaysOfServiceProjects = () => {
     filterType?: "cityId" | "communityId" | "daysOfServiceId",
   ) => {
     // Resolve filterType — some callers pass it as the 3rd argument (dateOfService position)
-    const resolvedFilterType: "cityId" | "communityId" | "daysOfServiceId" | undefined =
+    const resolvedFilterType:
+      | "cityId"
+      | "communityId"
+      | "daysOfServiceId"
+      | undefined =
       filterType ??
-      (["cityId", "communityId", "daysOfServiceId"].includes(dateOfService ?? "")
+      (["cityId", "communityId", "daysOfServiceId"].includes(
+        dateOfService ?? "",
+      )
         ? (dateOfService as "cityId" | "communityId" | "daysOfServiceId")
         : undefined);
 
@@ -688,7 +694,8 @@ export const useDaysOfServiceProjects = () => {
           projectsData = (await fetchProjectsByCommunityId(identifier)) || [];
           break;
         case "daysOfServiceId":
-          projectsData = (await fetchProjectsByDaysOfServiceId(identifier)) || [];
+          projectsData =
+            (await fetchProjectsByDaysOfServiceId(identifier)) || [];
           break;
       }
 
@@ -697,7 +704,9 @@ export const useDaysOfServiceProjects = () => {
         return;
       }
 
-      toast.success(`${projectsData.length} project(s) found. Reports are not yet implemented for bulk generation.`);
+      toast.success(
+        `${projectsData.length} project(s) found. Reports are not yet implemented for bulk generation.`,
+      );
     } catch (error) {
       toast.error("Failed to generate report");
     } finally {
