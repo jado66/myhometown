@@ -15,25 +15,20 @@ import {
   Checkbox,
   FormControlLabel,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   RadioGroup,
   Radio,
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { FIELD_TYPES } from "./FieldTypes";
-import { Check } from "@mui/icons-material";
 import { useImageUpload } from "@/hooks/use-upload-image";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
-import { MultiLineTypography } from "../MultiLineTypography";
 import { MinorVolunteersComponent } from "./days-of-service/MinorVolunteersComponent";
 import { VolunteerHours } from "./days-of-service/VolunteerHours";
 import { WhoAreYouComponent } from "./days-of-service/WhoAreYouComponent";
 import { DayOfServiceSelect } from "./days-of-service/DayOfServiceSelect";
 import { SignatureField } from "./days-of-service/SignatureField";
+import { InfoDialogField } from "./days-of-service/InfoDialogField";
 import { useClassSignup } from "./ClassSignupContext";
 // Form Field Component
 export const FormField = ({
@@ -44,8 +39,6 @@ export const FormField = ({
   error,
   isEditMode,
 }) => {
-  const [open, setOpen] = useState(false);
-
   const { resetKey } = useClassSignup();
 
   useEffect(() => {
@@ -289,34 +282,13 @@ export const FormField = ({
 
       case FIELD_TYPES.infoDialog:
         return (
-          <Box>
-            <Button variant="outlined" onClick={() => setOpen(true)}>
-              {config.label}
-              {value && <Check sx={{ ml: 1 }} />}
-            </Button>
-            <Dialog
-              open={open}
-              onClose={() => setOpen(false)}
-              maxWidth="md"
-              fullWidth
-            >
-              <DialogTitle>{config.label}</DialogTitle>
-              <DialogContent>
-                <MultiLineTypography text={config.content} />
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  onClick={() => {
-                    setOpen(false);
-                    onChange(field, true);
-                  }}
-                >
-                  I Acknowledge
-                </Button>
-              </DialogActions>
-            </Dialog>
-            {error && <FormHelperText error>{error}</FormHelperText>}
-          </Box>
+          <InfoDialogField
+            field={field}
+            config={config}
+            value={value}
+            onChange={onChange}
+            error={error}
+          />
         );
       default:
         return (

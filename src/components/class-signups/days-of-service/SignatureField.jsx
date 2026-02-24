@@ -6,39 +6,52 @@ import {
   FormHelperText,
   Stack,
   Typography,
-  useMediaQuery,
 } from "@mui/material";
-import SignaturePad from "react-signature-canvas";
+import Signature from "@uiw/react-signature";
 
-export const SignatureField = ({ field, config, value, onChange, error, resetKey }) => {
-  const containerRef = useRef(null);
-  const [sigPad, setSigPad] = useState(null);
-  const [padWidth, setPadWidth] = useState(500);
-  const isMobile = useMediaQuery("(max-width:600px)");
+const BG_COLOR = "#edeff2";
+
+export const SignatureField = ({
+  field,
+  config,
+  value,
+  onChange,
+  error,
+  resetKey,
+}) => {
+  const svgRef = useRef(null);
+  const [captured, setCaptured] = useState(!!value);
 
   useEffect(() => {
-    if (resetKey && sigPad) {
-      sigPad.clear();
+    if (resetKey && svgRef.current) {
+      svgRef.current.clear();
+      setCaptured(false);
       onChange(field, null);
     }
   }, [resetKey]);
 
-  useEffect(() => {
-    const updateWidth = () => {
-      if (containerRef.current) {
-        const width = containerRef.current.clientWidth - 16;
-        setPadWidth(isMobile ? width : Math.min(width, 500));
+  const handleEnd = () => {
+    if (svgRef.current) {
+      const svgEl = svgRef.current.svg?.current;
+      if (svgEl) {
+        const svgData = new XMLSerializer().serializeToString(svgEl);
+        const dataUrl = `data:image/svg+xml;base64,${btoa(svgData)}`;
+        setCaptured(true);
+        onChange(field, dataUrl);
       }
-    };
+    }
+  };
 
-    updateWidth();
-    window.addEventListener("resize", updateWidth);
-    return () => window.removeEventListener("resize", updateWidth);
-  }, [isMobile]);
+  const handleClear = () => {
+    if (svgRef.current) {
+      svgRef.current.clear();
+    }
+    setCaptured(false);
+    onChange(field, null);
+  };
 
   return (
     <Box
-      ref={containerRef}
       sx={{
         border: "1px solid #ccc",
         borderRadius: 1,
@@ -58,39 +71,21 @@ export const SignatureField = ({ field, config, value, onChange, error, resetKey
           border: "1px solid #ccc",
           borderRadius: 1,
           overflow: "hidden",
-          width: "100%",
+          "& svg": {
+            display: "block",
+            width: "100%",
+            height: 200,
+            background: BG_COLOR,
+          },
         }}
       >
-        <SignaturePad
-          backgroundColor="#edeff2"
-          canvasProps={{
-            className: "signature-canvas",
-            width: padWidth,
-            height: isMobile ? 150 : 200,
-            style: { display: "block", maxWidth: "100%" },
-          }}
-          ref={(ref) => setSigPad(ref)}
-          onEnd={() => {
-            if (sigPad) {
-              onChange(field, sigPad.toDataURL());
-            }
-          }}
-        />
+        <Signature ref={svgRef} onPointerUp={handleEnd} />
       </Box>
       <Stack direction="row" spacing={2} mt={1} alignItems="center">
-        <Button
-          size="small"
-          variant="outlined"
-          onClick={() => {
-            if (sigPad) {
-              sigPad.clear();
-              onChange(field, null);
-            }
-          }}
-        >
+        <Button size="small" variant="outlined" onClick={handleClear}>
           Clear
         </Button>
-        {value && (
+        {captured && value && (
           <Typography variant="caption" color="success.main">
             Signature captured
           </Typography>

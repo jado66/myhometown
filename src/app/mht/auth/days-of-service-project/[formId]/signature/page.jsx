@@ -16,7 +16,7 @@ import {
   Divider,
   CircularProgress,
 } from "@mui/material";
-import SignatureCanvas from "react-signature-canvas";
+import Signature from "@uiw/react-signature";
 import { supabase } from "@/util/supabase";
 import { CheckCircleOutline } from "@mui/icons-material";
 
@@ -66,25 +66,12 @@ const TermsOfServicePage = ({ params }) => {
   const [projectAddress, setProjectAddress] = useState("");
   const [cityName, setCityName] = useState("");
 
-  // Responsive canvas
-  const sigCanvas = useRef(null);
-  const canvasContainerRef = useRef(null);
-  const [canvasWidth, setCanvasWidth] = useState(500);
+  // Signature ref
+  const sigRef = useRef(null);
 
   const searchParams = useSearchParams();
 
-  //  Resize canvas to container width
-  useEffect(() => {
-    if (!canvasContainerRef.current) return;
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const w = Math.floor(entry.contentRect.width);
-        if (w > 0) setCanvasWidth(w);
-      }
-    });
-    observer.observe(canvasContainerRef.current);
-    return () => observer.disconnect();
-  }, []);
+
 
   //  Fetch release form for this project city (with default fallback)
   const fetchReleaseForm = useCallback(async (cityId) => {
@@ -221,10 +208,14 @@ const TermsOfServicePage = ({ params }) => {
       return;
     }
 
-    const canvasSignature =
-      sigCanvas.current && !sigCanvas.current.isEmpty()
-        ? sigCanvas.current.getTrimmedCanvas().toDataURL("image/png")
-        : null;
+    let canvasSignature = null;
+    if (sigRef.current) {
+      const svgEl = sigRef.current.svg?.current;
+      if (svgEl && svgEl.querySelectorAll("path").length > 0) {
+        const svgData = new XMLSerializer().serializeToString(svgEl);
+        canvasSignature = `data:image/svg+xml;base64,${btoa(svgData)}`;
+      }
+    }
 
     if (!signature.trim() && !canvasSignature) {
       alert("Please provide a signature.");
@@ -284,7 +275,7 @@ const TermsOfServicePage = ({ params }) => {
   };
 
   const clearSignature = () => {
-    if (sigCanvas.current) sigCanvas.current.clear();
+    if (sigRef.current) sigRef.current.clear();
   };
 
   //  Template variables
@@ -499,7 +490,6 @@ const TermsOfServicePage = ({ params }) => {
           Draw your signature below:
         </Typography>
         <Box
-          ref={canvasContainerRef}
           sx={{
             border: "1px solid",
             borderColor: hasReadTerms ? "grey.400" : "grey.300",
@@ -508,17 +498,14 @@ const TermsOfServicePage = ({ params }) => {
             overflow: "hidden",
             transition: "border-color 0.2s",
             touchAction: "none",
+            "& svg": {
+              display: "block",
+              width: "100%",
+              height: 160,
+            },
           }}
         >
-          <SignatureCanvas
-            ref={sigCanvas}
-            penColor="black"
-            canvasProps={{
-              width: canvasWidth,
-              height: 160,
-              style: { display: "block" },
-            }}
-          />
+          <Signature ref={sigRef} />
         </Box>
 
         <Box
