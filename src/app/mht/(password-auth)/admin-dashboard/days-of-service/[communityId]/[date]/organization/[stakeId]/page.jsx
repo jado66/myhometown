@@ -65,6 +65,7 @@ import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import DosBreadcrumbs from "@/components/days-of-service/DosBreadcrumbs";
 import Loading from "@/components/util/Loading";
 import { ProjectCard } from "./ProjectCard";
+import { generatePDFReport } from "@/util/reports/days-of-service/reportGenerators";
 
 export default function ProjectFormsPage({ params }) {
   const { stakeId, communityId, date } = params;
@@ -313,7 +314,13 @@ export default function ProjectFormsPage({ params }) {
   const handleGenerateSingleReport = async (e, projectId) => {
     e.stopPropagation();
     try {
-      await generateReports("single", projectId, date);
+      const project = projects.find((p) => p.id === projectId);
+      await generatePDFReport(
+        projectId,
+        date,
+        project?.project_name || "Project",
+        dayOfService,
+      );
     } catch (error) {
       console.error("Error generating report:", error);
       toast.error("Failed to generate project report");

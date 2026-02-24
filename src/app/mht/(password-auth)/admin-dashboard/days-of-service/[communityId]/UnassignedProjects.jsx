@@ -26,6 +26,7 @@ import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import Loading from "@/components/util/Loading";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { ProjectCard } from "./ProjectCard";
+import { generatePDFReport } from "@/util/reports/days-of-service/reportGenerators";
 
 export default function UnassignedProjects({
   communityId,
@@ -194,7 +195,13 @@ export default function UnassignedProjects({
   const handleGenerateSingleReport = async (e, projectId) => {
     e.stopPropagation();
     try {
-      await generateReports("single", projectId, date);
+      const project = projects.find((p) => p.id === projectId);
+      await generatePDFReport(
+        projectId,
+        "",
+        project?.project_name || "Project",
+        null,
+      );
     } catch (error) {
       console.error("Error generating report:", error);
       toast.error("Failed to generate project report");

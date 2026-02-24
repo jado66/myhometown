@@ -536,7 +536,14 @@ const CommunitySelectionPage = ({ params }) => {
               <Tab label="Community Volunteer Detail" />
             </Tabs>
             {/* Toggle inline with tabs — hidden on mobile (shown above instead) */}
-            <Box sx={{ pb: 1, pl: 2, flexShrink: 0, display: { xs: "none", sm: "block" } }}>
+            <Box
+              sx={{
+                pb: 1,
+                pl: 2,
+                flexShrink: 0,
+                display: { xs: "none", sm: "block" },
+              }}
+            >
               <FormControlLabel
                 control={
                   <Switch

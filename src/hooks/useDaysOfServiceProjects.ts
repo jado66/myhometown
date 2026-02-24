@@ -664,41 +664,32 @@ export const useDaysOfServiceProjects = () => {
     dateOfService?: string,
     filterType?: "cityId" | "communityId" | "daysOfServiceId",
   ) => {
+    // Resolve filterType — some callers pass it as the 3rd argument (dateOfService position)
+    const resolvedFilterType: "cityId" | "communityId" | "daysOfServiceId" | undefined =
+      filterType ??
+      (["cityId", "communityId", "daysOfServiceId"].includes(dateOfService ?? "")
+        ? (dateOfService as "cityId" | "communityId" | "daysOfServiceId")
+        : undefined);
+
+    if (type !== "multiple" || !resolvedFilterType) {
+      toast.error("Invalid report parameters");
+      return;
+    }
+
     setLoading(true);
     try {
       let projectsData: any[] = [];
-      let fileName = "";
 
-      if (type === "single") {
-        const { data, error } = await supabase
-          .from("days_of_service_project_forms")
-          .select("*")
-          .eq("id", identifier)
-          .single();
-
-        if (error) throw error;
-        projectsData = [data];
-        fileName = `project_${identifier}_report.pdf`;
-      } else if (type === "multiple" && filterType) {
-        switch (filterType) {
-          case "cityId":
-            projectsData = (await fetchProjectsByCityId(identifier)) || [];
-            fileName = `city_${identifier}_projects_report.pdf`;
-            break;
-          case "communityId":
-            projectsData = (await fetchProjectsByCommunityId(identifier)) || [];
-            fileName = `community_${identifier}_projects_report.pdf`;
-            break;
-          case "daysOfServiceId":
-            projectsData =
-              (await fetchProjectsByDaysOfServiceId(identifier)) || [];
-            fileName = `days_of_service_${identifier}_projects_report.pdf`;
-            break;
-          default:
-            throw new Error("Invalid filter type");
-        }
-      } else {
-        throw new Error("Invalid report parameters");
+      switch (resolvedFilterType) {
+        case "cityId":
+          projectsData = (await fetchProjectsByCityId(identifier)) || [];
+          break;
+        case "communityId":
+          projectsData = (await fetchProjectsByCommunityId(identifier)) || [];
+          break;
+        case "daysOfServiceId":
+          projectsData = (await fetchProjectsByDaysOfServiceId(identifier)) || [];
+          break;
       }
 
       if (!projectsData.length) {
@@ -706,12 +697,7 @@ export const useDaysOfServiceProjects = () => {
         return;
       }
 
-      const doc = new jsPDF();
-
-      // I DON"T WORK
-      // Save the PDF
-      doc.save(fileName);
-      toast.success("Report generated successfully");
+      toast.success(`${projectsData.length} project(s) found. Reports are not yet implemented for bulk generation.`);
     } catch (error) {
       toast.error("Failed to generate report");
     } finally {
