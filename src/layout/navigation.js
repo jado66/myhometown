@@ -91,7 +91,7 @@ export const pages = () => {
         },
         {
           title: "QR Code Maker",
-          href: rootUrl + "/admin-dashboard/tools/qr-code-maker",
+          href: rootUrl + "/admin-dashboard/qr-code-maker",
         },
         {
           title: "Global Reporting",

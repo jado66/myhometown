@@ -81,8 +81,12 @@ const DaysOfServicePage = ({ params }) => {
       return;
     }
 
-    if (formData.dayOfService && formData.dayOfService !== FIXED_DAY_OF_SERVICE_ID) {
-      const msg = "You must choose Monday, November 2nd, as the Day of Service.";
+    if (
+      formData.dayOfService &&
+      formData.dayOfService !== FIXED_DAY_OF_SERVICE_ID
+    ) {
+      const msg =
+        "You must choose Monday, November 2nd, as the Day of Service.";
       alert(msg);
       setSubmitError(msg);
       return;
@@ -94,13 +98,10 @@ const DaysOfServicePage = ({ params }) => {
     };
 
     try {
-      alert(
-        "Form submitted with data: " + JSON.stringify(submissionData, null, 2),
+      const response = await submitResponse(
+        community.volunteerSignUpId,
+        submissionData,
       );
-      //   const response = await submitResponse(
-      //     community.volunteerSignUpId,
-      //     submissionData,
-      //   );
 
       if (response) {
         setSubmitSuccess(true);
