@@ -228,8 +228,14 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
           const idToUse = urlCommunityId ?? communityId;
           // If it's an old-style ID, map it to the new UUID
           const newStyleId = oldToNewCommunity[idToUse] ?? idToUse;
-          const base = getUrl(["admin-dashboard", "days-of-service", newStyleId]);
-          return isProjectView && !dayOfService ? `${base}?tab=unassigned` : base;
+          const base = getUrl([
+            "admin-dashboard",
+            "days-of-service",
+            newStyleId,
+          ]);
+          return isProjectView && !dayOfService
+            ? `${base}?tab=unassigned`
+            : base;
         }
         return pathname;
       case 1: // Day of Service Level or Project Level
