@@ -1,12 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import {
-  Box,
-  Button,
-  FormHelperText,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Button, FormHelperText, Stack, Typography } from "@mui/material";
 import Signature from "@uiw/react-signature";
 
 const BG_COLOR = "#edeff2";

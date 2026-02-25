@@ -13,7 +13,7 @@ import { usePathname } from "next/navigation";
 import moment from "moment";
 import JsonViewer from "../util/debug/DebugOutput";
 
-export const newToOldCommunity = {
+export const newToOldCommunity: Record<string, string> = {
   "a78e8c7c-eca4-4f13-b6c8-e5603d1c36da": "66a811814800d08c300d88fd", // Orem - Geneva Heights
   "a6c19a50-7fc3-4759-b386-6ebdeca3ed9e":
     "fb34e335-5cc6-4e6c-b5fc-2b64588fe921", // Orem - Sharon Park
@@ -34,6 +34,11 @@ export const newToOldCommunity = {
   "724b1aa6-0950-40ba-9453-cdd80085c5d4": "6876c09a2a087f662c17feed", // Santaquin - Santaquin
   "dcf35fbc-8053-40fa-b4a4-faaa61e2fbef": "6912655528c9b9c20ee4dede",
 };
+
+// Reverse map: old ID → new UUID (for resolving back to the new-style URL)
+export const oldToNewCommunity: Record<string, string> = Object.fromEntries(
+  Object.entries(newToOldCommunity).map(([newId, oldId]) => [oldId, newId]),
+);
 
 interface CommunityData {
   city_name?: string;
@@ -59,6 +64,7 @@ interface DosBreadcrumbsProps {
   isProjectView?: boolean;
   stakeId?: string;
   projectId?: string; // Added projectId prop
+  urlCommunityId?: string; // The original community ID from the URL (may be new UUID)
 }
 
 const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
@@ -69,6 +75,7 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
   isProjectView,
   stakeId,
   projectId, // Include projectId in props
+  urlCommunityId,
   sx,
 }) => {
   const [windowWidth, setWindowWidth] = useState<number>(
@@ -96,10 +103,13 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
     // Handle community level breadcrumb
     if (communityData) {
       const cityName = communityData.city_name || communityData.city;
-      if (cityName) {
-        base.push(`${cityName} - ${communityData.name}`);
+      const communityLabel = cityName
+        ? `${cityName} - ${communityData.name}`
+        : communityData.name;
+      if (isProjectView && !dayOfService) {
+        base.push(`${communityLabel} Unassigned Projects`);
       } else {
-        base.push(communityData.name);
+        base.push(communityLabel);
       }
     } else if (dayOfService) {
       const cityName = dayOfService.city_name;
@@ -113,8 +123,8 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
         base.push(communityName);
       }
     } else if (isProjectView) {
-      // In dev or orphaned projects, just show "Projects"
-      base.push("Projects");
+      // Orphaned projects with no community data
+      base.push("Unassigned Projects");
     }
 
     // Handle standard day of service path
@@ -170,14 +180,7 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
     }
     // Handle direct project view without day of service
     else if (isProjectView) {
-      // Only add project name if we have community data
-      if (communityData) {
-        base.push(projectName || "Project Details");
-      } else {
-        // If we don't have community data, add a placeholder
-        base.push("Project");
-        base.push(projectName || "Project Details");
-      }
+      base.push(projectName || "Project Details");
     }
 
     return base;
@@ -202,7 +205,9 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
   const generateHref = (index: number): string => {
     const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || "";
     const communityId =
-      communityData?.community_id || dayOfService?.community_id;
+      communityData?.community_id ||
+      (communityData as any)?._id ||
+      dayOfService?.community_id;
 
     // Construct the URL with optional dev prefix
     const getUrl = (segments: string[]): string => {
@@ -218,15 +223,13 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
     const resolvedCommunityId = newToOldCommunity[communityId] ?? communityId;
 
     switch (index) {
-      case 0: // Community Level - use the new/current community ID
-        if (communityId) {
-          return getUrl(["admin-dashboard", "days-of-service", communityId]);
-        } else if (isProjectView) {
-          return getUrl([
-            "admin-dashboard",
-            "days-of-service",
-            communityData?._id,
-          ]);
+      case 0: // Community Level - always resolve to the new UUID
+        if (urlCommunityId || communityId) {
+          const idToUse = urlCommunityId ?? communityId;
+          // If it's an old-style ID, map it to the new UUID
+          const newStyleId = oldToNewCommunity[idToUse] ?? idToUse;
+          const base = getUrl(["admin-dashboard", "days-of-service", newStyleId]);
+          return isProjectView && !dayOfService ? `${base}?tab=unassigned` : base;
         }
         return pathname;
       case 1: // Day of Service Level or Project Level

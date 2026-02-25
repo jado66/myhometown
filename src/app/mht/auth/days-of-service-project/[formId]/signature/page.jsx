@@ -71,8 +71,6 @@ const TermsOfServicePage = ({ params }) => {
 
   const searchParams = useSearchParams();
 
-
-
   //  Fetch release form for this project city (with default fallback)
   const fetchReleaseForm = useCallback(async (cityId) => {
     if (cityId) {

@@ -434,6 +434,7 @@ export default function ProjectFormsPage({ params }) {
         dayOfService={dayOfService}
         date={date}
         stakeId={stakeId}
+        urlCommunityId={communityId}
         sx={{
           justifyContent: {
             xs: "center",

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Typography,
   Box,
@@ -50,6 +50,7 @@ import { supabase } from "@/util/supabase";
 const CommunitySelectionPage = ({ params }) => {
   const router = useRouter();
   const communityId = params.communityId;
+  const searchParams = useSearchParams();
   const [community, setCommunity] = useState(null);
   const [daysOfService, setDaysOfService] = useState([]);
   const [showServiceDayDialog, setShowServiceDayDialog] = useState(false);
@@ -64,7 +65,9 @@ const CommunitySelectionPage = ({ params }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(() => {
+    return 0; // will be set by useEffect once searchParams are available
+  });
 
   const [showPriorYears, setShowPriorYears] = useState(false);
   const [selectedDayId, setSelectedDayId] = useState("");
@@ -104,6 +107,12 @@ const CommunitySelectionPage = ({ params }) => {
     const authenticated = isAuthenticatedBudget();
     setIsAuthenticated(authenticated);
   }, []);
+
+  useEffect(() => {
+    if (searchParams.get("tab") === "unassigned") {
+      setActiveTab(1);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!communityId) return;
@@ -415,7 +424,6 @@ const CommunitySelectionPage = ({ params }) => {
         mt: 4,
       }}
     >
-      {communityId !== "dev" && <DosBreadcrumbs communityData={community} />}
       <Typography
         variant="h3"
         gutterBottom

@@ -50,6 +50,7 @@ const ProjectPage = ({
               justifyContent: "center",
             }}
             communityData={communityData}
+            urlCommunityId={communityId}
             isProjectView
           />
         </Container>
