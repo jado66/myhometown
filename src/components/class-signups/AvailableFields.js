@@ -416,8 +416,6 @@ export const AVAILABLE_FIELDS = {
     helpText:
       "By signing, I acknowledge that I have read and understood all of the terms of this release, received the Safety Training, reviewed the Volunteer Safety form, and that I am voluntarily giving up substantial legal rights, including the right to sue the Organization. / Al firmar, reconozco que he leído y comprendido todos los términos de este acuerdo, que recibí la capacitación en seguridad, que he revisado el formulario de seguridad para voluntarios, y que renuncio voluntariamente a derechos legales sustanciales, incluyendo el derecho de demandar a la Organización.*",
     category: "Days of Service",
-    validation: (value) =>
-      value && value.length > 0 ? null : "Signature is required",
   },
 
   volunteerReleaseForm: {
