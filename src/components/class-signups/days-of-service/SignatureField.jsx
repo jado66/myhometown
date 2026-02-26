@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Box, Button, FormHelperText, Stack, Typography } from "@mui/material";
 import Signature from "@uiw/react-signature";
 
@@ -14,6 +14,7 @@ export const SignatureField = ({
   resetKey,
 }) => {
   const svgRef = useRef(null);
+  const wrapperRef = useRef(null);
   const [captured, setCaptured] = useState(!!value);
 
   useEffect(() => {
@@ -24,17 +25,49 @@ export const SignatureField = ({
     }
   }, [resetKey]);
 
-  const handleEnd = () => {
-    if (svgRef.current) {
-      const svgEl = svgRef.current.svg?.current;
-      if (svgEl) {
+  const captureSignature = useCallback(() => {
+    if (!svgRef.current) return;
+
+    // Try multiple ways to access the SVG element
+    let svgEl = svgRef.current.svg?.current;
+    if (!svgEl && wrapperRef.current) {
+      svgEl = wrapperRef.current.querySelector("svg");
+    }
+
+    if (svgEl) {
+      const paths = svgEl.querySelectorAll("path");
+      const hasContent =
+        paths.length > 0 &&
+        Array.from(paths).some((path) => path.getAttribute("d"));
+
+      if (hasContent) {
         const svgData = new XMLSerializer().serializeToString(svgEl);
         const dataUrl = `data:image/svg+xml;base64,${btoa(svgData)}`;
         setCaptured(true);
         onChange(field, dataUrl);
       }
     }
-  };
+  }, [field, onChange]);
+
+  // Listen for pointer events on the wrapper div since @uiw/react-signature
+  // does not forward onPointerUp to the underlying SVG
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+
+    const handlePointerUp = () => {
+      // Small delay to let the Signature component finish drawing the path
+      setTimeout(captureSignature, 50);
+    };
+
+    wrapper.addEventListener("pointerup", handlePointerUp);
+    wrapper.addEventListener("pointerleave", handlePointerUp);
+
+    return () => {
+      wrapper.removeEventListener("pointerup", handlePointerUp);
+      wrapper.removeEventListener("pointerleave", handlePointerUp);
+    };
+  }, [captureSignature]);
 
   const handleClear = () => {
     if (svgRef.current) {
@@ -61,6 +94,7 @@ export const SignatureField = ({
         {config.required && " *"}
       </Typography>
       <Box
+        ref={wrapperRef}
         sx={{
           border: "1px solid #ccc",
           borderRadius: 1,
@@ -73,7 +107,7 @@ export const SignatureField = ({
           },
         }}
       >
-        <Signature ref={svgRef} onPointerUp={handleEnd} />
+        <Signature ref={svgRef} />
       </Box>
       <Stack direction="row" spacing={2} mt={1} alignItems="center">
         <Button size="small" variant="outlined" onClick={handleClear}>

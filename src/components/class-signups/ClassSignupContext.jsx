@@ -609,6 +609,10 @@ export function ClassSignupProvider({
           if (!formData[fieldId]) {
             newErrors[fieldId] = `You must acknowledge ${config.label}`;
           }
+        } else if (config.type === FIELD_TYPES.signature) {
+          if (!formData[fieldId] || typeof formData[fieldId] !== "string" || formData[fieldId].length === 0) {
+            newErrors[fieldId] = `${config.label} is required`;
+          }
         } else if (
           !formData[fieldId] ||
           (typeof formData[fieldId] === "string" &&
