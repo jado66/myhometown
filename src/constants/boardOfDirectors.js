@@ -252,4 +252,20 @@ of Chicago and a BA and MA from the University of Utah.`,
     avatar: "/images/board/Kristin Andrus.jpg",
     bio: ``,
   },
+  {
+    name: "Paul Taggart",
+    avatar: "/images/board/Paul Taggart.jpg",
+    bio: ``,
+  },
+
+  {
+    name: "Rick Lake",
+    avatar: "/images/board/Rick Lake.jpg",
+    bio: ``,
+  },
+  {
+    name: "Sydnee Dickson",
+    avatar: "/images/board/Sydnee Dickson.jpg",
+    bio: ``,
+  },
 ];
