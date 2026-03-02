@@ -82,7 +82,7 @@ export function ClassSignupProvider({
   const { signupForClass } = useClasses();
 
   const [isLoading, setIsLoading] = useState(
-    classObj?.id && !dontUseLoadedClasses ? true : false
+    classObj?.id && !dontUseLoadedClasses ? true : false,
   );
   const [loadError, setLoadError] = useState(null);
   // Changed from boolean ref to tracking the loaded class ID
@@ -146,7 +146,7 @@ export function ClassSignupProvider({
     // Third priority: extract order from formConfig fields that are visible
     if (defaultConfig?.formConfig) {
       return Object.keys(defaultConfig.formConfig).filter(
-        (key) => defaultConfig.formConfig[key].visible
+        (key) => defaultConfig.formConfig[key].visible,
       );
     }
 
@@ -218,7 +218,7 @@ export function ClassSignupProvider({
           "Loaded class trigger:",
           classObj?.id,
           isNew,
-          JSON.stringify(loadedClass, null, 4)
+          JSON.stringify(loadedClass, null, 4),
         );
         if (!loadedClass) {
           throw new Error(`Could not find class with ID ${classObj.id}`);
@@ -236,7 +236,7 @@ export function ClassSignupProvider({
           if (loadedClass.signupForm.fieldOrder) {
             console.log(
               "Setting fieldOrder:",
-              loadedClass.signupForm.fieldOrder
+              loadedClass.signupForm.fieldOrder,
             );
             setFieldOrder(loadedClass.signupForm.fieldOrder);
           }
@@ -251,7 +251,7 @@ export function ClassSignupProvider({
               };
               return acc;
             },
-            {}
+            {},
           );
           setFormConfig(defaultFormConfig);
           setFieldOrder(DEFAULT_VISIBLE_FIELDS);
@@ -321,7 +321,7 @@ export function ClassSignupProvider({
           };
         }
         return acc;
-      }, {})
+      }, {}),
     );
 
     setFieldOrder(DEFAULT_VISIBLE_FIELDS);
@@ -541,7 +541,7 @@ export function ClassSignupProvider({
         }
         return acc;
       },
-      {}
+      {},
     );
 
     // Create a new config with only the desired fields from AVAILABLE_FIELDS
@@ -610,7 +610,11 @@ export function ClassSignupProvider({
             newErrors[fieldId] = `You must acknowledge ${config.label}`;
           }
         } else if (config.type === FIELD_TYPES.signature) {
-          if (!formData[fieldId] || typeof formData[fieldId] !== "string" || formData[fieldId].length === 0) {
+          if (
+            !formData[fieldId] ||
+            typeof formData[fieldId] !== "string" ||
+            formData[fieldId].length === 0
+          ) {
             newErrors[fieldId] = `${config.label} is required`;
           }
         } else if (

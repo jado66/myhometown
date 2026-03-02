@@ -29,6 +29,10 @@ function getStagedFiles() {
         if (file.includes("check-debug-tags.js")) {
           return false;
         }
+        // Skip files where <pre> usage is intentional
+        if (file.includes("test-text-preview/page.jsx")) {
+          return false;
+        }
         // Only check relevant file types
         return /\.(js|jsx|ts|tsx|html)$/.test(file);
       });

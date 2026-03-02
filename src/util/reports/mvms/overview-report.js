@@ -2,10 +2,12 @@
  * MyHometown Overview Report CSV Generator
  *
  * Headers:
- *   Location, # Service Missionaries and Volunteers, Admin Service Hours,
- *   CRC Service Hours, CRC Classes Taught, DOS Service Hours,
- *   DOS Community Hours, DOS Community Volunteers, DOS # Projects,
- *   In-school Service Hours, Events Hours, Total Volunteers, Total Service Hours
+ *   Location, # Service Missionaries and Volunteers,
+ *   Service Missionaries/Volunteers Total Hours, Average Hours,
+ *   Admin Service Hours, CRC Service Hours, CRC Classes Taught,
+ *   DOS Service Hours, DOS Community Hours, DOS Community Volunteers,
+ *   DOS # Projects, In-school Service Hours, Events Hours,
+ *   Total Volunteers, Total Service Hours
  *
  * Layout: communities → blank → cities → blank → Utah → blank → Total
  *
@@ -49,6 +51,7 @@ function computeOverviewStats(
   dosProjects,
   classCount,
   includeDos,
+  elapsedMonths,
 ) {
   const mvCount = missionaries.length;
 
@@ -83,6 +86,15 @@ function computeOverviewStats(
   const totalServiceHours =
     adminHours + crcHours + dosServiceHours + inSchoolHours + eventsHours;
 
+  // SM/V Total Hours = total hours (includes DOS Service Hours but not DOS Community Hours)
+  const smvTotalHours = totalServiceHours;
+
+  // Average Hours = total service hours / # missionaries / elapsed months
+  const avgHours =
+    mvCount > 0 && elapsedMonths > 0
+      ? totalServiceHours / mvCount / elapsedMonths
+      : 0;
+
   // Total Volunteers = service missionaries/volunteers + DOS community volunteers
   const dosVolNum = includeDos
     ? dosProjects.reduce(
@@ -94,6 +106,8 @@ function computeOverviewStats(
 
   return {
     mvCount,
+    smvTotalHours: smvTotalHours.toFixed(1),
+    avgHours: avgHours.toFixed(1),
     adminHours: adminHours.toFixed(1),
     crcHours: crcHours.toFixed(1),
     classCount: classCount != null ? classCount : "",
@@ -112,6 +126,8 @@ function statsToRow(location, stats) {
   return [
     escapeCSV(location),
     stats.mvCount,
+    stats.smvTotalHours,
+    stats.avgHours,
     stats.adminHours,
     stats.crcHours,
     stats.classCount,
@@ -146,9 +162,20 @@ export function generateOverviewReportCSV({
   classCounts,
   dateRange,
 }) {
+  // Calculate elapsed months from date range
+  const start = new Date(dateRange.startDate);
+  const end = dateRange.endDate ? new Date(dateRange.endDate) : new Date();
+  const daysElapsed = Math.max(
+    1,
+    Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1,
+  );
+  const elapsedMonths = daysElapsed / 30.5;
+
   const headers = [
     "Location",
     "# Service Missionaries and Volunteers",
+    "Service Missionaries/Volunteers Total Hours",
+    "Average Hours",
     "Admin Service Hours",
     "CRC Service Hours",
     "CRC Classes Taught",
@@ -240,6 +267,7 @@ export function generateOverviewReportCSV({
         commDos,
         commClassCount,
         true, // include DOS community columns for communities
+        elapsedMonths,
       );
 
       const cityName = cityInfo.name || "";
@@ -284,6 +312,7 @@ export function generateOverviewReportCSV({
       [], // no DOS for cities
       city.classCount,
       false,
+      elapsedMonths,
     );
     rows.push(statsToRow(city.name, cityStats));
   }
@@ -299,6 +328,7 @@ export function generateOverviewReportCSV({
       [], // no DOS for Utah
       utahClassCount,
       false,
+      elapsedMonths,
     );
     rows.push(statsToRow("Utah", utahStats));
     rows.push("");
@@ -311,6 +341,7 @@ export function generateOverviewReportCSV({
     [], // no DOS for total
     allClassCount,
     false,
+    elapsedMonths,
   );
   rows.push(statsToRow("Total", totalStats));
 

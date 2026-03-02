@@ -173,47 +173,88 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 4. Fetch DOS project forms for selected communities
+    // 4. Fetch DOS project forms via their linked days_of_service event.
+    //    Project forms often have null date_of_service, so we filter by
+    //    the parent days_of_service.end_date (the actual service date).
     let allDosProjects: any[] = [];
     {
+      // 4a. Fetch days_of_service event IDs in the date range for selected communities
+      const dosEventIds: string[] = [];
       const idChunkSize = 50;
+
       for (let i = 0; i < resolvedCommunityIds.length; i += idChunkSize) {
         const idChunk = resolvedCommunityIds.slice(i, i + idChunkSize);
-        let dosFrom = 0;
-        let dosHasMore = true;
+        let eventFrom = 0;
+        let eventHasMore = true;
 
-        while (dosHasMore) {
+        while (eventHasMore) {
           let query = supabase
-            .from("days_of_service_project_forms")
-            .select(
-              "id, community_id, actual_volunteers, actual_project_duration, date_of_service",
-            )
+            .from("days_of_service")
+            .select("id")
             .in("community_id", idChunk)
-            .range(dosFrom, dosFrom + pageSize - 1);
+            .range(eventFrom, eventFrom + pageSize - 1);
 
           if (startDate) {
-            query = query.gte("date_of_service", startDate);
+            query = query.gte("end_date", startDate);
           }
           if (endDate) {
-            query = query.lte("date_of_service", endDate);
+            query = query.lte("end_date", endDate);
           }
 
           const { data, error } = await query;
 
           if (error) {
             console.error(
-              "[overview-report] Error fetching DOS projects:",
+              "[overview-report] Error fetching DOS events:",
               error,
             );
             return NextResponse.json({ error: error.message }, { status: 500 });
           }
 
           if (data && data.length > 0) {
-            allDosProjects = allDosProjects.concat(data);
-            dosFrom += pageSize;
-            dosHasMore = data.length === pageSize;
+            dosEventIds.push(...data.map((d: any) => d.id));
+            eventFrom += pageSize;
+            eventHasMore = data.length === pageSize;
           } else {
-            dosHasMore = false;
+            eventHasMore = false;
+          }
+        }
+      }
+
+      // 4b. Fetch project forms linked to those DOS events
+      if (dosEventIds.length > 0) {
+        for (let i = 0; i < dosEventIds.length; i += idChunkSize) {
+          const idChunk = dosEventIds.slice(i, i + idChunkSize);
+          let dosFrom = 0;
+          let dosHasMore = true;
+
+          while (dosHasMore) {
+            const { data, error } = await supabase
+              .from("days_of_service_project_forms")
+              .select(
+                "id, community_id, actual_volunteers, actual_project_duration, days_of_service_id",
+              )
+              .in("days_of_service_id", idChunk)
+              .range(dosFrom, dosFrom + pageSize - 1);
+
+            if (error) {
+              console.error(
+                "[overview-report] Error fetching DOS projects:",
+                error,
+              );
+              return NextResponse.json(
+                { error: error.message },
+                { status: 500 },
+              );
+            }
+
+            if (data && data.length > 0) {
+              allDosProjects = allDosProjects.concat(data);
+              dosFrom += pageSize;
+              dosHasMore = data.length === pageSize;
+            } else {
+              dosHasMore = false;
+            }
           }
         }
       }
