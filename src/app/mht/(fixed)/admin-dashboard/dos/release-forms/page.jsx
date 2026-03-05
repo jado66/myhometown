@@ -5,15 +5,18 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
   Chip,
   CircularProgress,
   Container,
   Divider,
+  FormControlLabel,
   Grid,
   IconButton,
   List,
   ListItemButton,
   ListItemText,
+  MenuItem,
   Paper,
   Stack,
   TextField,
@@ -79,17 +82,20 @@ const blankForm = (cityId = null, cityName = "") => ({
     'I recognize that all services and work are provided "as is," with NO WARRANTIES WHATSOEVER except as expressly agreed by the service provider in writing.',
     "Photographic Release. I understand and agree that before, during and after the services and work provided as stated herein, I or my home and property may be photographed and/or videotaped by {{partner}} or its representatives and partners for internal and/or promotional use. I hereby grant permission and convey to {{partner}} and its representatives and partners, all right, title, and interest, including but not limited to, any royalties, proceeds, or other benefits, in any and all such photographs or recordings, and consent to such parties' use of my name, image, likeness, and voice in perpetuity, in any medium or format, for any publicity, without further compensation or permission.",
   ],
+  custom_fields: [],
   is_active: true,
 });
 
-// ─── Variable reference chip ──────────────────────────────────────────────────
-const VAR_CHIPS = [
+// ─── Built-in variable chips ─────────────────────────────────────────────────
+const BUILTIN_VAR_CHIPS = [
   "{{name}}",
   "{{date}}",
   "{{address}}",
   "{{organization}}",
   "{{partner}}",
 ];
+
+const RESERVED_KEYS = new Set(["name", "date", "address", "organization", "partner"]);
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function ReleaseFormsAdminPage() {
@@ -137,6 +143,7 @@ export default function ReleaseFormsAdminPage() {
           ...f,
           cityName: city ? `${city.name}, ${city.state}` : "Default",
           content: Array.isArray(f.content) ? f.content : [],
+          custom_fields: Array.isArray(f.custom_fields) ? f.custom_fields : [],
         });
       } else if (key === "default") {
         setEditForm(blankForm(null, "Default"));
@@ -193,6 +200,35 @@ export default function ReleaseFormsAdminPage() {
     setDirty(true);
   };
 
+  // ── Custom field helpers ──────────────────────────────────────────────────
+  const addCustomField = () => {
+    setEditForm((prev) => ({
+      ...prev,
+      custom_fields: [
+        ...(prev.custom_fields || []),
+        { key: "", label: "", type: "text" },
+      ],
+    }));
+    setDirty(true);
+  };
+
+  const updateCustomField = (idx, field, value) => {
+    setEditForm((prev) => {
+      const fields = [...(prev.custom_fields || [])];
+      fields[idx] = { ...fields[idx], [field]: value };
+      return { ...prev, custom_fields: fields };
+    });
+    setDirty(true);
+  };
+
+  const removeCustomField = (idx) => {
+    setEditForm((prev) => ({
+      ...prev,
+      custom_fields: (prev.custom_fields || []).filter((_, i) => i !== idx),
+    }));
+    setDirty(true);
+  };
+
   // ── Save ──────────────────────────────────────────────────────────────────
   const handleSave = async () => {
     setSaving(true);
@@ -202,6 +238,7 @@ export default function ReleaseFormsAdminPage() {
         title: editForm.title,
         partner_name: editForm.partner_name,
         content: editForm.content,
+        custom_fields: editForm.custom_fields || [],
         is_active: editForm.is_active ?? true,
       };
 
@@ -272,11 +309,27 @@ export default function ReleaseFormsAdminPage() {
   };
 
   // ── Preview vars ──────────────────────────────────────────────────────────
+  const customFieldSamples = {};
+  for (const f of editForm?.custom_fields || []) {
+    if (f.key) {
+      customFieldSamples[f.key] =
+        (f.type || "text") === "checkbox" ? "☑" : (f.label || f.key);
+    }
+  }
   const previewVars = {
     ...SAMPLE_VARS,
     partner: editForm?.partner_name || "Some City",
     organization: "myHometown",
+    ...customFieldSamples,
   };
+
+  // Build dynamic chip list (only text fields are interpolatable)
+  const allVarChips = [
+    ...BUILTIN_VAR_CHIPS,
+    ...(editForm?.custom_fields || [])
+      .filter((f) => f.key && (f.type || "text") === "text")
+      .map((f) => `{{${f.key}}}`),
+  ];
 
   if (loading) {
     return (
@@ -463,7 +516,7 @@ export default function ReleaseFormsAdminPage() {
                       </Typography>
                     </Stack>
                     <Stack direction="row" flexWrap="wrap" gap={0.5}>
-                      {VAR_CHIPS.map((v) => (
+                      {allVarChips.map((v) => (
                         <Chip
                           key={v}
                           label={v}
@@ -565,6 +618,113 @@ export default function ReleaseFormsAdminPage() {
                   >
                     Add Paragraph
                   </Button>
+
+                  <Divider sx={{ my: 2 }} />
+
+                  {/* Custom Fields Editor */}
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    Custom Fields
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", mb: 1 }}
+                  >
+                    Define extra fields the homeowner fills out. Text fields use
+                    the key as {"{{key}}"} in paragraphs. Checkboxes render as
+                    standalone options on the form.
+                  </Typography>
+
+                  <Stack gap={1}>
+                    {(editForm.custom_fields || []).map((cf, idx) => (
+                      <Card
+                        key={idx}
+                        variant="outlined"
+                        sx={{ borderRadius: 1.5 }}
+                      >
+                        <CardContent
+                          sx={{ pb: "8px !important", pt: 1.5, px: 1.5 }}
+                        >
+                          <Stack direction="row" gap={1} alignItems="center">
+                            <TextField
+                              label="Type"
+                              select
+                              value={cf.type || "text"}
+                              onChange={(e) =>
+                                updateCustomField(idx, "type", e.target.value)
+                              }
+                              size="small"
+                              sx={{ width: 120 }}
+                              inputProps={{
+                                style: { fontSize: "0.8rem" },
+                              }}
+                            >
+                              <MenuItem value="text">Text</MenuItem>
+                              <MenuItem value="checkbox">Checkbox</MenuItem>
+                            </TextField>
+                            <TextField
+                              label="Key"
+                              value={cf.key}
+                              onChange={(e) => {
+                                const val = e.target.value
+                                  .toLowerCase()
+                                  .replace(/[^a-z0-9_]/g, "");
+                                updateCustomField(idx, "key", val);
+                              }}
+                              size="small"
+                              sx={{ width: 160 }}
+                              placeholder="scope_of_work"
+                              helperText={
+                                cf.key && RESERVED_KEYS.has(cf.key)
+                                  ? "Reserved key"
+                                  : (cf.type || "text") === "text"
+                                    ? `Use {{${cf.key || "key"}}}`
+                                    : "Stored as true/false"
+                              }
+                              error={!!(cf.key && RESERVED_KEYS.has(cf.key))}
+                              inputProps={{
+                                style: {
+                                  fontSize: "0.8rem",
+                                  fontFamily: "monospace",
+                                },
+                              }}
+                            />
+                            <TextField
+                              label="Label"
+                              value={cf.label}
+                              onChange={(e) =>
+                                updateCustomField(idx, "label", e.target.value)
+                              }
+                              size="small"
+                              fullWidth
+                              placeholder="Scope of Work"
+                              inputProps={{
+                                style: { fontSize: "0.8rem" },
+                              }}
+                            />
+                            <Tooltip title="Remove field">
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => removeCustomField(idx)}
+                              >
+                                <Delete fontSize="inherit" />
+                              </IconButton>
+                            </Tooltip>
+                          </Stack>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </Stack>
+
+                  <Button
+                    startIcon={<Add />}
+                    size="small"
+                    onClick={addCustomField}
+                    sx={{ mt: 1 }}
+                  >
+                    Add Custom Field
+                  </Button>
                 </Paper>
               </Grid>
 
@@ -656,6 +816,31 @@ export default function ReleaseFormsAdminPage() {
                       )}
                     </Box>
                   </Box>
+
+                  {/* Checkbox fields preview */}
+                  {(editForm.custom_fields || []).some(
+                    (f) => f.key && (f.type || "text") === "checkbox",
+                  ) && (
+                    <Box sx={{ mt: 2 }}>
+                      {(editForm.custom_fields || [])
+                        .filter(
+                          (f) => f.key && (f.type || "text") === "checkbox",
+                        )
+                        .map((cf) => (
+                          <FormControlLabel
+                            key={cf.key}
+                            control={
+                              <Checkbox size="small" checked={false} disabled />
+                            }
+                            label={
+                              <Typography variant="body2">
+                                {cf.label || cf.key}
+                              </Typography>
+                            }
+                          />
+                        ))}
+                    </Box>
+                  )}
 
                   {/* Sample variable values */}
                   <Box

@@ -17,7 +17,7 @@ const BudgetStep = () => {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <Typography variant="h4" sx={{ mt: 2, mb: 1, textAlign: "center" }}>
-        This step is typically filled out by the Resource Couple/Project Manager
+        This step is typically filled out by the Project Manager
       </Typography>
       <Divider />
 

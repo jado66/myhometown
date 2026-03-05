@@ -6,7 +6,7 @@
  *
  *   partner_ward           → Partner Group
  *   partner_ward_liaison   → Partner Group Contact
- *   project_development_couple → Resource Couple
+ *   project_development_couple → Project Manager
  *   project_development_couple_ward → Encompassing Area
  *   partner_stake           → Partner Organization
  *   project_id              → Project Short Description
@@ -129,9 +129,9 @@ export function generateDOSReportCSV({
     "Property Owner Phone",
     "Property Owner Email",
     "Address",
-    "Resource Couple",
-    "Resource Couple Phone",
-    "Resource Couple Email",
+    "Project Manager",
+    "Project Manager Phone",
+    "Project Manager Email",
     "Encompassing Area",
     "Host Name",
     "Host Phone",

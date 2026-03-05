@@ -44,18 +44,17 @@ const Step2 = () => {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <Typography variant="h4" sx={{ mt: 2, mb: 1, textAlign: "center" }}>
-        This step is typically filled out by the Resource Couple/Project
-        Manager(s)
+        This step is typically filled out by the Project Manager(s)
       </Typography>
       <Divider />
       <Typography variant="h5" sx={{ mb: 0 }}>
-        Resource Couple/Project Manager(s) Information
+        Project Manager(s) Information
       </Typography>
       <Typography variant="subtitle" sx={{ mb: 1 }}>
-        The Resource Couple/Project Manager(s) are the primary contacts for the
-        project. They are the detailed planners and interact with property
-        owners and volunteers. Their contact information is used to communicate
-        with the project team.
+        The Project Manager(s) are the primary contacts for the project. They
+        are the detailed planners and interact with property owners and
+        volunteers. Their contact information is used to communicate with the
+        project team.
       </Typography>
 
       {/* Assigned Ward  */}
@@ -71,7 +70,7 @@ const Step2 = () => {
       />
 
       <ProjectTextField
-        label="Resource Couple"
+        label="Project Manager(s)"
         key="project_development_couple"
         value={formData.project_development_couple}
         onChange={(e) =>
@@ -80,7 +79,7 @@ const Step2 = () => {
         isLocked={isLocked}
       />
       <ProjectTextField
-        label="Resource Couple Phone Number (1)"
+        label="Project Manager Phone Number (1)"
         key="project_development_couple_phone1"
         value={formData.project_development_couple_phone1}
         onChange={(e) =>
@@ -89,7 +88,7 @@ const Step2 = () => {
         isLocked={isLocked}
       />
       <ProjectTextField
-        label="Resource Couple Email (1)"
+        label="Project Manager Email (1)"
         key="project_development_couple_email1"
         value={formData.project_development_couple_email1}
         onChange={(e) =>
@@ -98,7 +97,7 @@ const Step2 = () => {
         isLocked={isLocked}
       />
       <ProjectTextField
-        label="Resource Couple Phone Number (2)"
+        label="Project Manager Phone Number (2)"
         key="project_development_couple_phone2"
         value={formData.project_development_couple_phone2}
         onChange={(e) =>
@@ -107,7 +106,7 @@ const Step2 = () => {
         isLocked={isLocked}
       />
       <ProjectTextField
-        label="Resource Couple Email (2)"
+        label="Project Manager Email (2)"
         key="project_development_couple_email2"
         value={formData.project_development_couple_email2}
         onChange={(e) =>
@@ -347,7 +346,7 @@ const Step2 = () => {
                 onChange={(e) =>
                   handleInputChange(
                     "is_second_dumpster_needed",
-                    e.target.checked
+                    e.target.checked,
                   )
                 }
               />

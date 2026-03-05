@@ -19,7 +19,9 @@ async function fetchAllMissionaries() {
   while (true) {
     const { data, error } = await supabaseServer
       .from("missionaries")
-      .select("id, first_name, contact_number, email, last_reminder_text, assignment_status")
+      .select(
+        "id, first_name, contact_number, email, last_reminder_text, assignment_status",
+      )
       .not("contact_number", "is", null)
       .neq("contact_number", "")
       .neq("assignment_status", "released")
@@ -183,7 +185,9 @@ export async function POST(req) {
       // Fetch only the specified missionaries by email
       const { data, error } = await supabaseServer
         .from("missionaries")
-        .select("id, first_name, contact_number, email, last_reminder_text, assignment_status")
+        .select(
+          "id, first_name, contact_number, email, last_reminder_text, assignment_status",
+        )
         .in("email", testEmails)
         .not("contact_number", "is", null)
         .neq("contact_number", "");

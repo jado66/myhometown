@@ -6,7 +6,6 @@ import {
   Typography,
   Checkbox,
   FormControlLabel,
-  TextField,
   Button,
   Container,
   Paper,
@@ -26,19 +25,83 @@ function interpolate(text, vars) {
   return text.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? `{{${key}}}`);
 }
 
-// Render a paragraph string that may contain **bold** and \n characters
-function RichParagraph({ text, vars, ...typographyProps }) {
-  const resolved = interpolate(text, vars);
-  const lines = resolved.split("\n");
+// Render a paragraph string that may contain **bold**, \n, and {{variables}}.
+// Built-in vars are interpolated as text. Custom fields render as inline inputs.
+function RichParagraph({
+  text,
+  vars,
+  customFieldMap,
+  customFieldValues,
+  onFieldChange,
+  ...typographyProps
+}) {
+  // Replace a text segment's {{key}} placeholders with values or inline inputs
+  const renderSegment = (segment, segKey) => {
+    const parts = segment.split(/\{\{(\w+)\}\}/g);
+    return parts.map((part, i) => {
+      if (i % 2 === 0) return part; // plain text
+      const cf = customFieldMap?.[part];
+      if (cf && onFieldChange) {
+        if ((cf.type || "text") === "checkbox") {
+          return (
+            <input
+              key={`${segKey}-${part}-${i}`}
+              type="checkbox"
+              checked={!!customFieldValues?.[part]}
+              onChange={(e) => onFieldChange(part, e.target.checked)}
+              style={{
+                verticalAlign: "middle",
+                width: 16,
+                height: 16,
+                margin: "0 4px",
+                cursor: "pointer",
+              }}
+            />
+          );
+        }
+        return (
+          <input
+            key={`${segKey}-${part}-${i}`}
+            type="text"
+            value={customFieldValues?.[part] || ""}
+            onChange={(e) => onFieldChange(part, e.target.value)}
+            placeholder={cf.label || part}
+            style={{
+              border: "none",
+              borderBottom: "1px solid #999",
+              outline: "none",
+              fontFamily: "inherit",
+              fontSize: "inherit",
+              padding: "0 2px",
+              minWidth: 100,
+              background: "transparent",
+            }}
+          />
+        );
+      }
+      // Built-in var or unknown — substitute as text
+      return vars[part] ?? `{{${part}}}`;
+    });
+  };
+
+  const lines = text.split("\n");
   return (
-    <Typography variant="body2" paragraph {...typographyProps}>
+    <Typography variant="body2" paragraph component="div" {...typographyProps}>
       {lines.map((line, lineIdx) => {
-        const parts = line.split(/\*\*([^*]+)\*\*/g);
+        const boldParts = line.split(/\*\*([^*]+)\*\*/g);
         return (
           <React.Fragment key={lineIdx}>
             {lineIdx > 0 && <br />}
-            {parts.map((part, i) =>
-              i % 2 === 1 ? <strong key={i}>{part}</strong> : part,
+            {boldParts.map((p, i) =>
+              i % 2 === 1 ? (
+                <strong key={i}>
+                  {renderSegment(p, `${lineIdx}-${i}`)}
+                </strong>
+              ) : (
+                <React.Fragment key={i}>
+                  {renderSegment(p, `${lineIdx}-${i}`)}
+                </React.Fragment>
+              ),
             )}
           </React.Fragment>
         );
@@ -65,18 +128,55 @@ const TermsOfServicePage = ({ params }) => {
   const [releaseForm, setReleaseForm] = useState(null);
   const [projectAddress, setProjectAddress] = useState("");
   const [cityName, setCityName] = useState("");
+  const [customFieldValues, setCustomFieldValues] = useState({});
 
   // Signature ref
   const sigRef = useRef(null);
+  const sigWrapperRef = useRef(null);
+  const [signatureImage, setSignatureImage] = useState(null);
+  const signatureImageRef = useRef(null);
 
   const searchParams = useSearchParams();
+
+  // Capture signature from the SVG on pointer events
+  const captureSignature = useCallback(() => {
+    if (!sigRef.current) return;
+    let svgEl = sigRef.current.svg?.current;
+    if (!svgEl && sigWrapperRef.current) {
+      svgEl = sigWrapperRef.current.querySelector("svg");
+    }
+    if (svgEl) {
+      const paths = svgEl.querySelectorAll("path");
+      const hasContent =
+        paths.length > 0 &&
+        Array.from(paths).some((path) => path.getAttribute("d"));
+      if (hasContent) {
+        const svgData = new XMLSerializer().serializeToString(svgEl);
+        const dataUrl = `data:image/svg+xml;base64,${btoa(svgData)}`;
+        signatureImageRef.current = dataUrl;
+        setSignatureImage(dataUrl);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const wrapper = sigWrapperRef.current;
+    if (!wrapper) return;
+    const handlePointerUp = () => setTimeout(captureSignature, 50);
+    wrapper.addEventListener("pointerup", handlePointerUp);
+    wrapper.addEventListener("pointerleave", handlePointerUp);
+    return () => {
+      wrapper.removeEventListener("pointerup", handlePointerUp);
+      wrapper.removeEventListener("pointerleave", handlePointerUp);
+    };
+  }, [captureSignature]);
 
   //  Fetch release form for this project city (with default fallback)
   const fetchReleaseForm = useCallback(async (cityId) => {
     if (cityId) {
       const { data: cityForm } = await supabase
         .from("property_release_forms")
-        .select("title, partner_name, content")
+        .select("title, partner_name, content, custom_fields")
         .eq("city_id", cityId)
         .eq("is_active", true)
         .maybeSingle();
@@ -89,6 +189,10 @@ const TermsOfServicePage = ({ params }) => {
             typeof cityForm.content === "string"
               ? JSON.parse(cityForm.content)
               : cityForm.content,
+          custom_fields:
+            typeof cityForm.custom_fields === "string"
+              ? JSON.parse(cityForm.custom_fields)
+              : cityForm.custom_fields || [],
         };
         setReleaseForm(parsedForm);
         return;
@@ -98,7 +202,7 @@ const TermsOfServicePage = ({ params }) => {
     // Fallback to default form (city_id is null)
     const { data: defaultForm } = await supabase
       .from("property_release_forms")
-      .select("title, partner_name, content")
+      .select("title, partner_name, content, custom_fields")
       .is("city_id", null)
       .eq("is_active", true)
       .maybeSingle();
@@ -111,6 +215,10 @@ const TermsOfServicePage = ({ params }) => {
           typeof defaultForm.content === "string"
             ? JSON.parse(defaultForm.content)
             : defaultForm.content,
+        custom_fields:
+          typeof defaultForm.custom_fields === "string"
+            ? JSON.parse(defaultForm.custom_fields)
+            : defaultForm.custom_fields || [],
       };
       setReleaseForm(parsedForm);
     }
@@ -206,16 +314,13 @@ const TermsOfServicePage = ({ params }) => {
       return;
     }
 
-    let canvasSignature = null;
-    if (sigRef.current) {
-      const svgEl = sigRef.current.svg?.current;
-      if (svgEl && svgEl.querySelectorAll("path").length > 0) {
-        const svgData = new XMLSerializer().serializeToString(svgEl);
-        canvasSignature = `data:image/svg+xml;base64,${btoa(svgData)}`;
-      }
-    }
+    // Try one final capture in case pointerup was missed
+    captureSignature();
 
-    if (!signature.trim() && !canvasSignature) {
+    // Read from ref (synchronous) since setState is async
+    const capturedImage = signatureImageRef.current;
+
+    if (!signature.trim() && !capturedImage) {
       alert("Please provide a signature.");
       return;
     }
@@ -249,9 +354,20 @@ const TermsOfServicePage = ({ params }) => {
         .from("days_of_service_project_forms")
         .update({
           signature_text: signature.trim(),
-          signature_image: canvasSignature,
+          signature_image: capturedImage,
           terms_agreed_at: timestamp,
           is_waiver_signed: true,
+          custom_field_values: {
+            ...customFieldValues,
+            name: signature.trim(),
+            address: projectAddress,
+          },
+          // Save the (possibly edited) address back
+          address_street1: projectAddress,
+          address_street2: null,
+          address_city: null,
+          address_state: null,
+          address_zip_code: null,
         })
         .eq("id", projectId);
 
@@ -274,15 +390,39 @@ const TermsOfServicePage = ({ params }) => {
 
   const clearSignature = () => {
     if (sigRef.current) sigRef.current.clear();
+    signatureImageRef.current = null;
+    setSignatureImage(null);
   };
 
-  //  Template variables
+  //  Template variables (only non-editable built-ins get text substitution)
   const templateVars = {
-    name: signature.trim() || "__________________________",
     date: new Date().toLocaleDateString(),
-    address: projectAddress || "__________________________",
     organization: "myHometown",
     partner: cityName || releaseForm?.partner_name || "myHometown",
+  };
+
+  // Build a lookup map for inline-editable fields (custom + name/address)
+  const inlineFieldMap = {};
+  for (const f of releaseForm?.custom_fields || []) {
+    if (f.key) inlineFieldMap[f.key] = f;
+  }
+  inlineFieldMap.name = { key: "name", label: "Full Name", type: "text" };
+  inlineFieldMap.address = { key: "address", label: "Property Address", type: "text" };
+
+  const inlineFieldValues = {
+    ...customFieldValues,
+    name: signature,
+    address: projectAddress,
+  };
+
+  const handleInlineFieldChange = (key, value) => {
+    if (key === "name") {
+      setSignature(value);
+    } else if (key === "address") {
+      setProjectAddress(value);
+    } else {
+      setCustomFieldValues((prev) => ({ ...prev, [key]: value }));
+    }
   };
 
   //  Render: loading
@@ -381,18 +521,6 @@ const TermsOfServicePage = ({ params }) => {
           provide your signature to proceed.
         </Typography>
 
-        <TextField
-          label="Type Your Full Name"
-          value={signature}
-          onChange={(e) => setSignature(e.target.value)}
-          fullWidth
-          margin="normal"
-          placeholder="Your full name"
-          variant="outlined"
-          size="small"
-          inputProps={{ autoComplete: "name" }}
-        />
-
         <Card variant="outlined" sx={{ mb: 3, mt: 2 }}>
           <CardHeader
             title={`${orgName}\n${formTitle.toUpperCase()}`}
@@ -409,23 +537,19 @@ const TermsOfServicePage = ({ params }) => {
           <Divider />
           <CardContent
             sx={{
-              maxHeight: { xs: "200px", sm: "260px" },
-              overflowY: "auto",
               px: { xs: 2, sm: 3 },
-              "&::-webkit-scrollbar": { width: "6px" },
-              "&::-webkit-scrollbar-track": {
-                backgroundColor: "#f1f1f1",
-                borderRadius: "4px",
-              },
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor: "#bdbdbd",
-                borderRadius: "4px",
-              },
             }}
           >
             {paragraphs.length > 0 ? (
               paragraphs.map((para, idx) => (
-                <RichParagraph key={idx} text={para} vars={templateVars} />
+                <RichParagraph
+                  key={idx}
+                  text={para}
+                  vars={templateVars}
+                  customFieldMap={inlineFieldMap}
+                  customFieldValues={inlineFieldValues}
+                  onFieldChange={handleInlineFieldChange}
+                />
               ))
             ) : (
               <>
@@ -435,17 +559,13 @@ const TermsOfServicePage = ({ params }) => {
                     templateVars,
                   )}
                 </Typography>
-                <Typography variant="body2" paragraph>
-                  <strong>Name:</strong> {templateVars.name}
-                  <br />
-                  <strong>Date:</strong> {templateVars.date}
-                  {projectAddress && (
-                    <>
-                      <br />
-                      <strong>Address:</strong> {projectAddress}
-                    </>
-                  )}
-                </Typography>
+                <RichParagraph
+                  text={"**Name:** {{name}}\n**Date:** {{date}}\n**Address:** {{address}}"}
+                  vars={templateVars}
+                  customFieldMap={inlineFieldMap}
+                  customFieldValues={inlineFieldValues}
+                  onFieldChange={handleInlineFieldChange}
+                />
                 <Typography variant="body2" paragraph>
                   {interpolate(
                     "I further agree to hold harmless the volunteers, {{partner}}, and its partners (together with all their employees, members, officers, partners and directors) in connection with any services or work performed by them relating to this program.",
@@ -488,6 +608,7 @@ const TermsOfServicePage = ({ params }) => {
           Draw your signature below:
         </Typography>
         <Box
+          ref={sigWrapperRef}
           sx={{
             border: "1px solid",
             borderColor: hasReadTerms ? "grey.400" : "grey.300",

@@ -46,7 +46,7 @@ export interface ProjectFormData {
   prep_day_work_summary?: string;
   prep_day_preferred_remedies?: string;
 
-  // Resource Couple Information
+  // Project Manager Information
   project_development_couple?: string;
   project_development_couple_ward?: string;
   project_development_couple_phone1?: string;

@@ -16,16 +16,18 @@ import ProjectTextField from "./ProjectTextField";
 import { DayOfServiceAssignmentDialog } from "./DayOfServiceAssignmentDialog";
 import AddressFormFields from "@/components/days-of-service/form-components/AddressFormFields";
 import { toast } from "react-toastify";
-import { Info } from "@mui/icons-material";
+import { Info, Visibility } from "@mui/icons-material";
 import moment from "moment";
 import JsonViewer from "@/components/util/debug/DebugOutput";
 import { useProjectForm } from "@/contexts/ProjectFormProvider";
 import HomeOwnerEmailSection from "./HomeOwnerEmailSection";
+import ReleaseFormViewDialog from "./ReleaseFormViewDialog";
 
 const Step1 = ({ date }) => {
   const [dayOfServiceDialogOpen, setDayOfServiceDialogOpen] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [isAssigning, setIsAssigning] = useState(false);
+  const [releaseFormViewOpen, setReleaseFormViewOpen] = useState(false);
 
   const {
     formData,
@@ -189,8 +191,7 @@ const Step1 = ({ date }) => {
       <Typography variant="h6">Project Developer Information</Typography>
       <Typography variant="subtitle" sx={{ mb: 1 }}>
         The Project Developer is the person or couple who are tasked with
-        identifying the project, and may have first contact with the property
-        owner. They will hand off the project to the Resource Couple/Project
+        identifying the project. They will hand off the project to the Project
         Manager(s) for detailed planning.
       </Typography>
       <ProjectTextField
@@ -295,22 +296,33 @@ const Step1 = ({ date }) => {
 
       <Divider />
       <FormControl component="fieldset">
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={formData.signature_text}
-              // readonly
-              disabled
-            />
-          }
-          // readonly
-          sx={{
-            "& .MuiFormControlLabel-label.Mui-disabled": {
-              color: "text.primary", // Keeps the label text in the normal color
-            },
-          }}
-          label="The home owner has reviewed and signed the liability release form"
-        />
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={formData.signature_text}
+                // readonly
+                disabled
+              />
+            }
+            // readonly
+            sx={{
+              "& .MuiFormControlLabel-label.Mui-disabled": {
+                color: "text.primary", // Keeps the label text in the normal color
+              },
+            }}
+            label="The home owner has reviewed and signed the liability release form"
+          />
+          {formData.signature_text && (
+            <IconButton
+              size="small"
+              onClick={() => setReleaseFormViewOpen(true)}
+              title="View signed release form"
+            >
+              <Visibility fontSize="small" />
+            </IconButton>
+          )}
+        </Box>
 
         {!formData.signature_text && !isLocked && (
           <FormHelperText
@@ -399,6 +411,13 @@ const Step1 = ({ date }) => {
         }}
         helperText="This is the property owner's financial ability to contribute to the project in dollars."
         isLocked={isLocked}
+      />
+
+      <ReleaseFormViewDialog
+        open={releaseFormViewOpen}
+        onClose={() => setReleaseFormViewOpen(false)}
+        formData={formData}
+        community={community}
       />
     </Box>
   );

@@ -31,6 +31,7 @@ const allSteps = [
 
 const ProjectForm = ({ date, communityId }) => {
   const [showFinishDialog, setShowFinishDialog] = React.useState(false);
+  const [completionError, setCompletionError] = useState(null);
 
   const [dayOfServiceDialogOpen, setDayOfServiceDialogOpen] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
@@ -51,6 +52,7 @@ const ProjectForm = ({ date, communityId }) => {
     importProject,
     exportProject,
     assignProjectToServiceDay,
+    handleInputChange,
   } = useProjectForm();
 
   const handleConfirmAssignment = async (selection) => {
@@ -78,6 +80,8 @@ const ProjectForm = ({ date, communityId }) => {
   };
 
   const handleNext = () => {
+    setCompletionError(null);
+
     const projectFormPage = document.getElementById("project-form-page");
     if (projectFormPage) projectFormPage.scrollIntoView({ behavior: "smooth" });
 
@@ -89,25 +93,86 @@ const ProjectForm = ({ date, communityId }) => {
   };
 
   const handleBack = () => {
+    setCompletionError(null);
+
     if (activeStep > 0) {
       goToStep(activeStep - 1);
     }
   };
 
-  const saveAndExit = () => {
-    const route = date
+  const getExitRoute = () =>
+    date
       ? process.env.NEXT_PUBLIC_DOMAIN +
         `/admin-dashboard/days-of-service/${communityId}/${date}/organization/${formData.partner_stake_id}`
       : process.env.NEXT_PUBLIC_DOMAIN +
         `/admin-dashboard/days-of-service/${communityId}`;
 
+  const saveAndExit = () => {
     saveProject();
-    router.push(route);
+    router.push(getExitRoute());
+  };
+
+  const handleMarkReady = () => {
+    toast.success("Project has been marked as ready for Day of Service!");
+
+    handleInputChange("status", "ready");
+    handleNext();
+  };
+
+  const handleUnmarkReady = () => {
+    toast.success("Project has been marked as not ready.");
+    handleInputChange("status", null);
+  };
+
+  const handleUnmarkCompleted = () => {
+    handleInputChange("status", "ready");
+  };
+
+  const handleCompleteClick = () => {
+    const errors = [];
+
+    if (formData.status !== "ready") {
+      errors.push(
+        "Project must be marked as ready on Step 4 (Resource Assessment) first.",
+      );
+      toast.error(
+        "Project must be marked as ready on Step 4 (Resource Assessment) first.",
+      );
+    }
+    if (!formData.actual_volunteers) {
+      errors.push(
+        "Please fill out the Number of Volunteers and the Actual Duration of Project (hours).",
+      );
+      toast.error(
+        "Please fill out the Number of Volunteers and the Actual Duration of Project (hours).",
+        {
+          toastId: "cantComplete",
+        },
+      );
+    }
+    if (!formData.actual_project_duration) {
+      errors.push(
+        "Please fill out the Number of Volunteers and the Actual Duration of Project (hours).",
+      );
+      toast.error(
+        "Please fill out the Number of Volunteers and the Actual Duration of Project (hours).",
+        {
+          toastId: "cantComplete",
+        },
+      );
+    }
+    if (errors.length > 0) {
+      setCompletionError(errors[0]);
+      return;
+    }
+
+    setCompletionError(null);
+    setShowFinishDialog(true);
   };
 
   const handleFinish = () => {
     finishProject();
-    router.push(route);
+    router.push(getExitRoute());
   };
 
   const getSteps = () => {
@@ -213,26 +278,87 @@ const ProjectForm = ({ date, communityId }) => {
                 Return to Projects Page
               </Button>
             )}
-            <Button
-              variant="contained"
-              color="primary"
-              disabled={
-                activeStep === steps.length - 1 &&
-                formData.status === "completed"
-              }
-              onClick={
-                activeStep === steps.length - 1
-                  ? () => setShowFinishDialog(true)
-                  : handleNext
-              }
-            >
-              {activeStep === steps.length - 1
-                ? formData.status !== "completed"
-                  ? "Mark Project Ready For Day of Service"
-                  : "Project Completed"
-                : "Next"}
-            </Button>
+
+            {activeStep === steps.length - 2 && (
+              <Box sx={{ display: "flex", gap: 1 }}>
+                {(formData.status === "ready" ||
+                  formData.status === "completed") && (
+                  <Button
+                    variant="outlined"
+                    color="warning"
+                    disabled={formData.status === "completed"}
+                    onClick={handleUnmarkReady}
+                  >
+                    Mark Not Ready
+                  </Button>
+                )}
+                <Button
+                  variant="contained"
+                  color="primary"
+                  disabled={
+                    formData.status === "ready" ||
+                    formData.status === "completed"
+                  }
+                  onClick={handleMarkReady}
+                >
+                  {formData.status === "ready" ||
+                  formData.status === "completed"
+                    ? "Project Marked Ready ✓"
+                    : "Mark Project Ready For Day of Service"}
+                </Button>
+              </Box>
+            )}
+            {activeStep === steps.length - 1 ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-end",
+                  gap: 1,
+                }}
+              >
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  {formData.status === "completed" && (
+                    <Button
+                      variant="outlined"
+                      color="warning"
+                      onClick={handleUnmarkCompleted}
+                    >
+                      Mark Not Completed
+                    </Button>
+                  )}
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    disabled={formData.status === "completed"}
+                    onClick={handleCompleteClick}
+                  >
+                    {formData.status === "completed"
+                      ? "Project Completed ✓"
+                      : "Complete Project"}
+                  </Button>
+                </Box>
+              </Box>
+            ) : (
+              <Button
+                variant="outlined"
+                sx={{ mx: 1 }}
+                color="primary"
+                onClick={handleNext}
+              >
+                Next
+              </Button>
+            )}
           </Box>
+          {completionError && (
+            <Typography
+              variant="body2"
+              color="error"
+              sx={{ mt: 0.5, textAlign: "right" }}
+            >
+              {completionError}
+            </Typography>
+          )}
         </CardContent>
       </Card>
       <CollaborationSection />
@@ -240,7 +366,7 @@ const ProjectForm = ({ date, communityId }) => {
       <AskYesNoDialog
         // title, description, onConfirm, onCancel, onClose, open
         title="Are you sure?"
-        description='Are you sure this project is ready for the Day of Service? You will still be able to edit your project but your project will indicate "Ready for Day of Service".'
+        description="Are you sure you want to mark this project as completed? This will finalize the project report."
         onConfirm={handleFinish}
         onCancel={() => setShowFinishDialog(false)}
         onClose={() => setShowFinishDialog(false)}

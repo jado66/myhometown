@@ -47,27 +47,27 @@ const FIELD_CATEGORIES = {
     fields: [
       {
         id: "project_development_couple",
-        label: "Resource Couple",
+        label: "Project Manager",
         isPII: true,
       },
       {
         id: "project_development_couple_phone1",
-        label: "Resource Phone 1",
+        label: "Project Manager Phone 1",
         isPII: true,
       },
       {
         id: "project_development_couple_email1",
-        label: "Resource Email 1",
+        label: "Project Manager Email 1",
         isPII: true,
       },
       {
         id: "project_development_couple_phone2",
-        label: "Resource Phone 2",
+        label: "Project Manager Phone 2",
         isPII: true,
       },
       {
         id: "project_development_couple_email2",
-        label: "Resource Email 2",
+        label: "Project Manager Email 2",
         isPII: true,
       },
       { id: "host_name", label: "Host Name", isPII: true },

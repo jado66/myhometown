@@ -26,7 +26,9 @@ import {
   LocationOn,
   MoreVert as MoreVertIcon,
   Visibility as ViewIcon,
+  WarningAmber,
 } from "@mui/icons-material";
+import moment from "moment";
 
 export const ProjectCard = ({
   project,
@@ -38,6 +40,7 @@ export const ProjectCard = ({
   menuAnchorEl,
   onMenuOpen,
   onMenuClose,
+  serviceDate,
 }) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -50,6 +53,12 @@ export const ProjectCard = ({
   };
 
   const isCompleted = project.status === "completed";
+  const isReady = project.status === "ready";
+  const isPastDue =
+    !isCompleted &&
+    serviceDate &&
+    moment(serviceDate).isValid() &&
+    moment(serviceDate).isBefore(moment(), "day");
 
   return (
     <Card
@@ -59,20 +68,24 @@ export const ProjectCard = ({
         overflow: "visible",
         position: "relative",
         transition: "all 0.2s ease",
-        borderColor: isNew
-          ? "info.main"
-          : isCompleted
-            ? "success.main"
-            : undefined,
-        borderWidth: isNew ? 2 : isCompleted ? 2 : 1,
-        cursor: "pointer",
-        "&:hover": {
-          boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-          borderColor: isNew
+        borderColor: isPastDue
+          ? "warning.main"
+          : isNew || isReady
             ? "info.main"
             : isCompleted
               ? "success.main"
-              : "primary.light",
+              : undefined,
+        borderWidth: isNew ? 2 : isPastDue ? 2 : isCompleted ? 2 : 1,
+        cursor: "pointer",
+        "&:hover": {
+          boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+          borderColor: isPastDue
+            ? "warning.main"
+            : isNew || isReady
+              ? "info.main"
+              : isCompleted
+                ? "success.main"
+                : "primary.light",
         },
       }}
       onClick={() => onProjectClick(project.id)}
@@ -108,7 +121,14 @@ export const ProjectCard = ({
             width: 40,
             height: 40,
             borderRadius: 1.5,
-            bgcolor: isCompleted ? "success.main" : "primary.main",
+            bgcolor: isCompleted
+              ? "success.main"
+              : isPastDue
+                ? "warning.main"
+                : isReady
+                  ? "info.main"
+                  : "primary.main",
+
             color: "primary.contrastText",
             display: "flex",
             alignItems: "center",
@@ -119,6 +139,8 @@ export const ProjectCard = ({
         >
           {isCompleted ? (
             <CheckCircle fontSize="small" />
+          ) : isPastDue ? (
+            <WarningAmber fontSize="small" />
           ) : (
             <Construction fontSize="small" />
           )}
@@ -146,9 +168,25 @@ export const ProjectCard = ({
             >
               {getProjectTitle(project)}
             </Typography>
-            {isCompleted && (
+            {isPastDue && (
+              <Chip
+                label="Past Due — Please complete reporting (step 5)"
+                color="warning"
+                size="small"
+                sx={{ height: 18, fontSize: "0.65rem" }}
+              />
+            )}
+            {isReady && !isPastDue && (
               <Chip
                 label="Ready"
+                color="info"
+                size="small"
+                sx={{ height: 18, fontSize: "0.65rem" }}
+              />
+            )}
+            {isCompleted && (
+              <Chip
+                label="Completed"
                 color="success"
                 size="small"
                 sx={{ height: 18, fontSize: "0.65rem" }}

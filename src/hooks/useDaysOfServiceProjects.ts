@@ -764,7 +764,7 @@ export const useDaysOfServiceProjects = () => {
       csvContent += `"${dayHeader}"\n`;
 
       // UPDATED: Column headers for projects (new format)
-      csvContent += `"Organization","Group","Home Owner","Address","Status","Needed # of Volunteers","Resource Couple","Project Short Description","Dumpster","Waiver","Prep Day","Actual # of Volunteers","Actual # of Hours"\n`;
+      csvContent += `"Organization","Group","Home Owner","Address","Status","Needed # of Volunteers","Project Manager","Project Short Description","Dumpster","Waiver","Prep Day","Actual # of Volunteers","Actual # of Hours"\n`;
 
       // Process each stake sequentially
       for (const stake of day.partner_stakes) {

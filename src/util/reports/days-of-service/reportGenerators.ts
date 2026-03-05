@@ -3,6 +3,41 @@ import { jsPDF } from "jspdf";
 import moment from "moment";
 import { toast } from "react-toastify";
 
+// Helper function to fetch image as base64
+const fetchImageAsBase64 = async (url: string): Promise<string> => {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.readAsDataURL(blob);
+  });
+};
+
+// Helper function to parse Lexical JSON content and extract plain text
+const parseLexicalContent = (
+  lexicalJson: string | null | undefined,
+): string => {
+  if (!lexicalJson) return "";
+  let parsedData: any;
+  try {
+    parsedData =
+      typeof lexicalJson === "string" ? JSON.parse(lexicalJson) : lexicalJson;
+  } catch {
+    return "";
+  }
+  const extractText = (node: any): string => {
+    if (!node) return "";
+    if (node.type === "text") return node.text || "";
+    if (node.children && node.children.length > 0) {
+      const joiner = node.type === "paragraph" ? "\n" : "";
+      return node.children.map(extractText).join("") + joiner;
+    }
+    return "";
+  };
+  return extractText(parsedData.root || parsedData).trim();
+};
+
 // Helper function to format date safely
 const formatSafeDate = (date: string | Date) => {
   try {
@@ -64,6 +99,7 @@ interface ReportSettings {
 interface TaskImage {
   url: string;
   label?: string;
+  type?: "before" | "during" | "after";
 }
 
 interface Task {
@@ -83,6 +119,7 @@ interface Project {
   actual_project_duration?: number;
   budget_estimates?: number;
   report_rich_text?: string;
+  report_content?: string;
   reported_tasks?: Task[];
   status?: string;
 }
@@ -720,7 +757,7 @@ export const generatePDFReport = async (
 
       if (shouldIncludeField("project_development_couple", settings)) {
         doc.text(
-          `Resource Couple: ${anonymizeText(
+          `Project Manager: ${anonymizeText(
             project.project_development_couple,
             true,
             settings,
@@ -1143,6 +1180,179 @@ export const generatePDFReport = async (
         margin,
         yPosition,
       );
+    }
+
+    // PROJECT REPORTING SECTION
+    const hasReportingData =
+      project.actual_volunteers ||
+      project.actual_project_duration ||
+      (project.reported_tasks && project.reported_tasks.length > 0) ||
+      project.report_content;
+
+    if (hasReportingData) {
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("PROJECT REPORTING", margin, yPosition);
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      yPosition += 5;
+      yPosition = checkForNewPage(yPosition);
+
+      if (project.actual_volunteers) {
+        doc.text(
+          `Actual Volunteers: ${project.actual_volunteers}`,
+          margin,
+          yPosition,
+        );
+        yPosition += 4;
+        yPosition = checkForNewPage(yPosition);
+      }
+
+      if (project.actual_project_duration) {
+        doc.text(
+          `Actual Project Duration: ${project.actual_project_duration} hours`,
+          margin,
+          yPosition,
+        );
+        yPosition += 4;
+        yPosition = checkForNewPage(yPosition);
+      }
+
+      // Reported task images (before/during/after)
+      if (project.reported_tasks && project.reported_tasks.length > 0) {
+        yPosition += 2;
+        doc.setFont("helvetica", "bold");
+        doc.text("Task Report Photos", margin, yPosition);
+        doc.setFont("helvetica", "normal");
+        yPosition += 5;
+
+        for (const task of project.reported_tasks) {
+          if (!task.images || task.images.length === 0) continue;
+
+          const taskDesc = task.todos?.[0] || "Task";
+          yPosition = checkForNewPage(yPosition, 8);
+          doc.setFont("helvetica", "italic");
+          const wrappedDesc = doc.splitTextToSize(
+            taskDesc,
+            pageWidth - 2 * margin,
+          );
+          doc.text(wrappedDesc, margin, yPosition);
+          doc.setFont("helvetica", "normal");
+          yPosition += wrappedDesc.length * 4 + 2;
+
+          const imageWidth = (pageWidth - 2 * margin) / 3 - 4;
+          const imageHeight = 40;
+
+          // Group images by type
+          const beforeImg = task.images.find(
+            (img: any) => img.type === "before",
+          );
+          const duringImg = task.images.find(
+            (img: any) => img.type === "during",
+          );
+          const afterImg = task.images.find((img: any) => img.type === "after");
+
+          const hasImages = beforeImg || duringImg || afterImg;
+          if (hasImages) {
+            yPosition = checkForNewPage(yPosition, imageHeight + 15);
+
+            // Labels
+            if (beforeImg) {
+              doc.text("Before:", margin, yPosition);
+            }
+            if (duringImg) {
+              doc.text("During:", margin + imageWidth + 4, yPosition);
+            }
+            if (afterImg) {
+              doc.text("After:", margin + 2 * (imageWidth + 4), yPosition);
+            }
+            yPosition += 4;
+
+            // Images side by side
+            if (beforeImg?.url) {
+              try {
+                const imgData = await fetchImageAsBase64(beforeImg.url);
+                doc.addImage(
+                  imgData,
+                  "JPEG",
+                  margin,
+                  yPosition,
+                  imageWidth,
+                  imageHeight,
+                );
+              } catch {
+                doc.text("[Image not available]", margin, yPosition + 10);
+              }
+            }
+            if (duringImg?.url) {
+              try {
+                const imgData = await fetchImageAsBase64(duringImg.url);
+                doc.addImage(
+                  imgData,
+                  "JPEG",
+                  margin + imageWidth + 4,
+                  yPosition,
+                  imageWidth,
+                  imageHeight,
+                );
+              } catch {
+                doc.text(
+                  "[Image not available]",
+                  margin + imageWidth + 4,
+                  yPosition + 10,
+                );
+              }
+            }
+            if (afterImg?.url) {
+              try {
+                const imgData = await fetchImageAsBase64(afterImg.url);
+                doc.addImage(
+                  imgData,
+                  "JPEG",
+                  margin + 2 * (imageWidth + 4),
+                  yPosition,
+                  imageWidth,
+                  imageHeight,
+                );
+              } catch {
+                doc.text(
+                  "[Image not available]",
+                  margin + 2 * (imageWidth + 4),
+                  yPosition + 10,
+                );
+              }
+            }
+            yPosition += imageHeight + 6;
+          }
+        }
+      }
+
+      // Report content from Lexical editor
+      if (project.report_content) {
+        yPosition += 2;
+        yPosition = checkForNewPage(yPosition, 15);
+        doc.setFont("helvetica", "bold");
+        doc.text("Project Report Notes", margin, yPosition);
+        yPosition += 5;
+        doc.setFont("helvetica", "normal");
+        const plainText = parseLexicalContent(project.report_content);
+        if (plainText) {
+          const wrappedText = doc.splitTextToSize(
+            plainText,
+            pageWidth - 2 * margin,
+          );
+          for (const line of wrappedText) {
+            yPosition = checkForNewPage(yPosition, 5);
+            doc.text(line, margin, yPosition);
+            yPosition += 4;
+          }
+        }
+      }
+
+      yPosition += 6;
+      yPosition = checkForNewPage(yPosition, 12);
+      dividerLine(yPosition);
+      yPosition += 6;
     }
 
     doc.save(fileName);

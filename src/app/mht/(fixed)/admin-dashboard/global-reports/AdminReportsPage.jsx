@@ -784,7 +784,7 @@ const AdminReportsPage = () => {
                           >
                             All Day of Service projects across selected
                             communities, including partner organizations,
-                            resource couples, volunteer counts, and project
+                            project managers, volunteer counts, and project
                             details.
                           </Typography>
                         </Box>

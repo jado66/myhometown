@@ -32,7 +32,7 @@ export const POSITIONS_BY_LEVEL = {
     "Neighborhood Services": [
       "Neighborhood Services Director",
       "Project Developer",
-      "Resource Couple",
+      "Project Manager",
       "Team Member",
     ],
   },

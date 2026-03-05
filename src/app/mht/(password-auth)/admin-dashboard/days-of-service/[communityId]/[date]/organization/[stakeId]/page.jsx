@@ -405,7 +405,7 @@ export default function ProjectFormsPage({ params }) {
     if (project.project_name) projectTitle += project.project_name;
 
     // if (project.project_development_couple)
-    //   projectTitle += ` -  Resource Couple: ${project.project_development_couple}`;
+    //   projectTitle += ` -  Project Manager: ${project.project_development_couple}`;
 
     if (!projectTitle) {
       return `Project ${project.id.slice(0, 8)}...`;
@@ -570,6 +570,7 @@ export default function ProjectFormsPage({ params }) {
                     menuAnchorEl={menuAnchorEl}
                     onMenuOpen={handleMenuClick}
                     onMenuClose={handleMenuClose}
+                    serviceDate={dayOfService?.end_date}
                   />
                 </Grid>
               ))}

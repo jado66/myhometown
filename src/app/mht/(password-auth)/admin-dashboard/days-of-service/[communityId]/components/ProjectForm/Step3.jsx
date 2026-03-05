@@ -90,7 +90,7 @@ const Step3 = () => {
             </Stack>
           </Box>
 
-          {/* Resource Couple */}
+          {/* Project Manager */}
           <Box
             sx={{
               display: "flex",
@@ -99,7 +99,7 @@ const Step3 = () => {
             }}
           >
             <Typography sx={{ mr: 1, mb: { xs: 0.5, sm: 0 } }}>
-              <strong>Resource Couple:</strong>{" "}
+              <strong>Project Manager:</strong>{" "}
               {formData.project_development_couple}
             </Typography>
             <Stack direction="row" spacing={1}>
@@ -629,7 +629,7 @@ const Step3 = () => {
               disabled={isLocked}
             />
           }
-          label="The Resource Couple has reviewed the project information"
+          label="The Project Manager has reviewed the project information"
         />
       </FormControl>
       <Divider />
@@ -665,7 +665,7 @@ const Step3 = () => {
             disabled={isLocked}
           />
         }
-        label="The Resource Couple has done a site visit with Property Owner"
+        label="The Project Manager has done a site visit with Property Owner"
       />
       <Divider />
       <ProjectTextField

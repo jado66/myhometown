@@ -55,13 +55,13 @@ const HomeOwnerEmailSection = () => {
   if (formData.project_development_couple_email1) {
     emailOptions.push({
       value: formData.project_development_couple_email1,
-      label: `Resource Couple Email`,
+      label: `Project Manager Email`,
     });
   }
   if (formData.project_development_couple_email2) {
     emailOptions.push({
       value: formData.project_development_couple_email2,
-      label: `Resource Couple Email 2`,
+      label: `Project Manager Email 2`,
     });
   }
 
@@ -185,7 +185,7 @@ const HomeOwnerEmailSection = () => {
               <Grid item xs={12} sm={12}>
                 <Typography variant="subtitle" color="error">
                   * Please fill out at least one email field for Property Owner,
-                  Project Developer, or Resource Couple.
+                  Project Developer, or Project Manager.
                 </Typography>
               </Grid>
             )}

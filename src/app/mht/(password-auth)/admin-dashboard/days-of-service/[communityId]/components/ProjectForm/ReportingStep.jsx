@@ -13,15 +13,47 @@ const ReportingStep = () => {
   const [editing, setEditing] = useState(true);
   const debounceTimerRef = useRef(null);
 
-  // Ensure reported_tasks is initialized based on tasks
+  // Ensure reported_tasks is initialized based on tasks,
+  // and backfill before images from Step 2 photos if missing
   useEffect(() => {
-    if (!formData.reported_tasks && formData.tasks?.tasks) {
-      // Initialize reported_tasks with the structure from tasks
+    if (!formData.tasks?.tasks) return;
+
+    if (!formData.reported_tasks) {
+      // First-time initialization: pull in Step 2 photos as "before" images
       const initialReportedTasks = formData.tasks.tasks.map((task) => ({
         ...task,
-        images: [], // Initialize empty images array for each task
+        images:
+          task.photos?.length > 0
+            ? task.photos.map((photoUrl) => ({ type: "before", url: photoUrl }))
+            : [],
       }));
       handleInputChange("reported_tasks", initialReportedTasks);
+    } else {
+      // Backfill: if reported_tasks exist but are missing before images
+      // that are available in the planning tasks, add them
+      let changed = false;
+      const updated = formData.reported_tasks.map((reportedTask) => {
+        const planningTask = formData.tasks.tasks.find(
+          (t) => t.id === reportedTask.id,
+        );
+        if (!planningTask?.photos?.length) return reportedTask;
+
+        const images = reportedTask.images || [];
+        const hasBeforeImage = images.some((img) => img.type === "before");
+        if (hasBeforeImage) return reportedTask;
+
+        changed = true;
+        return {
+          ...reportedTask,
+          images: [
+            ...planningTask.photos.map((url) => ({ type: "before", url })),
+            ...images,
+          ],
+        };
+      });
+      if (changed) {
+        handleInputChange("reported_tasks", updated);
+      }
     }
   }, [formData.tasks]);
 
@@ -40,7 +72,7 @@ const ReportingStep = () => {
         handleInputChange("report_content", jsonString);
       }, 500);
     },
-    [handleInputChange]
+    [handleInputChange],
   );
 
   // Cleanup timer on unmount
