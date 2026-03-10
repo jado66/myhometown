@@ -107,18 +107,32 @@ const ResponseDetailsDialog = ({
                     </Box>
                   </Box>
                 );
-              } else if (field.type === "checkbox") {
-                displayValue = displayValue ? "Yes" : "No";
+              } else if (
+                typeof displayValue === "boolean" ||
+                field.type === "checkbox"
+              ) {
+                displayValue = displayValue ? "✓ Yes" : "✗ No";
               } else if (field.type === "select" && field.options) {
                 const option = field.options.find(
-                  (opt) => opt.value === displayValue
+                  (opt) => opt.value === displayValue,
                 );
                 displayValue = option ? option.label : displayValue;
               } else if (field.type === "date" && displayValue) {
                 displayValue = new Date(displayValue).toLocaleDateString();
+              } else if (Array.isArray(displayValue)) {
+                displayValue =
+                  displayValue.length === 0 ? "None" : displayValue.join(", ");
               } else if (typeof displayValue === "object") {
-                // For all other objects, stringify them
-                displayValue = JSON.stringify(displayValue);
+                if (displayValue.value != null) {
+                  const val = String(displayValue.value).trim();
+                  const type = displayValue.type
+                    ? displayValue.type.charAt(0).toUpperCase() +
+                      displayValue.type.slice(1)
+                    : null;
+                  displayValue = type && val ? `${type} - ${val}` : type || val;
+                } else {
+                  displayValue = JSON.stringify(displayValue);
+                }
               }
 
               return (

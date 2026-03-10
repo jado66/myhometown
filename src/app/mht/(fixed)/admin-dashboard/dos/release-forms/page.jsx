@@ -95,7 +95,13 @@ const BUILTIN_VAR_CHIPS = [
   "{{partner}}",
 ];
 
-const RESERVED_KEYS = new Set(["name", "date", "address", "organization", "partner"]);
+const RESERVED_KEYS = new Set([
+  "name",
+  "date",
+  "address",
+  "organization",
+  "partner",
+]);
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function ReleaseFormsAdminPage() {
@@ -313,7 +319,7 @@ export default function ReleaseFormsAdminPage() {
   for (const f of editForm?.custom_fields || []) {
     if (f.key) {
       customFieldSamples[f.key] =
-        (f.type || "text") === "checkbox" ? "☑" : (f.label || f.key);
+        (f.type || "text") === "checkbox" ? "☑" : f.label || f.key;
     }
   }
   const previewVars = {

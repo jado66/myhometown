@@ -64,10 +64,12 @@ export const DayOfServiceSelect = ({
           (a, b) => moment(a.end_date).valueOf() - moment(b.end_date).valueOf(),
         );
 
-        const dayOptions = sortedData.map((day) => ({
-          value: day.id,
-          label: moment(day.end_date).format("dddd, MMMM Do, YYYY"),
-        }));
+        const dayOptions = sortedData
+          .filter((day) => moment(day.end_date).isSameOrAfter(moment(), "day"))
+          .map((day) => ({
+            value: day.id,
+            label: moment(day.end_date).format("dddd, MMMM Do, YYYY"),
+          }));
 
         setServiceOptions(dayOptions || []);
       } catch (err) {

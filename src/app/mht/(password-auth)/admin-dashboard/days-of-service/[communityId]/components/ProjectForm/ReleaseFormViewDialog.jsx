@@ -41,7 +41,11 @@ function ReadOnlyParagraph({ text, vars }) {
           <React.Fragment key={lineIdx}>
             {lineIdx > 0 && <br />}
             {boldParts.map((p, i) =>
-              i % 2 === 1 ? <strong key={i}>{p}</strong> : <React.Fragment key={i}>{p}</React.Fragment>
+              i % 2 === 1 ? (
+                <strong key={i}>{p}</strong>
+              ) : (
+                <React.Fragment key={i}>{p}</React.Fragment>
+              ),
             )}
           </React.Fragment>
         );
@@ -50,7 +54,12 @@ function ReadOnlyParagraph({ text, vars }) {
   );
 }
 
-export default function ReleaseFormViewDialog({ open, onClose, formData, community }) {
+export default function ReleaseFormViewDialog({
+  open,
+  onClose,
+  formData,
+  community,
+}) {
   const [releaseForm, setReleaseForm] = useState(null);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -142,7 +151,9 @@ export default function ReleaseFormViewDialog({ open, onClose, formData, communi
   }
 
   const formTitle = releaseForm?.title ?? "Property Owner Release Form";
-  const paragraphs = Array.isArray(releaseForm?.content) ? releaseForm.content : [];
+  const paragraphs = Array.isArray(releaseForm?.content)
+    ? releaseForm.content
+    : [];
 
   // Default content when no custom paragraphs
   const defaultParagraphs = [
@@ -153,7 +164,8 @@ export default function ReleaseFormViewDialog({ open, onClose, formData, communi
     `Photographic Release. I understand and agree that before, during and after the services and work provided as stated herein, I or my home and property may be photographed and/or videotaped by {{partner}} or its representatives and partners for internal and/or promotional use.`,
   ];
 
-  const displayParagraphs = paragraphs.length > 0 ? paragraphs : defaultParagraphs;
+  const displayParagraphs =
+    paragraphs.length > 0 ? paragraphs : defaultParagraphs;
 
   // Convert SVG data URL to PNG data URL via canvas
   const svgToPng = (svgDataUrl, width = 400, height = 130) => {
@@ -205,7 +217,10 @@ export default function ReleaseFormViewDialog({ open, onClose, formData, communi
     // Title
     doc.setFontSize(14);
     doc.setFont(undefined, "bold");
-    const titleLines = doc.splitTextToSize(formTitle.toUpperCase(), usableWidth);
+    const titleLines = doc.splitTextToSize(
+      formTitle.toUpperCase(),
+      usableWidth,
+    );
     doc.text(titleLines, pageWidth / 2, y, { align: "center" });
     y += titleLines.length * 6 + 4;
 
@@ -259,13 +274,22 @@ export default function ReleaseFormViewDialog({ open, onClose, formData, communi
       }
     }
 
-    const safeName = (formData?.signature_text || "release-form").replace(/[^a-zA-Z0-9]/g, "_");
+    const safeName = (formData?.signature_text || "release-form").replace(
+      /[^a-zA-Z0-9]/g,
+      "_",
+    );
     doc.save(`${safeName}_release_form.pdf`);
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <DialogTitle
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <Typography variant="h6" component="span">
           Release Form — View
         </Typography>
@@ -286,14 +310,22 @@ export default function ReleaseFormViewDialog({ open, onClose, formData, communi
                 title={`myHometown\n${formTitle.toUpperCase()}`}
                 titleTypographyProps={{
                   variant: "subtitle2",
-                  sx: { whiteSpace: "pre-line", fontWeight: 700, fontSize: "0.8rem" },
+                  sx: {
+                    whiteSpace: "pre-line",
+                    fontWeight: 700,
+                    fontSize: "0.8rem",
+                  },
                 }}
                 sx={{ bgcolor: "#f5f5f5", pb: 1 }}
               />
               <Divider />
               <CardContent sx={{ px: { xs: 2, sm: 3 } }}>
                 {displayParagraphs.map((para, idx) => (
-                  <ReadOnlyParagraph key={idx} text={para} vars={templateVars} />
+                  <ReadOnlyParagraph
+                    key={idx}
+                    text={para}
+                    vars={templateVars}
+                  />
                 ))}
               </CardContent>
             </Card>
@@ -302,7 +334,10 @@ export default function ReleaseFormViewDialog({ open, onClose, formData, communi
             {formData?.signature_text && (
               <Card variant="outlined" sx={{ mt: 2 }}>
                 <CardContent>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ fontWeight: 700, mb: 1 }}
+                  >
                     Signature
                   </Typography>
                   <Divider sx={{ mb: 1.5 }} />
@@ -310,7 +345,11 @@ export default function ReleaseFormViewDialog({ open, onClose, formData, communi
                     <strong>Signed by:</strong> {formData.signature_text}
                   </Typography>
                   {signedDate && (
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      gutterBottom
+                    >
                       <strong>Date:</strong> {signedDate}
                     </Typography>
                   )}
@@ -329,7 +368,11 @@ export default function ReleaseFormViewDialog({ open, onClose, formData, communi
                       <img
                         src={formData.signature_image}
                         alt="Signature"
-                        style={{ maxWidth: 300, height: "auto", display: "block" }}
+                        style={{
+                          maxWidth: 300,
+                          height: "auto",
+                          display: "block",
+                        }}
                       />
                     </Box>
                   )}
@@ -347,7 +390,11 @@ export default function ReleaseFormViewDialog({ open, onClose, formData, communi
           startIcon={<Download />}
           onClick={async () => {
             setDownloading(true);
-            try { await handleDownloadPdf(); } finally { setDownloading(false); }
+            try {
+              await handleDownloadPdf();
+            } finally {
+              setDownloading(false);
+            }
           }}
           disabled={loading || downloading}
         >
@@ -361,7 +408,8 @@ export default function ReleaseFormViewDialog({ open, onClose, formData, communi
 function parseForm(raw) {
   return {
     ...raw,
-    content: typeof raw.content === "string" ? JSON.parse(raw.content) : raw.content,
+    content:
+      typeof raw.content === "string" ? JSON.parse(raw.content) : raw.content,
     custom_fields:
       typeof raw.custom_fields === "string"
         ? JSON.parse(raw.custom_fields)

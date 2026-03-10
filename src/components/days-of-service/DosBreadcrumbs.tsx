@@ -219,8 +219,8 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
       return pathname;
     }
 
-    // If the community ID is a new one, use the old one for breadcrumb links
-    const resolvedCommunityId = newToOldCommunity[communityId] ?? communityId;
+    // Always resolve to the new Supabase-style UUID for breadcrumb links
+    const resolvedCommunityId = oldToNewCommunity[communityId] ?? communityId;
 
     switch (index) {
       case 0: // Community Level - always resolve to the new UUID

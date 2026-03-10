@@ -94,9 +94,7 @@ function RichParagraph({
             {lineIdx > 0 && <br />}
             {boldParts.map((p, i) =>
               i % 2 === 1 ? (
-                <strong key={i}>
-                  {renderSegment(p, `${lineIdx}-${i}`)}
-                </strong>
+                <strong key={i}>{renderSegment(p, `${lineIdx}-${i}`)}</strong>
               ) : (
                 <React.Fragment key={i}>
                   {renderSegment(p, `${lineIdx}-${i}`)}
@@ -407,7 +405,11 @@ const TermsOfServicePage = ({ params }) => {
     if (f.key) inlineFieldMap[f.key] = f;
   }
   inlineFieldMap.name = { key: "name", label: "Full Name", type: "text" };
-  inlineFieldMap.address = { key: "address", label: "Property Address", type: "text" };
+  inlineFieldMap.address = {
+    key: "address",
+    label: "Property Address",
+    type: "text",
+  };
 
   const inlineFieldValues = {
     ...customFieldValues,
@@ -560,7 +562,9 @@ const TermsOfServicePage = ({ params }) => {
                   )}
                 </Typography>
                 <RichParagraph
-                  text={"**Name:** {{name}}\n**Date:** {{date}}\n**Address:** {{address}}"}
+                  text={
+                    "**Name:** {{name}}\n**Date:** {{date}}\n**Address:** {{address}}"
+                  }
                   vars={templateVars}
                   customFieldMap={inlineFieldMap}
                   customFieldValues={inlineFieldValues}
