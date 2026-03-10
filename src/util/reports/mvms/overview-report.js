@@ -5,6 +5,7 @@
  *   Location, # Service Missionaries and Volunteers,
  *   Service Missionaries/Volunteers Total Hours, Average Hours,
  *   Admin Service Hours, CRC Service Hours, CRC Classes Taught,
+ *   CRC Students Enrolled, CRC Unique Students, CRC Total Attendance,
  *   DOS Service Hours, DOS Community Hours, DOS Community Volunteers,
  *   DOS # Projects, In-school Service Hours, Events Hours,
  *   Total Volunteers, Total Service Hours
@@ -44,12 +45,13 @@ function sumActivityHours(hoursEntries, categoryKey) {
 /**
  * Compute overview stats for a set of missionaries, hours entries, and DOS projects.
  * @param {boolean} includeDos - whether to fill DOS community columns (false for cities/utah/total)
+ * @param {Object} crcData - { classCount, studentsEnrolled, uniqueStudents, totalAttendance }
  */
 function computeOverviewStats(
   missionaries,
   hoursEntries,
   dosProjects,
-  classCount,
+  crcData,
   includeDos,
   elapsedMonths,
 ) {
@@ -86,16 +88,13 @@ function computeOverviewStats(
   const totalServiceHours =
     adminHours + crcHours + dosServiceHours + inSchoolHours + eventsHours;
 
-  // SM/V Total Hours = total hours (includes DOS Service Hours but not DOS Community Hours)
   const smvTotalHours = totalServiceHours;
 
-  // Average Hours = total service hours / # missionaries / elapsed months
   const avgHours =
     mvCount > 0 && elapsedMonths > 0
       ? totalServiceHours / mvCount / elapsedMonths
       : 0;
 
-  // Total Volunteers = service missionaries/volunteers + DOS community volunteers
   const dosVolNum = includeDos
     ? dosProjects.reduce(
         (sum, p) => sum + (parseFloat(p.actual_volunteers) || 0),
@@ -110,7 +109,10 @@ function computeOverviewStats(
     avgHours: avgHours.toFixed(1),
     adminHours: adminHours.toFixed(1),
     crcHours: crcHours.toFixed(1),
-    classCount: classCount != null ? classCount : "",
+    classCount: crcData.classCount ?? "",
+    studentsEnrolled: crcData.studentsEnrolled ?? "",
+    uniqueStudents: crcData.uniqueStudents ?? "",
+    totalAttendance: crcData.totalAttendance ?? "",
     dosServiceHours: dosServiceHours.toFixed(1),
     dosCommunityHours,
     dosCommunityVolunteers,
@@ -131,6 +133,9 @@ function statsToRow(location, stats) {
     stats.adminHours,
     stats.crcHours,
     stats.classCount,
+    stats.studentsEnrolled,
+    stats.uniqueStudents,
+    stats.totalAttendance,
     stats.dosServiceHours,
     stats.dosCommunityHours,
     stats.dosCommunityVolunteers,
@@ -150,7 +155,7 @@ function statsToRow(location, stats) {
  * @param {Array} params.missionaries - missionary objects with id, community_id
  * @param {Array} params.hours - missionary_hours objects with missionary_id, total_hours, activities JSONB
  * @param {Array} params.dosProjects - DOS project form objects with community_id, actual_volunteers, actual_project_duration
- * @param {Object} params.classCounts - { [communityId]: number }
+ * @param {Object} params.crcStats - { [communityId]: { classCount, studentsEnrolled, uniqueStudents, totalAttendance } }
  * @param {Object} params.dateRange - { startDate, endDate }
  * @returns {string} CSV content
  */
@@ -159,7 +164,7 @@ export function generateOverviewReportCSV({
   missionaries,
   hours,
   dosProjects,
-  classCounts,
+  crcStats,
   dateRange,
 }) {
   // Calculate elapsed months from date range
@@ -179,6 +184,9 @@ export function generateOverviewReportCSV({
     "Admin Service Hours",
     "CRC Service Hours",
     "CRC Classes Taught",
+    "CRC Students Enrolled",
+    "CRC Unique Students",
+    "CRC Total Attendance",
     "DOS Service Hours",
     "DOS Community Hours",
     "DOS Community Volunteers",
@@ -236,18 +244,32 @@ export function generateOverviewReportCSV({
 
   const rows = [headers.join(",")];
 
+  const emptyCrc = {
+    classCount: 0,
+    studentsEnrolled: 0,
+    uniqueStudents: 0,
+    totalAttendance: 0,
+  };
+
+  const addCrc = (a, b) => ({
+    classCount: (a.classCount || 0) + (b.classCount || 0),
+    studentsEnrolled: (a.studentsEnrolled || 0) + (b.studentsEnrolled || 0),
+    uniqueStudents: (a.uniqueStudents || 0) + (b.uniqueStudents || 0),
+    totalAttendance: (a.totalAttendance || 0) + (b.totalAttendance || 0),
+  });
+
   const cityRows = [];
   let utahMissionaries = [];
   let utahHoursEntries = [];
-  let utahClassCount = 0;
+  let utahCrc = { ...emptyCrc };
   let allMissionaries = [];
   let allHoursEntries = [];
-  let allClassCount = 0;
+  let allCrc = { ...emptyCrc };
 
   for (const [cityId, cityInfo] of sortedCityEntries) {
     let cityMissionaries = [];
     let cityHoursEntries = [];
-    let cityClassCount = 0;
+    let cityCrc = { ...emptyCrc };
 
     const communitiesInCity = communities
       .filter((c) => cityInfo.communityIds.includes(c.id))
@@ -259,14 +281,14 @@ export function generateOverviewReportCSV({
         (m) => hoursByMissionary[m.id] || [],
       );
       const commDos = dosByCommunity[community.id] || [];
-      const commClassCount = classCounts[community.id] || 0;
+      const commCrc = crcStats[community.id] || { ...emptyCrc };
 
       const stats = computeOverviewStats(
         commMissionaries,
         commHours,
         commDos,
-        commClassCount,
-        true, // include DOS community columns for communities
+        commCrc,
+        true,
         elapsedMonths,
       );
 
@@ -280,25 +302,25 @@ export function generateOverviewReportCSV({
 
       cityMissionaries = cityMissionaries.concat(commMissionaries);
       cityHoursEntries = cityHoursEntries.concat(commHours);
-      cityClassCount += commClassCount;
+      cityCrc = addCrc(cityCrc, commCrc);
     }
 
     cityRows.push({
       name: cityInfo.name,
       missionaries: cityMissionaries,
       hours: cityHoursEntries,
-      classCount: cityClassCount,
+      crc: cityCrc,
     });
 
     if (cityInfo.state && cityInfo.state.toLowerCase().includes("utah")) {
       utahMissionaries = utahMissionaries.concat(cityMissionaries);
       utahHoursEntries = utahHoursEntries.concat(cityHoursEntries);
-      utahClassCount += cityClassCount;
+      utahCrc = addCrc(utahCrc, cityCrc);
     }
 
     allMissionaries = allMissionaries.concat(cityMissionaries);
     allHoursEntries = allHoursEntries.concat(cityHoursEntries);
-    allClassCount += cityClassCount;
+    allCrc = addCrc(allCrc, cityCrc);
   }
 
   // Empty row after communities
@@ -309,8 +331,8 @@ export function generateOverviewReportCSV({
     const cityStats = computeOverviewStats(
       city.missionaries,
       city.hours,
-      [], // no DOS for cities
-      city.classCount,
+      [],
+      city.crc,
       false,
       elapsedMonths,
     );
@@ -325,8 +347,8 @@ export function generateOverviewReportCSV({
     const utahStats = computeOverviewStats(
       utahMissionaries,
       utahHoursEntries,
-      [], // no DOS for Utah
-      utahClassCount,
+      [],
+      utahCrc,
       false,
       elapsedMonths,
     );
@@ -338,8 +360,8 @@ export function generateOverviewReportCSV({
   const totalStats = computeOverviewStats(
     allMissionaries,
     allHoursEntries,
-    [], // no DOS for total
-    allClassCount,
+    [],
+    allCrc,
     false,
     elapsedMonths,
   );

@@ -270,7 +270,7 @@ const AdminReportsPage = () => {
           missionaries,
           hours,
           dosProjects,
-          classCounts,
+          crcStats,
         } = await response.json();
 
         const csvContent = generateOverviewReportCSV({
@@ -278,7 +278,7 @@ const AdminReportsPage = () => {
           missionaries,
           hours,
           dosProjects,
-          classCounts,
+          crcStats,
           dateRange,
         });
 

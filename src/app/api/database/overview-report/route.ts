@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
         missionaries: [],
         hours: [],
         dosProjects: [],
-        classCounts: {},
+        crcStats: {},
       });
     }
 
@@ -260,28 +260,79 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 5. Fetch CRC class counts from MongoDB per community
-    const classCounts: Record<string, number> = {};
+    // 5. Fetch CRC class data from MongoDB per community
+    const crcStats: Record<
+      string,
+      {
+        classCount: number;
+        studentsEnrolled: number;
+        uniqueStudents: number;
+        totalAttendance: number;
+      }
+    > = {};
     try {
       const { db } = await connectToMongoDatabase();
       const classesCollection = db.collection("Classes");
 
       for (const community of communities) {
-        // Try the old mongo community ID first, then the supabase UUID
         const oldId =
           newToOldCommunity[community.id] || community.mongo_id || community.id;
 
-        const count = await classesCollection.countDocuments({
-          communityId: oldId,
-        });
-        classCounts[community.id] = count;
+        const classes = await classesCollection
+          .find(
+            { communityId: oldId },
+            {
+              projection: {
+                signups: 1,
+                attendance: 1,
+                startDate: 1,
+                endDate: 1,
+              },
+            },
+          )
+          .toArray();
+
+        let classCount = 0;
+        let studentsEnrolled = 0;
+        const allUniqueStudents = new Set<string>();
+        let totalAttendance = 0;
+
+        for (const cls of classes) {
+          // Filter classes by date range overlap
+          if (cls.startDate && endDate && cls.startDate > endDate) continue;
+          if (cls.endDate && startDate && cls.endDate < startDate) continue;
+
+          const enrolled =
+            cls.signups?.filter((s: any) => !s.isWaitlisted)?.length || 0;
+          if (enrolled === 0) continue;
+
+          classCount++;
+          studentsEnrolled += enrolled;
+
+          if (Array.isArray(cls.attendance)) {
+            for (const record of cls.attendance) {
+              if (record.present !== true) continue;
+              const d = record.date;
+              if (d && endDate && d > endDate) continue;
+              if (d && startDate && d < startDate) continue;
+              allUniqueStudents.add(record.studentId);
+              totalAttendance++;
+            }
+          }
+        }
+
+        crcStats[community.id] = {
+          classCount,
+          studentsEnrolled,
+          uniqueStudents: allUniqueStudents.size,
+          totalAttendance,
+        };
       }
     } catch (mongoErr: any) {
       console.error(
-        "[overview-report] Error fetching class counts from MongoDB:",
+        "[overview-report] Error fetching CRC data from MongoDB:",
         mongoErr,
       );
-      // Non-fatal — class counts will just be 0
     }
 
     return NextResponse.json({
@@ -289,7 +340,7 @@ export async function POST(request: NextRequest) {
       missionaries: allMissionaries,
       hours: allHours,
       dosProjects: allDosProjects,
-      classCounts,
+      crcStats,
     });
   } catch (err: any) {
     console.error("[overview-report] Unexpected error:", err);
