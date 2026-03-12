@@ -266,10 +266,7 @@ export const generateDetailedCSV = (semester, dateRange) => {
 
   // Process each section and class
   semester.sections.forEach((section) => {
-    if (section.visibility === false) return;
-
     section.classes.forEach((classItem) => {
-      if (classItem.visibility === false) return;
       if (!shouldIncludeClass(classItem, dateRange)) return;
 
       const stats = calculateAttendanceStats(classItem, dateRange);
@@ -346,12 +343,7 @@ export const generateStudentAttendanceReportCSV = (semester, dateRange) => {
 
   // Process each section and class to gather student attendance
   semester.sections.forEach((section) => {
-    // Skip hidden sections
-    if (section.visibility === false) return;
-
     section.classes.forEach((classItem) => {
-      // Skip hidden classes
-      if (classItem.visibility === false) return;
       if (!shouldIncludeClass(classItem, dateRange)) return;
 
       // Get all dates for this class within the date range
@@ -529,13 +521,7 @@ export const generateStudentReportCSV = (semester) => {
 
   // Process each section and class
   semester.sections.forEach((section) => {
-    // Skip hidden sections
-    if (section.visibility === false) return;
-
     section.classes.forEach((classItem) => {
-      // Skip hidden classes
-      if (classItem.visibility === false) return;
-
       // Process each student
       if (classItem.signups && classItem.signups.length > 0) {
         classItem.signups.forEach((signup) => {
@@ -600,13 +586,7 @@ export const generateClassScheduleReportCSV = (semester) => {
 
   // Process each section and class
   semester.sections.forEach((section) => {
-    // Skip hidden sections
-    if (section.visibility === false) return;
-
     section.classes.forEach((classItem) => {
-      // Skip hidden classes
-      if (classItem.visibility === false) return;
-
       // Format meeting days and times
       const meetingDays = classItem.meetings
         ? classItem.meetings.map((m) => m.day).join(", ")
@@ -664,12 +644,7 @@ export const generateCapacityReportCSV = (semester, dateRange) => {
 
   // First pass: collect all unique dates and build class info array
   semester.sections.forEach((section) => {
-    // Skip hidden sections
-    if (section.visibility === false) return;
-
     section.classes.forEach((classItem) => {
-      // Skip hidden classes
-      if (classItem.visibility === false) return;
       if (!shouldIncludeClass(classItem, dateRange)) return;
 
       // Store class info for later reference
@@ -722,10 +697,7 @@ export const generateCapacityReportCSV = (semester, dateRange) => {
   const dateAttendanceCounts = {};
 
   semester.sections.forEach((section) => {
-    if (section.visibility === false) return;
-
     section.classes.forEach((classItem) => {
-      if (classItem.visibility === false) return;
       if (!shouldIncludeClass(classItem, dateRange)) return;
 
       // Skip if no attendance data

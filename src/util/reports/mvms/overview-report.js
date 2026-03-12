@@ -1,20 +1,24 @@
 /**
  * MyHometown Overview Report CSV Generator
  *
- * Headers:
- *   Location, # Service Missionaries and Volunteers,
- *   Service Missionaries/Volunteers Total Hours, Average Hours,
- *   Admin Service Hours, CRC Service Hours, CRC Classes Taught,
- *   CRC Students Enrolled, CRC Unique Students, CRC Total Attendance,
- *   DOS Service Hours, DOS Community Hours, DOS Community Volunteers,
- *   DOS # Projects, In-school Service Hours, Events Hours,
- *   Total Volunteers, Total Service Hours
+ * Two-section layout:
+ *   Section 1 — Missionary and Volunteer Statistics
+ *     Location, # Service Missionaries and Volunteers,
+ *     Service Missionaries/Volunteers Total Hours, Average Monthly Hours,
+ *     % Logging Hours, Admin Service Hours, CRC Service Hours,
+ *     DOS Service Hours, In-school Service Hours, Events Hours
  *
- * Layout: communities → blank → cities → blank → Utah → blank → Total
+ *   Section 2 — CRC and Days of Service Statistics
+ *     Location, CRC Classes Taught, CRC Students Enrolled,
+ *     CRC Total Attendance, DOS Community Hours, DOS Community Volunteers,
+ *     DOS # Projects,
+ *     (blank), Total Volunteers, Total Service Hours, (blank)
  *
- * DOS Community Hours, DOS Community Volunteers, and DOS # Projects are left
- * empty for city / Utah / Total rows (DOS projects are per-community only).
+ * Per section: communities → blank → cities → blank → Utah → blank → Total
  */
+
+const COL_COUNT = 11;
+const EMPTY_ROW = new Array(COL_COUNT).join(",");
 
 function escapeCSV(value) {
   const str = String(value);
@@ -24,10 +28,24 @@ function escapeCSV(value) {
   return str;
 }
 
-/**
- * Sum hours from the activities JSONB for a given category key.
- * Activities is an array like: [{ category: "crc", hours: "5", ... }, ...]
- */
+function fmtNum(num) {
+  const rounded = Math.round(num);
+  if (rounded === 0) return "-";
+  return escapeCSV(rounded.toLocaleString("en-US"));
+}
+
+function labelRow(text) {
+  return text + EMPTY_ROW;
+}
+
+function formatDateLong(date) {
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "2-digit",
+  });
+}
+
 function sumActivityHours(hoursEntries, categoryKey) {
   let total = 0;
   for (const entry of hoursEntries) {
@@ -42,17 +60,11 @@ function sumActivityHours(hoursEntries, categoryKey) {
   return total;
 }
 
-/**
- * Compute overview stats for a set of missionaries, hours entries, and DOS projects.
- * @param {boolean} includeDos - whether to fill DOS community columns (false for cities/utah/total)
- * @param {Object} crcData - { classCount, studentsEnrolled, uniqueStudents, totalAttendance }
- */
 function computeOverviewStats(
   missionaries,
   hoursEntries,
   dosProjects,
   crcData,
-  includeDos,
   elapsedMonths,
 ) {
   const mvCount = missionaries.length;
@@ -63,87 +75,91 @@ function computeOverviewStats(
   const inSchoolHours = sumActivityHours(hoursEntries, "in-school-services");
   const eventsHours = sumActivityHours(hoursEntries, "community-events");
 
-  let dosCommunityHours = "";
-  let dosCommunityVolunteers = "";
-  let dosProjectCount = "";
+  let communityHoursNum = 0;
+  let communityVolunteersNum = 0;
+  let projectNum = 0;
 
-  if (includeDos) {
-    let communityHoursNum = 0;
-    let communityVolunteersNum = 0;
-    let projectNum = 0;
-
-    for (const proj of dosProjects) {
-      const volunteers = parseFloat(proj.actual_volunteers) || 0;
-      const duration = parseFloat(proj.actual_project_duration) || 0;
-      communityHoursNum += volunteers * duration;
-      communityVolunteersNum += volunteers;
-      projectNum += 1;
-    }
-
-    dosCommunityHours = communityHoursNum.toFixed(1);
-    dosCommunityVolunteers = String(communityVolunteersNum);
-    dosProjectCount = String(projectNum);
+  for (const proj of dosProjects) {
+    const volunteers = parseFloat(proj.actual_volunteers) || 0;
+    const duration = parseFloat(proj.actual_project_duration) || 0;
+    communityHoursNum += volunteers * duration;
+    communityVolunteersNum += volunteers;
+    projectNum += 1;
   }
 
-  const totalServiceHours =
+  const smvTotalHours =
     adminHours + crcHours + dosServiceHours + inSchoolHours + eventsHours;
 
-  const smvTotalHours = totalServiceHours;
+  const totalServiceHours = smvTotalHours + communityHoursNum;
 
-  const avgHours =
+  const avgMonthlyHours =
     mvCount > 0 && elapsedMonths > 0
-      ? totalServiceHours / mvCount / elapsedMonths
+      ? smvTotalHours / mvCount / elapsedMonths
       : 0;
 
-  const dosVolNum = includeDos
-    ? dosProjects.reduce(
-        (sum, p) => sum + (parseFloat(p.actual_volunteers) || 0),
-        0,
-      )
-    : 0;
-  const totalVolunteers = mvCount + dosVolNum;
+  const missionaryIdsWithHours = new Set(
+    hoursEntries.map((h) => h.missionary_id),
+  );
+  const loggedCount = missionaries.filter((m) =>
+    missionaryIdsWithHours.has(m.id),
+  ).length;
+  const pctLogged =
+    mvCount > 0 ? Math.round((loggedCount / mvCount) * 100) : 0;
+
+  const dosVolNum = dosProjects.reduce(
+    (sum, p) => sum + (parseFloat(p.actual_volunteers) || 0),
+    0,
+  );
 
   return {
     mvCount,
-    smvTotalHours: smvTotalHours.toFixed(1),
-    avgHours: avgHours.toFixed(1),
-    adminHours: adminHours.toFixed(1),
-    crcHours: crcHours.toFixed(1),
-    classCount: crcData.classCount ?? "",
-    studentsEnrolled: crcData.studentsEnrolled ?? "",
-    uniqueStudents: crcData.uniqueStudents ?? "",
-    totalAttendance: crcData.totalAttendance ?? "",
-    dosServiceHours: dosServiceHours.toFixed(1),
-    dosCommunityHours,
-    dosCommunityVolunteers,
-    dosProjectCount,
-    inSchoolHours: inSchoolHours.toFixed(1),
-    eventsHours: eventsHours.toFixed(1),
-    totalVolunteers,
-    totalServiceHours: totalServiceHours.toFixed(1),
+    smvTotalHours,
+    avgMonthlyHours,
+    pctLogged,
+    adminHours,
+    crcHours,
+    classCount: crcData.classCount || 0,
+    studentsEnrolled: crcData.studentsEnrolled || 0,
+    totalAttendance: crcData.totalAttendance || 0,
+    dosServiceHours,
+    dosCommunityHours: communityHoursNum,
+    dosCommunityVolunteers: communityVolunteersNum,
+    dosProjectCount: projectNum,
+    inSchoolHours,
+    eventsHours,
+    totalVolunteers: mvCount + dosVolNum,
+    totalServiceHours,
   };
 }
 
-function statsToRow(location, stats) {
+function section1Row(location, stats) {
   return [
     escapeCSV(location),
-    stats.mvCount,
-    stats.smvTotalHours,
-    stats.avgHours,
-    stats.adminHours,
-    stats.crcHours,
-    stats.classCount,
-    stats.studentsEnrolled,
-    stats.uniqueStudents,
-    stats.totalAttendance,
-    stats.dosServiceHours,
-    stats.dosCommunityHours,
-    stats.dosCommunityVolunteers,
-    stats.dosProjectCount,
-    stats.inSchoolHours,
-    stats.eventsHours,
-    stats.totalVolunteers,
-    stats.totalServiceHours,
+    fmtNum(stats.mvCount),
+    fmtNum(stats.smvTotalHours),
+    fmtNum(stats.avgMonthlyHours),
+    stats.pctLogged > 0 ? stats.pctLogged + "%" : "-",
+    fmtNum(stats.adminHours),
+    fmtNum(stats.crcHours),
+    fmtNum(stats.dosServiceHours),
+    fmtNum(stats.inSchoolHours),
+    fmtNum(stats.eventsHours),
+  ].join(",");
+}
+
+function section2Row(location, stats) {
+  return [
+    escapeCSV(location),
+    fmtNum(stats.classCount),
+    fmtNum(stats.studentsEnrolled),
+    fmtNum(stats.totalAttendance),
+    fmtNum(stats.dosCommunityHours),
+    fmtNum(stats.dosCommunityVolunteers),
+    fmtNum(stats.dosProjectCount),
+    "",
+    fmtNum(stats.totalVolunteers),
+    fmtNum(stats.totalServiceHours),
+    "",
   ].join(",");
 }
 
@@ -155,7 +171,7 @@ function statsToRow(location, stats) {
  * @param {Array} params.missionaries - missionary objects with id, community_id
  * @param {Array} params.hours - missionary_hours objects with missionary_id, total_hours, activities JSONB
  * @param {Array} params.dosProjects - DOS project form objects with community_id, actual_volunteers, actual_project_duration
- * @param {Object} params.crcStats - { [communityId]: { classCount, studentsEnrolled, uniqueStudents, totalAttendance } }
+ * @param {Object} params.crcStats - { [communityId]: { classCount, studentsEnrolled, totalAttendance } }
  * @param {Object} params.dateRange - { startDate, endDate }
  * @returns {string} CSV content
  */
@@ -167,34 +183,41 @@ export function generateOverviewReportCSV({
   crcStats,
   dateRange,
 }) {
-  // Calculate elapsed months from date range
-  const start = new Date(dateRange.startDate);
   const end = dateRange.endDate ? new Date(dateRange.endDate) : new Date();
+  const start = dateRange.startDate
+    ? new Date(dateRange.startDate)
+    : new Date(end.getFullYear(), 0, 1);
   const daysElapsed = Math.max(
     1,
     Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1,
   );
   const elapsedMonths = daysElapsed / 30.5;
 
-  const headers = [
+  const section1Headers = [
     "Location",
     "# Service Missionaries and Volunteers",
     "Service Missionaries/Volunteers Total Hours",
-    "Average Hours",
+    "Average Monthly Hours",
+    "% Logging Hours",
     "Admin Service Hours",
     "CRC Service Hours",
+    "DOS Service Hours",
+    "In-school Service Hours",
+    "Events Hours",
+  ];
+
+  const section2Headers = [
+    "Location",
     "CRC Classes Taught",
     "CRC Students Enrolled",
-    "CRC Unique Students",
     "CRC Total Attendance",
-    "DOS Service Hours",
     "DOS Community Hours",
     "DOS Community Volunteers",
     "DOS # Projects",
-    "In-school Service Hours",
-    "Events Hours",
+    "",
     "Total Volunteers",
     "Total Service Hours",
+    "",
   ];
 
   // Build lookups
@@ -242,33 +265,30 @@ export function generateOverviewReportCSV({
     a[1].name.localeCompare(b[1].name),
   );
 
-  const rows = [headers.join(",")];
-
-  const emptyCrc = {
-    classCount: 0,
-    studentsEnrolled: 0,
-    uniqueStudents: 0,
-    totalAttendance: 0,
-  };
+  const emptyCrc = { classCount: 0, studentsEnrolled: 0, totalAttendance: 0 };
 
   const addCrc = (a, b) => ({
     classCount: (a.classCount || 0) + (b.classCount || 0),
     studentsEnrolled: (a.studentsEnrolled || 0) + (b.studentsEnrolled || 0),
-    uniqueStudents: (a.uniqueStudents || 0) + (b.uniqueStudents || 0),
     totalAttendance: (a.totalAttendance || 0) + (b.totalAttendance || 0),
   });
 
+  // Collect computed stats per community/city for reuse across both sections
+  const communityEntries = [];
   const cityRows = [];
   let utahMissionaries = [];
   let utahHoursEntries = [];
+  let utahDosProjects = [];
   let utahCrc = { ...emptyCrc };
   let allMissionaries = [];
   let allHoursEntries = [];
+  let allDosProjects = [];
   let allCrc = { ...emptyCrc };
 
   for (const [cityId, cityInfo] of sortedCityEntries) {
     let cityMissionaries = [];
     let cityHoursEntries = [];
+    let cityDosProjects = [];
     let cityCrc = { ...emptyCrc };
 
     const communitiesInCity = communities
@@ -288,7 +308,6 @@ export function generateOverviewReportCSV({
         commHours,
         commDos,
         commCrc,
-        true,
         elapsedMonths,
       );
 
@@ -298,10 +317,12 @@ export function generateOverviewReportCSV({
         commName.toLowerCase() === cityName.toLowerCase()
           ? commName
           : `${cityName} ${commName}`;
-      rows.push(statsToRow(displayName, stats));
+
+      communityEntries.push({ name: displayName, stats });
 
       cityMissionaries = cityMissionaries.concat(commMissionaries);
       cityHoursEntries = cityHoursEntries.concat(commHours);
+      cityDosProjects = cityDosProjects.concat(commDos);
       cityCrc = addCrc(cityCrc, commCrc);
     }
 
@@ -309,63 +330,102 @@ export function generateOverviewReportCSV({
       name: cityInfo.name,
       missionaries: cityMissionaries,
       hours: cityHoursEntries,
+      dosProjects: cityDosProjects,
       crc: cityCrc,
     });
 
     if (cityInfo.state && cityInfo.state.toLowerCase().includes("utah")) {
       utahMissionaries = utahMissionaries.concat(cityMissionaries);
       utahHoursEntries = utahHoursEntries.concat(cityHoursEntries);
+      utahDosProjects = utahDosProjects.concat(cityDosProjects);
       utahCrc = addCrc(utahCrc, cityCrc);
     }
 
     allMissionaries = allMissionaries.concat(cityMissionaries);
     allHoursEntries = allHoursEntries.concat(cityHoursEntries);
+    allDosProjects = allDosProjects.concat(cityDosProjects);
     allCrc = addCrc(allCrc, cityCrc);
   }
 
-  // Empty row after communities
-  rows.push("");
-
-  // City rows (no DOS community columns)
-  for (const city of cityRows) {
-    const cityStats = computeOverviewStats(
+  // Pre-compute aggregate stats
+  const cityStatsMap = cityRows.map((city) => ({
+    name: city.name,
+    stats: computeOverviewStats(
       city.missionaries,
       city.hours,
-      [],
+      city.dosProjects,
       city.crc,
-      false,
       elapsedMonths,
-    );
-    rows.push(statsToRow(city.name, cityStats));
-  }
+    ),
+  }));
 
-  // Empty row after cities
-  rows.push("");
+  const utahStats =
+    utahMissionaries.length > 0
+      ? computeOverviewStats(utahMissionaries, utahHoursEntries, utahDosProjects, utahCrc, elapsedMonths)
+      : null;
 
-  // Utah
-  if (utahMissionaries.length > 0) {
-    const utahStats = computeOverviewStats(
-      utahMissionaries,
-      utahHoursEntries,
-      [],
-      utahCrc,
-      false,
-      elapsedMonths,
-    );
-    rows.push(statsToRow("Utah", utahStats));
-    rows.push("");
-  }
-
-  // Total
   const totalStats = computeOverviewStats(
     allMissionaries,
     allHoursEntries,
-    [],
+    allDosProjects,
     allCrc,
-    false,
     elapsedMonths,
   );
-  rows.push(statsToRow("Total", totalStats));
+
+  // --- Build CSV rows ---
+  const rows = [];
+
+  // Title & date range
+  const dateLabel = escapeCSV(`from  ${formatDateLong(start)} to ${formatDateLong(end)}`);
+  rows.push(labelRow("myHometown Overview Report"));
+  rows.push(labelRow(dateLabel));
+  rows.push(EMPTY_ROW);
+
+  // ---- Section 1: Missionary and Volunteer Statistics ----
+  rows.push(labelRow("Missionary and Volunteer Statistics"));
+  rows.push(section1Headers.join(","));
+
+  for (const entry of communityEntries) {
+    rows.push(section1Row(entry.name, entry.stats));
+  }
+  rows.push(EMPTY_ROW);
+
+  for (const city of cityStatsMap) {
+    rows.push(section1Row(city.name, city.stats));
+  }
+  rows.push(EMPTY_ROW);
+
+  if (utahStats) {
+    rows.push(section1Row("Utah", utahStats));
+    rows.push(EMPTY_ROW);
+  }
+
+  rows.push(section1Row("Total", totalStats));
+
+  // Gap between sections
+  rows.push(EMPTY_ROW);
+  rows.push(EMPTY_ROW);
+
+  // ---- Section 2: CRC and Days of Service Statistics ----
+  rows.push(labelRow("CRC and Days of Service Statistics"));
+  rows.push(section2Headers.join(","));
+
+  for (const entry of communityEntries) {
+    rows.push(section2Row(entry.name, entry.stats));
+  }
+  rows.push(EMPTY_ROW);
+
+  for (const city of cityStatsMap) {
+    rows.push(section2Row(city.name, city.stats));
+  }
+  rows.push(EMPTY_ROW);
+
+  if (utahStats) {
+    rows.push(section2Row("Utah", utahStats));
+    rows.push(EMPTY_ROW);
+  }
+
+  rows.push(section2Row("Total", totalStats));
 
   return rows.join("\n");
 }

@@ -290,17 +290,16 @@ export function VolunteerSignupForm({
                 color="primary"
               />
             }
-            label="Check this box if someone referred you to us."
+            label="Check this box if you were referred by an organization or an individual."
           />
           {wasReferred && (
             <TextField
               fullWidth
-              label="Name of person who referred you *"
+              label="Name of organization or individual who referred you *"
               value={referrerName}
               onChange={(e) => setReferrerName(e.target.value)}
               error={!!errors.referrerName}
               helperText={errors.referrerName}
-              placeholder="Jane Doe"
             />
           )}
 
