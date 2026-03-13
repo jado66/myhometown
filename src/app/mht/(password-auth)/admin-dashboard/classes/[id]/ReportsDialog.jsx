@@ -39,6 +39,11 @@ import {
   generateStudentAttendanceReportCSV,
 } from "@/util/reports/classes/report-helper-functions";
 
+const getDefaultDateRange = () => ({
+  startDate: new Date().getFullYear() + "-01-01",
+  endDate: new Date().toISOString().split("T")[0],
+});
+
 const handleGenerateAttendanceReport = (semester) => {
   // Generate safe filename from semester title
   const safeTitle = semester.title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
@@ -47,12 +52,12 @@ const handleGenerateAttendanceReport = (semester) => {
   }.csv`;
 
   // Generate and download the CSV with detailed attendance statistics
-  const csvContent = generateDetailedCSV(semester);
+  const csvContent = generateDetailedCSV(semester, getDefaultDateRange());
   downloadCSV(csvContent, fileName);
 };
 
 const handleGenerateCapacityReport = (semester) => {
-  const csvContent = generateCapacityReportCSV(semester);
+  const csvContent = generateCapacityReportCSV(semester, getDefaultDateRange());
   const today = new Date();
   const dateStr = `${today.getFullYear()}-${String(
     today.getMonth() + 1
@@ -68,7 +73,7 @@ const handleGenerateStudentAttendanceReport = (semester) => {
   }.csv`;
 
   // Generate and download the CSV with student attendance data
-  const csvContent = generateStudentAttendanceReportCSV(semester);
+  const csvContent = generateStudentAttendanceReportCSV(semester, getDefaultDateRange());
   downloadCSV(csvContent, fileName);
 };
 
