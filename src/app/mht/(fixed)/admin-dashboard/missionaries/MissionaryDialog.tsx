@@ -152,7 +152,7 @@ const initalFormData: MissionaryFormData = {
   city_id: "",
   community_id: "",
   assignment_status: "active",
-  assignment_level: "state",
+  assignment_level: "community",
   contact_number: "",
   notes: "",
   group: "",

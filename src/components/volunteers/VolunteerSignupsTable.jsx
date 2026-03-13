@@ -42,9 +42,11 @@ import {
   CheckCircleOutline,
   Visibility,
   VisibilityOff,
+  Delete,
 } from "@mui/icons-material";
 import { useVolunteerSignups } from "@/hooks/use-volunteer-signups";
 import { useUser } from "@/hooks/use-user";
+import AskYesNoDialog from "@/components/util/AskYesNoDialog";
 import moment from "moment";
 
 const VolunteerSignupsTable = ({ communityFilter = null }) => {
@@ -55,6 +57,9 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [showContacted, setShowContacted] = useState(false);
   const [updatingContact, setUpdatingContact] = useState(null);
+  const [deletingSignup, setDeletingSignup] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [signupToDelete, setSignupToDelete] = useState(null);
   const { user } = useUser();
 
   // Local state for notes editing
@@ -158,6 +163,31 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
       // You could add a toast notification here
     } finally {
       setUpdatingContact(null);
+    }
+  };
+
+  const handleDeleteSignup = (signupId) => {
+    setSignupToDelete(signupId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteSignup = async () => {
+    const signupId = signupToDelete;
+    setDeleteDialogOpen(false);
+    setSignupToDelete(null);
+    setDeletingSignup(signupId);
+    try {
+      const response = await fetch("/api/volunteer-signup", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: signupId }),
+      });
+      if (!response.ok) throw new Error("Failed to delete signup");
+      refetch();
+    } catch (error) {
+      console.error("Error deleting signup:", error);
+    } finally {
+      setDeletingSignup(null);
     }
   };
 
@@ -380,6 +410,16 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
                     ? "Mark Uncontacted"
                     : "Mark Contacted"}
               </Button>
+              <Tooltip title="Delete">
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => handleDeleteSignup(signup.id)}
+                  disabled={deletingSignup === signup.id}
+                >
+                  <Delete fontSize="small" />
+                </IconButton>
+              </Tooltip>
             </Box>
           </Grid>
         </Grid>
@@ -491,6 +531,7 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
 
                 <TableCell>Actions</TableCell>
                 <TableCell>Notes</TableCell>
+                <TableCell></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -621,12 +662,36 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
                       }}
                     />
                   </TableCell>
+                  <TableCell>
+                    <Tooltip title="Delete">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => handleDeleteSignup(signup.id)}
+                        disabled={deletingSignup === signup.id}
+                      >
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
       )}
+
+      <AskYesNoDialog
+        open={deleteDialogOpen}
+        onClose={() => { setDeleteDialogOpen(false); setSignupToDelete(null); }}
+        onConfirm={confirmDeleteSignup}
+        onCancel={() => { setDeleteDialogOpen(false); setSignupToDelete(null); }}
+        title="Delete Volunteer Signup"
+        description="Are you sure you want to delete this volunteer signup? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmColor="error"
+      />
 
       {/* Pagination */}
       {signups.length > 0 && (

@@ -143,10 +143,10 @@ export const pages = () => {
           title: "Development Board",
           href: rootUrl + "/admin-dashboard/tasks",
         },
-        {
-          title: "Bugs and Feature Requests",
-          href: rootUrl + "/admin-dashboard/bugs-and-features",
-        },
+        // {
+        //   title: "Bugs and Feature Requests",
+        //   href: rootUrl + "/admin-dashboard/bugs-and-features",
+        // },
         {
           title: "Upload Media",
           href: rootUrl + "/admin-dashboard/tools/media-upload",
