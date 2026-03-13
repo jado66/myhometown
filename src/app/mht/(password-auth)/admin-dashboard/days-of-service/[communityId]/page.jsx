@@ -236,16 +236,10 @@ const CommunitySelectionPage = ({ params }) => {
   };
 
   const handlePartnerStakeClick = (day, stake) => {
-    const url = `${
-      process.env.NEXT_PUBLIC_DOMAIN
-    }/admin-dashboard/days-of-service/${day.short_id.replaceAll(
-      "_",
-      "/",
-    )}/organization/${stake.id}`;
-
-    // alert(url);
-
-    // return;
+    const formattedDate = moment(day.end_date).format("MM-DD-YYYY");
+    
+  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+    const url = rootUrl + `/admin-dashboard/days-of-service/${day.community_id}/${formattedDate}/organization/${stake.id}`;
     router.push(url);
   };
 

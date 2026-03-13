@@ -197,7 +197,7 @@ export default function ProjectFormsPage({ params }) {
 
   // Hooks
   const { fetchNewCommunities } = useCommunities();
-  const { fetchDayOfServiceByShortId } = useDaysOfService();
+  const { fetchDayOfServiceByCommunityAndDate } = useDaysOfService();
   const {
     fetchProjectsByDaysOfStakeId,
     deleteProject,
@@ -210,8 +210,9 @@ export default function ProjectFormsPage({ params }) {
   useEffect(() => {
     const fetchDays = async () => {
       try {
-        const { data, error } = await fetchDayOfServiceByShortId(
-          `${communityId}_${date}`,
+        const { data, error } = await fetchDayOfServiceByCommunityAndDate(
+          communityId,
+          date,
         );
 
         if (error) throw error;
@@ -290,7 +291,7 @@ export default function ProjectFormsPage({ params }) {
 
     try {
       const newId = uuidv4();
-      const daysOfServiceShortId = `${communityId}_${date}`;
+      const daysOfServiceShortId = dayOfService?.short_id ?? `${communityId}_${date}`;
       const newProject = await addProject(
         newId,
         dayOfService.community_id,

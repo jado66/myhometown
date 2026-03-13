@@ -104,6 +104,56 @@ export const useDaysOfService = () => {
     }
   }, []);
 
+  const fetchDayOfServiceByCommunityAndDate = useCallback(
+    async (communityId: string, dateParam: string) => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // dateParam is MM-DD-YYYY from the URL; convert to YYYY-MM-DD for Supabase
+        const isoDate = moment(dateParam, "MM-DD-YYYY").format("YYYY-MM-DD");
+
+        const { data, error: supabaseError } = await supabase
+          .from("days_of_service")
+          .select(
+            `
+              *,
+              cities!city_id (
+                city_name:name
+              ),
+              communities!community_id (
+                community_name:name
+              )
+            `,
+          )
+          .eq("community_id", communityId)
+          .eq("end_date", isoDate)
+          .single();
+
+        if (supabaseError) throw supabaseError;
+
+        const flattenedData = {
+          ...data,
+          city_name: data.cities?.city_name,
+          community_name: data.communities?.community_name,
+        };
+
+        delete flattenedData.cities;
+        delete flattenedData.communities;
+
+        return { data: flattenedData, error: null };
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "An error occurred";
+        setError(message);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
   const fetchDayOfService = useCallback(async (id: string) => {
     try {
       setIsLoading(true);
@@ -466,6 +516,7 @@ export const useDaysOfService = () => {
     removePartnerStakeFromDayOfService,
     fetchDaysOfServiceByCommunity,
     fetchDayOfServiceByShortId,
+    fetchDayOfServiceByCommunityAndDate,
     fetchDayOfService,
     updatePartnerStakeInDayOfService,
     addPartnerToDayOfService,
