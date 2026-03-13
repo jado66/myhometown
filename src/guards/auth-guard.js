@@ -11,7 +11,7 @@ const AuthGuard = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
 
-  const isPublic = PUBLIC_PATHS.some((p) => pathname.endsWith(p));
+  const isPublic = PUBLIC_PATHS.some((p) => pathname.includes(p));
 
   useEffect(() => {
     if (!isPublic && !isLoading && !user) {
