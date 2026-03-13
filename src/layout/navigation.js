@@ -113,23 +113,23 @@ export const pages = () => {
         // },
       ],
     },
-    {
-      title: "Support",
-      id: "support-pages",
-      requiredPermission: "any",
-      pages: [
-        {
-          title: "Bug Report",
-          href: rootUrl + "/bug-report",
-          requiredPermission: "any",
-        },
-        {
-          title: "Request a Feature",
-          href: rootUrl + "/feature-request",
-          requiredPermission: "any",
-        },
-      ],
-    },
+    // {
+    //   title: "Support",
+    //   id: "support-pages",
+    //   requiredPermission: "any",
+    //   pages: [
+    //     {
+    //       title: "Bug Report",
+    //       href: rootUrl + "/bug-report",
+    //       requiredPermission: "any",
+    //     },
+    //     {
+    //       title: "Request a Feature",
+    //       href: rootUrl + "/feature-request",
+    //       requiredPermission: "any",
+    //     },
+    //   ],
+    // },
     {
       title: "Development Tools",
       id: "landing-pages",
