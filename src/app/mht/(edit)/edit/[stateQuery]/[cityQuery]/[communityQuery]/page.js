@@ -1404,7 +1404,7 @@ const Page = ({ params }) => {
                       value={
                         communityData.becomeVolunteerButtonText !== undefined
                           ? communityData.becomeVolunteerButtonText
-                          : "Get Involved"
+                          : "GET INVOLVED"
                       }
                       onChange={(e) =>
                         setCommunityData({

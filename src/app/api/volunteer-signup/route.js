@@ -364,3 +364,40 @@ export async function POST(request) {
     );
   }
 }
+
+export async function DELETE(request) {
+  try {
+    const { id } = await request.json();
+
+    if (!id) {
+      return new Response(
+        JSON.stringify({ success: false, message: "id is required" }),
+        { status: 400 }
+      );
+    }
+
+    const { error } = await supabaseServer
+      .from("volunteer_signups")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error deleting volunteer signup:", error);
+      return new Response(
+        JSON.stringify({ success: false, message: "Failed to delete volunteer signup" }),
+        { status: 500 }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ success: true, message: "Volunteer signup deleted" }),
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Delete volunteer signup error:", error);
+    return new Response(
+      JSON.stringify({ success: false, message: "Internal server error" }),
+      { status: 500 }
+    );
+  }
+}

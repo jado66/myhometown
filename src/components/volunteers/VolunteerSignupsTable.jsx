@@ -47,6 +47,7 @@ import {
 import { useVolunteerSignups } from "@/hooks/use-volunteer-signups";
 import { useUser } from "@/hooks/use-user";
 import AskYesNoDialog from "@/components/util/AskYesNoDialog";
+import { toast } from "react-toastify";
 import moment from "moment";
 
 const VolunteerSignupsTable = ({ communityFilter = null }) => {
@@ -183,9 +184,11 @@ const VolunteerSignupsTable = ({ communityFilter = null }) => {
         body: JSON.stringify({ id: signupId }),
       });
       if (!response.ok) throw new Error("Failed to delete signup");
+      toast.success("Volunteer signup deleted successfully");
       refetch();
     } catch (error) {
       console.error("Error deleting signup:", error);
+      toast.error("Failed to delete volunteer signup");
     } finally {
       setDeletingSignup(null);
     }
