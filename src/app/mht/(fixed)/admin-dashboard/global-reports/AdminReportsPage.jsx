@@ -86,7 +86,8 @@ const AdminReportsPage = () => {
 
   // Date range state
   const todayStr = new Date().toISOString().split("T")[0];
-  const [startDate, setStartDate] = useState("");
+  const janFirstStr = new Date().getFullYear() + "-01-01";
+  const [startDate, setStartDate] = useState(janFirstStr);
   const [endDate, setEndDate] = useState(todayStr);
   const [dateError, setDateError] = useState("");
 
@@ -327,7 +328,7 @@ const AdminReportsPage = () => {
         // Process each section/category from community data
         if (community.classes && Array.isArray(community.classes)) {
           community.classes.forEach((category) => {
-            if (category.type === "header" || category.visibility === false)
+            if (category.type === "header")
               return;
 
             const sectionClasses = (category.classes || [])
@@ -343,7 +344,16 @@ const AdminReportsPage = () => {
                   communityName,
                 };
               })
-              .filter((c) => c.visibility !== false);
+              .filter((c) => {
+                if (!c.startDate) return false;
+                const classStart = c.startDate.slice(0, 10);
+                const classEnd = c.endDate ? c.endDate.slice(0, 10) : null;
+                // Exclude classes that started after the range end
+                if (dateRange.endDate && classStart > dateRange.endDate) return false;
+                // Exclude classes that ended before the range start
+                if (dateRange.startDate && classEnd && classEnd < dateRange.startDate) return false;
+                return true;
+              });
 
             if (sectionClasses.length > 0) {
               allSections.push({
@@ -357,6 +367,7 @@ const AdminReportsPage = () => {
           });
         }
       }
+
 
       if (allSections.length === 0) {
         setError("No classes found for selected communities");

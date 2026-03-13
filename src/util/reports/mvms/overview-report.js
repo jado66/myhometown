@@ -9,7 +9,7 @@
  *     DOS Service Hours, In-school Service Hours, Events Hours
  *
  *   Section 2 — CRC and Days of Service Statistics
- *     Location, CRC Classes Taught, CRC Students Enrolled,
+ *     Location, CRC Classes Taught, CRC Students Attended,
  *     CRC Total Attendance, DOS Community Hours, DOS Community Volunteers,
  *     DOS # Projects,
  *     (blank), Total Volunteers, Total Service Hours, (blank)
@@ -119,7 +119,7 @@ function computeOverviewStats(
     adminHours,
     crcHours,
     classCount: crcData.classCount || 0,
-    studentsEnrolled: crcData.studentsEnrolled || 0,
+    studentsAttended: crcData.uniqueStudents || 0,
     totalAttendance: crcData.totalAttendance || 0,
     dosServiceHours,
     dosCommunityHours: communityHoursNum,
@@ -151,7 +151,7 @@ function section2Row(location, stats) {
   return [
     escapeCSV(location),
     fmtNum(stats.classCount),
-    fmtNum(stats.studentsEnrolled),
+    fmtNum(stats.studentsAttended),
     fmtNum(stats.totalAttendance),
     fmtNum(stats.dosCommunityHours),
     fmtNum(stats.dosCommunityVolunteers),
@@ -171,7 +171,7 @@ function section2Row(location, stats) {
  * @param {Array} params.missionaries - missionary objects with id, community_id
  * @param {Array} params.hours - missionary_hours objects with missionary_id, total_hours, activities JSONB
  * @param {Array} params.dosProjects - DOS project form objects with community_id, actual_volunteers, actual_project_duration
- * @param {Object} params.crcStats - { [communityId]: { classCount, studentsEnrolled, totalAttendance } }
+ * @param {Object} params.crcStats - { [communityId]: { classCount, uniqueStudents, totalAttendance } }
  * @param {Object} params.dateRange - { startDate, endDate }
  * @returns {string} CSV content
  */
@@ -209,7 +209,7 @@ export function generateOverviewReportCSV({
   const section2Headers = [
     "Location",
     "CRC Classes Taught",
-    "CRC Students Enrolled",
+    "CRC Students Attended",
     "CRC Total Attendance",
     "DOS Community Hours",
     "DOS Community Volunteers",
@@ -265,11 +265,11 @@ export function generateOverviewReportCSV({
     a[1].name.localeCompare(b[1].name),
   );
 
-  const emptyCrc = { classCount: 0, studentsEnrolled: 0, totalAttendance: 0 };
+  const emptyCrc = { classCount: 0, uniqueStudents: 0, totalAttendance: 0 };
 
   const addCrc = (a, b) => ({
     classCount: (a.classCount || 0) + (b.classCount || 0),
-    studentsEnrolled: (a.studentsEnrolled || 0) + (b.studentsEnrolled || 0),
+    uniqueStudents: (a.uniqueStudents || 0) + (b.uniqueStudents || 0),
     totalAttendance: (a.totalAttendance || 0) + (b.totalAttendance || 0),
   });
 
