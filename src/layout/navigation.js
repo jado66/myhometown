@@ -89,10 +89,7 @@ export const pages = () => {
           title: "Days Of Service",
           href: rootUrl + "/admin-dashboard/days-of-service",
         },
-        // {
-        //   title: "QR Code Maker",
-        //   href: rootUrl + "/admin-dashboard/qr-code-maker",
-        // },
+        
         {
           title: "Global Reporting",
           href: rootUrl + "/admin-dashboard/global-reports",
