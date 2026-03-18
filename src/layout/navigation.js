@@ -95,7 +95,10 @@ export const pages = () => {
           href: rootUrl + "/admin-dashboard/global-reports",
           requiredPermission: "administrator",
         },
-
+        {
+          title: "QR Code Generator",
+          href: rootUrl + "/admin-dashboard/qr-code-maker",
+        }
         // {
         //   title: "Volunteer Signups",
         //   href: rootUrl + "/admin-dashboard/volunteer-signups",
