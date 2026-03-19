@@ -16,6 +16,7 @@ import {
   CircularProgress,
   Alert,
   Checkbox,
+  IconButton,
   FormControlLabel,
   Divider,
 } from "@mui/material";
@@ -26,6 +27,7 @@ import {
   Person,
   LocationOn,
   Error as ErrorIcon,
+  Close,
 } from "@mui/icons-material";
 import { supabase } from "@/util/supabase";
 import { submitVolunteerSignup } from "@/util/volunteers/volunteer-signup";
@@ -67,11 +69,13 @@ interface FormData {
 interface VolunteerSignupFormProps {
   communityId: string;
   communityName?: string;
+  onClose?: () => void;
 }
 
 export function VolunteerSignupForm({
   communityId,
   communityName,
+  onClose,
 }: VolunteerSignupFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -220,7 +224,16 @@ export function VolunteerSignupForm({
   return (
     <Box sx={{ maxWidth: 600, mx: "auto" }}>
       <Paper sx={{ p: 4, boxShadow: 0 }}>
-        <Box sx={{ mb: 4, textAlign: "center" }}>
+        <Box sx={{ mb: 4, textAlign: "center", position: "relative" }}>
+          {onClose && (
+            <IconButton
+              onClick={onClose}
+              aria-label="Close form"
+              sx={{ position: "absolute", top: 0, right: 0 }}
+            >
+              <Close />
+            </IconButton>
+          )}
           <Typography variant="h4" fontWeight="bold" gutterBottom>
             Volunteer Sign Up
           </Typography>

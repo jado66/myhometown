@@ -473,6 +473,7 @@ const Page = ({ params }) => {
                     "-",
                     " ",
                   )} Community`}
+                  onClose={() => setShowSignup(false)}
                 />
               </>
             )}

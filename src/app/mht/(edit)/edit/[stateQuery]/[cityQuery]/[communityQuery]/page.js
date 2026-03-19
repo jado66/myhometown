@@ -1364,15 +1364,7 @@ const Page = ({ params }) => {
                   gap: 2,
                 }}
               >
-                <Button
-                  variant="outlined"
-                  onClick={() => setIsEditVolunteerForm(!isEditVolunteerForm)}
-                  startIcon={!isEditVolunteerForm ? <Close /> : <Edit />}
-                  sx={{ mr: 1 }}
-                >
-                  {!isEditVolunteerForm ? "Close" : "Edit"}
-                </Button>
-
+                
                 <Button
                   variant="outlined"
                   onClick={() => toggleVolunteerSectionVisibility(false)}
