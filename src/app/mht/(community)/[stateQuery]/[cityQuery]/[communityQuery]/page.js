@@ -453,14 +453,16 @@ const Page = ({ params }) => {
                   size="large"
                   fullWidth
                 >
-                  <Typography variant="h5">Become A Volunteer</Typography>
+                  <Typography variant="h5">
+                    {community.becomeVolunteerButtonText || "GET INVOLVED"}
+                  </Typography>
                 </Button>
                 <Typography
                   variant="body"
                   sx={{ fontSize: "larger", textAlign: "center" }}
                 >
-                  Want to volunteer? Click here. We would love to have you as
-                  part of the family.
+                  {community.volunteerHelperText ||
+                    "Want to volunteer? Click here. We would love to have you as part of the family."}
                 </Typography>
               </Grid>
             ) : (
