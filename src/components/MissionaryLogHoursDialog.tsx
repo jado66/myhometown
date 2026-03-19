@@ -16,6 +16,8 @@ import {
   Alert,
   CircularProgress,
   Divider,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import moment, { type Moment } from "moment";
@@ -161,6 +163,8 @@ export default function MissionaryLogHoursDialog({
   resetForm,
   isVolunteer = true,
 }: MissionaryLogHoursDialogProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const periodStart = selectedDate?.clone().startOf("month");
   const periodEnd = selectedDate?.clone().endOf("month");
 
@@ -202,8 +206,9 @@ export default function MissionaryLogHoursDialog({
         onClose();
         resetForm();
       }}
-      maxWidth="lg"
+      maxWidth="md"
       fullWidth
+      fullScreen={isMobile}
     >
       <DialogTitle sx={{ display: "flex", alignItems: "center", pr: 8 }}>
         <Box sx={{ flexGrow: 1 }}>
@@ -220,7 +225,7 @@ export default function MissionaryLogHoursDialog({
           <Close />
         </IconButton>
       </DialogTitle>
-      <DialogContent>
+      <DialogContent sx={isMobile ? { px: 2 } : undefined}>
         <Box sx={{ pt: 1 }}>
           {/* Period Selection */}
           <Grid container spacing={2} sx={{ mb: 2 }}>
@@ -299,12 +304,12 @@ export default function MissionaryLogHoursDialog({
                       <Typography
                         variant="body2"
                         color="text.secondary"
-                        sx={{ ml: 2 }}
+                        sx={{ ml: { xs: 0, sm: 2 } }}
                       >
                         {category.description}
                       </Typography>
                     </Grid>
-                    <Grid item xs={6} sm={2} sx={{ ml: 2 }}>
+                    <Grid item xs={4} sm={2} sx={{ ml: { xs: 0, sm: 2 } }}>
                       <TextField
                         fullWidth
                         type="number"
@@ -321,7 +326,7 @@ export default function MissionaryLogHoursDialog({
                         size="small"
                       />
                     </Grid>
-                    <Grid item xs={6} sm={6}>
+                    <Grid item xs={8} sm={6}>
                       <TextField
                         fullWidth
                         label="Description (optional)"

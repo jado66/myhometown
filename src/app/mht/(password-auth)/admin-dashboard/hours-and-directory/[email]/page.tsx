@@ -428,7 +428,7 @@ export default function MissionaryDashboard({
           Back
         </Button>
         {selectedView === "hours" ? (
-          <Container maxWidth="md">
+          <Container maxWidth="md" sx={{ mt: { xs: 6, sm: 0 } }}>
             {error && (
               <Alert severity="error" sx={{ mb: 2 }}>
                 {error}
@@ -508,13 +508,13 @@ export default function MissionaryDashboard({
                     sx={{
                       px: 2,
                       py: 1,
-
+                      display: { xs: "none", sm: "block" },
                       borderBottom: 1,
                       borderColor: "divider",
                     }}
                   >
                     <Grid container alignItems="center">
-                      <Grid item xs={12} sm={3}>
+                      <Grid item sm={3} sx={{ display: { xs: "none", sm: "block" } }}>
                         <Typography variant="h6" fontWeight="bold">
                           Month
                         </Typography>
@@ -564,20 +564,20 @@ export default function MissionaryDashboard({
                             >
                               <AccordionSummary expandIcon={<ExpandMore />}>
                                 <Grid container alignItems="center" spacing={2}>
-                                  <Grid item xs={12} sm={3}>
+                                  <Grid item xs="auto" sm={3}>
                                     <Typography variant="h6">
                                       {moment(entry.period_start_date).format(
                                         "MMMM",
                                       )}
                                     </Typography>
                                   </Grid>
-                                  <Grid item xs={6} sm={2}>
+                                  <Grid item xs="auto" sm={2}>
                                     <Chip
                                       label={`${entry.total_hours} hours`}
                                       color="primary"
                                     />
                                   </Grid>
-                                  <Grid item xs={6} sm={3}>
+                                  <Grid item xs={12} sm={3}>
                                     <Typography
                                       variant="body2"
                                       color="text.secondary"
@@ -589,9 +589,11 @@ export default function MissionaryDashboard({
                                   </Grid>
                                   <Grid
                                     item
-                                    xs={4}
                                     sm={4}
-                                    sx={{ textAlign: "right" }}
+                                    sx={{
+                                      textAlign: "right",
+                                      display: { xs: "none", sm: "block" },
+                                    }}
                                   >
                                     <IconButton
                                       size="small"
@@ -617,7 +619,7 @@ export default function MissionaryDashboard({
                               <AccordionDetails
                                 sx={{ bgcolor: "grey.50", p: 0 }}
                               >
-                                <Table size="small">
+                                <Table size="small" sx={{ mb: { xs: 0, sm: 0 } }}>
                                   <TableHead>
                                     <TableRow>
                                       <TableCell sx={{ fontWeight: "bold" }}>
@@ -676,6 +678,32 @@ export default function MissionaryDashboard({
                                       ))}
                                   </TableBody>
                                 </Table>
+                                <Box
+                                  sx={{
+                                    display: { xs: "flex", sm: "none" },
+                                    justifyContent: "flex-end",
+                                    gap: 1,
+                                    p: 1.5,
+                                    borderTop: 1,
+                                    borderColor: "divider",
+                                  }}
+                                >
+                                  <Button
+                                    size="small"
+                                    startIcon={<Edit />}
+                                    onClick={() => handleEdit(entry.id)}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    size="small"
+                                    color="error"
+                                    startIcon={<Delete />}
+                                    onClick={() => handleOpenDeleteDialog(entry.id)}
+                                  >
+                                    Delete
+                                  </Button>
+                                </Box>
                               </AccordionDetails>
                             </Accordion>
                             {index !== arr.length - 1 && <Divider />}
