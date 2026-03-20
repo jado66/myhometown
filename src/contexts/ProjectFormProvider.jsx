@@ -169,15 +169,9 @@ export function ProjectFormProvider({
       !isBudgetAdmin &&
       (formData.budget_estimates || formData.homeowner_ability)
     ) {
-      const updatedFormData = {
-        ...formData,
-        budget_hidden: true,
-      };
       handleInputChange("budget_hidden", true);
-      setFormData(updatedFormData);
-      // Save the hidden state to the database
     }
-  }, [formData, isBudgetAdmin, setFormData, updateProjectForm, formId]);
+  }, [formData, isBudgetAdmin, handleInputChange]);
 
   const initializeProjectForm = useCallback(
     async (formId) => {

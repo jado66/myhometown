@@ -208,23 +208,25 @@ export const useDaysOfServiceProjectForm = ({
   };
 
   const handleInputChange = (field: keyof ProjectFormData, value: any) => {
-    const newFormData = {
-      ...formData,
-      [field]: value,
-    };
-
-    setFormData(newFormData);
-    debouncedSave(newFormData);
+    setFormData((prev) => {
+      const newFormData = {
+        ...prev,
+        [field]: value,
+      };
+      debouncedSave(newFormData);
+      return newFormData;
+    });
   };
 
   const handleMultipleInputChange = (inputs: Partial<ProjectFormData>) => {
-    const newFormData = {
-      ...formData,
-      ...inputs,
-    };
-
-    setFormData(newFormData);
-    debouncedSave(newFormData);
+    setFormData((prev) => {
+      const newFormData = {
+        ...prev,
+        ...inputs,
+      };
+      debouncedSave(newFormData);
+      return newFormData;
+    });
   };
 
   const addCollaborator = (collaborator: {
