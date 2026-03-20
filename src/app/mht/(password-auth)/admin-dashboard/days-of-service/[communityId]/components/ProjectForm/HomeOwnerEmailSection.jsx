@@ -40,15 +40,15 @@ const HomeOwnerEmailSection = () => {
       label: `Property Owner 2 Email`,
     });
   }
-  if (formData.project_development_couple_email1) {
+  if (formData.project_developer_email1) {
     emailOptions.push({
       value: formData.project_developer_email1,
       label: `Project Developer Email`,
     });
   }
-  if (formData.project_development_couple_email2) {
+  if (formData.project_developer_email2) {
     emailOptions.push({
-      value: formData.project_developer_phone2,
+      value: formData.project_developer_email2,
       label: `Project Developer Email 2`,
     });
   }

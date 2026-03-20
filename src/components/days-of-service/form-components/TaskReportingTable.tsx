@@ -92,9 +92,11 @@ const TaskReportingTable = ({
     onChange(newTasks);
   };
 
-  const handleRemovePhoto = (taskIndex: number, imageIndex: number) => {
+  const handleRemovePhoto = (taskIndex: number, type: "before" | "during" | "after") => {
     const newTasks = [...taskList];
-    newTasks[taskIndex].images.splice(imageIndex, 1);
+    newTasks[taskIndex].images = newTasks[taskIndex].images.filter(
+      (img) => img.type !== type
+    );
     setTaskList(newTasks);
     onChange(newTasks);
   };
@@ -200,7 +202,7 @@ interface ImageCellProps {
     type: "before" | "during" | "after",
     url: string
   ) => void;
-  onRemove: (taskIndex: number, imageIndex: number) => void;
+  onRemove: (taskIndex: number, type: "before" | "during" | "after") => void;
 }
 
 const ImageCell = ({
@@ -211,10 +213,6 @@ const ImageCell = ({
   onUpload,
   onRemove,
 }: ImageCellProps) => {
-  // For the delete functionality, we just need a valid index to identify the image
-  // when there is an image, we'll pass the taskIndex itself
-  const imageIndex = image ? taskIndex : -1;
-
   return (
     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
       {image ? (
@@ -243,7 +241,7 @@ const ImageCell = ({
                 right: 0,
                 backgroundColor: "rgba(255,255,255,0.7)",
               }}
-              onClick={() => onRemove(taskIndex, imageIndex)}
+              onClick={() => onRemove(taskIndex, type)}
             >
               <Delete fontSize="small" />
             </IconButton>

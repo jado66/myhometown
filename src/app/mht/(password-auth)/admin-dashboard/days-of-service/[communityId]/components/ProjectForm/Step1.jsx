@@ -300,7 +300,7 @@ const Step1 = ({ date }) => {
           <FormControlLabel
             control={
               <Checkbox
-                checked={formData.signature_text}
+                checked={formData.signature_image ? true : false}
                 // readonly
                 disabled
               />
