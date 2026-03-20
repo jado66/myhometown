@@ -88,16 +88,12 @@ America and a past president of the Brigham Young University Law School Alumni
 Association.`,
   },
   {
-    name: "Paul Werner",
-    position: "Secretary",
-    avatar: "/images/board/Paul Werner.jpg",
-    bio: `Paul is the Senior Vice President and Senior Counsel at Synchrony Financial, and
-Senior Counsel for the Synchrony Foundation. He earned his J.D. from the J. Reuben
-Clark Law School at Brigham Young University and his B.A. from the University of
-California, Los Angeles. Paul is a director and past chair of Junior Achievement of Utah
-and has mentored high-potential, at-risk students through the Synchrony/Junior
-Achievement of Utah "High Impact Program."`,
+    name: "Rick Lake",
+    avatar: "/images/board/Rick Lake.jpg",
+    bio: ``,
+    position: "Treasurer",
   },
+  
 ];
 
 export const boardOfDirectors = [
@@ -222,20 +218,6 @@ teaches as an adjunct instructor at the University of Utah Health Huntsman Menta
 Health Institute. Dr. Teitter is a dedicated wife and mother of two daughters.`,
   },
   {
-    name: "Dr. Jared Theurer",
-    avatar: "/images/board/Jared Theurer.jpg",
-    bio: `Dr. Theurer is the owner and practicing general dentist at The Sugar House Dentist in
-Salt Lake City, Utah. He is an Adjunct Instructor at the University of Utah School of
-Dentistry. Jared graduated with highest honors from the University of the Pacific Arthur
-
-A. Dugoni School of Dentistry and with honors from the University of Utah. He co-
-founded the Rivers for Hope International Family Health Care Initiative and leads dental
-
-mission outreach for the Smiles for Life Foundation. Jared is a member of several
-dental associations. He’s an avid fly fisherman and father of five children with the love
-of his life Heather Bernhisel Theurer.`,
-  },
-  {
     name: "Shaleane Gee",
     avatar: "/images/board/Shaleane Gee.jpg",
     bio: `Shaleane Gee is the Chief Officer of Culture + Community at Zions Bank, with expertise
@@ -257,15 +239,15 @@ of Chicago and a BA and MA from the University of Utah.`,
     avatar: "/images/board/Paul Taggart.jpg",
     bio: ``,
   },
-
-  {
-    name: "Rick Lake",
-    avatar: "/images/board/Rick Lake.jpg",
-    bio: ``,
-  },
   {
     name: "Sydnee Dickson",
     avatar: "/images/board/Sydnee Dickson.jpg",
     bio: ``,
   },
+  {
+    name: "Taymour Semnani",
+    avatar: "/images/board/Taymour Semnani.jpeg",
+    bio: ``,
+  },
+  
 ];

@@ -201,24 +201,28 @@ const DaysOfServicePage = ({
                 </>
               )}
 
-              <VolunteersNeededSection
-                projects={filteredProjectSummary}
-                daysOfService={filteredDaysOfService}
-                responses={filteredResponses || []}
-              />
+              {((daysOfService || []).length <= 1 || localDayId) && (
+                <>
+                  <VolunteersNeededSection
+                    projects={filteredProjectSummary}
+                    daysOfService={filteredDaysOfService}
+                    responses={filteredResponses || []}
+                  />
 
-              <Divider sx={{ my: 4 }} />
+                  <Divider sx={{ my: 4 }} />
 
-              <VolunteerSignupsSection
-                formId={community.volunteerSignUpId}
-                responses={filteredResponses}
-                formConfig={formConfig}
-                onViewResponse={handleViewResponse}
-                onDeleteResponse={handleDeleteClick}
-                daysOfService={daysOfService}
-                projectsMap={projectsMap}
-                isLoading={!responsesLoaded}
-              />
+                  <VolunteerSignupsSection
+                    formId={community.volunteerSignUpId}
+                    responses={filteredResponses}
+                    formConfig={formConfig}
+                    onViewResponse={handleViewResponse}
+                    onDeleteResponse={handleDeleteClick}
+                    daysOfService={daysOfService}
+                    projectsMap={projectsMap}
+                    isLoading={!responsesLoaded}
+                  />
+                </>
+              )}
             </>
           )}
 

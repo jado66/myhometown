@@ -19,6 +19,8 @@ import {
   FormControlLabel,
   Divider,
   Tooltip,
+  TextField,
+  Alert,
 } from "@mui/material";
 import {
   Close,
@@ -39,12 +41,7 @@ import {
   generateStudentAttendanceReportCSV,
 } from "@/util/reports/classes/report-helper-functions";
 
-const getDefaultDateRange = () => ({
-  startDate: new Date().getFullYear() + "-01-01",
-  endDate: new Date().toISOString().split("T")[0],
-});
-
-const handleGenerateAttendanceReport = (semester) => {
+const handleGenerateAttendanceReport = (semester, dateRange) => {
   // Generate safe filename from semester title
   const safeTitle = semester.title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
   const fileName = `${safeTitle}_attendance_report_${
@@ -52,12 +49,12 @@ const handleGenerateAttendanceReport = (semester) => {
   }.csv`;
 
   // Generate and download the CSV with detailed attendance statistics
-  const csvContent = generateDetailedCSV(semester, getDefaultDateRange());
+  const csvContent = generateDetailedCSV(semester, dateRange);
   downloadCSV(csvContent, fileName);
 };
 
-const handleGenerateCapacityReport = (semester) => {
-  const csvContent = generateCapacityReportCSV(semester, getDefaultDateRange());
+const handleGenerateCapacityReport = (semester, dateRange) => {
+  const csvContent = generateCapacityReportCSV(semester, dateRange);
   const today = new Date();
   const dateStr = `${today.getFullYear()}-${String(
     today.getMonth() + 1
@@ -65,7 +62,7 @@ const handleGenerateCapacityReport = (semester) => {
   downloadCSV(csvContent, `capacity-report-${dateStr}.csv`);
 };
 
-const handleGenerateStudentAttendanceReport = (semester) => {
+const handleGenerateStudentAttendanceReport = (semester, dateRange) => {
   // Generate safe filename from semester title
   const safeTitle = semester.title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
   const fileName = `${safeTitle}_student_attendance_${
@@ -73,7 +70,7 @@ const handleGenerateStudentAttendanceReport = (semester) => {
   }.csv`;
 
   // Generate and download the CSV with student attendance data
-  const csvContent = generateStudentAttendanceReportCSV(semester, getDefaultDateRange());
+  const csvContent = generateStudentAttendanceReportCSV(semester, dateRange);
   downloadCSV(csvContent, fileName);
 };
 
@@ -86,6 +83,13 @@ const handleGenerateStudentAttendanceReport = (semester) => {
 export const ReportsDialog = ({ open, onClose, semester }) => {
   const [selectedReport, setSelectedReport] = useState("attendance");
 
+  // Date range state
+  const todayStr = new Date().toISOString().split("T")[0];
+  const janFirstStr = new Date().getFullYear() + "-01-01";
+  const [startDate, setStartDate] = useState(janFirstStr);
+  const [endDate, setEndDate] = useState(todayStr);
+  const [dateError, setDateError] = useState("");
+
   const handleReportChange = (event) => {
     setSelectedReport(event.target.value);
   };
@@ -93,22 +97,38 @@ export const ReportsDialog = ({ open, onClose, semester }) => {
   const handleGenerateReport = (e) => {
     e.stopPropagation(); // Prevent accordion from toggling
 
+    // Validate dates
+    if (endDate && endDate > todayStr) {
+      setDateError("End date cannot be in the future");
+      return;
+    }
+    if (startDate && endDate && startDate > endDate) {
+      setDateError("Start date must be before end date");
+      return;
+    }
+    setDateError("");
+
+    const dateRange = {
+      startDate: startDate || null,
+      endDate: endDate || todayStr,
+    };
+
     switch (selectedReport) {
       case "attendance":
-        handleGenerateAttendanceReport(semester);
+        handleGenerateAttendanceReport(semester, dateRange);
         break;
       case "capacity":
-        handleGenerateCapacityReport(semester);
+        handleGenerateCapacityReport(semester, dateRange);
         break;
       case "studentAttendance":
-        handleGenerateStudentAttendanceReport(semester);
+        handleGenerateStudentAttendanceReport(semester, dateRange);
         break;
       case "schedule":
-        handleGenerateAttendanceReport(semester);
+        handleGenerateAttendanceReport(semester, dateRange);
         break;
       default:
         // Default to attendance report
-        handleGenerateAttendanceReport(semester);
+        handleGenerateAttendanceReport(semester, dateRange);
     }
     onClose();
   };
@@ -348,6 +368,53 @@ export const ReportsDialog = ({ open, onClose, semester }) => {
             </Grid>
           </Grid>
         </RadioGroup>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* Date Range Section */}
+        <Typography variant="h6" gutterBottom>
+          Date Range
+        </Typography>
+        <Grid container spacing={2} sx={{ mb: 1 }}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Start Date"
+              type="date"
+              value={startDate}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                setDateError("");
+              }}
+              InputLabelProps={{ shrink: true }}
+              inputProps={{ min: "2026-01-01", max: endDate || todayStr }}
+              fullWidth
+              helperText="Earliest: Jan 1, 2026"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="End Date"
+              type="date"
+              value={endDate}
+              onChange={(e) => {
+                setEndDate(e.target.value);
+                setDateError("");
+              }}
+              InputLabelProps={{ shrink: true }}
+              inputProps={{
+                max: todayStr,
+                min: startDate || undefined,
+              }}
+              fullWidth
+              helperText="Cannot be in the future"
+            />
+          </Grid>
+          {dateError && (
+            <Grid item xs={12}>
+              <Alert severity="error">{dateError}</Alert>
+            </Grid>
+          )}
+        </Grid>
       </DialogContent>
 
       <Divider />

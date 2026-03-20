@@ -433,6 +433,31 @@ const ClassDetailTable = ({
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
+  const DEFAULT_VISIBLE_FIELDS = new Set([
+    'firstName',
+    'lastName',
+    'email',
+    'phone',
+  ]);
+
+  const DEFAULT_VISIBLE_LABELS = new Set([
+    'Age',
+  ]);
+
+  const columnVisibilityModel = useMemo(() => {
+    const model = {};
+    classData.signupForm.fieldOrder.forEach((fieldKey) => {
+      const field = getFieldConfig(fieldKey, classData.signupForm.formConfig);
+      if (isStructuralElement(field.type)) return;
+      if (!DEFAULT_VISIBLE_FIELDS.has(fieldKey) && !DEFAULT_VISIBLE_LABELS.has(field.label)) {
+        model[fieldKey] = false;
+      }
+    });
+    model.attendance = false;
+    model.createdAt = false;
+    return model;
+  }, [classData.signupForm]);
+
   const baseColumns = useMemo(
     () =>
       classData.signupForm.fieldOrder
@@ -877,6 +902,9 @@ const ClassDetailTable = ({
                     { field: classData.signupForm.fieldOrder[0], sort: "asc" },
                   ],
                 },
+                columns: {
+                  columnVisibilityModel,
+                },
               }}
             />
           </Paper>
@@ -926,6 +954,9 @@ const ClassDetailTable = ({
                           sort: "asc",
                         },
                       ],
+                    },
+                    columns: {
+                      columnVisibilityModel,
                     },
                   }}
                 />
