@@ -54,6 +54,41 @@ interface ResourceSection {
   fieldName: keyof FormData;
 }
 
+const parseResourceStringItem = (
+  value: string,
+  fallbackIndex: number
+): ResourceItem => {
+  const trimmedValue = value.trim();
+
+  try {
+    const parsed = JSON.parse(trimmedValue);
+
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      const parsedName =
+        typeof parsed.name === "string" && parsed.name.trim()
+          ? parsed.name.trim()
+          : trimmedValue;
+
+      return {
+        name: parsedName,
+        isPrepDay: Boolean(parsed.isPrepDay),
+        id:
+          typeof parsed.id === "string" && parsed.id.trim()
+            ? parsed.id
+            : `item-${fallbackIndex}-${parsedName}`,
+      };
+    }
+  } catch {
+    // Not JSON, treat as a plain text resource item.
+  }
+
+  return {
+    name: trimmedValue,
+    isPrepDay: false,
+    id: `item-${fallbackIndex}-${trimmedValue}`,
+  };
+};
+
 const DragHandle = () => (
   <SvgIcon
     sx={{
@@ -133,7 +168,7 @@ export function ProjectResources({
     if (Array.isArray(items)) {
       return items.map((item, index) => {
         if (typeof item === "string") {
-          return { name: item, isPrepDay: false, id: `item-${index}-${item}` };
+          return parseResourceStringItem(item, index);
         }
         // Ensure each item has an ID
         return { ...item, id: item.id || `item-${index}-${item.name}` };
@@ -145,11 +180,7 @@ export function ProjectResources({
         if (Array.isArray(parsed)) {
           return parsed.map((item, index) => {
             if (typeof item === "string") {
-              return {
-                name: item,
-                isPrepDay: false,
-                id: `item-${index}-${item}`,
-              };
+              return parseResourceStringItem(item, index);
             }
             return { ...item, id: item.id || `item-${index}-${item.name}` };
           });
@@ -353,12 +384,13 @@ export function ProjectResources({
                               ? "rgba(144, 249, 153, 0.2)"
                               : "transparent",
                             borderRadius: 1,
-                            border:
-                              !isLocked && "1px dashed rgba(0, 0, 0, 0.12)",
+                            border: !isLocked
+                              ? "1px dashed rgba(0, 0, 0, 0.12)"
+                              : undefined,
                           }}
                         >
                           {regularItems.length > 0
-                            ? items.map((item, index) => (
+                            ? regularItems.map((item, index) => (
                                 <Draggable
                                   key={item.id}
                                   draggableId={item.id}
@@ -500,9 +532,9 @@ export function ProjectResources({
                                 ? "rgba(144, 249, 153, 0.3)"
                                 : "rgba(144, 249, 153, 0.2)",
                               borderRadius: 1,
-                              border:
-                                !isLocked &&
-                                "1px dashed rgba(144, 202, 249, 0.5)",
+                              border: !isLocked
+                                ? "1px dashed rgba(144, 202, 249, 0.5)"
+                                : undefined,
                             }}
                           >
                             <Typography
@@ -647,7 +679,9 @@ export function ProjectResources({
                       p: 1,
                       minHeight: 40,
                       borderRadius: 1,
-                      border: !isLocked && "1px dashed rgba(0, 0, 0, 0.12)",
+                      border: !isLocked
+                        ? "1px dashed rgba(0, 0, 0, 0.12)"
+                        : undefined,
                     }}
                   >
                     {items.length > 0
