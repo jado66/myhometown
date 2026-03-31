@@ -870,6 +870,28 @@ const ClassDetailTable = ({
         )}
       </Box>
 
+      {/* Small screen rotate message */}
+      <Box
+        sx={{
+          display: { xs: "flex", md: "none" },
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          py: 6,
+          gap: 1.5,
+          textAlign: "center",
+        }}
+      >
+        <Typography variant="h6">↻ Rotate Your Screen</Typography>
+        <Typography variant="body2" color="text.secondary">
+          Please rotate your device to landscape mode to view the class roster
+          table.
+        </Typography>
+      </Box>
+
+      {/* Tables — hidden on small screens */}
+      <Box sx={{ display: { xs: "none", md: "block" } }}>
+
       {/* Regular enrollment table */}
       <div
         role="tabpanel"
@@ -965,6 +987,8 @@ const ClassDetailTable = ({
           )}
         </div>
       )}
+
+      </Box>{/* end tables wrapper */}
 
       {/* Student Form Dialog */}
       <StudentFormDialog
