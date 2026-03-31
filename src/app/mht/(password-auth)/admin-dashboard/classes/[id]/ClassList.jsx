@@ -23,7 +23,9 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  useMediaQuery,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CategoryIcon from "@mui/icons-material/Category";
@@ -441,6 +443,8 @@ export default function ClassList({
   viewType,
   refetchCommunityData,
 }) {
+  const theme = useTheme();
+  const isSmallDevice = useMediaQuery(theme.breakpoints.down("sm"));
   const [showHidden, setShowHidden] = useState(false);
   const {
     updateClass,
@@ -679,6 +683,7 @@ export default function ClassList({
         <Dialog
           open={showClassDetails}
           onClose={() => setShowClassDetails(false)}
+          fullScreen={isSmallDevice}
           maxWidth="xl"
           fullWidth
         >
@@ -787,6 +792,7 @@ export default function ClassList({
       <Dialog
         open={showClassDetails}
         onClose={() => setShowClassDetails(false)}
+        fullScreen={isSmallDevice}
         maxWidth="xl"
         fullWidth
       >

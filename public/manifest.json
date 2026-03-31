@@ -1,9 +1,9 @@
 {
-  "name": "myHometown",
-  "short_name": "myHometown",
+  "name": "myHometown Hours",
+  "short_name": "myHometown Hours",
   "description": "Your local community.",
   "prefer_related_applications": false,
-  "start_url": "/mht/admin-dashboard/hours-and-directory",
+  "start_url": "/admin-dashboard/hours-and-directory",
   "display": "standalone",
   "orientation": "portrait",
   "categories": ["community", "lifestyle"],

@@ -333,7 +333,15 @@ export default function MissionaryDashboard({
   // Selection Screen
   if (selectedView === "selection") {
     return (
-      <Box sx={{ minHeight: "100vh", backgroundColor: "#f5f5f5", py: 8 }}>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          backgroundColor: "#f5f5f5",
+          py: 8,
+          // Keep bottom content clear of iOS safe-area and fixed footer overlays.
+          pb: { xs: "calc(env(safe-area-inset-bottom) + 96px)", sm: 8 },
+        }}
+      >
         <Container maxWidth="md">
           <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
             <Button
@@ -430,7 +438,14 @@ export default function MissionaryDashboard({
           </Grid>
 
           {isInstallable && (
-            <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                mt: 4,
+                mb: { xs: 2, sm: 0 },
+              }}
+            >
               <Button
                 variant="outlined"
                 startIcon={<GetApp />}
