@@ -3,7 +3,7 @@
   "short_name": "myHometown",
   "description": "Your local community.",
   "prefer_related_applications": false,
-  "start_url": "/admin-dashboard",
+  "start_url": "/mht/admin-dashboard/hours-and-directory",
   "display": "standalone",
   "orientation": "portrait",
   "categories": ["community", "lifestyle"],

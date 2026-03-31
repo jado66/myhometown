@@ -46,6 +46,8 @@ import {
   PunchClock,
   ArrowBack,
   GetApp,
+  IosShare,
+  Close,
 } from "@mui/icons-material";
 import MissionaryLogHoursDialog from "@/components/MissionaryLogHoursDialog";
 import moment, { type Moment } from "moment";
@@ -84,7 +86,8 @@ export default function MissionaryDashboard({
 }) {
   const router = useRouter();
   const email = decodeURIComponent(params.email);
-  const { isInstallable, promptInstall } = useInstallPWA();
+  const { isInstallable, isIOS, promptInstall } = useInstallPWA();
+  const [iosDialogOpen, setIosDialogOpen] = useState(false);
   const [selectedView, setSelectedView] = useState<
     "selection" | "hours" | "directory"
   >("selection");
@@ -139,6 +142,7 @@ export default function MissionaryDashboard({
 
   useEffect(() => {
     if (email) {
+      localStorage.setItem("mht-missionary-email", email);
       fetchDashboardData();
     }
   }, [email]);
@@ -335,7 +339,10 @@ export default function MissionaryDashboard({
             <Button
               variant="outlined"
               color="secondary"
-              onClick={() => router.push("/mht/admin-dashboard/hours-and-directory")}
+              onClick={() => {
+                localStorage.removeItem("mht-missionary-email");
+                router.push("/mht/admin-dashboard/hours-and-directory");
+              }}
             >
               Logout
             </Button>
@@ -427,13 +434,47 @@ export default function MissionaryDashboard({
               <Button
                 variant="outlined"
                 startIcon={<GetApp />}
-                onClick={promptInstall}
+                onClick={isIOS ? () => setIosDialogOpen(true) : promptInstall}
                 size="large"
               >
                 Install App
               </Button>
             </Box>
           )}
+
+          {/* iOS Install Instructions Dialog */}
+          <Dialog
+            open={iosDialogOpen}
+            onClose={() => setIosDialogOpen(false)}
+            PaperProps={{ sx: { borderRadius: 3, maxWidth: 340 } }}
+          >
+            <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pb: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <GetApp />
+                <Typography variant="h6" fontWeight="bold">Install App</Typography>
+              </Box>
+              <IconButton onClick={() => setIosDialogOpen(false)} size="small">
+                <Close />
+              </IconButton>
+            </DialogTitle>
+            <DialogContent>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Install the app on your device to easily access it anytime. No app store. No download. No hassle.
+              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                  <Typography variant="body1" fontWeight="bold">1.</Typography>
+                  <Typography variant="body1">Tap on</Typography>
+                  <IosShare sx={{ color: "primary.main", fontSize: 20 }} />
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                  <Typography variant="body1" fontWeight="bold">2.</Typography>
+                  <Typography variant="body1">Select</Typography>
+                  <Chip label="Add to Home Screen" size="small" variant="outlined" />
+                </Box>
+              </Box>
+            </DialogContent>
+          </Dialog>
         </Container>
       </Box>
     );

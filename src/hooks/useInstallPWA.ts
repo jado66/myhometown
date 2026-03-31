@@ -8,9 +8,24 @@ interface BeforeInstallPromptEvent extends Event {
 
 export function useInstallPWA() {
   const [isInstallable, setIsInstallable] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
+    const ua = window.navigator.userAgent;
+    const ios = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
+    const standalone =
+      ("standalone" in window.navigator && (window.navigator as any).standalone) ||
+      window.matchMedia("(display-mode: standalone)").matches;
+
+    setIsIOS(ios);
+    setIsStandalone(standalone);
+
+    if (ios && !standalone) {
+      setIsInstallable(true);
+    }
+
     const handler = (e: Event) => {
       e.preventDefault();
       deferredPrompt.current = e as BeforeInstallPromptEvent;
@@ -41,5 +56,5 @@ export function useInstallPWA() {
     deferredPrompt.current = null;
   };
 
-  return { isInstallable, promptInstall };
+  return { isInstallable, isIOS, isStandalone, promptInstall };
 }
