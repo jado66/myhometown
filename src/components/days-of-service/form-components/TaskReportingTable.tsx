@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import UploadImage from "@/components/util/UploadImage";
+import { LightBox } from "@/components/LightBox";
 
 interface TaskImage {
   type: "before" | "during" | "after";
@@ -41,6 +42,7 @@ const TaskReportingTable = ({
   isLocked = false,
   value,
 }: TaskReportingTableProps) => {
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   // Initialize with value first, then fallback to tasks, and ensure images array exists
   const [taskList, setTaskList] = useState<Task[]>(() => {
     if (value) {
@@ -108,6 +110,7 @@ const TaskReportingTable = ({
 
   return (
     <Box>
+      <LightBox image={lightboxImage} closeImageDialog={() => setLightboxImage(null)} />
       <TableContainer component={Paper}>
         <Table size="small">
           <TableHead>
@@ -157,6 +160,7 @@ const TaskReportingTable = ({
                     isLocked={isLocked}
                     onUpload={handlePhotoUpload}
                     onRemove={handleRemovePhoto}
+                    onOpenLightbox={setLightboxImage}
                   />
                 </TableCell>
 
@@ -169,6 +173,7 @@ const TaskReportingTable = ({
                     isLocked={isLocked}
                     onUpload={handlePhotoUpload}
                     onRemove={handleRemovePhoto}
+                    onOpenLightbox={setLightboxImage}
                   />
                 </TableCell>
 
@@ -181,6 +186,7 @@ const TaskReportingTable = ({
                     isLocked={isLocked}
                     onUpload={handlePhotoUpload}
                     onRemove={handleRemovePhoto}
+                    onOpenLightbox={setLightboxImage}
                   />
                 </TableCell>
               </TableRow>
@@ -203,6 +209,7 @@ interface ImageCellProps {
     url: string
   ) => void;
   onRemove: (taskIndex: number, type: "before" | "during" | "after") => void;
+  onOpenLightbox: (url: string) => void;
 }
 
 const ImageCell = ({
@@ -212,6 +219,7 @@ const ImageCell = ({
   isLocked,
   onUpload,
   onRemove,
+  onOpenLightbox,
 }: ImageCellProps) => {
   return (
     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
@@ -230,7 +238,9 @@ const ImageCell = ({
               width: "100%",
               height: "100%",
               objectFit: "cover",
+              cursor: "pointer",
             }}
+            onClick={() => onOpenLightbox(image.url)}
           />
           {!isLocked && (
             <IconButton

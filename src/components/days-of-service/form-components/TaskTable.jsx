@@ -21,8 +21,10 @@ import {
 } from "@mui/material";
 import { Add, Delete } from "@mui/icons-material";
 import UploadImage from "@/components/util/UploadImage";
+import { LightBox } from "@/components/LightBox";
 
 const TaskTable = ({ value, onChange, hasPrepDay = false, isLocked }) => {
+  const [lightboxImage, setLightboxImage] = useState(null);
   const [tasks, setTasks] = useState(
     value?.tasks || [
       {
@@ -252,6 +254,7 @@ const TaskTable = ({ value, onChange, hasPrepDay = false, isLocked }) => {
 
   return (
     <Box>
+      <LightBox image={lightboxImage} closeImageDialog={() => setLightboxImage(null)} />
       <TableContainer component={Paper}>
         <Table size="small">
           <TableHead>
@@ -388,7 +391,9 @@ const TaskTable = ({ value, onChange, hasPrepDay = false, isLocked }) => {
                                       width: "100%",
                                       height: "100%",
                                       objectFit: "cover",
+                                      cursor: "pointer",
                                     }}
+                                    onClick={() => setLightboxImage(photo)}
                                   />
                                   {!isLocked && (
                                     <IconButton
