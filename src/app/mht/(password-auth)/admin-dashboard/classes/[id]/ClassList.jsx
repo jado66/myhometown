@@ -444,7 +444,7 @@ export default function ClassList({
   refetchCommunityData,
 }) {
   const theme = useTheme();
-  const isSmallDevice = useMediaQuery(theme.breakpoints.down("sm"));
+  const isSmallDevice = useMediaQuery(theme.breakpoints.down("md"));
   const [showHidden, setShowHidden] = useState(false);
   const {
     updateClass,

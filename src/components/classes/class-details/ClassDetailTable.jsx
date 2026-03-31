@@ -873,7 +873,7 @@ const ClassDetailTable = ({
       {/* Small screen rotate message */}
       <Box
         sx={{
-          display: { xs: "flex", md: "none" },
+          display: { xs: "flex", sm: "none" },
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
@@ -890,7 +890,7 @@ const ClassDetailTable = ({
       </Box>
 
       {/* Tables — hidden on small screens */}
-      <Box sx={{ display: { xs: "none", md: "block" } }}>
+      <Box sx={{ display: { xs: "none", sm: "block" } }}>
 
       {/* Regular enrollment table */}
       <div
