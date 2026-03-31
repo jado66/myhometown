@@ -45,10 +45,12 @@ import {
   CalendarMonth,
   PunchClock,
   ArrowBack,
+  GetApp,
 } from "@mui/icons-material";
 import MissionaryLogHoursDialog from "@/components/MissionaryLogHoursDialog";
 import moment, { type Moment } from "moment";
 import MissionaryDirectory from "../MissionaryDirectory";
+import { useInstallPWA } from "@/hooks/useInstallPWA";
 
 interface DetailedActivity {
   id: string;
@@ -82,6 +84,7 @@ export default function MissionaryDashboard({
 }) {
   const router = useRouter();
   const email = decodeURIComponent(params.email);
+  const { isInstallable, promptInstall } = useInstallPWA();
   const [selectedView, setSelectedView] = useState<
     "selection" | "hours" | "directory"
   >("selection");
@@ -328,6 +331,24 @@ export default function MissionaryDashboard({
     return (
       <Box sx={{ minHeight: "100vh", backgroundColor: "#f5f5f5", py: 8 }}>
         <Container maxWidth="md">
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => router.push("/mht/admin-dashboard/hours-and-directory")}
+            >
+              Logout
+            </Button>
+          </Box>
+
+            <Typography
+            variant="h6"
+            align="center"
+            gutterBottom
+            fontWeight="bold"
+          >
+            Hello {email}!
+          </Typography>
           <Typography
             variant="h4"
             align="center"
@@ -400,6 +421,19 @@ export default function MissionaryDashboard({
               </Card>
             </Grid>
           </Grid>
+
+          {isInstallable && (
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+              <Button
+                variant="outlined"
+                startIcon={<GetApp />}
+                onClick={promptInstall}
+                size="large"
+              >
+                Install App
+              </Button>
+            </Box>
+          )}
         </Container>
       </Box>
     );

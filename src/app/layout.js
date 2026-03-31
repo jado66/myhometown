@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 const inter = Inter({ subsets: ["latin"] });
 import { Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import RegisterSW from "@/components/RegisterSW";
 
 export const metadata = {
   title: {
@@ -49,6 +50,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className}>
+        <RegisterSW />
         <ToastContainer />
         {children}
         <Analytics />

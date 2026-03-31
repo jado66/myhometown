@@ -50,13 +50,13 @@ async function fetchAllMissionaries() {
  */
 function getMonthBoundaries() {
   const now = new Date();
-  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const monthName = prev.toLocaleString("en-US", { month: "long" });
-  const year = prev.getFullYear();
-  const month = prev.getMonth() + 1;
+  const monthName = now.toLocaleString("en-US", { month: "long" });
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
   const periodStartDate = `${year}-${String(month).padStart(2, "0")}-01`;
-  const currentMonthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
-  return { monthName, periodStartDate, currentMonthStart };
+  const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const nextMonthStart = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-01`;
+  return { monthName, periodStartDate, nextMonthStart };
 }
 
 /**
@@ -64,14 +64,14 @@ function getMonthBoundaries() {
  * Returns { hours, logsCount }.
  */
 async function getHoursForMissionary(missionaryId) {
-  const { periodStartDate, currentMonthStart } = getMonthBoundaries();
+  const { periodStartDate, nextMonthStart } = getMonthBoundaries();
 
   const { data: hoursDataArray, error: hoursError } = await supabaseServer
     .from("missionary_hours")
     .select("total_hours")
     .eq("missionary_id", missionaryId)
     .gte("period_start_date", periodStartDate)
-    .lt("period_start_date", currentMonthStart);
+      .lt("period_start_date", nextMonthStart);
 
   if (hoursError) {
     console.error(
@@ -96,7 +96,7 @@ async function getHoursForMissionary(missionaryId) {
  * Returns a Map<missionaryId, { hours, logsCount }>.
  */
 async function getHoursForAllMissionaries(missionaryIds) {
-  const { periodStartDate, currentMonthStart } = getMonthBoundaries();
+  const { periodStartDate, nextMonthStart } = getMonthBoundaries();
   const hoursMap = new Map();
 
   // Initialize all to zero
@@ -118,7 +118,7 @@ async function getHoursForAllMissionaries(missionaryIds) {
         .select("missionary_id, total_hours")
         .in("missionary_id", idChunk)
         .gte("period_start_date", periodStartDate)
-        .lt("period_start_date", currentMonthStart)
+        .lt("period_start_date", nextMonthStart)
         .range(from, from + BATCH_SIZE - 1);
 
       if (error) {

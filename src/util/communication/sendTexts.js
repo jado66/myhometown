@@ -2,10 +2,16 @@ import twilio from "twilio";
 import redis from "@/util/redis/redis";
 import { v4 as uuidv4 } from "uuid";
 
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+function getTwilioClient() {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  if (!accountSid || !authToken) {
+    throw new Error(
+      "Twilio credentials are not configured. Set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN in your environment."
+    );
+  }
+  return twilio(accountSid, authToken);
+}
 
 // Helper to generate Redis keys
 const getStreamKey = (messageId) => `stream:${messageId}`;
@@ -62,7 +68,7 @@ async function sendTextWithStream({
     }
 
     // Send message through Twilio
-    const messageResponse = await client.messages.create(messageOptions);
+    const messageResponse = await getTwilioClient().messages.create(messageOptions);
 
     // Don't send the success status here - let the route handle it
     // Just return the result
@@ -94,7 +100,7 @@ async function sendSimpleText({ message, phone, name }) {
         ? `+1${formattedPhone}`
         : `+${formattedPhone}`;
 
-    const messageResponse = await client.messages.create({
+    const messageResponse = await getTwilioClient().messages.create({
       body: message,
       to: toNumber,
       from: process.env.TWILIO_PHONE_NUMBER,

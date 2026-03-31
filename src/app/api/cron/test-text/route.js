@@ -7,12 +7,11 @@ export const runtime = "nodejs";
 
 // Helper to get preview message and missionary info for an email
 async function getPreviewForEmail(email) {
-  // Get previous month info
+  // Get current month info
   const now = new Date();
-  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const monthName = prev.toLocaleString("en-US", { month: "long" });
-  const year = prev.getFullYear();
-  const month = prev.getMonth() + 1; // 1-based month
+  const monthName = now.toLocaleString("en-US", { month: "long" });
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // 1-based month
   const periodStartDate = `${year}-${String(month).padStart(2, "0")}-01`;
 
   // Fetch missionary by email
@@ -36,13 +35,14 @@ async function getPreviewForEmail(email) {
 
   if (missionary) {
     // Fetch all hours for current month and sum them
-    const currentMonthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+    const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const nextMonthStart = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-01`;
     const { data: hoursDataArray, error: hoursError } = await supabaseServer
       .from("missionary_hours")
       .select("total_hours")
       .eq("missionary_id", missionary.id)
       .gte("period_start_date", periodStartDate)
-      .lt("period_start_date", currentMonthStart);
+      .lt("period_start_date", nextMonthStart);
 
     if (hoursError) {
       console.error(
