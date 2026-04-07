@@ -201,7 +201,10 @@ export async function POST(request: NextRequest) {
             // Include the full end day by using less-than the next day
             const endPlusOne = new Date(endDate);
             endPlusOne.setDate(endPlusOne.getDate() + 1);
-            query = query.lt("created_at", endPlusOne.toISOString().split("T")[0]);
+            query = query.lt(
+              "created_at",
+              endPlusOne.toISOString().split("T")[0],
+            );
           }
 
           const { data, error } = await query;

@@ -103,8 +103,7 @@ function computeOverviewStats(
   const loggedCount = missionaries.filter((m) =>
     missionaryIdsWithHours.has(m.id),
   ).length;
-  const pctLogged =
-    mvCount > 0 ? Math.round((loggedCount / mvCount) * 100) : 0;
+  const pctLogged = mvCount > 0 ? Math.round((loggedCount / mvCount) * 100) : 0;
 
   const dosVolNum = dosProjects.reduce(
     (sum, p) => sum + (parseFloat(p.actual_volunteers) || 0),
@@ -189,7 +188,9 @@ export function generateOverviewReportCSV({
     const [year, month, day] = dateStr.split("-").map(Number);
     return new Date(year, month - 1, day);
   };
-  const end = dateRange.endDate ? parseLocalDate(dateRange.endDate) : new Date();
+  const end = dateRange.endDate
+    ? parseLocalDate(dateRange.endDate)
+    : new Date();
   const start = dateRange.startDate
     ? parseLocalDate(dateRange.startDate)
     : new Date(end.getFullYear(), 0, 1);
@@ -367,7 +368,13 @@ export function generateOverviewReportCSV({
 
   const utahStats =
     utahMissionaries.length > 0
-      ? computeOverviewStats(utahMissionaries, utahHoursEntries, utahDosProjects, utahCrc, elapsedMonths)
+      ? computeOverviewStats(
+          utahMissionaries,
+          utahHoursEntries,
+          utahDosProjects,
+          utahCrc,
+          elapsedMonths,
+        )
       : null;
 
   const totalStats = computeOverviewStats(
@@ -382,7 +389,9 @@ export function generateOverviewReportCSV({
   const rows = [];
 
   // Title & date range
-  const dateLabel = escapeCSV(`from  ${formatDateLong(start)} to ${formatDateLong(end)}`);
+  const dateLabel = escapeCSV(
+    `from  ${formatDateLong(start)} to ${formatDateLong(end)}`,
+  );
   rows.push(labelRow("myHometown Overview Report"));
   rows.push(labelRow(dateLabel));
   rows.push(EMPTY_ROW);
