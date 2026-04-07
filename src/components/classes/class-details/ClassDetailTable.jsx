@@ -21,6 +21,7 @@ import AddIcon from "@mui/icons-material/Add";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import HourglassTopIcon from "@mui/icons-material/HourglassTop";
 import { toast } from "react-toastify";
 
 // Import utility functions
@@ -61,6 +62,9 @@ const ClassDetailTable = ({
   const [promoteDialogOpen, setPromoteDialogOpen] = useState(false);
   const [studentToPromote, setStudentToPromote] = useState(null);
   const [promoteLoading, setPromoteLoading] = useState(false);
+  const [demoteDialogOpen, setDemoteDialogOpen] = useState(false);
+  const [studentToDemote, setStudentToDemote] = useState(null);
+  const [demoteLoading, setDemoteLoading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
 
   // Transfer-related state
@@ -230,6 +234,54 @@ const ClassDetailTable = ({
     },
     [waitlistedRows]
   );
+
+  const handleDemoteClick = useCallback(
+    (id) => () => {
+      const student = rows.find((row) => row.id === id);
+      if (student) {
+        setStudentToDemote(student);
+        setDemoteDialogOpen(true);
+      }
+    },
+    [rows]
+  );
+
+  const handleConfirmedDemote = async () => {
+    if (!studentToDemote) return;
+
+    setDemoteLoading(true);
+    try {
+      const response = await fetch(
+        `/api/database/classes/${classData.id}/demote`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ studentId: studentToDemote.id }),
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to move student to waitlist");
+      }
+
+      const demotedStudent = { ...studentToDemote, isWaitlisted: true };
+      delete demotedStudent.promotedAt;
+      setRows((prev) => prev.filter((row) => row.id !== studentToDemote.id));
+      setWaitlistedRows((prev) => [...prev, demotedStudent]);
+
+      toast.success(
+        `${studentToDemote.firstName} ${studentToDemote.lastName} has been moved to the waitlist.`
+      );
+    } catch (error) {
+      console.error("Error moving student to waitlist:", error);
+      toast.error(error.message || "Failed to move student to waitlist. Please try again.");
+    } finally {
+      setDemoteLoading(false);
+      setDemoteDialogOpen(false);
+      setStudentToDemote(null);
+    }
+  };
 
   const handleTransferClick = useCallback(
     (id) => () => {
@@ -551,6 +603,17 @@ const ClassDetailTable = ({
             onClick={handleEditClick(params.id)}
             disabled={editLoading}
           />,
+          ...(isWaitlistEnabled
+            ? [
+                <GridActionsCellItem
+                  key="demote"
+                  icon={<HourglassTopIcon />}
+                  label="Move to Waitlist"
+                  onClick={handleDemoteClick(params.id)}
+                  disabled={demoteLoading}
+                />,
+              ]
+            : []),
           <GridActionsCellItem
             key="transfer"
             icon={<SwapHorizIcon />}
@@ -572,10 +635,13 @@ const ClassDetailTable = ({
       baseColumns,
       handleEditClick,
       handleDeleteClick,
+      handleDemoteClick,
       handleTransferClick,
       removeSignupLoading,
       editLoading,
+      demoteLoading,
       transferLoading,
+      isWaitlistEnabled,
       classData,
     ]
   );
@@ -746,6 +812,50 @@ const ClassDetailTable = ({
         sendTextNotification={sendTextNotification}
         setSendTextNotification={setSendTextNotification}
       />
+
+      {/* Demote to Waitlist Confirmation Dialog */}
+      <Dialog
+        open={demoteDialogOpen}
+        onClose={() => {
+          setDemoteDialogOpen(false);
+          setStudentToDemote(null);
+        }}
+      >
+        <DialogTitle>Move to Waitlist</DialogTitle>
+        <DialogContent>
+          {studentToDemote && (
+            <>
+              <Typography>
+                Are you sure you want to move {studentToDemote.firstName}{" "}
+                {studentToDemote.lastName} from the enrolled roster to the
+                waitlist?
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                They will be removed from the enrolled roster and placed on the
+                waitlist.
+              </Typography>
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setDemoteDialogOpen(false);
+              setStudentToDemote(null);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmedDemote}
+            color="warning"
+            variant="contained"
+            disabled={demoteLoading}
+          >
+            {demoteLoading ? "Moving..." : "Move to Waitlist"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Promote Confirmation Dialog */}
       <Dialog

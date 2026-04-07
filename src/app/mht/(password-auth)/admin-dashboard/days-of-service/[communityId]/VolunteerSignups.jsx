@@ -72,6 +72,7 @@ const DaysOfServicePage = ({
     projectSummary,
     projectsMap,
     totalVolunteerHours,
+    totalVolunteers,
     loading: projectsLoading,
   } = useProjectSummary(daysOfService);
 
@@ -142,6 +143,14 @@ const DaysOfServicePage = ({
               Projects and volunteer participation overview
             </Typography>
             <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
+              Total Community Volunteers:{" "}
+              <strong>
+                {Number(totalVolunteers).toLocaleString(undefined, {
+                  maximumFractionDigits: 0,
+                })}
+              </strong>
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
               Total Community Volunteer Hours:{" "}
               <strong>
                 {Number(totalVolunteerHours).toLocaleString(undefined, {

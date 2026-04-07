@@ -120,10 +120,17 @@ export const useProjectSummary = (daysOfService) => {
     0,
   );
 
+  // Calculate total volunteers across all projects
+  const totalVolunteers = projectSummary.reduce(
+    (total, project) => total + project.volunteerCount,
+    0,
+  );
+
   return {
     projectSummary,
     projectsMap,
     totalVolunteerHours,
+    totalVolunteers,
     loading,
     error,
   };

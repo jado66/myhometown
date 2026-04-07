@@ -81,6 +81,7 @@ export const FormResponseTable = ({
       email: 180,
       phone: 140,
       whoAreYouType: 150,
+      dayOfServiceDate: 140,
       whoAreYouValue: 180,
       stakeName: 180,
       projectName: 200, // Renamed from projectId
@@ -105,6 +106,7 @@ export const FormResponseTable = ({
       email: true,
       phone: true,
       whoAreYouType: true,
+      dayOfServiceDate: true,
       whoAreYouValue: true,
       stakeName: true,
       projectName: true, // Renamed from projectId
@@ -414,6 +416,17 @@ export const FormResponseTable = ({
             size="small"
             sx={{ textTransform: "capitalize" }}
           />
+        ),
+      },
+      {
+        accessorKey: "dayOfServiceDate",
+        header: "Day of Service",
+        size: columnSizing.dayOfServiceDate,
+        minSize: 120,
+        Cell: ({ row }) => (
+          <Typography variant="body2" noWrap>
+            {row.original.dayOfServiceDate || "-"}
+          </Typography>
         ),
       },
       {
