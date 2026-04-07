@@ -183,9 +183,15 @@ export function generateOverviewReportCSV({
   crcStats,
   dateRange,
 }) {
-  const end = dateRange.endDate ? new Date(dateRange.endDate) : new Date();
+  // Parse date-only strings as local time (not UTC) to avoid off-by-one day
+  // when displaying in negative-UTC-offset timezones.
+  const parseLocalDate = (dateStr) => {
+    const [year, month, day] = dateStr.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  };
+  const end = dateRange.endDate ? parseLocalDate(dateRange.endDate) : new Date();
   const start = dateRange.startDate
-    ? new Date(dateRange.startDate)
+    ? parseLocalDate(dateRange.startDate)
     : new Date(end.getFullYear(), 0, 1);
   const daysElapsed = Math.max(
     1,

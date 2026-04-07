@@ -173,88 +173,53 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 4. Fetch DOS project forms via their linked days_of_service event.
-    //    Project forms often have null date_of_service, so we filter by
-    //    the parent days_of_service.end_date (the actual service date).
+    // 4. Fetch DOS project forms directly by community_id and created_at.
+    //    Querying via the parent days_of_service event misses forms whose
+    //    parent event falls outside the date range, so we filter here instead.
     let allDosProjects: any[] = [];
     {
-      // 4a. Fetch days_of_service event IDs in the date range for selected communities
-      const dosEventIds: string[] = [];
       const idChunkSize = 50;
 
       for (let i = 0; i < resolvedCommunityIds.length; i += idChunkSize) {
         const idChunk = resolvedCommunityIds.slice(i, i + idChunkSize);
-        let eventFrom = 0;
-        let eventHasMore = true;
+        let dosFrom = 0;
+        let dosHasMore = true;
 
-        while (eventHasMore) {
+        while (dosHasMore) {
           let query = supabase
-            .from("days_of_service")
-            .select("id")
+            .from("days_of_service_project_forms")
+            .select(
+              "id, community_id, actual_volunteers, actual_project_duration, days_of_service_id",
+            )
             .in("community_id", idChunk)
-            .range(eventFrom, eventFrom + pageSize - 1);
+            .range(dosFrom, dosFrom + pageSize - 1);
 
           if (startDate) {
-            query = query.gte("end_date", startDate);
+            query = query.gte("created_at", startDate);
           }
           if (endDate) {
-            query = query.lte("end_date", endDate);
+            // Include the full end day by using less-than the next day
+            const endPlusOne = new Date(endDate);
+            endPlusOne.setDate(endPlusOne.getDate() + 1);
+            query = query.lt("created_at", endPlusOne.toISOString().split("T")[0]);
           }
 
           const { data, error } = await query;
 
           if (error) {
             console.error(
-              "[overview-report] Error fetching DOS events:",
+              "[overview-report] Error fetching DOS projects:",
               error,
             );
             return NextResponse.json({ error: error.message }, { status: 500 });
           }
 
           if (data && data.length > 0) {
-            dosEventIds.push(...data.map((d: any) => d.id));
-            eventFrom += pageSize;
-            eventHasMore = data.length === pageSize;
+            allDosProjects = allDosProjects.concat(data);
+            dosFrom += pageSize;
+            dosHasMore = data.length === pageSize;
           } else {
-            eventHasMore = false;
-          }
-        }
-      }
-
-      // 4b. Fetch project forms linked to those DOS events
-      if (dosEventIds.length > 0) {
-        for (let i = 0; i < dosEventIds.length; i += idChunkSize) {
-          const idChunk = dosEventIds.slice(i, i + idChunkSize);
-          let dosFrom = 0;
-          let dosHasMore = true;
-
-          while (dosHasMore) {
-            const { data, error } = await supabase
-              .from("days_of_service_project_forms")
-              .select(
-                "id, community_id, actual_volunteers, actual_project_duration, days_of_service_id",
-              )
-              .in("days_of_service_id", idChunk)
-              .range(dosFrom, dosFrom + pageSize - 1);
-
-            if (error) {
-              console.error(
-                "[overview-report] Error fetching DOS projects:",
-                error,
-              );
-              return NextResponse.json(
-                { error: error.message },
-                { status: 500 },
-              );
-            }
-
-            if (data && data.length > 0) {
-              allDosProjects = allDosProjects.concat(data);
-              dosFrom += pageSize;
-              dosHasMore = data.length === pageSize;
-            } else {
-              dosHasMore = false;
-            }
+            dosHasMore = false;
           }
         }
       }
