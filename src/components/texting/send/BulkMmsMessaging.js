@@ -447,24 +447,6 @@ export default function BulkMMSMessaging() {
     });
   };
 
-  if (!redisHealth.isConnected && !redisHealth.isLoading) {
-    return (
-      <Alert
-        severity="error"
-        sx={{ position: "sticky", top: "64px", zIndex: 1000, mx: 3, mt: 2 }}
-      >
-        <AlertTitle>Texting Service Unavailable</AlertTitle>
-        The messaging service is currently experiencing technical difficulties.
-        Please try again later.
-        {redisHealth.lastChecked && (
-          <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-            Last checked: {new Date(redisHealth.lastChecked).toLocaleString()}
-          </Typography>
-        )}
-      </Alert>
-    );
-  }
-
   return (
     <Box
       sx={{
