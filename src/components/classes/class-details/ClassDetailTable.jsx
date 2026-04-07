@@ -84,7 +84,7 @@ const ClassDetailTable = ({
       setLoadingClasses(true);
       try {
         const response = await fetch(
-          `/api/database/classes/by-community/${classData.communityId}`
+          `/api/database/classes/by-community/${classData.communityId}`,
         );
         if (response.ok) {
           const data = await response.json();
@@ -118,10 +118,10 @@ const ClassDetailTable = ({
   useEffect(() => {
     if (classData?.signups) {
       const enrolled = classData.signups.filter(
-        (signup) => !signup.isWaitlisted
+        (signup) => !signup.isWaitlisted,
       );
       const waitlisted = classData.signups.filter(
-        (signup) => signup.isWaitlisted
+        (signup) => signup.isWaitlisted,
       );
       setRows(enrolled);
       setWaitlistedRows(waitlisted);
@@ -137,11 +137,11 @@ const ClassDetailTable = ({
     const uniqueStudentIds = new Set(
       classData.attendance
         .filter((record) => record.present === true)
-        .map((record) => record.studentId)
+        .map((record) => record.studentId),
     );
 
     const uniqueDates = new Set(
-      classData.attendance.map((record) => record.date)
+      classData.attendance.map((record) => record.date),
     );
 
     return {
@@ -179,7 +179,7 @@ const ClassDetailTable = ({
       const error = validateField(
         fieldKey,
         studentData[fieldKey],
-        classData.signupForm.formConfig
+        classData.signupForm.formConfig,
       );
       if (error) {
         errors[fieldKey] = error;
@@ -205,7 +205,7 @@ const ClassDetailTable = ({
       setStudentToDelete(id);
       setDeleteConfirmOpen(true);
     },
-    [classData]
+    [classData],
   );
 
   const handleConfirmedDelete = async () => {
@@ -213,10 +213,10 @@ const ClassDetailTable = ({
       const success = await onRemoveSignup(studentToDelete);
       if (success) {
         setRows((prevRows) =>
-          prevRows.filter((row) => row.id !== studentToDelete)
+          prevRows.filter((row) => row.id !== studentToDelete),
         );
         setWaitlistedRows((prevRows) =>
-          prevRows.filter((row) => row.id !== studentToDelete)
+          prevRows.filter((row) => row.id !== studentToDelete),
         );
       }
       setDeleteConfirmOpen(false);
@@ -232,7 +232,7 @@ const ClassDetailTable = ({
         setPromoteDialogOpen(true);
       }
     },
-    [waitlistedRows]
+    [waitlistedRows],
   );
 
   const handleDemoteClick = useCallback(
@@ -243,7 +243,7 @@ const ClassDetailTable = ({
         setDemoteDialogOpen(true);
       }
     },
-    [rows]
+    [rows],
   );
 
   const handleConfirmedDemote = async () => {
@@ -257,7 +257,7 @@ const ClassDetailTable = ({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ studentId: studentToDemote.id }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -271,11 +271,14 @@ const ClassDetailTable = ({
       setWaitlistedRows((prev) => [...prev, demotedStudent]);
 
       toast.success(
-        `${studentToDemote.firstName} ${studentToDemote.lastName} has been moved to the waitlist.`
+        `${studentToDemote.firstName} ${studentToDemote.lastName} has been moved to the waitlist.`,
       );
     } catch (error) {
       console.error("Error moving student to waitlist:", error);
-      toast.error(error.message || "Failed to move student to waitlist. Please try again.");
+      toast.error(
+        error.message ||
+          "Failed to move student to waitlist. Please try again.",
+      );
     } finally {
       setDemoteLoading(false);
       setDemoteDialogOpen(false);
@@ -293,7 +296,7 @@ const ClassDetailTable = ({
         setTransferDialogOpen(true);
       }
     },
-    [rows, waitlistedRows]
+    [rows, waitlistedRows],
   );
 
   const handleConfirmedTransfer = async () => {
@@ -311,7 +314,7 @@ const ClassDetailTable = ({
             targetClassId: selectedTargetClass,
             sendTextNotification: sendTextNotification,
           }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -368,7 +371,7 @@ const ClassDetailTable = ({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ studentId: studentToPromote.id }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -377,12 +380,12 @@ const ClassDetailTable = ({
 
       const promotedStudent = { ...studentToPromote, isWaitlisted: false };
       setWaitlistedRows((prev) =>
-        prev.filter((row) => row.id !== studentToPromote.id)
+        prev.filter((row) => row.id !== studentToPromote.id),
       );
       setRows((prev) => [...prev, promotedStudent]);
 
       toast.success(
-        `${studentToPromote.firstName} ${studentToPromote.lastName} has been promoted from the waitlist.`
+        `${studentToPromote.firstName} ${studentToPromote.lastName} has been promoted from the waitlist.`,
       );
     } catch (error) {
       console.error("Error promoting student:", error);
@@ -407,7 +410,7 @@ const ClassDetailTable = ({
         setShowDialog(true);
       }
     },
-    [rows, waitlistedRows]
+    [rows, waitlistedRows],
   );
 
   const handleAddClick = () => {
@@ -433,7 +436,7 @@ const ClassDetailTable = ({
               method: "PUT",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(studentData),
-            }
+            },
           );
 
           if (!response.ok) {
@@ -445,16 +448,16 @@ const ClassDetailTable = ({
               prev.map((row) =>
                 row.id === editingStudent.id
                   ? { ...studentData, id: editingStudent.id }
-                  : row
-              )
+                  : row,
+              ),
             );
           } else {
             setRows((prev) =>
               prev.map((row) =>
                 row.id === editingStudent.id
                   ? { ...studentData, id: editingStudent.id }
-                  : row
-              )
+                  : row,
+              ),
             );
           }
 
@@ -462,7 +465,7 @@ const ClassDetailTable = ({
         } catch (error) {
           console.error("Error updating student:", error);
           toast.error(
-            "Failed to update student information. Please try again."
+            "Failed to update student information. Please try again.",
           );
         } finally {
           setEditLoading(false);
@@ -486,22 +489,23 @@ const ClassDetailTable = ({
     setTabValue(newValue);
   };
   const DEFAULT_VISIBLE_FIELDS = new Set([
-    'firstName',
-    'lastName',
-    'email',
-    'phone',
+    "firstName",
+    "lastName",
+    "email",
+    "phone",
   ]);
 
-  const DEFAULT_VISIBLE_LABELS = new Set([
-    'Age',
-  ]);
+  const DEFAULT_VISIBLE_LABELS = new Set(["Age"]);
 
   const columnVisibilityModel = useMemo(() => {
     const model = {};
     classData.signupForm.fieldOrder.forEach((fieldKey) => {
       const field = getFieldConfig(fieldKey, classData.signupForm.formConfig);
       if (isStructuralElement(field.type)) return;
-      if (!DEFAULT_VISIBLE_FIELDS.has(fieldKey) && !DEFAULT_VISIBLE_LABELS.has(field.label)) {
+      if (
+        !DEFAULT_VISIBLE_FIELDS.has(fieldKey) &&
+        !DEFAULT_VISIBLE_LABELS.has(field.label)
+      ) {
         model[fieldKey] = false;
       }
     });
@@ -516,14 +520,14 @@ const ClassDetailTable = ({
         .filter((fieldKey) => {
           const field = getFieldConfig(
             fieldKey,
-            classData.signupForm.formConfig
+            classData.signupForm.formConfig,
           );
           return !isStructuralElement(field.type);
         })
         .map((fieldKey) => {
           const field = getFieldConfig(
             fieldKey,
-            classData.signupForm.formConfig
+            classData.signupForm.formConfig,
           );
           return {
             field: fieldKey,
@@ -537,7 +541,7 @@ const ClassDetailTable = ({
                 : undefined,
           };
         }),
-    [classData.signupForm]
+    [classData.signupForm],
   );
 
   // Add actions column for enrolled students
@@ -552,7 +556,7 @@ const ClassDetailTable = ({
         renderCell: (params) => {
           const studentAttendance = getStudentAttendance(
             classData,
-            params.row.id
+            params.row.id,
           );
           return (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -563,7 +567,7 @@ const ClassDetailTable = ({
               {studentAttendance.count > 0 && (
                 <Tooltip
                   title={`Last attended: ${formatDate(
-                    studentAttendance.lastAttended
+                    studentAttendance.lastAttended,
                   )}`}
                 >
                   <EventAvailableIcon fontSize="small" color="primary" />
@@ -643,7 +647,7 @@ const ClassDetailTable = ({
       transferLoading,
       isWaitlistEnabled,
       classData,
-    ]
+    ],
   );
 
   // Add actions column for waitlisted students with promote option
@@ -658,7 +662,7 @@ const ClassDetailTable = ({
         renderCell: (params) => {
           const studentAttendance = getStudentAttendance(
             classData,
-            params.row.id
+            params.row.id,
           );
           return (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -669,7 +673,7 @@ const ClassDetailTable = ({
               {studentAttendance.count > 0 && (
                 <Tooltip
                   title={`Last attended: ${formatDate(
-                    studentAttendance.lastAttended
+                    studentAttendance.lastAttended,
                   )}`}
                 >
                   <EventAvailableIcon fontSize="small" color="primary" />
@@ -749,7 +753,7 @@ const ClassDetailTable = ({
       transferLoading,
       hasAvailableCapacity,
       classData,
-    ]
+    ],
   );
 
   return (
@@ -928,10 +932,10 @@ const ClassDetailTable = ({
             {isCompletelyFull
               ? "Class is Full"
               : isMainCapacityFull && isWaitlistEnabled
-              ? "Add to Waitlist"
-              : signupLoading
-              ? "Adding..."
-              : "Add Student"}
+                ? "Add to Waitlist"
+                : signupLoading
+                  ? "Adding..."
+                  : "Add Student"}
           </Button>
         </Box>
 
@@ -1001,104 +1005,106 @@ const ClassDetailTable = ({
 
       {/* Tables — hidden on small screens */}
       <Box sx={{ display: { xs: "none", sm: "block" } }}>
-
-      {/* Regular enrollment table */}
-      <div
-        role="tabpanel"
-        hidden={tabValue !== 0}
-        id="tabpanel-0"
-        aria-labelledby="tab-0"
-      >
-        {tabValue === 0 && (
-          <Paper sx={{ height: 600, width: "100%" }}>
-            <DataGrid
-              rows={rows}
-              columns={enrolledColumns}
-              pageSize={10}
-              rowsPerPageOptions={[5, 10, 25]}
-              checkboxSelection={false}
-              disableSelectionOnClick
-              components={{
-                Toolbar: GridToolbar,
-              }}
-              componentsProps={{
-                toolbar: {
-                  showQuickFilter: true,
-                  quickFilterProps: { debounceMs: 500 },
-                },
-              }}
-              density="comfortable"
-              initialState={{
-                sorting: {
-                  sortModel: [
-                    { field: classData.signupForm.fieldOrder[0], sort: "asc" },
-                  ],
-                },
-                columns: {
-                  columnVisibilityModel,
-                },
-              }}
-            />
-          </Paper>
-        )}
-      </div>
-
-      {/* Waitlist table */}
-      {isWaitlistEnabled && (
+        {/* Regular enrollment table */}
         <div
           role="tabpanel"
-          hidden={tabValue !== 1}
-          id="tabpanel-1"
-          aria-labelledby="tab-1"
+          hidden={tabValue !== 0}
+          id="tabpanel-0"
+          aria-labelledby="tab-0"
         >
-          {tabValue === 1 && (
-            <>
-              {!hasAvailableCapacity && waitlistedRows.length > 0 && (
-                <Alert severity="info" sx={{ mb: 2 }}>
-                  The class is currently at capacity. Free up space by removing
-                  students from the enrolled list before promoting from the
-                  waitlist.
-                </Alert>
-              )}
-              <Paper sx={{ height: 600, width: "100%" }}>
-                <DataGrid
-                  rows={waitlistedRows}
-                  columns={waitlistColumns}
-                  pageSize={10}
-                  rowsPerPageOptions={[5, 10, 25]}
-                  checkboxSelection={false}
-                  disableSelectionOnClick
-                  components={{
-                    Toolbar: GridToolbar,
-                  }}
-                  componentsProps={{
-                    toolbar: {
-                      showQuickFilter: true,
-                      quickFilterProps: { debounceMs: 500 },
-                    },
-                  }}
-                  density="comfortable"
-                  initialState={{
-                    sorting: {
-                      sortModel: [
-                        {
-                          field: classData.signupForm.fieldOrder[0],
-                          sort: "asc",
-                        },
-                      ],
-                    },
-                    columns: {
-                      columnVisibilityModel,
-                    },
-                  }}
-                />
-              </Paper>
-            </>
+          {tabValue === 0 && (
+            <Paper sx={{ height: 600, width: "100%" }}>
+              <DataGrid
+                rows={rows}
+                columns={enrolledColumns}
+                pageSize={10}
+                rowsPerPageOptions={[5, 10, 25]}
+                checkboxSelection={false}
+                disableSelectionOnClick
+                components={{
+                  Toolbar: GridToolbar,
+                }}
+                componentsProps={{
+                  toolbar: {
+                    showQuickFilter: true,
+                    quickFilterProps: { debounceMs: 500 },
+                  },
+                }}
+                density="comfortable"
+                initialState={{
+                  sorting: {
+                    sortModel: [
+                      {
+                        field: classData.signupForm.fieldOrder[0],
+                        sort: "asc",
+                      },
+                    ],
+                  },
+                  columns: {
+                    columnVisibilityModel,
+                  },
+                }}
+              />
+            </Paper>
           )}
         </div>
-      )}
 
-      </Box>{/* end tables wrapper */}
+        {/* Waitlist table */}
+        {isWaitlistEnabled && (
+          <div
+            role="tabpanel"
+            hidden={tabValue !== 1}
+            id="tabpanel-1"
+            aria-labelledby="tab-1"
+          >
+            {tabValue === 1 && (
+              <>
+                {!hasAvailableCapacity && waitlistedRows.length > 0 && (
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    The class is currently at capacity. Free up space by
+                    removing students from the enrolled list before promoting
+                    from the waitlist.
+                  </Alert>
+                )}
+                <Paper sx={{ height: 600, width: "100%" }}>
+                  <DataGrid
+                    rows={waitlistedRows}
+                    columns={waitlistColumns}
+                    pageSize={10}
+                    rowsPerPageOptions={[5, 10, 25]}
+                    checkboxSelection={false}
+                    disableSelectionOnClick
+                    components={{
+                      Toolbar: GridToolbar,
+                    }}
+                    componentsProps={{
+                      toolbar: {
+                        showQuickFilter: true,
+                        quickFilterProps: { debounceMs: 500 },
+                      },
+                    }}
+                    density="comfortable"
+                    initialState={{
+                      sorting: {
+                        sortModel: [
+                          {
+                            field: classData.signupForm.fieldOrder[0],
+                            sort: "asc",
+                          },
+                        ],
+                      },
+                      columns: {
+                        columnVisibilityModel,
+                      },
+                    }}
+                  />
+                </Paper>
+              </>
+            )}
+          </div>
+        )}
+      </Box>
+      {/* end tables wrapper */}
 
       {/* Student Form Dialog */}
       <StudentFormDialog

@@ -25,13 +25,13 @@ export async function POST(req, { params }) {
 
     // Find the student in the signups array
     const studentIndex = classDoc.signups.findIndex(
-      (signup) => signup.id === studentId
+      (signup) => signup.id === studentId,
     );
 
     if (studentIndex === -1) {
       return new Response(
         JSON.stringify({ error: "Student not found in class roster" }),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -39,7 +39,7 @@ export async function POST(req, { params }) {
     if (classDoc.signups[studentIndex].isWaitlisted) {
       return new Response(
         JSON.stringify({ error: "Student is already on the waitlist" }),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -54,25 +54,25 @@ export async function POST(req, { params }) {
     // Update the student in the database
     const result = await classes.updateOne(
       { id, "signups.id": studentId },
-      { $set: { "signups.$": updatedStudent } }
+      { $set: { "signups.$": updatedStudent } },
     );
 
     if (result.modifiedCount === 0) {
       return new Response(
         JSON.stringify({ error: "Failed to update student status" }),
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return new Response(
       JSON.stringify({ success: true, student: updatedStudent }),
-      { status: 200 }
+      { status: 200 },
     );
   } catch (e) {
     console.error("Error occurred while demoting student to waitlist", e);
     return new Response(
       JSON.stringify({ error: "Error occurred while demoting student" }),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
