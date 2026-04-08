@@ -28,7 +28,7 @@ const Topbar = ({ onSidebarOpen }) => {
 
   const [search, setSearch] = useState("");
 
-  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+  const rootUrl = "";
 
   const handleCitiesClick = (event) => {
     setCitiesAnchorEl(event.currentTarget);
@@ -61,7 +61,7 @@ const Topbar = ({ onSidebarOpen }) => {
             .sort(),
         ];
       })
-      .filter(([state, cities]) => cities.length > 0)
+      .filter(([state, cities]) => cities.length > 0),
   );
 
   const theme = useTheme();
@@ -345,7 +345,7 @@ const LanguageDropdown = () => {
       // Reload the page to enable the next/intl server module to detect new locale
       router.refresh();
     },
-    [router]
+    [router],
   );
 
   const [anchorEl, setAnchorEl] = useState(null);

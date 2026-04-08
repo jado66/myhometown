@@ -13,25 +13,19 @@ import Loading from "@/components/util/Loading";
 import NextLink from "next/link";
 import PermissionGuard from "@/guards/permission-guard";
 import { ShowIfAuthenticatedOnce } from "@/guards/withAuthenticatedOnce";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import DevEnvGuard from "@/guards/dev-env-guard";
 import UserGuard from "@/guards/user-guard";
 
 const AdminDashboardPages = () => {
   const theme = useTheme();
-
-  const { user, isLoading } = useUser();
+  const searchParams = useSearchParams();
 
   const rootUrl = "";
 
   return (
     <Box>
-      <Box
-        position={"relative"}
-        sx={{
-          backgroundColor: theme.palette.alternate.main,
-        }}
-      >
+      <Box position={"relative"}>
         <Container>
           <Box padding={5}>
             <Box marginBottom={4}>
@@ -44,7 +38,7 @@ const AdminDashboardPages = () => {
                 color={"primary"}
                 align={"center"}
               >
-                Admin dashboard
+                myHometown Login
               </Typography>
               <Box
                 component={Typography}
@@ -53,85 +47,40 @@ const AdminDashboardPages = () => {
                 align={"center"}
                 gutterBottom
               >
-                Manage your groups or use admin tools
+                Select the tool you would like to use.
               </Box>
-              <Typography
-                variant={"h6"}
-                component={"p"}
-                color={"textSecondary"}
-                align={"center"}
-              >
-                Welcome to the admin dashboard.
-              </Typography>
             </Box>
-
-            {isLoading && (
-              <Grid
-                container
-                spacing={4}
-                justifyContent={"center"}
-                alignItems={"center"}
-                mt={5}
-              >
-                <Loading size={50} />
-              </Grid>
-            )}
 
             <Grid
               container
               spacing={4}
               sx={{
-                visibility: !isLoading ? "visible" : "hidden",
                 justifyContent: "center",
               }}
             >
               {[
                 {
-                  title: "User Management",
-                  subtitle:
-                    "Add, remove, or edit users and their roles to manage who can access your city or community.",
-                  media: "/admin-icons/User Management.svg",
-                  href: "https://myhometown-landing.vercel.app/admin/users",
-                  requiredPermission: "admin",
-                },
-                {
-                  title: "City Management",
-                  subtitle:
-                    "Manage your cities. Add, remove, or edit city information.",
-                  media: "/admin-icons/City Management.svg",
-                  href: rootUrl + "/admin-dashboard/cities",
-                  requiredPermission: "content_development",
-                },
-                {
-                  title: "Community Management",
-                  subtitle:
-                    "Manage your communities. Add, remove, or edit community information.",
-                  media: "/admin-icons/Community Management.svg",
-                  href: rootUrl + "/admin-dashboard/communities",
-                  requiredPermission: "content_development",
-                },
-                {
                   title: "Classes and Rolls",
                   subtitle:
                     "View your classes and rolls. Take attendance and manage your classes.",
                   media: "/admin-icons/Classes and Rolls.svg",
-                  href: rootUrl + "/admin-dashboard/classes",
+                  href: "/admin-dashboard/classes",
                 },
                 {
                   title: "Days of Service",
                   subtitle:
                     "View and manage your days of service. Track your projects and volunteers.",
                   media: "/admin-icons/Days of Service.svg",
-                  href: rootUrl + "/admin-dashboard/days-of-service",
+                  href: "/admin-dashboard/days-of-service",
                 },
 
                 {
-                  title: "Texting & Communications",
+                  title:
+                    "Log Service Hours & Missionary/Volunteers Contact Directory",
                   subtitle:
-                    "Manage all text communications for your city or community members.",
-                  media: "/admin-icons/Text SMS Communications.svg",
-                  href: rootUrl + "/admin-dashboard/texting",
-                  requiredPermission: "texting",
+                    "View and manage your missionary & volunteer hours. Track your service hours and progress.",
+                  media: "/admin-icons/missionary-logs.png",
+                  href: "/admin-dashboard/hours-and-directory",
                 },
 
                 {
@@ -139,26 +88,25 @@ const AdminDashboardPages = () => {
                   subtitle:
                     "Manage your missionaries & volunteers. Add, remove, or edit missionary information.",
                   media: "/admin-icons/missionary-management.png",
-                  href: rootUrl + "/admin-dashboard/missionaries",
+                  href: "/admin-dashboard/missionaries",
                   requiredPermission: "missionary_volunteer_management",
                 },
                 {
-                  title: "Enter Missionary & Volunteers Hours",
-                  subtitle: "View and manage your service hours.",
-                  media: "/admin-icons/missionary-logs.png",
-                  href: rootUrl + "/admin-dashboard/hours-and-directory",
+                  title: "Content Management & Global Admin",
+                  subtitle:
+                    "Manage city and community pages, classes, texting and communications, or global management.",
+                  media: "/admin-icons/User Management.svg",
+                  href: "/admin-dashboard",
                 },
               ].map((item, i) => (
-                <PermissionGuard
-                  requiredPermission={item.requiredPermission}
-                  user={user}
-                  key={i}
-                >
-                  <AdminDashboardCard item={item} i={i} />
-                </PermissionGuard>
+                <AdminDashboardCard
+                  item={item}
+                  i={i}
+                  returnTo={searchParams.get("returnTo")}
+                />
               ))}
 
-              {/* Design Hub (requires prior authentication & administrator permission) */}
+              {/* Design Hub - only show if they've authenticated previously */}
               <ShowIfAuthenticatedOnce>
                 <AdminDashboardCard
                   item={{
@@ -166,27 +114,12 @@ const AdminDashboardPages = () => {
                     subtitle:
                       "Create and order custom flyers, certificates, signs, and banners for your community.",
                     media: "/admin-icons/Design Hub.svg",
-                    href: rootUrl + "/admin-dashboard/design-hub",
-                    requiredPermission: "administrator",
+                    href: "/admin-dashboard/design-hub",
                   }}
                   i={999}
+                  returnTo={searchParams.get("returnTo")}
                 />
               </ShowIfAuthenticatedOnce>
-
-              <UserGuard
-                allowedEmails={["jado66@gmail.com", "kcraven10@gmail.com"]}
-                user={user}
-              >
-                <AdminDashboardCard
-                  item={{
-                    title: "App Health",
-                    subtitle: "Manage your application health and performance.",
-                    media: "/admin-icons/health.png",
-                    href: rootUrl + "/admin-dashboard/health",
-                  }}
-                  i={-1}
-                />
-              </UserGuard>
             </Grid>
           </Box>
         </Container>
@@ -197,13 +130,26 @@ const AdminDashboardPages = () => {
 
 export default AdminDashboardPages;
 
-const AdminDashboardCard = ({ item, i }) => {
+const AdminDashboardCard = ({ item, i, returnTo }) => {
   const theme = useTheme();
 
   const router = useRouter();
 
   const onClick = () => {
-    router.push(item.href);
+    const rootUrl = "";
+    const targetUrl = rootUrl + item.href;
+
+    // If there's a returnTo parameter and it starts with this card's target path,
+    // redirect to the specific returnTo URL
+    if (returnTo) {
+      const decodedReturnTo = decodeURIComponent(returnTo);
+      if (decodedReturnTo.includes(item.href)) {
+        router.push(decodedReturnTo);
+        return;
+      }
+    }
+
+    router.push(targetUrl);
   };
 
   return (

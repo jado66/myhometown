@@ -84,7 +84,7 @@ const DosBreadcrumbs: React.FC<DosBreadcrumbsProps> = ({
 
   const pathname = usePathname();
   const isDev = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev";
-  const basePrefix = isDev ? "/mht" : "";
+  const basePrefix = "";
   const pathnames = pathname
     ? pathname
         .split("/")

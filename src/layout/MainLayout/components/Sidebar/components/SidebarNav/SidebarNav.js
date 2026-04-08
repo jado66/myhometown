@@ -22,7 +22,7 @@ const SidebarNav = ({ onClose }) => {
   const toggleExpandCities = () => setExpandCities((p) => !p);
   const { groupedCityStrings } = useManageCities(null, true);
 
-  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+  const rootUrl = "";
 
   const theme = useTheme();
   const [activeLink, setActiveLink] = useState("");
@@ -35,7 +35,7 @@ const SidebarNav = ({ onClose }) => {
       .map(([state, cities]) => {
         return [state, cities.sort()];
       })
-      .filter(([state, cities]) => cities.length > 0)
+      .filter(([state, cities]) => cities.length > 0),
   );
 
   return (

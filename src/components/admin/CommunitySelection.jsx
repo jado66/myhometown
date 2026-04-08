@@ -154,7 +154,7 @@ const CommunitySelectionPage = ({ type = "classes" }) => {
   };
 
   const goToGlobalReports = () => {
-    const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+    const rootUrl = "";
     router.push(rootUrl + "/admin-dashboard/classes/global-reports");
   };
 

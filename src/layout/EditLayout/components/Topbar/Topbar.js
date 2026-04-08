@@ -16,7 +16,7 @@ const DaysOfServicePage = () => {
   const [isAtDaysOfService, setIsAtDaysOfService] = useState(false);
   const [isCommunityLevel, setIsCommunityLevel] = useState(false);
 
-  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+  const rootUrl = "";
 
   useEffect(() => {
     // Check if we're at the days-of-service level

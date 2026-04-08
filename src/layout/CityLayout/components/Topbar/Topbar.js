@@ -33,7 +33,7 @@ const Topbar = ({ onSidebarOpen }) => {
   const router = useRouter();
   const [search, setSearch] = useState("");
 
-  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+  const rootUrl = "";
 
   const handleCitiesClick = (event) => {
     setCitiesAnchorEl(event.currentTarget);
@@ -292,7 +292,7 @@ const LanguageDropdown = () => {
       // Reload the page to enable the next/intl server module to detect new locale
       router.refresh();
     },
-    [router]
+    [router],
   );
 
   const [anchorEl, setAnchorEl] = useState(null);

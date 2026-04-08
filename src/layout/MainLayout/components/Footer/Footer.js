@@ -4,7 +4,7 @@ import Typography from "@mui/material/Typography";
 import MyHometownLogo from "@/assets/svg/logos/MyHometown";
 
 const Footer = () => {
-  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+  const rootUrl = "";
 
   return (
     <Grid

@@ -9,7 +9,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 const Topbar = ({ onSidebarOpen, theme }) => {
   const isMediumUp = useMediaQuery(theme.breakpoints.up("md"));
 
-  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+  const rootUrl = "";
 
   return (
     <Box

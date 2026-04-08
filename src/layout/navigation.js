@@ -1,5 +1,5 @@
 export const pages = () => {
-  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+  const rootUrl = "";
 
   return [
     {
@@ -89,7 +89,7 @@ export const pages = () => {
           title: "Days Of Service",
           href: rootUrl + "/admin-dashboard/days-of-service",
         },
-        
+
         {
           title: "Global Reporting",
           href: rootUrl + "/admin-dashboard/global-reports",
@@ -98,7 +98,7 @@ export const pages = () => {
         {
           title: "QR Code Generator",
           href: rootUrl + "/admin-dashboard/qr-code-maker",
-        }
+        },
         // {
         //   title: "Volunteer Signups",
         //   href: rootUrl + "/admin-dashboard/volunteer-signups",

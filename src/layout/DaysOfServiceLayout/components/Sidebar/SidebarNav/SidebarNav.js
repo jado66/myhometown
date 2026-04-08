@@ -21,7 +21,7 @@ const SidebarNav = ({ onClose }) => {
     }, 250);
   };
 
-  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === "dev" ? "/mht" : "";
+  const rootUrl = "";
 
   return (
     <Box sx={{ position: "relative", textAlign: "center" }}>

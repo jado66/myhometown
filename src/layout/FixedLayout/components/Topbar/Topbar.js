@@ -1,13 +1,13 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Link from '@mui/material/Link';
-import { useTheme } from '@mui/material/styles';
-import { colors } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
-import MyHometownLogo from '@/assets/svg/logos/MyHometown';
+import React from "react";
+import PropTypes from "prop-types";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Link from "@mui/material/Link";
+import { useTheme } from "@mui/material/styles";
+import { colors } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import MenuIcon from "@mui/icons-material/Menu";
+import MyHometownLogo from "@/assets/svg/logos/MyHometown";
 
 const Topbar = ({
   themeMode,
@@ -16,24 +16,27 @@ const Topbar = ({
   onSidebarOpen,
   paletteType,
 }) => {
-  const rootUrl = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'? '/mht':''
+  const rootUrl = "";
 
   const theme = useTheme();
   return (
     <Box
-      display={'flex'}
-      justifyContent={'space-between'}
-      alignItems={'center'}
-      width={'100%'}
+      display={"flex"}
+      justifyContent={"space-between"}
+      alignItems={"center"}
+      width={"100%"}
     >
-      <Box display={'flex'} alignItems={'center'}>
-        <Box marginRight={{ xs: 1, sm: 2 }} sx={{ display: { md: 'none', sm: 'block' } }}>
+      <Box display={"flex"} alignItems={"center"}>
+        <Box
+          marginRight={{ xs: 1, sm: 2 }}
+          sx={{ display: { md: "none", sm: "block" } }}
+        >
           <IconButton onClick={onSidebarOpen} aria-label="Menu">
             <MenuIcon />
           </IconButton>
         </Box>
         <Box
-          display={'flex'}
+          display={"flex"}
           alignItems="baseline"
           component="a"
           underline="none"
@@ -45,9 +48,14 @@ const Topbar = ({
           {/* <MyHometownLogo height={'100%'} width={'100%'} /> */}
         </Box>
       </Box>
-      <Box display="flex" alignItems={'center'} justifyContent='end'>
+      <Box display="flex" alignItems={"center"} justifyContent="end">
         <Box marginRight={2}>
-          <Link underline="none" component="a" href={rootUrl+"/admin-dashboard"} color="textPrimary">
+          <Link
+            underline="none"
+            component="a"
+            href={rootUrl + "/admin-dashboard"}
+            color="textPrimary"
+          >
             Admin Dashboard
           </Link>
         </Box>
@@ -56,7 +64,7 @@ const Topbar = ({
             Home
           </Link>
         </Box>
-      </Box> 
+      </Box>
     </Box>
   );
 };
