@@ -28,6 +28,7 @@ import VolunteerSignupsSection from "./components/VolunteerSignupsSection";
 import VolunteersNeededSection from "./components/VolunteersNeededSection";
 import ResponseDetailsDialog from "./components/ResponseDetailsDialog";
 import DeleteConfirmationDialog from "./components/DeleteConfirmationDialog";
+import JsonViewer from "@/components/util/debug/DebugOutput";
 
 const newToOldCommunity = {
   "a78e8c7c-eca4-4f13-b6c8-e5603d1c36da": "66a811814800d08c300d88fd", // Orem - Geneva Heights

@@ -87,6 +87,7 @@ export const useProjectSummary = (daysOfService) => {
                       partnerGroup: project.partner_ward,
                       volunteerCount: project.actual_volunteers || 0,
                       duration: project.actual_project_duration || 0,
+                      volunteersNeeded: project.volunteers_needed || 0,
                       volunteerHours: volunteerHours,
                       status: project.status || "Pending",
                       dayOfServiceId: dayOfService.id || "unknown",

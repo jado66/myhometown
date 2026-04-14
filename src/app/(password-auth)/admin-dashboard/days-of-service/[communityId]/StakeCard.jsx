@@ -6,6 +6,7 @@ import {
   Description as ReportIcon,
   Business,
   Construction as ViewIcon,
+  Print,
 } from "@mui/icons-material";
 
 export const StakeCard = ({
@@ -136,6 +137,7 @@ export const StakeCard = ({
             alignItems: "center",
             flexWrap: "wrap",
             gap: 0.5,
+            flexDirection: "column",
             width: { xs: "100%", lg: "auto" },
           }}
           onClick={(e) => e.stopPropagation()}
@@ -151,8 +153,9 @@ export const StakeCard = ({
             sx={{
               textTransform: "none",
               fontSize: "0.75rem",
+
               px: 1,
-              flex: { xs: "1 1 auto", lg: "none" },
+              width: "100%",
             }}
           >
             View/Add Projects
@@ -167,7 +170,7 @@ export const StakeCard = ({
               textTransform: "none",
               fontSize: "0.75rem",
               px: 1,
-              flex: { xs: "1 1 auto", lg: "none" },
+              width: "100%",
             }}
           >
             Edit Organization
@@ -175,7 +178,7 @@ export const StakeCard = ({
           <Button
             variant="outlined"
             size="small"
-            startIcon={<ReportIcon />}
+            startIcon={<Print />}
             onClick={(e) => {
               e.stopPropagation();
               onGenerateReport(stake.id, day.end_date, day);
@@ -184,10 +187,10 @@ export const StakeCard = ({
               textTransform: "none",
               fontSize: "0.75rem",
               px: 1,
-              flex: { xs: "1 1 auto", lg: "none" },
+              width: "100%",
             }}
           >
-            Print Organization Report
+            Organization Summary Report
           </Button>
         </Box>
       </Box>

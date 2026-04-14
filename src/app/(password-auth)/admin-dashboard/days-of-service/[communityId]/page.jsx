@@ -46,6 +46,10 @@ import moment from "moment";
 
 import UnassignedProjects from "./UnassignedProjects";
 import { supabase } from "@/util/supabase";
+import {
+  generateCombinedOrgSummaryReport,
+  generateCombinedProjectDetailReport,
+} from "@/util/reports/days-of-service/reportGenerators";
 
 const CommunitySelectionPage = ({ params }) => {
   const router = useRouter();
@@ -326,23 +330,28 @@ const CommunitySelectionPage = ({ params }) => {
     }
   };
 
-  const handleGenerateDayOfServiceReport = async (
-    stakeId,
-    date,
-    dayOfService,
-  ) => {
+  const handleGenerateReport = async (reportType, stakeIds, dayOfService) => {
     if (!dayOfService?.id) {
       toast.error("Day of Service ID not available");
       return;
     }
     try {
-      // Get all projects for this stake
-
-      // Use the new function instead
-      await generateStakeSummaryReport(stakeId, date, dayOfService);
+      if (reportType === "org_summary") {
+        await generateCombinedOrgSummaryReport(
+          stakeIds,
+          dayOfService.end_date,
+          dayOfService,
+        );
+      } else {
+        await generateCombinedProjectDetailReport(
+          stakeIds,
+          dayOfService.end_date,
+          dayOfService,
+        );
+      }
     } catch (error) {
-      console.error("Error generating projects summary:", error);
-      toast.error("Failed to generate projects summary");
+      console.error("Error generating report:", error);
+      toast.error("Failed to generate report");
     }
   };
 
@@ -600,32 +609,57 @@ const CommunitySelectionPage = ({ params }) => {
                       </Typography>
                     </Box>
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                      {filteredDaysOfService
-                        .sort(
+                      {(() => {
+                        const sorted = [...filteredDaysOfService].sort(
                           (a, b) =>
                             new Date(a.end_date).getTime() -
                             new Date(b.end_date).getTime(),
-                        )
-                        .map((day) => (
-                          <Chip
-                            key={`nav-${day.id}`}
-                            icon={<CalendarMonth sx={{ fontSize: 14 }} />}
-                            label={moment(day.end_date).format("MMM DD, YYYY")}
-                            variant="outlined"
-                            size="small"
-                            onClick={() => scrollToDay(day.id)}
-                            sx={{
-                              cursor: "pointer",
-                              fontWeight: 500,
-                              borderRadius: 1.5,
-                              "&:hover": {
-                                bgcolor: (t) =>
-                                  alpha(t.palette.primary.main, 0.08),
-                                borderColor: "primary.main",
-                              },
-                            }}
-                          />
-                        ))}
+                        );
+                        const today = moment().startOf("day");
+                        const nextDos = sorted.find((d) =>
+                          moment(d.end_date).isSameOrAfter(today),
+                        );
+                        return sorted.map((day) => {
+                          const isNext = nextDos && day.id === nextDos.id;
+                          return (
+                            <Chip
+                              key={`nav-${day.id}`}
+                              icon={
+                                <CalendarMonth
+                                  sx={{ fontSize: isNext ? 16 : 14 }}
+                                />
+                              }
+                              label={
+                                isNext
+                                  ? `Next: ${moment(day.end_date).format("MMM DD, YYYY")}`
+                                  : moment(day.end_date).format("MMM DD, YYYY")
+                              }
+                              variant={isNext ? "filled" : "outlined"}
+                              color={isNext ? "success" : "default"}
+                              size="small"
+                              onClick={() => scrollToDay(day.id)}
+                              sx={{
+                                cursor: "pointer",
+                                fontWeight: isNext ? 700 : 500,
+                                borderRadius: 1.5,
+                                ...(isNext && {
+                                  boxShadow: (t) =>
+                                    `0 0 0 2px ${t.palette.success.light}`,
+                                }),
+                                "&:hover": {
+                                  bgcolor: (t) =>
+                                    isNext
+                                      ? t.palette.success.dark
+                                      : alpha(t.palette.primary.main, 0.08),
+                                  borderColor: isNext
+                                    ? "success.dark"
+                                    : "primary.main",
+                                },
+                              }}
+                            />
+                          );
+                        });
+                      })()}
                       <Chip
                         variant="contained"
                         color="primary"
@@ -669,9 +703,7 @@ const CommunitySelectionPage = ({ params }) => {
                         handleOpenAddStakeDialog={handleOpenAddStakeDialog}
                         handlePartnerStakeClick={handlePartnerStakeClick}
                         handleEditStake={handleEditStake}
-                        handleGenerateDayOfServiceReport={
-                          handleGenerateDayOfServiceReport
-                        }
+                        handleGenerateReport={handleGenerateReport}
                         toggleLockDayOfService={toggleLockDayOfService}
                       />
                     </Box>

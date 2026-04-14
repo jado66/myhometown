@@ -13,7 +13,7 @@ import {
   TableBody,
   Paper,
 } from "@mui/material";
-import { Assignment, Warning } from "@mui/icons-material";
+import { Print, Warning } from "@mui/icons-material";
 import ServiceDayHeader from "./ServiceDayHeader";
 import TightedCell from "./TightedCell";
 
@@ -49,7 +49,7 @@ const ProjectsSummarySection = ({
           sx={{ my: 2, display: "flex" }}
           onClick={generateCommunityReport}
         >
-          <Assignment sx={{ mr: 1 }} />
+          <Print sx={{ mr: 1 }} />
           Print Days of Service Summary Report
         </Button>
 

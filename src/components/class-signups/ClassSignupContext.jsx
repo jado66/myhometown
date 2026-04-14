@@ -617,6 +617,11 @@ export function ClassSignupProvider({
           ) {
             newErrors[fieldId] = `${config.label} is required`;
           }
+        } else if (config.type === FIELD_TYPES.whoAreYou) {
+          if (!formData[fieldId] || !formData[fieldId].projectId) {
+            newErrors[fieldId] =
+              "Please select a project before continuing.";
+          }
         } else if (
           !formData[fieldId] ||
           (typeof formData[fieldId] === "string" &&

@@ -146,12 +146,6 @@ export default function VolunteerNeededChart({
         dayToUse.projects.push({
           ...project,
           volunteersSignedUp,
-          volunteersNeeded: Math.max(
-            0,
-            project.volunteerCount > 0
-              ? project.volunteerCount - volunteersSignedUp
-              : 10 - volunteersSignedUp,
-          ),
           dayOfServiceId: dayToUse.id,
         });
       }

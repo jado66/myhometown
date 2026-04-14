@@ -17,6 +17,7 @@ import {
 import {
   Construction,
   CheckCircle,
+  Print,
   Delete as DeleteIcon,
   Description as ReportIcon,
   Edit as EditIcon,
@@ -408,14 +409,14 @@ export const ProjectCard = ({
                 <Button
                   variant="outlined"
                   size="small"
-                  startIcon={<ReportIcon />}
+                  startIcon={<Print />}
                   onClick={(e) => {
                     e.stopPropagation();
                     onGenerateReport(project);
                   }}
                   sx={{ textTransform: "none", fontSize: "0.75rem", px: 1 }}
                 >
-                  Print Report
+                  Project Detail Report
                 </Button>
                 <IconButton
                   size="small"

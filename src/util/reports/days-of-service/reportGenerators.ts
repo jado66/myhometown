@@ -539,7 +539,9 @@ export const generatePDFReport = async (
   includeBudget = false,
   settings?: any,
   setLoading?: (loading: boolean) => void,
-) => {
+  _doc?: jsPDF,
+): Promise<jsPDF | undefined> => {
+  const isAppending = !!_doc;
   if (setLoading) setLoading(true);
   try {
     const fileName = `${projectName} report.pdf`;
@@ -552,7 +554,7 @@ export const generatePDFReport = async (
     if (error) throw error;
     if (!data) {
       toast.warning("No project found to generate report");
-      return;
+      return _doc;
     }
 
     const project = data;
@@ -560,7 +562,8 @@ export const generatePDFReport = async (
       (stake: any) => stake.id === project.partner_stake_id,
     );
 
-    const doc = new jsPDF();
+    const doc = _doc || new jsPDF();
+    if (isAppending) doc.addPage();
     const logoPath = "/svgs/Primary_Logo_Black_Text.png";
     const logoWidth = 40; // Reduced width
     const logoHeight = 6.15; // Adjusted proportionally
@@ -595,7 +598,7 @@ export const generatePDFReport = async (
     // Title and Logo
     doc.setFontSize(16); // Reduced font size
     doc.setFont("helvetica", "bold");
-    doc.text("Days Of Service Project Report", margin, yPosition + 4);
+    doc.text("Days Of Service - Project Detail Report", margin, yPosition + 4);
     if (imgData) {
       doc.addImage(
         imgData,
@@ -1355,11 +1358,15 @@ export const generatePDFReport = async (
       yPosition += 6;
     }
 
-    doc.save(fileName);
-    toast.success("Report generated successfully");
+    if (!isAppending) {
+      doc.save(fileName);
+    }
+
+    return doc;
   } catch (error) {
     console.error("Failed to generate report:", error);
     toast.error("Failed to generate report");
+    return _doc;
   } finally {
     if (setLoading) setLoading(false);
   }
@@ -1387,13 +1394,94 @@ const fetchProjectsByDaysOfStakeId = async (
   }
 };
 
+/**
+ * Generates a single PDF combining Organization Summary Reports
+ * for all selected partner stakes on a day of service.
+ */
+export const generateCombinedOrgSummaryReport = async (
+  stakeIds: string[],
+  dateOfService: string,
+  dayOfService: any,
+) => {
+  if (stakeIds.length === 0) return;
+  let doc: jsPDF | undefined;
+  for (const stakeId of stakeIds) {
+    doc = await generateStakeSummaryReport(
+      stakeId,
+      dateOfService,
+      dayOfService,
+      undefined,
+      undefined,
+      doc,
+    );
+  }
+  if (doc) {
+    const totalPages = doc.getNumberOfPages();
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Page ${i} of ${totalPages}`, pageWidth - 2, pageHeight - 5, {
+        align: "right",
+      });
+    }
+    const formattedDate = formatSafeDate(dateOfService);
+    doc.save(`Organization_Summary_Report_${formattedDate}.pdf`);
+    toast.success("Organization summary report generated");
+  }
+};
+
+/**
+ * Generates a single PDF combining Project Detail Reports
+ * for all projects across the selected partner stakes.
+ */
+export const generateCombinedProjectDetailReport = async (
+  stakeIds: string[],
+  dateOfService: string,
+  dayOfService: any,
+) => {
+  if (stakeIds.length === 0) return;
+  const formattedDate = formatSafeDate(dateOfService);
+  let doc: jsPDF | undefined;
+  let hasProjects = false;
+  for (const stakeId of stakeIds) {
+    const projects = await fetchProjectsByDaysOfStakeId(stakeId, false);
+    if (!projects || projects.length === 0) continue;
+    for (const project of projects) {
+      hasProjects = true;
+      doc = await generatePDFReport(
+        project.id,
+        formattedDate,
+        project.project_name || "Project",
+        dayOfService,
+        false,
+        undefined,
+        undefined,
+        doc,
+      );
+    }
+  }
+  if (!hasProjects) {
+    toast.warning("No projects found for detail reports");
+    return;
+  }
+  if (doc) {
+    doc.save(`Project_Detail_Report_${formattedDate}.pdf`);
+    toast.success("Project detail report generated");
+  }
+};
+
 export const generateStakeSummaryReport = async (
   stakeId: string,
   dateOfService: string,
   dayOfService: any,
   settings?: ReportSettings,
   setLoading?: (loading: boolean) => void,
-) => {
+  _doc?: jsPDF,
+): Promise<jsPDF | undefined> => {
+  const isAppending = !!_doc;
   if (setLoading) setLoading(true);
   try {
     // Fetch projects if not provided
@@ -1401,7 +1489,7 @@ export const generateStakeSummaryReport = async (
 
     if (!projectsData || projectsData.length === 0) {
       toast.warning("No projects found to generate report");
-      return;
+      return _doc;
     }
 
     const partnerStake = dayOfService?.partner_stakes.find(
@@ -1410,7 +1498,8 @@ export const generateStakeSummaryReport = async (
     const formattedDate = formatSafeDate(dateOfService);
 
     // Initialize PDF
-    const doc = new jsPDF();
+    const doc = _doc || new jsPDF();
+    if (isAppending) doc.addPage();
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
     const margin = 2;
@@ -1459,7 +1548,11 @@ export const generateStakeSummaryReport = async (
 
       doc.setFontSize(16);
       doc.setFont("helvetica", "bold");
-      doc.text("Organization Projects Summary", margin, yPosition + 4);
+      doc.text(
+        "Days Of Service - Organization Summary Report",
+        margin,
+        yPosition + 4,
+      );
 
       if (imgData) {
         doc.addImage(
@@ -1924,31 +2017,35 @@ export const generateStakeSummaryReport = async (
       projectsPerPage++;
     }
 
-    // Add page numbers
-    const totalPages = currentPage;
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "normal");
-      doc.text(
-        `Page ${i} of ${totalPages}`,
-        pageWidth - margin,
-        pageHeight - 5,
-        {
-          align: "right",
-        },
-      );
+    if (!isAppending) {
+      // Add page numbers
+      const totalPages = currentPage;
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
+        doc.text(
+          `Page ${i} of ${totalPages}`,
+          pageWidth - margin,
+          pageHeight - 5,
+          {
+            align: "right",
+          },
+        );
+      }
+
+      // Save PDF
+      const fileName = `${
+        partnerStake?.name || "Stake"
+      }_Summary_${formattedDate}.pdf`;
+      doc.save(fileName);
     }
 
-    // Save PDF
-    const fileName = `${
-      partnerStake?.name || "Stake"
-    }_Summary_${formattedDate}.pdf`;
-    doc.save(fileName);
-    toast.success("Stake summary report generated successfully");
+    return doc;
   } catch (error) {
     console.error("Failed to generate stake summary report:", error);
     toast.error("Failed to generate stake summary");
+    return _doc;
   } finally {
     if (setLoading) setLoading(false);
   }

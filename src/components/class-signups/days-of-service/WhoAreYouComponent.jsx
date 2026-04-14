@@ -232,13 +232,17 @@ export const WhoAreYouComponent = ({
 
       setSelectedProject(selectedOption);
       const updatedFormData = {
-        type: value?.type || "groupMember", // Preserve the current type or default to groupMember
+        type: value?.type || "groupMember",
         value: selectedOption.label,
-        projectId: selectedOption.value, // Include the project ID in the form data
+        projectId: selectedOption.value,
         hasPrepDay: hasPrepDay,
       };
 
       onChange(updatedFormData);
+    } else {
+      // Cleared
+      setSelectedProject(null);
+      onChange({ type: value?.type || "groupMember" });
     }
   };
 
@@ -257,9 +261,9 @@ export const WhoAreYouComponent = ({
 
   // Find the current organization option for react-select
   const groupProjectOptions = projects
-    .map((project, index) => ({
+    .map((project) => ({
       value: project.id,
-      label: ` ${project.partner_ward} - ${project.project_name}`,
+      label: [project.partner_ward, project.project_name].filter(Boolean).join(" - ") || project.id,
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
@@ -515,6 +519,11 @@ export const WhoAreYouComponent = ({
                       className="react-select-container"
                       classNamePrefix="react-select"
                     />
+                    {!selectedProject && (
+                      <FormHelperText error sx={{ ml: 1 }}>
+                        A project selection is required.
+                      </FormHelperText>
+                    )}
                     {selectedProject && (
                       <Typography
                         variant="caption"

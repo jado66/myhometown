@@ -27,6 +27,7 @@ import {
   FilterList,
   ExpandMore as ExpandMoreIcon,
   Assignment,
+  Print,
 } from "@mui/icons-material";
 import moment from "moment";
 
@@ -682,23 +683,20 @@ export const FormResponseTable = ({
       enableColumnDragging: true,
       enableColumnOrdering: true,
       enableColumnResizing: true,
-      enablePagination: true,
+      enablePagination: false,
       enableColumnVisibility: true,
       enableDensityToggle: true,
       enableColumnFilters: true,
       enableFilters: true,
       enableRowSelection: false,
       manualFiltering: false,
-      manualPagination: false,
       manualSorting: false,
       columnResizeMode: "onChange",
-      paginationDisplayMode: "pages",
       positionToolbarAlertBanner: "bottom",
       initialState: { showColumnFilters: false },
 
       // Event handlers
       onColumnSizingChange: handleColumnSizingChange,
-      onPaginationChange: handlePaginationChange,
       onColumnVisibilityChange: handleColumnVisibilityChange,
       onSortingChange: handleSortingChange,
       onColumnFiltersChange: handleColumnFiltersChange,
@@ -707,7 +705,6 @@ export const FormResponseTable = ({
       // State
       state: {
         columnSizing,
-        pagination,
         columnVisibility,
         sorting,
         columnFilters,
@@ -719,7 +716,7 @@ export const FormResponseTable = ({
         <Box sx={{ display: "flex", gap: 2, alignItems: "center", p: 1 }}>
           <Tooltip title="Export to CSV">
             <Button color="primary" onClick={() => exportToCSV(dayData)}>
-              <Assignment sx={{ mr: 1 }} /> Print
+              <Print sx={{ mr: 1 }} /> Print
             </Button>
           </Tooltip>
           <Tooltip title="Toggle Filters">
@@ -786,15 +783,7 @@ export const FormResponseTable = ({
         },
       }),
 
-      // Pagination props
-      muiPaginationProps: {
-        rowsPerPageOptions: [5, 10, 25, 50, 100],
-        showFirstButton: true,
-        showLastButton: true,
-      },
-
       // Other display options
-      positionPagination: "bottom",
       rowNumberDisplayMode: "static",
       muiTableContainerProps: {
         component: Paper,

@@ -288,7 +288,11 @@ export const useDaysOfServiceProjects = () => {
 
         doc.setFontSize(16);
         doc.setFont("helvetica", "bold");
-        doc.text("Organization Projects Summary", margin, yPosition + 4);
+        doc.text(
+          "Days Of Service - Organization Summary Report",
+          margin,
+          yPosition + 4,
+        );
 
         if (imgData) {
           doc.addImage(
