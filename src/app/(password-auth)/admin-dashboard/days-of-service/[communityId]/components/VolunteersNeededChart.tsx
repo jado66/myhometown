@@ -280,13 +280,16 @@ export default function VolunteerNeededChart({
                   <TableCell align="center">
                     <Typography variant="body2">
                       {project.volunteersSignedUp} /{" "}
-                      {project.volunteerCount > 0 ? project.volunteerCount : 10}
+                      {project.volunteersNeeded > 0
+                        ? project.volunteersNeeded
+                        : "TBD"}
                     </Typography>
                   </TableCell>
                   <TableCell align="center">
-                    {project.volunteersNeeded > 0 ? (
+                    {project.volunteersNeeded - project.volunteersSignedUp >
+                    0 ? (
                       <Chip
-                        label={`${project.volunteersNeeded} more needed`}
+                        label={`${project.volunteersNeeded - project.volunteersSignedUp} more needed`}
                         color="warning"
                         size="small"
                       />

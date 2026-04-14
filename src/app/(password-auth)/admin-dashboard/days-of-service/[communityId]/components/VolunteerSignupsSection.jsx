@@ -13,6 +13,8 @@ const VolunteerSignupsSection = ({
   daysOfService,
   projectsMap,
   isLoading,
+  checkins,
+  onToggleCheckin,
 }) => {
   return (
     <Box sx={{ mb: 2 }}>
@@ -28,6 +30,8 @@ const VolunteerSignupsSection = ({
         daysOfService={daysOfService}
         projectsData={projectsMap}
         isLoading={isLoading}
+        checkins={checkins}
+        onToggleCheckin={onToggleCheckin}
       />
     </Box>
   );

@@ -16,6 +16,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Button,
+  Checkbox,
 } from "@mui/material";
 import {
   Person,
@@ -42,6 +43,8 @@ export const FormResponseTable = ({
   daysOfService,
   projectsData,
   isLoading = false,
+  checkins = {},
+  onToggleCheckin,
 }) => {
   // State for grouped data
   const [groupedData, setGroupedData] = useState({});
@@ -77,6 +80,7 @@ export const FormResponseTable = ({
   // Table state
   const [columnSizing, setColumnSizing] = useState(
     getStoredState("volunteerTableColumnSizes", {
+      checkedIn: 120,
       fullName: 180,
       email: 180,
       phone: 140,
@@ -84,8 +88,8 @@ export const FormResponseTable = ({
       dayOfServiceDate: 140,
       whoAreYouValue: 180,
       stakeName: 180,
-      projectName: 200, // Renamed from projectId
-      dayOfServiceFormatted: 200, // Added new column for day of service
+      projectName: 200,
+      dayOfServiceFormatted: 200,
       submittedAtFormatted: 140,
       minorCount: 100,
       hasPrepDay: 100,
@@ -102,6 +106,7 @@ export const FormResponseTable = ({
 
   const [columnVisibility, setColumnVisibility] = useState(
     getStoredState("volunteerTableColumnVisibility", {
+      checkedIn: true,
       fullName: true,
       email: true,
       phone: true,
@@ -109,8 +114,8 @@ export const FormResponseTable = ({
       dayOfServiceDate: true,
       whoAreYouValue: true,
       stakeName: true,
-      projectName: true, // Renamed from projectId
-      dayOfServiceFormatted: true, // Added for day of service column
+      projectName: true,
+      dayOfServiceFormatted: true,
       submittedAtFormatted: true,
       minorCount: true,
       hasPrepDay: true,
@@ -142,6 +147,9 @@ export const FormResponseTable = ({
       const processed = responses.map((response) => {
         const data = response.response_data || response;
         const whoAreYou = data.whoAreYou || {};
+
+        const firstName = (response.firstName || data.firstName || "").trim();
+        const lastName = (response.lastName || data.lastName || "").trim();
 
         // Get day of service name and key
         const serviceDay = data.dayOfService || "removed";
@@ -182,9 +190,7 @@ export const FormResponseTable = ({
           : 0;
 
         // Format name
-        const fullName = `${response.firstName || ""} ${
-          response.lastName || ""
-        }`.trim();
+        const fullName = `${firstName} ${lastName}`.trim();
 
         // Format date
         const submittedAtFormatted =
@@ -204,6 +210,8 @@ export const FormResponseTable = ({
         return {
           ...response,
           ...data,
+          firstName,
+          lastName,
           fullName,
           location,
           submittedAtFormatted,
@@ -222,6 +230,21 @@ export const FormResponseTable = ({
           hasPrepDay: whoAreYou.hasPrepDay || false,
           submissionId: response.submissionId || response.id,
         };
+      });
+
+      // Default ordering: alphabetical by last name, then first name.
+      processed.sort((a, b) => {
+        const lastNameCompare = (a.lastName || "").localeCompare(
+          b.lastName || "",
+          undefined,
+          { sensitivity: "base" },
+        );
+
+        if (lastNameCompare !== 0) return lastNameCompare;
+
+        return (a.firstName || "").localeCompare(b.firstName || "", undefined, {
+          sensitivity: "base",
+        });
       });
 
       // Group by day of service
@@ -364,6 +387,31 @@ export const FormResponseTable = ({
   const columns = useMemo(
     () => [
       {
+        id: "checkedIn",
+        header: "Checked In",
+        size: columnSizing.checkedIn,
+        minSize: 175,
+        enableSorting: true,
+        enableColumnFilter: true,
+        filterFn: "equals",
+        accessorFn: (row) => checkins[row.submissionId]?.checked_in ?? false,
+        Cell: ({ row }) => {
+          const submissionId = row.original.submissionId;
+          const isCheckedIn = checkins[submissionId]?.checked_in ?? false;
+          return (
+            <Checkbox
+              checked={isCheckedIn}
+              color="success"
+              size="small"
+              onChange={(e) => {
+                onToggleCheckin?.(submissionId, e.target.checked);
+              }}
+              onClick={(e) => e.stopPropagation()}
+            />
+          );
+        },
+      },
+      {
         accessorKey: "fullName",
         header: "Volunteer",
         size: columnSizing.fullName,
@@ -384,7 +432,7 @@ export const FormResponseTable = ({
         accessorKey: "phone",
         header: "Phone",
         size: columnSizing.phone,
-        minSize: 120,
+        minSize: 150,
         Cell: ({ row }) => (
           <Typography variant="body2" color="textSecondary" noWrap>
             {row.original.phone || "-"}
@@ -422,7 +470,7 @@ export const FormResponseTable = ({
         accessorKey: "dayOfServiceDate",
         header: "Day of Service",
         size: columnSizing.dayOfServiceDate,
-        minSize: 120,
+        minSize: 200,
         Cell: ({ row }) => (
           <Typography variant="body2" noWrap>
             {row.original.dayOfServiceDate || "-"}
@@ -433,7 +481,7 @@ export const FormResponseTable = ({
         accessorKey: "stakeName",
         header: "Organization",
         size: columnSizing.stakeName,
-        minSize: 160,
+        minSize: 200,
         Cell: ({ row }) => (
           <Typography variant="body2" noWrap>
             {row.original.stakeName || "-"}
@@ -467,9 +515,9 @@ export const FormResponseTable = ({
 
       {
         accessorKey: "submittedAtFormatted",
-        header: "Submitted",
+        header: "Date Submitted",
         size: columnSizing.submittedAtFormatted,
-        minSize: 120,
+        minSize: 175,
         sortingFn: "datetime",
         sortUndefined: -1,
         Cell: ({ row }) => (
@@ -516,7 +564,7 @@ export const FormResponseTable = ({
         accessorKey: "actions",
         header: "Actions",
         size: columnSizing.actions,
-        minSize: 100,
+        minSize: 150,
         enableSorting: false,
         enableColumnFilter: false,
         Cell: ({ row }) => (
@@ -551,7 +599,14 @@ export const FormResponseTable = ({
         ),
       },
     ],
-    [columnSizing, formId, onViewResponse, onDeleteResponse],
+    [
+      columnSizing,
+      formId,
+      onViewResponse,
+      onDeleteResponse,
+      checkins,
+      onToggleCheckin,
+    ],
   );
 
   // Handle state changes
@@ -632,7 +687,7 @@ export const FormResponseTable = ({
       enableDensityToggle: true,
       enableColumnFilters: true,
       enableFilters: true,
-      enableRowSelection: true,
+      enableRowSelection: false,
       manualFiltering: false,
       manualPagination: false,
       manualSorting: false,

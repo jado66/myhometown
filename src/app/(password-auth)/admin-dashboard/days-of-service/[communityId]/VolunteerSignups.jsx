@@ -19,6 +19,7 @@ import moment from "moment";
 import { useCommunityData } from "@/hooks/useCommunityData";
 import { useProjectSummary } from "@/hooks/useProjectSummary";
 import { useVolunteerResponses } from "@/hooks/useVolunteerResponses";
+import { useVolunteerCheckins } from "@/hooks/useVolunteerCheckins";
 
 // Component imports
 import ProjectsSummarySection from "./components/ProjectsSummarySection";
@@ -50,7 +51,7 @@ const newToOldCommunity = {
   "dcf35fbc-8053-40fa-b4a4-faaa61e2fbef": "6912655528c9b9c20ee4dede",
 };
 
-const DaysOfServicePage = ({
+const VolunteerSignups = ({
   params,
   daysOfService,
   generateCommunityReport,
@@ -93,12 +94,23 @@ const DaysOfServicePage = ({
     handleConfirmDelete,
   } = useVolunteerResponses(community?.volunteerSignUpId);
 
+  const { checkins, loadCheckins, toggleCheckin } = useVolunteerCheckins(
+    community?.volunteerSignUpId,
+  );
+
   // Load responses when community is ready
   useEffect(() => {
     if (!responsesLoaded && community?.volunteerSignUpId) {
       loadResponses();
     }
   }, [responsesLoaded, community, loadResponses]);
+
+  // Load checkins whenever responses finish loading
+  useEffect(() => {
+    if (responsesLoaded && community?.volunteerSignUpId) {
+      loadCheckins();
+    }
+  }, [responsesLoaded, community, loadCheckins]);
 
   // Filter project summary and responses by selected day
   const filteredProjectSummary = localDayId
@@ -229,6 +241,8 @@ const DaysOfServicePage = ({
                     daysOfService={daysOfService}
                     projectsMap={projectsMap}
                     isLoading={!responsesLoaded}
+                    checkins={checkins}
+                    onToggleCheckin={toggleCheckin}
                   />
                 </>
               )}
@@ -264,4 +278,4 @@ const DaysOfServicePage = ({
   );
 };
 
-export default DaysOfServicePage;
+export default VolunteerSignups;
