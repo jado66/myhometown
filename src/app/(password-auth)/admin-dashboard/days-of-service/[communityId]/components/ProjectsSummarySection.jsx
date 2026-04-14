@@ -13,7 +13,7 @@ import {
   TableBody,
   Paper,
 } from "@mui/material";
-import { Print, Warning } from "@mui/icons-material";
+import { TableChart, Warning } from "@mui/icons-material";
 import ServiceDayHeader from "./ServiceDayHeader";
 import TightedCell from "./TightedCell";
 
@@ -49,8 +49,8 @@ const ProjectsSummarySection = ({
           sx={{ my: 2, display: "flex" }}
           onClick={generateCommunityReport}
         >
-          <Print sx={{ mr: 1 }} />
-          Print Days of Service Summary Report
+          <TableChart sx={{ mr: 1 }} />
+          Download Days of Service Summary Report (CSV)
         </Button>
 
         {sortedDates.length === 0 ? (

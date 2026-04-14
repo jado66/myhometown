@@ -141,7 +141,8 @@ export function generateDOSReportCSV({
     "Partner Group Contact Email",
     "Needed # of Volunteers",
     "Actual # of Volunteers",
-    "Actual # of Hours",
+    "Duration of project (Hours)",
+    "Total # of Volunteer Hours",
     "Dumpster Needed",
     "Second Dumpster Needed",
     "Blue Stakes Needed",
@@ -267,6 +268,11 @@ export function generateDOSReportCSV({
         project.actual_project_duration != null
           ? project.actual_project_duration
           : "",
+        (() => {
+          const volunteers = parseFloat(project.actual_volunteers) || 0;
+          const hours = parseFloat(project.actual_project_duration) || 0;
+          return volunteers > 0 && hours > 0 ? (volunteers * hours).toFixed(1) : "";
+        })(),
         escapeCSV(formatBoolean(project.is_dumpster_needed)),
         escapeCSV(formatBoolean(project.is_second_dumpster_needed)),
         escapeCSV(formatBoolean(project.are_blue_stakes_needed)),
@@ -326,6 +332,11 @@ export function generateDOSReportCSV({
         project.actual_project_duration != null
           ? project.actual_project_duration
           : "",
+        (() => {
+          const volunteers = parseFloat(project.actual_volunteers) || 0;
+          const hours = parseFloat(project.actual_project_duration) || 0;
+          return volunteers > 0 && hours > 0 ? (volunteers * hours).toFixed(1) : "";
+        })(),
         escapeCSV(formatBoolean(project.is_dumpster_needed)),
         escapeCSV(formatBoolean(project.is_second_dumpster_needed)),
         escapeCSV(formatBoolean(project.are_blue_stakes_needed)),

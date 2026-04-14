@@ -759,16 +759,22 @@ export const useDaysOfServiceProjects = () => {
     // Create CSV content
     let csvContent = "";
 
-    // Generate the report
-    for (const day of daysOfService) {
-      // Day header
-      const dayHeader = `${day.name || "Day of Service"} - ${moment(
-        day.end_date,
-      ).format("ddd, MM/DD/yy")}`;
-      csvContent += `"${dayHeader}"\n`;
+    // Single header row for the entire table
+    csvContent += `"Day Of Service","Name","Organization","Group","Home Owner","Address","Status","Needed # of Volunteers","Project Manager","Project Short Description","Dumpster","Waiver","Prep Day","Actual # of Volunteers","Actual # of Hours","Total # of Volunteer Hours"\n`;
 
-      // UPDATED: Column headers for projects (new format)
-      csvContent += `"Organization","Group","Home Owner","Address","Status","Needed # of Volunteers","Project Manager","Project Short Description","Dumpster","Waiver","Prep Day","Actual # of Volunteers","Actual # of Hours"\n`;
+    let totalNeededVolunteers = 0;
+    let totalActualVolunteers = 0;
+    let totalActualHours = 0;
+    let totalVolunteerHours = 0;
+
+    // Generate the report
+    const sortedDaysOfService = [...daysOfService].sort((a, b) =>
+      moment(a.end_date).diff(moment(b.end_date)),
+    );
+
+    for (const day of sortedDaysOfService) {
+      const dayDate = moment(day.end_date).format("ddd, MM/DD/yy");
+      const dayName = (day.name || "Day of Service").replace(/"/g, '""');
 
       // Process each stake sequentially
       for (const stake of day.partner_stakes) {
@@ -778,8 +784,7 @@ export const useDaysOfServiceProjects = () => {
         )) as any[];
 
         if (projects.length === 0) {
-          // UPDATED: Add a row for stakes with no projects (with new column count)
-          csvContent += `"${stake.name}","No projects found for this stake.","","","","","","","","","","",""\n`;
+          csvContent += `"${dayDate}","${dayName}","${stake.name}","No projects found for this stake.","","","","","","","","","","",""\n`;
         } else {
           projects.forEach((project) => {
             // Format address
@@ -791,10 +796,19 @@ export const useDaysOfServiceProjects = () => {
             const status =
               project.status?.toUpperCase() || "In Progress".toUpperCase();
 
-            // UPDATED: Get all the new field values
             const neededVolunteers = project.volunteers_needed || "";
             const actualVolunteers = project.actual_volunteers || "";
             const actualHours = project.actual_project_duration || "";
+            const volunteerHours =
+              (parseFloat(project.actual_volunteers) || 0) *
+              (parseFloat(project.actual_project_duration) || 0);
+            const volunteerHoursDisplay =
+              volunteerHours > 0 ? volunteerHours.toFixed(1) : "";
+
+            totalNeededVolunteers += parseFloat(project.volunteers_needed) || 0;
+            totalActualVolunteers += parseFloat(project.actual_volunteers) || 0;
+            totalActualHours += parseFloat(project.actual_project_duration) || 0;
+            totalVolunteerHours += volunteerHours;
             const resourceCouple = project.project_development_couple || "";
             const projectDescription = project.project_id || "";
             const dumpster = formatBoolean(project.is_dumpster_needed);
@@ -819,15 +833,14 @@ export const useDaysOfServiceProjects = () => {
               '""',
             );
 
-            // UPDATED: Add the row to CSV content with all new columns
-            csvContent += `"${escapedStakeName}","${escapedGroup}","${escapedOwner}","${escapedAddress}","${escapedStatus}","${neededVolunteers}","${escapedResourceCouple}","${escapedProjectDescription}","${dumpster}","${waiver}","${prepDay}","${actualVolunteers}","${actualHours}"\n`;
+            csvContent += `"${dayDate}","${dayName}","${escapedStakeName}","${escapedGroup}","${escapedOwner}","${escapedAddress}","${escapedStatus}","${neededVolunteers}","${escapedResourceCouple}","${escapedProjectDescription}","${dumpster}","${waiver}","${prepDay}","${actualVolunteers}","${actualHours}","${volunteerHoursDisplay}"\n`;
           });
         }
       }
-
-      // Add blank lines after each day
-      csvContent += `\n\n`;
     }
+
+    // Totals row
+    csvContent += `"TOTALS","","","","","","","${totalNeededVolunteers}","","","","","","${totalActualVolunteers}","","${totalVolunteerHours.toFixed(1)}"\n`;
 
     // Generate filename
     const fileName = `${community.city_name} - ${community.name} Days of Service Report.csv`;
