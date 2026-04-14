@@ -619,8 +619,7 @@ export function ClassSignupProvider({
           }
         } else if (config.type === FIELD_TYPES.whoAreYou) {
           if (!formData[fieldId] || !formData[fieldId].projectId) {
-            newErrors[fieldId] =
-              "Please select a project before continuing.";
+            newErrors[fieldId] = "Please select a project before continuing.";
           }
         } else if (
           !formData[fieldId] ||

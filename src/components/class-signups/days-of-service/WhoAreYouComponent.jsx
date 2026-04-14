@@ -263,7 +263,10 @@ export const WhoAreYouComponent = ({
   const groupProjectOptions = projects
     .map((project) => ({
       value: project.id,
-      label: [project.partner_ward, project.project_name].filter(Boolean).join(" - ") || project.id,
+      label:
+        [project.partner_ward, project.project_name]
+          .filter(Boolean)
+          .join(" - ") || project.id,
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
