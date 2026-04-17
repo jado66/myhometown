@@ -259,6 +259,7 @@ const VolunteerSignups = ({
             selectedSubmissionId={selectedSubmissionId}
             onDelete={handleDeleteClick}
             formId={community.volunteerSignUpId}
+            daysOfService={daysOfService}
           />
 
           {/* Delete Confirmation Dialog */}

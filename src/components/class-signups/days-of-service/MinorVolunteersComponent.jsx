@@ -372,12 +372,7 @@ export const MinorVolunteersComponent = ({
               </Box>
             </Box>
 
-            <Typography
-              color="text.secondary"
-              sx={{ mt: 2.5, fontSize: "0.95rem" }}
-            >
-              * Hours will be collected below
-            </Typography>
+
           </CardContent>
         </Card>
       )}

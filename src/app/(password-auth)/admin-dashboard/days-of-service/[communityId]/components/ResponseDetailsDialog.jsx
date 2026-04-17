@@ -22,6 +22,7 @@ const ResponseDetailsDialog = ({
   selectedSubmissionId,
   onDelete,
   formId,
+  daysOfService = [],
 }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -51,6 +52,43 @@ const ResponseDetailsDialog = ({
 
               let displayValue = fullSubmissionData[fieldId];
 
+              // Resolve day of service UUID to name/date
+              if (
+                fieldId === "dayOfService" &&
+                typeof displayValue === "string"
+              ) {
+                const dayInfo = daysOfService.find(
+                  (d) => d.id === displayValue,
+                );
+                if (dayInfo) {
+                  displayValue =
+                    dayInfo.name ||
+                    new Date(dayInfo.end_date).toLocaleDateString();
+                }
+              }
+
+              // Show just the type for whoAreYou
+              if (
+                fieldId === "whoAreYou" &&
+                typeof displayValue === "object" &&
+                displayValue !== null &&
+                !Array.isArray(displayValue)
+              ) {
+                const type = displayValue.type;
+                if (type) {
+                  const typeLabels = {
+                    missionary: "Missionary",
+                    volunteer: "Volunteer",
+                    wardMember: "Ward Member",
+                    groupMember: "Group Member",
+                    other: "Other",
+                  };
+                  displayValue =
+                    typeLabels[type] ||
+                    type.charAt(0).toUpperCase() + type.slice(1);
+                }
+              }
+
               // Handle array of objects (like minorVolunteers)
               if (
                 Array.isArray(displayValue) &&
@@ -67,8 +105,7 @@ const ResponseDetailsDialog = ({
                       {displayValue.map((volunteer, index) => (
                         <Box key={index} sx={{ ml: 2, mb: 1 }}>
                           <Typography variant="body1">
-                            Name: {volunteer.name}, Age: {volunteer.age}, Hours:{" "}
-                            {volunteer.hours}
+                            Name: {volunteer.name}, Age: {volunteer.age}
                           </Typography>
                         </Box>
                       ))}
