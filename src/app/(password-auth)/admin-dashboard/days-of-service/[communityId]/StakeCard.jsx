@@ -181,7 +181,7 @@ export const StakeCard = ({
             startIcon={<Print />}
             onClick={(e) => {
               e.stopPropagation();
-              onGenerateReport(stake.id, day.end_date, day);
+              onGenerateReport("org_summary", [stake.id], day);
             }}
             sx={{
               textTransform: "none",

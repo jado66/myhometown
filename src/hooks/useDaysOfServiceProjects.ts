@@ -807,7 +807,8 @@ export const useDaysOfServiceProjects = () => {
 
             totalNeededVolunteers += parseFloat(project.volunteers_needed) || 0;
             totalActualVolunteers += parseFloat(project.actual_volunteers) || 0;
-            totalActualHours += parseFloat(project.actual_project_duration) || 0;
+            totalActualHours +=
+              parseFloat(project.actual_project_duration) || 0;
             totalVolunteerHours += volunteerHours;
             const resourceCouple = project.project_development_couple || "";
             const projectDescription = project.project_id || "";

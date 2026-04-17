@@ -271,7 +271,9 @@ export function generateDOSReportCSV({
         (() => {
           const volunteers = parseFloat(project.actual_volunteers) || 0;
           const hours = parseFloat(project.actual_project_duration) || 0;
-          return volunteers > 0 && hours > 0 ? (volunteers * hours).toFixed(1) : "";
+          return volunteers > 0 && hours > 0
+            ? (volunteers * hours).toFixed(1)
+            : "";
         })(),
         escapeCSV(formatBoolean(project.is_dumpster_needed)),
         escapeCSV(formatBoolean(project.is_second_dumpster_needed)),
@@ -335,7 +337,9 @@ export function generateDOSReportCSV({
         (() => {
           const volunteers = parseFloat(project.actual_volunteers) || 0;
           const hours = parseFloat(project.actual_project_duration) || 0;
-          return volunteers > 0 && hours > 0 ? (volunteers * hours).toFixed(1) : "";
+          return volunteers > 0 && hours > 0
+            ? (volunteers * hours).toFixed(1)
+            : "";
         })(),
         escapeCSV(formatBoolean(project.is_dumpster_needed)),
         escapeCSV(formatBoolean(project.is_second_dumpster_needed)),

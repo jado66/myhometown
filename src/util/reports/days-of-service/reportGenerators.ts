@@ -1413,6 +1413,7 @@ export const generateCombinedOrgSummaryReport = async (
       undefined,
       undefined,
       doc,
+      true, // combined function handles saving
     );
   }
   if (doc) {
@@ -1480,6 +1481,7 @@ export const generateStakeSummaryReport = async (
   settings?: ReportSettings,
   setLoading?: (loading: boolean) => void,
   _doc?: jsPDF,
+  suppressSave = false,
 ): Promise<jsPDF | undefined> => {
   const isAppending = !!_doc;
   if (setLoading) setLoading(true);
@@ -1681,8 +1683,14 @@ export const generateStakeSummaryReport = async (
         ? `${project.project_name || "Unnamed Project"}`
         : "Project";
 
+      // Use the same font sizes as rendering so splitTextToSize wraps identically
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
       const wrappedTitle = doc.splitTextToSize(projectTitle, colWidth - 10);
-      tempY += wrappedTitle.length * 5 + 1; // Reduced spacing after title from 2 to 1
+      tempY += wrappedTitle.length * 5 + 1;
+
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
 
       // Calculate height for details
       const details = [];
@@ -1738,29 +1746,28 @@ export const generateStakeSummaryReport = async (
         tempY += wrappedLine.length * 4;
       });
 
-      // Calculate height for tasks
-      if (
-        shouldIncludeField("tasks", settings) &&
-        project.tasks?.tasks?.length > 0
-      ) {
+      // Calculate height for tasks — mirrors rendering logic exactly
+      if (shouldIncludeField("tasks", settings)) {
         tempY += 4; // "Project Description:" label
-
-        const tasks = project.tasks.tasks
-          .slice(0, 3) // Limit to 3 tasks
-          .map((task: any) =>
-            task.todos?.length > 0 ? task.todos[0].substring(0, 40) : "N/A",
-          );
-
-        tasks.forEach((task: string) => {
-          const wrappedTask = doc.splitTextToSize(
-            `• ${task}${task.length > 40 ? "..." : ""}`,
-            colWidth - 15,
-          );
-          tempY += wrappedTask.slice(0, 1).length * 4;
-        });
-
-        if (project.tasks.tasks.length > 3) {
-          tempY += 4; // "+X more" text
+        if (project.tasks?.tasks?.length > 0) {
+          const tasks = project.tasks.tasks
+            .map((task: any) =>
+              task.todos?.length > 0 ? task.todos[0].substring(0, 40) : "",
+            )
+            .filter((task: string) => task.trim());
+          if (tasks.length > 0) {
+            tasks.forEach((task: string) => {
+              const wrappedTask = doc.splitTextToSize(
+                `• ${task}${task.length > 40 ? "..." : ""}`,
+                colWidth - 15,
+              );
+              tempY += wrappedTask.slice(0, 1).length * 4;
+            });
+          } else {
+            tempY += 4; // "• N/A"
+          }
+        } else {
+          tempY += 4; // "• N/A"
         }
       }
 
@@ -1877,40 +1884,31 @@ export const generateStakeSummaryReport = async (
       // Calculate the actual height needed for the card
       const estimatedCardHeight = tempY - yPosition;
 
+      // Determine where this card would actually start
+      const cardStartY = useLeftColumn ? leftColY : rightColY;
+
       // Check if adding this card to the current column would exceed page height
       const wouldExceedPage =
-        yPosition + estimatedCardHeight > pageHeight - margin;
+        cardStartY + estimatedCardHeight > pageHeight - margin;
 
       // If it would exceed, check how to handle it:
       if (wouldExceedPage) {
-        if (useLeftColumn && rightColY < yPosition) {
-          // If left column reaches bottom but right column has space, switch to right
+        if (useLeftColumn && rightColY + estimatedCardHeight <= pageHeight - margin) {
+          // Right column still has space for this card, switch to it
           currentColumn = "right";
-          // Don't increment projectIndex, we'll try this project again in the right column
           continue;
         } else {
-          // Both columns are at bottom or we're already in right column
+          // Both columns are full — start a new page
           doc.addPage();
           currentPage++;
 
-          // Reset for new page but preserve column alternation
           leftColY = margin;
           rightColY = margin;
-          projectsPerPage = 0; // Reset count for new page
-
-          // Important: when starting a new page, we should KEEP the current column
-          // so the alternating pattern continues across pages
-          // Don't increment projectIndex, we'll try this project again on the new page
-
-          // Add header to the new page
-          // addPageHeader(true)
-
+          projectsPerPage = 0;
+          currentColumn = "left";
           continue;
         }
       }
-
-      // Now we know we can fit the card, determine the column and position
-      const cardStartY = useLeftColumn ? leftColY : rightColY;
 
       // Draw the card background FIRST
       const isCompleted = project.status === "completed";
@@ -2017,7 +2015,7 @@ export const generateStakeSummaryReport = async (
       projectsPerPage++;
     }
 
-    if (!isAppending) {
+    if (!isAppending && !suppressSave) {
       // Add page numbers
       const totalPages = currentPage;
       for (let i = 1; i <= totalPages; i++) {
