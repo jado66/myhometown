@@ -75,6 +75,7 @@ const VolunteerSignups = ({
     projectsMap,
     totalVolunteerHours,
     totalVolunteers,
+    totalCompletedProjects,
     loading: projectsLoading,
   } = useProjectSummary(daysOfService);
 
@@ -156,6 +157,14 @@ const VolunteerSignups = ({
               Projects and volunteer participation overview
             </Typography>
             <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
+              Total Completed Projects:{" "}
+              <strong>
+                {Number(totalCompletedProjects).toLocaleString(undefined, {
+                  maximumFractionDigits: 0,
+                })}
+              </strong>
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
               Total Community Volunteers:{" "}
               <strong>
                 {Number(totalVolunteers).toLocaleString(undefined, {

@@ -127,11 +127,17 @@ export const useProjectSummary = (daysOfService) => {
     0,
   );
 
+  // Count completed projects (date is in the past)
+  const totalCompletedProjects = projectSummary.filter(
+    (project) => project.date && project.date.isBefore(moment(), "day"),
+  ).length;
+
   return {
     projectSummary,
     projectsMap,
     totalVolunteerHours,
     totalVolunteers,
+    totalCompletedProjects,
     loading,
     error,
   };

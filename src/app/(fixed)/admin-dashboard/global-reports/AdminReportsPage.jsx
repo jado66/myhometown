@@ -291,6 +291,8 @@ const AdminReportsPage = () => {
           hours,
           dosProjects,
           crcStats,
+          cityMissionaries,
+          stateMissionaries,
         } = await response.json();
 
         const csvContent = generateOverviewReportCSV({
@@ -300,6 +302,8 @@ const AdminReportsPage = () => {
           dosProjects,
           crcStats,
           dateRange,
+          cityMissionaries: cityMissionaries || [],
+          stateMissionaries: stateMissionaries || [],
         });
 
         const today = new Date().toISOString().split("T")[0];

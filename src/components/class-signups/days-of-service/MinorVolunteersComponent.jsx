@@ -371,8 +371,6 @@ export const MinorVolunteersComponent = ({
                 </Button>
               </Box>
             </Box>
-
-
           </CardContent>
         </Card>
       )}

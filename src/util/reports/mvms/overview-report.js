@@ -14,7 +14,7 @@
  *     DOS # Projects,
  *     (blank), Total Volunteers, Total Service Hours, (blank)
  *
- * Per section: communities → blank → cities → blank → Utah → blank → Total
+ * Per section: communities → blank → cities (incl. city-level missionaries) → blank → Total (incl. state-level missionaries)
  */
 
 const COL_COUNT = 11;
@@ -172,6 +172,8 @@ function section2Row(location, stats) {
  * @param {Array} params.dosProjects - DOS project form objects with community_id, actual_volunteers, actual_project_duration
  * @param {Object} params.crcStats - { [communityId]: { classCount, uniqueStudents, totalAttendance } }
  * @param {Object} params.dateRange - { startDate, endDate }
+ * @param {Array} params.cityMissionaries - city-level missionary objects with id, city_id
+ * @param {Array} params.stateMissionaries - state-level missionary objects with id
  * @returns {string} CSV content
  */
 export function generateOverviewReportCSV({
@@ -181,6 +183,8 @@ export function generateOverviewReportCSV({
   dosProjects,
   crcStats,
   dateRange,
+  cityMissionaries = [],
+  stateMissionaries = [],
 }) {
   // Parse date-only strings as local time (not UTC) to avoid off-by-one day
   // when displaying in negative-UTC-offset timezones.
@@ -252,6 +256,15 @@ export function generateOverviewReportCSV({
     dosByCommunity[p.community_id].push(p);
   });
 
+  // Group city-level missionaries by city_id
+  const cityMissionaryByCity = {};
+  cityMissionaries.forEach((m) => {
+    if (!cityMissionaryByCity[m.city_id]) {
+      cityMissionaryByCity[m.city_id] = [];
+    }
+    cityMissionaryByCity[m.city_id].push(m);
+  });
+
   // Group communities by city
   const citiesMap = {};
   communities.forEach((c) => {
@@ -283,17 +296,13 @@ export function generateOverviewReportCSV({
   // Collect computed stats per community/city for reuse across both sections
   const communityEntries = [];
   const cityRows = [];
-  let utahMissionaries = [];
-  let utahHoursEntries = [];
-  let utahDosProjects = [];
-  let utahCrc = { ...emptyCrc };
   let allMissionaries = [];
   let allHoursEntries = [];
   let allDosProjects = [];
   let allCrc = { ...emptyCrc };
 
   for (const [cityId, cityInfo] of sortedCityEntries) {
-    let cityMissionaries = [];
+    let cityMissionariesList = [];
     let cityHoursEntries = [];
     let cityDosProjects = [];
     let cityCrc = { ...emptyCrc };
@@ -327,32 +336,40 @@ export function generateOverviewReportCSV({
 
       communityEntries.push({ name: displayName, stats });
 
-      cityMissionaries = cityMissionaries.concat(commMissionaries);
+      cityMissionariesList = cityMissionariesList.concat(commMissionaries);
       cityHoursEntries = cityHoursEntries.concat(commHours);
       cityDosProjects = cityDosProjects.concat(commDos);
       cityCrc = addCrc(cityCrc, commCrc);
     }
 
+    // Include city-level missionaries (assigned to the city, not a community)
+    const cityLevelMvs = cityMissionaryByCity[cityId] || [];
+    const cityLevelHours = cityLevelMvs.flatMap(
+      (m) => hoursByMissionary[m.id] || [],
+    );
+    cityMissionariesList = cityMissionariesList.concat(cityLevelMvs);
+    cityHoursEntries = cityHoursEntries.concat(cityLevelHours);
+
     cityRows.push({
       name: cityInfo.name,
-      missionaries: cityMissionaries,
+      missionaries: cityMissionariesList,
       hours: cityHoursEntries,
       dosProjects: cityDosProjects,
       crc: cityCrc,
     });
 
-    if (cityInfo.state && cityInfo.state.toLowerCase().includes("utah")) {
-      utahMissionaries = utahMissionaries.concat(cityMissionaries);
-      utahHoursEntries = utahHoursEntries.concat(cityHoursEntries);
-      utahDosProjects = utahDosProjects.concat(cityDosProjects);
-      utahCrc = addCrc(utahCrc, cityCrc);
-    }
-
-    allMissionaries = allMissionaries.concat(cityMissionaries);
+    allMissionaries = allMissionaries.concat(cityMissionariesList);
     allHoursEntries = allHoursEntries.concat(cityHoursEntries);
     allDosProjects = allDosProjects.concat(cityDosProjects);
     allCrc = addCrc(allCrc, cityCrc);
   }
+
+  // Include state-level missionaries in overall totals
+  const stateLevelHours = stateMissionaries.flatMap(
+    (m) => hoursByMissionary[m.id] || [],
+  );
+  allMissionaries = allMissionaries.concat(stateMissionaries);
+  allHoursEntries = allHoursEntries.concat(stateLevelHours);
 
   // Pre-compute aggregate stats
   const cityStatsMap = cityRows.map((city) => ({
@@ -365,17 +382,6 @@ export function generateOverviewReportCSV({
       elapsedMonths,
     ),
   }));
-
-  const utahStats =
-    utahMissionaries.length > 0
-      ? computeOverviewStats(
-          utahMissionaries,
-          utahHoursEntries,
-          utahDosProjects,
-          utahCrc,
-          elapsedMonths,
-        )
-      : null;
 
   const totalStats = computeOverviewStats(
     allMissionaries,
@@ -410,11 +416,6 @@ export function generateOverviewReportCSV({
   }
   rows.push(EMPTY_ROW);
 
-  if (utahStats) {
-    rows.push(section1Row("Utah", utahStats));
-    rows.push(EMPTY_ROW);
-  }
-
   rows.push(section1Row("Total", totalStats));
 
   // Gap between sections
@@ -434,11 +435,6 @@ export function generateOverviewReportCSV({
     rows.push(section2Row(city.name, city.stats));
   }
   rows.push(EMPTY_ROW);
-
-  if (utahStats) {
-    rows.push(section2Row("Utah", utahStats));
-    rows.push(EMPTY_ROW);
-  }
 
   rows.push(section2Row("Total", totalStats));
 

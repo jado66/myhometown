@@ -145,6 +145,8 @@ export async function POST(request: NextRequest) {
         hours: [],
         dosProjects: [],
         crcStats: {},
+        cityMissionaries: [],
+        stateMissionaries: [],
       });
     }
 
@@ -187,8 +189,94 @@ export async function POST(request: NextRequest) {
       })),
     );
 
+    // 2b. Fetch city-level missionaries (assignment_level = 'city', no community_id)
+    const resolvedCityIds = Array.from(
+      new Set(communities.map((c: any) => c.city_id).filter(Boolean)),
+    );
+    let cityMissionaries: any[] = [];
+
+    if (resolvedCityIds.length > 0) {
+      let cityFrom = 0;
+      let cityHasMore = true;
+
+      while (cityHasMore) {
+        const { data, error } = await supabase
+          .from("missionaries")
+          .select("id, first_name, last_name, city_id, person_type")
+          .in("city_id", resolvedCityIds)
+          .eq("assignment_level", "city")
+          .in("assignment_status", ["active"])
+          .is("community_id", null)
+          .range(cityFrom, cityFrom + pageSize - 1);
+
+        if (error) {
+          console.error(
+            "[overview-report] Error fetching city missionaries:",
+            error,
+          );
+          return NextResponse.json({ error: error.message }, { status: 500 });
+        }
+
+        if (data && data.length > 0) {
+          cityMissionaries = cityMissionaries.concat(data);
+          cityFrom += pageSize;
+          cityHasMore = data.length === pageSize;
+        } else {
+          cityHasMore = false;
+        }
+      }
+    }
+
+    console.log(
+      "[overview-report] City-level missionaries found:",
+      cityMissionaries.length,
+    );
+
+    // 2c. Fetch state-level missionaries (assignment_level = 'state', no city or community)
+    let stateMissionaries: any[] = [];
+    {
+      let stateFrom = 0;
+      let stateHasMore = true;
+
+      while (stateHasMore) {
+        const { data, error } = await supabase
+          .from("missionaries")
+          .select("id, first_name, last_name, person_type")
+          .eq("assignment_level", "state")
+          .in("assignment_status", ["active"])
+          .is("community_id", null)
+          .is("city_id", null)
+          .range(stateFrom, stateFrom + pageSize - 1);
+
+        if (error) {
+          console.error(
+            "[overview-report] Error fetching state missionaries:",
+            error,
+          );
+          return NextResponse.json({ error: error.message }, { status: 500 });
+        }
+
+        if (data && data.length > 0) {
+          stateMissionaries = stateMissionaries.concat(data);
+          stateFrom += pageSize;
+          stateHasMore = data.length === pageSize;
+        } else {
+          stateHasMore = false;
+        }
+      }
+    }
+
+    console.log(
+      "[overview-report] State-level missionaries found:",
+      stateMissionaries.length,
+    );
+
     // 3. Fetch hours WITH activities JSONB
-    const missionaryIds = allMissionaries.map((m) => m.id);
+    const missionaryIds = [
+      ...allMissionaries,
+      ...cityMissionaries,
+      ...stateMissionaries,
+    ].map((m) => m.id);
     let allHours: any[] = [];
 
     if (missionaryIds.length > 0) {
@@ -384,6 +472,8 @@ export async function POST(request: NextRequest) {
       hours: allHours,
       dosProjects: allDosProjects,
       crcStats,
+      cityMissionaries,
+      stateMissionaries,
     });
   } catch (err: any) {
     console.error("[overview-report] Unexpected error:", err);
