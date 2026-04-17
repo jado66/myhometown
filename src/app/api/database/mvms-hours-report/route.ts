@@ -48,6 +48,26 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
       if (data) communities = communities.concat(data);
+
+      // Retry unmatched UUID-formatted IDs against mongo_id
+      // (legacy MongoDB _id values can look like UUIDs)
+      const foundIds = new Set((data || []).map((c: any) => c.id));
+      const unmatchedUuids = uuidIds.filter((id: string) => !foundIds.has(id));
+      if (unmatchedUuids.length > 0) {
+        const { data: mongoData, error: mongoError } = await supabase
+          .from("communities")
+          .select(
+            "id, name, city_id, mongo_id, cities:communities_city_id_fkey ( id, name, state )",
+          )
+          .in("mongo_id", unmatchedUuids);
+        if (mongoError) {
+          console.error(
+            "[mvms-hours-report] Error fetching communities by mongo_id (uuid fallback):",
+            mongoError,
+          );
+        }
+        if (mongoData) communities = communities.concat(mongoData);
+      }
     }
 
     if (mongoIds.length > 0) {

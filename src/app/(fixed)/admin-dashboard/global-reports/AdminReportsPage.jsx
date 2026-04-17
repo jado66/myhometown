@@ -50,8 +50,6 @@ import { generateDOSReportCSV } from "@/util/reports/days-of-service/dos-global-
 // Mapping from new community IDs to old ones (same as in ClassPage)
 const newToOldCommunity = {
   "a78e8c7c-eca4-4f13-b6c8-e5603d1c36da": "66a811814800d08c300d88fd",
-  "a6c19a50-7fc3-4759-b386-6ebdeca3ed9e":
-    "fb34e335-5cc6-4e6c-b5fc-2b64588fe921",
   "b3381b98-e44f-4f1f-b067-04e575c515ca": "66df56bef05bd41ef9493f33",
   "7c446e80-323d-4268-b595-6945e915330f": "66df56e6f05bd41ef9493f34",
   "7c8731bc-1aee-406a-9847-7dc1e5255587": "66df5707f05bd41ef9493f35",
@@ -68,7 +66,16 @@ const newToOldCommunity = {
   "0076ad61-e165-4cd0-b6af-f4a30af2510c": "66df581af05bd41ef9493f40",
   "724b1aa6-0950-40ba-9453-cdd80085c5d4": "6876c09a2a087f662c17feed",
   "dcf35fbc-8053-40fa-b4a4-faaa61e2fbef": "6912655528c9b9c20ee4dede",
+  "a6c19a50-7fc3-4759-b386-6ebdeca3ed9e":
+    "fb34e335-5cc6-4e6c-b5fc-2b64588fe921", // Orem - Sharon Park
 };
+
+// Reverse mapping: old MongoDB _id → new Supabase id.
+// The legacy useCommunities hook returns MongoDB _id values which may not
+// match the Supabase id. Normalise before sending to API routes.
+const oldToNewCommunity = Object.fromEntries(
+  Object.entries(newToOldCommunity).map(([newId, oldId]) => [oldId, newId]),
+);
 
 const AdminReportsPage = () => {
   const { user, isLoading: userLoading, isAdmin } = useUser();
@@ -175,6 +182,12 @@ const AdminReportsPage = () => {
     setGenerating(true);
     setError(null);
 
+    // Normalise community IDs: the legacy MongoDB hook may return _id values
+    // that differ from the Supabase id. Map any known old IDs to new ones.
+    const normalizedCommunities = selectedCommunities.map(
+      (id) => oldToNewCommunity[id] || id,
+    );
+
     try {
       // Days of Service Report uses its own dedicated data source
       if (selectedReport === "daysOfService") {
@@ -182,7 +195,7 @@ const AdminReportsPage = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            communityIds: selectedCommunities,
+            communityIds: normalizedCommunities,
             startDate: dateRange.startDate,
             endDate: dateRange.endDate,
           }),
@@ -220,7 +233,7 @@ const AdminReportsPage = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            communityIds: selectedCommunities,
+            communityIds: normalizedCommunities,
             startDate: dateRange.startDate,
             endDate: dateRange.endDate,
           }),
@@ -252,11 +265,16 @@ const AdminReportsPage = () => {
 
       // MyHometown Overview Report uses its own dedicated data source
       if (selectedReport === "overview") {
+        console.log(
+          "[overview-report CLIENT] selectedCommunities:",
+          selectedCommunities,
+        );
+        console.log("[overview-report CLIENT] dateRange:", dateRange);
         const response = await fetch("/api/database/overview-report", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            communityIds: selectedCommunities,
+            communityIds: normalizedCommunities,
             startDate: dateRange.startDate,
             endDate: dateRange.endDate,
           }),

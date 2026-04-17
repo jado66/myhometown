@@ -8,8 +8,6 @@ export const revalidate = 0;
 // Mapping from new community IDs to old ones (same as in AdminReportsPage / ClassPage)
 const newToOldCommunity: Record<string, string> = {
   "a78e8c7c-eca4-4f13-b6c8-e5603d1c36da": "66a811814800d08c300d88fd",
-  "a6c19a50-7fc3-4759-b386-6ebdeca3ed9e":
-    "fb34e335-5cc6-4e6c-b5fc-2b64588fe921",
   "b3381b98-e44f-4f1f-b067-04e575c515ca": "66df56bef05bd41ef9493f33",
   "7c446e80-323d-4268-b595-6945e915330f": "66df56e6f05bd41ef9493f34",
   "7c8731bc-1aee-406a-9847-7dc1e5255587": "66df5707f05bd41ef9493f35",
@@ -26,6 +24,8 @@ const newToOldCommunity: Record<string, string> = {
   "0076ad61-e165-4cd0-b6af-f4a30af2510c": "66df581af05bd41ef9493f40",
   "724b1aa6-0950-40ba-9453-cdd80085c5d4": "6876c09a2a087f662c17feed",
   "dcf35fbc-8053-40fa-b4a4-faaa61e2fbef": "6912655528c9b9c20ee4dede",
+  "a6c19a50-7fc3-4759-b386-6ebdeca3ed9e":
+    "fb34e335-5cc6-4e6c-b5fc-2b64588fe921", // Orem - Sharon Park
 };
 
 /**
@@ -43,13 +43,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log("[overview-report] Input communityIds:", communityIds);
+    console.log("[overview-report] startDate:", startDate, "endDate:", endDate);
+
     const supabase = getSupabaseServer();
+
+    // Build reverse mapping: old MongoDB _id → new Supabase id
+    const oldToNewCommunity: Record<string, string> = {};
+    for (const [newId, oldId] of Object.entries(newToOldCommunity)) {
+      oldToNewCommunity[oldId] = newId;
+    }
+
+    // Normalize incoming IDs: if an ID is a known old MongoDB _id, replace it
+    // with the corresponding Supabase UUID so the query finds the right row.
+    const normalizedIds = communityIds.map(
+      (id: string) => oldToNewCommunity[id] || id,
+    );
+    console.log("[overview-report] Normalized communityIds:", normalizedIds);
 
     // Separate incoming IDs into UUIDs and MongoDB ObjectIds
     const uuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const uuidIds = communityIds.filter((id: string) => uuidRegex.test(id));
-    const mongoIds = communityIds.filter((id: string) => !uuidRegex.test(id));
+    const uuidIds = normalizedIds.filter((id: string) => uuidRegex.test(id));
+    const mongoIds = normalizedIds.filter((id: string) => !uuidRegex.test(id));
 
     // 1. Fetch communities with city info
     let communities: any[] = [];
@@ -69,6 +85,26 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
       if (data) communities = communities.concat(data);
+
+      // Retry unmatched UUID-formatted IDs against mongo_id
+      // (legacy MongoDB _id values can look like UUIDs)
+      const foundIds = new Set((data || []).map((c: any) => c.id));
+      const unmatchedUuids = uuidIds.filter((id: string) => !foundIds.has(id));
+      if (unmatchedUuids.length > 0) {
+        const { data: mongoData, error: mongoError } = await supabase
+          .from("communities")
+          .select(
+            "id, name, city_id, mongo_id, cities:communities_city_id_fkey ( id, name, state )",
+          )
+          .in("mongo_id", unmatchedUuids);
+        if (mongoError) {
+          console.error(
+            "[overview-report] Error fetching communities by mongo_id (uuid fallback):",
+            mongoError,
+          );
+        }
+        if (mongoData) communities = communities.concat(mongoData);
+      }
     }
 
     if (mongoIds.length > 0) {
@@ -89,6 +125,18 @@ export async function POST(request: NextRequest) {
     }
 
     const resolvedCommunityIds = communities.map((c: any) => c.id);
+    console.log(
+      "[overview-report] Resolved communities:",
+      communities.map((c: any) => ({
+        id: c.id,
+        name: c.name,
+        city: c.cities?.name,
+      })),
+    );
+    console.log(
+      "[overview-report] resolvedCommunityIds:",
+      resolvedCommunityIds,
+    );
 
     if (resolvedCommunityIds.length === 0) {
       return NextResponse.json({
@@ -127,6 +175,17 @@ export async function POST(request: NextRequest) {
         hasMore = false;
       }
     }
+
+    console.log(
+      "[overview-report] Missionaries found:",
+      allMissionaries.length,
+      "per community:",
+      resolvedCommunityIds.map((cid) => ({
+        cid,
+        count: allMissionaries.filter((m: any) => m.community_id === cid)
+          .length,
+      })),
+    );
 
     // 3. Fetch hours WITH activities JSONB
     const missionaryIds = allMissionaries.map((m) => m.id);
@@ -172,6 +231,8 @@ export async function POST(request: NextRequest) {
         }
       }
     }
+
+    console.log("[overview-report] Hours found:", allHours.length);
 
     // 4. Fetch DOS project forms directly by community_id and created_at.
     //    Querying via the parent days_of_service event misses forms whose
@@ -227,6 +288,8 @@ export async function POST(request: NextRequest) {
         }
       }
     }
+
+    console.log("[overview-report] DOS projects found:", allDosProjects.length);
 
     // 5. Fetch CRC class data from MongoDB per community
     const crcStats: Record<
@@ -302,6 +365,18 @@ export async function POST(request: NextRequest) {
         mongoErr,
       );
     }
+
+    console.log("[overview-report] CRC stats:", JSON.stringify(crcStats));
+    console.log(
+      "[overview-report] Final counts — communities:",
+      communities.length,
+      "missionaries:",
+      allMissionaries.length,
+      "hours:",
+      allHours.length,
+      "dosProjects:",
+      allDosProjects.length,
+    );
 
     return NextResponse.json({
       communities: communities || [],
