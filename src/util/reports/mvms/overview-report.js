@@ -75,11 +75,20 @@ function computeOverviewStats(
   const inSchoolHours = sumActivityHours(hoursEntries, "in-school-services");
   const eventsHours = sumActivityHours(hoursEntries, "community-events");
 
+  // Only count projects whose day of service date is in the past (completed)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const completedProjects = dosProjects.filter((proj) => {
+    const endDate = proj.days_of_service?.end_date;
+    if (!endDate) return false;
+    return new Date(endDate) < today;
+  });
+
   let communityHoursNum = 0;
   let communityVolunteersNum = 0;
   let projectNum = 0;
 
-  for (const proj of dosProjects) {
+  for (const proj of completedProjects) {
     const volunteers = parseFloat(proj.actual_volunteers) || 0;
     const duration = parseFloat(proj.actual_project_duration) || 0;
     communityHoursNum += volunteers * duration;
@@ -105,7 +114,7 @@ function computeOverviewStats(
   ).length;
   const pctLogged = mvCount > 0 ? Math.round((loggedCount / mvCount) * 100) : 0;
 
-  const dosVolNum = dosProjects.reduce(
+  const dosVolNum = completedProjects.reduce(
     (sum, p) => sum + (parseFloat(p.actual_volunteers) || 0),
     0,
   );
@@ -169,7 +178,7 @@ function section2Row(location, stats) {
  * @param {Array} params.communities - community objects with id, name, city_id, cities: { id, name, state }
  * @param {Array} params.missionaries - missionary objects with id, community_id
  * @param {Array} params.hours - missionary_hours objects with missionary_id, total_hours, activities JSONB
- * @param {Array} params.dosProjects - DOS project form objects with community_id, actual_volunteers, actual_project_duration
+ * @param {Array} params.dosProjects - DOS project form objects with community_id, actual_volunteers, actual_project_duration, days_of_service: { end_date }
  * @param {Object} params.crcStats - { [communityId]: { classCount, uniqueStudents, totalAttendance } }
  * @param {Object} params.dateRange - { startDate, endDate }
  * @param {Array} params.cityMissionaries - city-level missionary objects with id, city_id

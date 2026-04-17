@@ -338,7 +338,7 @@ export async function POST(request: NextRequest) {
           let query = supabase
             .from("days_of_service_project_forms")
             .select(
-              "id, community_id, actual_volunteers, actual_project_duration, days_of_service_id",
+              "id, community_id, actual_volunteers, actual_project_duration, days_of_service_id, days_of_service(end_date)",
             )
             .in("community_id", idChunk)
             .range(dosFrom, dosFrom + pageSize - 1);
