@@ -30,11 +30,16 @@ const newToOldCommunity: Record<string, string> = {
 
 /**
  * POST - Fetch MyHometown Overview Report data.
- * Body: { communityIds: string[], startDate?: string, endDate?: string }
+ * Body: { communityIds: string[], startDate?: string, endDate?: string, includeUtahMissionaries?: boolean }
  */
 export async function POST(request: NextRequest) {
   try {
-    const { communityIds, startDate, endDate } = await request.json();
+    const {
+      communityIds,
+      startDate,
+      endDate,
+      includeUtahMissionaries = false,
+    } = await request.json();
 
     if (!communityIds || communityIds.length === 0) {
       return NextResponse.json(
@@ -45,6 +50,10 @@ export async function POST(request: NextRequest) {
 
     console.log("[overview-report] Input communityIds:", communityIds);
     console.log("[overview-report] startDate:", startDate, "endDate:", endDate);
+    console.log(
+      "[overview-report] includeUtahMissionaries:",
+      includeUtahMissionaries,
+    );
 
     const supabase = getSupabaseServer();
 
@@ -161,7 +170,7 @@ export async function POST(request: NextRequest) {
         .from("missionaries")
         .select("id, first_name, last_name, community_id, person_type")
         .in("community_id", resolvedCommunityIds)
-        .in("assignment_status", ["active"])
+        .in("assignment_status", ["active", "pending", "released"])
         .range(from, from + pageSize - 1);
 
       if (error) {
@@ -205,7 +214,7 @@ export async function POST(request: NextRequest) {
           .select("id, first_name, last_name, city_id, person_type")
           .in("city_id", resolvedCityIds)
           .eq("assignment_level", "city")
-          .in("assignment_status", ["active"])
+          .in("assignment_status", ["active", "pending", "released"])
           .is("community_id", null)
           .range(cityFrom, cityFrom + pageSize - 1);
 
@@ -234,7 +243,7 @@ export async function POST(request: NextRequest) {
 
     // 2c. Fetch state-level missionaries (assignment_level = 'state', no city or community)
     let stateMissionaries: any[] = [];
-    {
+    if (includeUtahMissionaries) {
       let stateFrom = 0;
       let stateHasMore = true;
 
@@ -243,7 +252,7 @@ export async function POST(request: NextRequest) {
           .from("missionaries")
           .select("id, first_name, last_name, person_type")
           .eq("assignment_level", "state")
-          .in("assignment_status", ["active"])
+          .in("assignment_status", ["active", "pending", "released"])
           .is("community_id", null)
           .is("city_id", null)
           .range(stateFrom, stateFrom + pageSize - 1);

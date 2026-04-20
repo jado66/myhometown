@@ -6,14 +6,19 @@ export const revalidate = 0;
 
 /**
  * POST - Fetch MVMS hours report data.
- * Body: { communityIds: string[], startDate?: string, endDate?: string }
+ * Body: { communityIds: string[], startDate?: string, endDate?: string, includeUtahMissionaries?: boolean }
  *
  * Returns missionaries grouped by community (with city info),
  * along with their logged hours in the date range.
  */
 export async function POST(request: NextRequest) {
   try {
-    const { communityIds, startDate, endDate } = await request.json();
+    const {
+      communityIds,
+      startDate,
+      endDate,
+      includeUtahMissionaries = false,
+    } = await request.json();
 
     if (!communityIds || communityIds.length === 0) {
       return NextResponse.json(
@@ -94,6 +99,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         communities: [],
         missionaries: [],
+        stateMissionaries: [],
         hours: [],
       });
     }
@@ -109,7 +115,7 @@ export async function POST(request: NextRequest) {
         .from("missionaries")
         .select("id, first_name, last_name, community_id, person_type")
         .in("community_id", resolvedCommunityIds)
-        .in("assignment_status", ["active"])
+        .in("assignment_status", ["active", "pending", "released"])
         .range(from, from + pageSize - 1);
 
       if (error) {
@@ -129,8 +135,43 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    let stateMissionaries: any[] = [];
+    if (includeUtahMissionaries) {
+      let stateFrom = 0;
+      let stateHasMore = true;
+
+      while (stateHasMore) {
+        const { data, error } = await supabase
+          .from("missionaries")
+          .select("id, first_name, last_name, person_type")
+          .eq("assignment_level", "state")
+          .in("assignment_status", ["active", "pending", "released"])
+          .is("community_id", null)
+          .is("city_id", null)
+          .range(stateFrom, stateFrom + pageSize - 1);
+
+        if (error) {
+          console.error(
+            "[mvms-hours-report] Error fetching state missionaries:",
+            error,
+          );
+          return NextResponse.json({ error: error.message }, { status: 500 });
+        }
+
+        if (data && data.length > 0) {
+          stateMissionaries = stateMissionaries.concat(data);
+          stateFrom += pageSize;
+          stateHasMore = data.length === pageSize;
+        } else {
+          stateHasMore = false;
+        }
+      }
+    }
+
     // 3. Fetch hours for those missionaries in the date range using pagination
-    const missionaryIds = allMissionaries.map((m) => m.id);
+    const missionaryIds = [...allMissionaries, ...stateMissionaries].map(
+      (m) => m.id,
+    );
     let allHours: any[] = [];
 
     if (missionaryIds.length > 0) {
@@ -179,6 +220,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       communities: communities || [],
       missionaries: allMissionaries,
+      stateMissionaries,
       hours: allHours,
     });
   } catch (err: any) {

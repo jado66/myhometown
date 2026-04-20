@@ -100,6 +100,7 @@ function statsToRow(location, stats) {
  * @param {Object} params
  * @param {Array} params.communities - community objects with id, name, city_id, cities: { id, name, state }
  * @param {Array} params.missionaries - missionary objects with id, community_id
+ * @param {Array} params.stateMissionaries - state-level missionary objects with id
  * @param {Array} params.hours - missionary_hours objects with missionary_id, total_hours, period_start_date
  * @param {Object} params.dateRange - { startDate, endDate }
  * @returns {string} CSV content
@@ -107,6 +108,7 @@ function statsToRow(location, stats) {
 export function generateMVMSHoursReportCSV({
   communities,
   missionaries,
+  stateMissionaries = [],
   hours,
   dateRange,
 }) {
@@ -235,6 +237,12 @@ export function generateMVMSHoursReportCSV({
   rows.push("");
 
   // Utah subtotal
+  const stateLevelHours = stateMissionaries.flatMap(
+    (m) => hoursByMissionary[m.id] || [],
+  );
+  utahMissionaries = utahMissionaries.concat(stateMissionaries);
+  utahHours = utahHours.concat(stateLevelHours);
+
   if (utahMissionaries.length > 0) {
     const utahStats = computeRowStats(
       utahMissionaries,
@@ -247,6 +255,8 @@ export function generateMVMSHoursReportCSV({
   }
 
   // Grand total
+  allMissionaries = allMissionaries.concat(stateMissionaries);
+  allHours = allHours.concat(stateLevelHours);
   const totalStats = computeRowStats(allMissionaries, allHours, months, weeks);
   rows.push(statsToRow("Total", totalStats));
 

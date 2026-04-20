@@ -17,6 +17,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Switch,
   Chip,
   TextField,
 } from "@mui/material";
@@ -91,6 +92,7 @@ const AdminReportsPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [generating, setGenerating] = useState(false);
+  const [includeUtahMissionaries, setIncludeUtahMissionaries] = useState(false);
 
   // Date range state
   const todayStr = new Date().toISOString().split("T")[0];
@@ -236,6 +238,7 @@ const AdminReportsPage = () => {
             communityIds: normalizedCommunities,
             startDate: dateRange.startDate,
             endDate: dateRange.endDate,
+            includeUtahMissionaries,
           }),
         });
 
@@ -248,12 +251,14 @@ const AdminReportsPage = () => {
           communities: commData,
           missionaries,
           hours,
+          stateMissionaries,
         } = await response.json();
 
         const csvContent = generateMVMSHoursReportCSV({
           communities: commData,
           missionaries,
           hours,
+          stateMissionaries,
           dateRange,
         });
 
@@ -277,6 +282,7 @@ const AdminReportsPage = () => {
             communityIds: normalizedCommunities,
             startDate: dateRange.startDate,
             endDate: dateRange.endDate,
+            includeUtahMissionaries,
           }),
         });
 
@@ -488,7 +494,7 @@ const AdminReportsPage = () => {
                 mb: 2,
               }}
             >
-              <Typography variant="h6">Select Communities</Typography>
+              <Typography variant="h6">Select Groups</Typography>
               <Button
                 size="small"
                 onClick={handleSelectAll}
@@ -508,8 +514,10 @@ const AdminReportsPage = () => {
             <Divider sx={{ mb: 2 }} />
 
             <Box sx={{ maxHeight: 400, overflow: "auto" }}>
-              {Object.entries(communitiesByCity).map(
-                ([cityName, cityCommunities]) => {
+              {Object.entries(communitiesByCity)
+                // filter out dev
+                .filter(([cityName]) => cityName !== "Dev")
+                .map(([cityName, cityCommunities]) => {
                   const cityIds = cityCommunities.map((c) => c._id || c.id);
                   const allCitySelected = cityIds.every((id) =>
                     selectedCommunities.includes(id),
@@ -574,15 +582,35 @@ const AdminReportsPage = () => {
                       </AccordionDetails>
                     </Accordion>
                   );
-                },
-              )}
+                })}
             </Box>
 
             <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: "divider" }}>
               <Typography variant="body2" color="text.secondary">
-                {selectedCommunities.length} of {communities.length} communities
-                selected
+                {selectedCommunities.length} of {communities.length - 1}{" "}
+                communities selected
               </Typography>
+              <Divider sx={{ my: 2 }} />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={includeUtahMissionaries}
+                    onChange={(e) =>
+                      setIncludeUtahMissionaries(e.target.checked)
+                    }
+                    disabled={
+                      selectedReport !== "mvmsHours" &&
+                      selectedReport !== "overview"
+                    }
+                    size="small"
+                  />
+                }
+                label="Include Utah Missionaries"
+                disabled={
+                  selectedReport !== "mvmsHours" &&
+                  selectedReport !== "overview"
+                }
+              />
             </Box>
           </Paper>
         </Grid>

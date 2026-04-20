@@ -35,7 +35,7 @@ function GenerateReportDialog({
     if (open && city && city.communities) {
       // Always select all communities by default
       setSelectedCommunities(
-        city.communities.map((community) => community.title)
+        city.communities.map((community) => community.title),
       );
       setReportOptions({
         includeCommunities: true,
@@ -58,7 +58,7 @@ function GenerateReportDialog({
     } else if (name === "includeCommunities" && checked) {
       // If it's being turned on, select all communities
       setSelectedCommunities(
-        city.communities.map((community) => community.name)
+        city.communities.map((community) => community.name),
       );
     }
   };
@@ -70,7 +70,7 @@ function GenerateReportDialog({
       setSelectedCommunities((prev) => [...prev, communityName]);
     } else {
       setSelectedCommunities((prev) =>
-        prev.filter((name) => name !== communityName)
+        prev.filter((name) => name !== communityName),
       );
     }
   };
