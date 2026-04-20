@@ -257,9 +257,14 @@ export const generateDetailedCSV = (semester, dateRange) => {
   let csvContent = headers.join(",") + "\n";
 
   const allClassTitles = semester.sections.flatMap((s) =>
-    s.classes.filter((c) => shouldIncludeClass(c, dateRange)).map((c) => c.title),
+    s.classes
+      .filter((c) => shouldIncludeClass(c, dateRange))
+      .map((c) => c.title),
   );
-  console.log(`[DetailedReport] Classes included (${allClassTitles.length}):`, allClassTitles);
+  console.log(
+    `[DetailedReport] Classes included (${allClassTitles.length}):`,
+    allClassTitles,
+  );
 
   // Track totals for summary
   let totalClassesTaught = 0;

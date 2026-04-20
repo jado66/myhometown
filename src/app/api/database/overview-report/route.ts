@@ -436,7 +436,10 @@ export async function POST(request: NextRequest) {
           if (enrolled === 0) continue;
 
           if (cls.title?.includes("THURSDAY PIANO LESSONS")) {
-            console.log("[overview-report] Thursday Piano Lessons full data:", JSON.stringify(cls, null, 2));
+            console.log(
+              "[overview-report] Thursday Piano Lessons full data:",
+              JSON.stringify(cls, null, 2),
+            );
           }
 
           classCount++;
@@ -456,9 +459,12 @@ export async function POST(request: NextRequest) {
 
         const includedClassNames = classes
           .filter((cls: any) => {
-            if (cls.startDate && endDate && cls.startDate > endDate) return false;
-            if (cls.endDate && startDate && cls.endDate < startDate) return false;
-            const enrolled = cls.signups?.filter((s: any) => !s.isWaitlisted)?.length || 0;
+            if (cls.startDate && endDate && cls.startDate > endDate)
+              return false;
+            if (cls.endDate && startDate && cls.endDate < startDate)
+              return false;
+            const enrolled =
+              cls.signups?.filter((s: any) => !s.isWaitlisted)?.length || 0;
             return enrolled > 0;
           })
           .map((cls: any) => cls.title || "(no title)");

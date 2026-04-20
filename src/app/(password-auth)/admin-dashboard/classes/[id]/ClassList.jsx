@@ -530,7 +530,13 @@ export default function ClassList({
       communityName,
       sections: semesters.flatMap((s) => s.sections),
     };
-  }, [semesters, community?.city, community?.city_name, community?.name, community?.title]);
+  }, [
+    semesters,
+    community?.city,
+    community?.city_name,
+    community?.name,
+    community?.title,
+  ]);
 
   // Cleaned semesters: only id and title fields
   const cleanedSemesters = useMemo(() => {

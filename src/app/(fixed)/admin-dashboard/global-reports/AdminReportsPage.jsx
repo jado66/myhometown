@@ -408,12 +408,6 @@ const AdminReportsPage = () => {
         return;
       }
 
-      const allClasses = allSections.flatMap((s) => s.classes);
-      console.log(
-        `[AdminReports] Total classes: ${allClasses.length}`,
-        allClasses.map((c) => c.title),
-      );
-
       // Create a combined "semester" object for the report generators
       const combinedData = {
         title: "All_Communities",

@@ -190,9 +190,19 @@ const ProjectForm = ({ date, communityId }) => {
           margin: "auto",
           p: {
             xs: 0,
-            sm: 3,
+            md: 3,
+          },
+          boxShadow: {
+            xs: "none",
+            sm: undefined,
+          },
+          bgcolor: "white",
+          border: {
+            xs: "none",
+            sm: "1px solid rgba(0, 0, 0, 0.12)",
           },
         }}
+        variant="outlined"
       >
         {/* <JsonViewer data={formData} /> */}
 
@@ -206,6 +216,10 @@ const ProjectForm = ({ date, communityId }) => {
 
         <CardContent
           sx={{
+            p: {
+              xs: 0.5,
+              md: 2,
+            },
             position: "relative",
           }}
         >
@@ -215,6 +229,7 @@ const ProjectForm = ({ date, communityId }) => {
               position: "absolute",
               top: 16,
               right: 16,
+
               display: {
                 xs: "none",
                 sm: "block",

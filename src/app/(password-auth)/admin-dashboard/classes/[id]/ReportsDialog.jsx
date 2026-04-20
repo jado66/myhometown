@@ -57,7 +57,7 @@ const handleGenerateCapacityReport = (semester, dateRange) => {
   const csvContent = generateCapacityReportCSV(semester, dateRange);
   const today = new Date();
   const dateStr = `${today.getFullYear()}-${String(
-    today.getMonth() + 1
+    today.getMonth() + 1,
   ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   downloadCSV(csvContent, `capacity-report-${dateStr}.csv`);
 };
@@ -159,7 +159,8 @@ export const ReportsDialog = ({ open, onClose, semester }) => {
         <Box display="flex" alignItems="center" gap={1}>
           <FileDownload />
           <Typography variant="h6">
-            Generate Reports for {semester?.communityName || semester?.title || "Community"}
+            Generate Reports for{" "}
+            {semester?.communityName || semester?.title || "Community"}
           </Typography>
         </Box>
         <IconButton

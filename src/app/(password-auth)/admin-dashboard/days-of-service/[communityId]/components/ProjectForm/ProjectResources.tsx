@@ -11,6 +11,7 @@ import {
   Tooltip,
   Paper,
   SvgIcon,
+  Button,
 } from "@mui/material";
 import { Info } from "@mui/icons-material";
 import {
@@ -56,7 +57,7 @@ interface ResourceSection {
 
 const parseResourceStringItem = (
   value: string,
-  fallbackIndex: number
+  fallbackIndex: number,
 ): ResourceItem => {
   const trimmedValue = value.trim();
 
@@ -215,21 +216,16 @@ export function ProjectResources({
     }));
   };
 
-  // Process comma-separated input and add items
-  const handleCommaInput = (
-    e: any,
+  // Add items from an input value string
+  const addItems = (
+    value: string,
     category: ResourceCategory,
-    isPrepDay: boolean
+    isPrepDay: boolean,
   ) => {
-    if (e.key !== "Enter") return;
+    const trimmed = value.trim();
+    if (!trimmed) return;
 
-    e.preventDefault();
-    const value = (e.target as HTMLInputElement).value.trim();
-
-    if (!value) return;
-
-    // Split by commas and filter out empty strings
-    const newItems = value
+    const newItems = trimmed
       .split(",")
       .map((item) => item.trim())
       .filter((item) => item !== "");
@@ -244,22 +240,31 @@ export function ProjectResources({
     const fieldName = categoryMap[category];
     const currentItems = normalizeItems(formData[fieldName]);
 
-    // Generate unique IDs for new items
     const timestamp = Date.now();
     const itemsToAdd = newItems.map((item, index) => ({
       name: item,
-      isPrepDay: isPrepDay, // Set isPrepDay based on which input was used
+      isPrepDay: isPrepDay,
       id: `item-${timestamp}-${index}-${item}`,
     }));
 
     handleInputChange(fieldName, [...currentItems, ...itemsToAdd]);
 
-    // Clear the input field
     const inputKey = isPrepDay ? `${category}-prepDay` : category;
     setInputValues((prev) => ({
       ...prev,
       [inputKey]: "",
     }));
+  };
+
+  // Process comma-separated input and add items
+  const handleCommaInput = (
+    e: any,
+    category: ResourceCategory,
+    isPrepDay: boolean,
+  ) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    addItems((e.target as HTMLInputElement).value, category, isPrepDay);
   };
 
   // Handle drag end event
@@ -333,13 +338,13 @@ export function ProjectResources({
   // Filter items by prep day status
   const filterItemsByPrepDay = (
     items: ResourceItem[],
-    isPrepDay: boolean
+    isPrepDay: boolean,
   ): ResourceItem[] => {
     return items.filter((item) => !!item.isPrepDay === isPrepDay);
   };
 
   return (
-    <Paper elevation={0} sx={{ p: 2 }}>
+    <Paper elevation={0} sx={{ p: { xs: 0, sm: 2 } }}>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {sections.map((section, sectionIndex) => {
           const items = normalizeItems(section.items);
@@ -441,7 +446,7 @@ export function ProjectResources({
                                             : () =>
                                                 handleDelete(
                                                   section.category,
-                                                  item.id
+                                                  item.id,
                                                 )
                                         }
                                         size="small"
@@ -458,8 +463,8 @@ export function ProjectResources({
                                 </Draggable>
                               ))
                             : isLocked
-                            ? "None"
-                            : ""}
+                              ? "None"
+                              : ""}
                           {provided.placeholder}
 
                           {/* Input field for regular items */}
@@ -480,7 +485,7 @@ export function ProjectResources({
                                 onChange={(e) =>
                                   handleInputValueChange(
                                     section.category,
-                                    e.target.value
+                                    e.target.value,
                                   )
                                 }
                                 onKeyDown={(e) =>
@@ -493,17 +498,41 @@ export function ProjectResources({
                               />
 
                               {inputValues[section.category] && (
-                                <FormHelperText
-                                  sx={{
-                                    m: 0,
-                                    color: "error.main",
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <Info fontSize="small" sx={{ mr: 0.5 }} />
-                                  Press Enter to add
-                                </FormHelperText>
+                                <>
+                                  <Button
+                                    size="small"
+                                    variant="outlined"
+                                    color="error"
+                                    startIcon={<Info fontSize="small" />}
+                                    onClick={() =>
+                                      addItems(
+                                        inputValues[section.category],
+                                        section.category,
+                                        false,
+                                      )
+                                    }
+                                    sx={{
+                                      display: {
+                                        xs: "inline-flex",
+                                        sm: "none",
+                                      },
+                                      height: 40,
+                                    }}
+                                  >
+                                    Click to Add
+                                  </Button>
+                                  <FormHelperText
+                                    sx={{
+                                      m: 0,
+                                      color: "error.main",
+                                      display: { xs: "none", sm: "flex" },
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <Info fontSize="small" sx={{ mr: 0.5 }} />
+                                    Press Enter to add
+                                  </FormHelperText>
+                                </>
                               )}
                             </Box>
                           )}
@@ -599,7 +628,7 @@ export function ProjectResources({
                                           : () =>
                                               handleDelete(
                                                 section.category,
-                                                item.id
+                                                item.id,
                                               )
                                       }
                                       size="small"
@@ -637,7 +666,7 @@ export function ProjectResources({
                                   onChange={(e) =>
                                     handleInputValueChange(
                                       `${section.category}-prepDay`,
-                                      e.target.value
+                                      e.target.value,
                                     )
                                   }
                                   onKeyDown={(e) =>
@@ -649,17 +678,43 @@ export function ProjectResources({
                                   }}
                                 />
                                 {inputValues[`${section.category}-prepDay`] && (
-                                  <FormHelperText
-                                    sx={{
-                                      m: 0,
-                                      color: "error.main",
-                                      display: "flex",
-                                      alignItems: "center",
-                                    }}
-                                  >
-                                    <Info fontSize="small" sx={{ mr: 0.5 }} />
-                                    Press Enter to add
-                                  </FormHelperText>
+                                  <>
+                                    <Button
+                                      size="small"
+                                      variant="outlined"
+                                      color="error"
+                                      startIcon={<Info fontSize="small" />}
+                                      onClick={() =>
+                                        addItems(
+                                          inputValues[
+                                            `${section.category}-prepDay`
+                                          ],
+                                          section.category,
+                                          true,
+                                        )
+                                      }
+                                      sx={{
+                                        display: {
+                                          xs: "inline-flex",
+                                          sm: "none",
+                                        },
+                                        height: 40,
+                                      }}
+                                    >
+                                      Click to Add
+                                    </Button>
+                                    <FormHelperText
+                                      sx={{
+                                        m: 0,
+                                        color: "error.main",
+                                        display: { xs: "none", sm: "flex" },
+                                        alignItems: "center",
+                                      }}
+                                    >
+                                      <Info fontSize="small" sx={{ mr: 0.5 }} />
+                                      Press Enter to add
+                                    </FormHelperText>
+                                  </>
                                 )}
                               </Box>
                             )}
@@ -702,8 +757,8 @@ export function ProjectResources({
                           />
                         ))
                       : isLocked
-                      ? "None"
-                      : ""}
+                        ? "None"
+                        : ""}
 
                     {/* Input field for non-prep day mode */}
                     {!isLocked && (
@@ -723,7 +778,7 @@ export function ProjectResources({
                           onChange={(e) =>
                             handleInputValueChange(
                               section.category,
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           onKeyDown={(e) =>
@@ -735,17 +790,38 @@ export function ProjectResources({
                           }}
                         />
                         {inputValues[section.category] && (
-                          <FormHelperText
-                            sx={{
-                              m: 0,
-                              color: "error.main",
-                              display: "flex",
-                              alignItems: "center",
-                            }}
-                          >
-                            <Info fontSize="small" sx={{ mr: 0.5 }} />
-                            Press Enter to add
-                          </FormHelperText>
+                          <>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="error"
+                              startIcon={<Info fontSize="small" />}
+                              onClick={() =>
+                                addItems(
+                                  inputValues[section.category],
+                                  section.category,
+                                  false,
+                                )
+                              }
+                              sx={{
+                                display: { xs: "inline-flex", sm: "none" },
+                                height: 40,
+                              }}
+                            >
+                              Click to Add
+                            </Button>
+                            <FormHelperText
+                              sx={{
+                                m: 0,
+                                color: "error.main",
+                                display: { xs: "none", sm: "flex" },
+                                alignItems: "center",
+                              }}
+                            >
+                              <Info fontSize="small" sx={{ mr: 0.5 }} />
+                              Press Enter to add
+                            </FormHelperText>
+                          </>
                         )}
                       </Box>
                     )}

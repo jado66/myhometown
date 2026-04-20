@@ -23,8 +23,10 @@ const ProjectPage = ({
       <Box
         id="project-form-page"
         sx={{
-          bgcolor: "#f5f5f5",
-
+          bgcolor: {
+            xs: "white",
+            sm: "#f5f5f5",
+          },
           pb: 4,
           width: "100% !important",
         }}
