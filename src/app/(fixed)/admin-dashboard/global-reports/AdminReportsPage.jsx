@@ -270,11 +270,11 @@ const AdminReportsPage = () => {
 
       // MyHometown Overview Report uses its own dedicated data source
       if (selectedReport === "overview") {
-        console.log(
-          "[overview-report CLIENT] selectedCommunities:",
-          selectedCommunities,
-        );
-        console.log("[overview-report CLIENT] dateRange:", dateRange);
+        // console.log(
+        //   "[overview-report CLIENT] selectedCommunities:",
+        //   selectedCommunities,
+        // );
+        // console.log("[overview-report CLIENT] dateRange:", dateRange);
         const response = await fetch("/api/database/overview-report", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -407,6 +407,12 @@ const AdminReportsPage = () => {
         setGenerating(false);
         return;
       }
+
+      const allClasses = allSections.flatMap((s) => s.classes);
+      console.log(
+        `[AdminReports] Total classes: ${allClasses.length}`,
+        allClasses.map((c) => c.title),
+      );
 
       // Create a combined "semester" object for the report generators
       const combinedData = {

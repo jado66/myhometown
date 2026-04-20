@@ -55,10 +55,10 @@ export const generateClassDates = (classItem) => {
     currentDate.add(1, "days");
   }
 
-  console.log(startDate.format("YYYY-MM-DD"), endDate.format("YYYY-MM-DD"));
-  console.log(endDate.format("YYYY-MM-DD"), endDate.format("YYYY-MM-DD"));
-  console.log(JSON.stringify(classItem.meetings));
-  console.log("dates", dates);
+  // console.log(startDate.format("YYYY-MM-DD"), endDate.format("YYYY-MM-DD"));
+  // console.log(endDate.format("YYYY-MM-DD"), endDate.format("YYYY-MM-DD"));
+  // console.log(JSON.stringify(classItem.meetings));
+  // console.log("dates", dates);
 
   return dates;
 };
@@ -193,23 +193,23 @@ export const calculateAttendanceStats = (classItem, dateRange) => {
         ? Math.round((totalAttended / maxPossibleAttendance) * 100)
         : 0;
 
-    console.log("classItem", JSON.stringify(classItem, null, 2));
-    console.log(
-      "response",
-      JSON.stringify(
-        {
-          studentsEnrolled,
-          studentsAttended,
-          totalClassDays,
-          totalAttendance: `${totalAttended} of ${maxPossibleAttendance}`,
-          attendancePercentage: `${percentage}%`,
-          totalAttended, // For summary calculation
-          maxPossibleAttendance, // For summary calculation
-        },
-        null,
-        2,
-      ),
-    );
+    // console.log("classItem", JSON.stringify(classItem, null, 2));
+    // console.log(
+    //   "response",
+    //   JSON.stringify(
+    //     {
+    //       studentsEnrolled,
+    //       studentsAttended,
+    //       totalClassDays,
+    //       totalAttendance: `${totalAttended} of ${maxPossibleAttendance}`,
+    //       attendancePercentage: `${percentage}%`,
+    //       totalAttended, // For summary calculation
+    //       maxPossibleAttendance, // For summary calculation
+    //     },
+    //     null,
+    //     2,
+    //   ),
+    // );
 
     return {
       studentsEnrolled,
@@ -255,6 +255,11 @@ export const generateDetailedCSV = (semester, dateRange) => {
 
   // Create the CSV content starting with headers
   let csvContent = headers.join(",") + "\n";
+
+  const allClassTitles = semester.sections.flatMap((s) =>
+    s.classes.filter((c) => shouldIncludeClass(c, dateRange)).map((c) => c.title),
+  );
+  console.log(`[DetailedReport] Classes included (${allClassTitles.length}):`, allClassTitles);
 
   // Track totals for summary
   let totalClassesTaught = 0;
@@ -411,7 +416,7 @@ export const generateStudentAttendanceReportCSV = (semester, dateRange) => {
   // Sort dates chronologically
   const sortedDates = Array.from(allDates).sort();
 
-  console.log("sortedDates", JSON.stringify(sortedDates, null, 2));
+  // console.log("sortedDates", JSON.stringify(sortedDates, null, 2));
 
   // Create CSV headers
   const headers = [

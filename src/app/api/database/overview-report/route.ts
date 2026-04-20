@@ -411,6 +411,7 @@ export async function POST(request: NextRequest) {
             { communityId: oldId },
             {
               projection: {
+                title: 1,
                 signups: 1,
                 attendance: 1,
                 startDate: 1,
@@ -434,6 +435,10 @@ export async function POST(request: NextRequest) {
             cls.signups?.filter((s: any) => !s.isWaitlisted)?.length || 0;
           if (enrolled === 0) continue;
 
+          if (cls.title?.includes("THURSDAY PIANO LESSONS")) {
+            console.log("[overview-report] Thursday Piano Lessons full data:", JSON.stringify(cls, null, 2));
+          }
+
           classCount++;
           studentsEnrolled += enrolled;
 
@@ -448,6 +453,19 @@ export async function POST(request: NextRequest) {
             }
           }
         }
+
+        const includedClassNames = classes
+          .filter((cls: any) => {
+            if (cls.startDate && endDate && cls.startDate > endDate) return false;
+            if (cls.endDate && startDate && cls.endDate < startDate) return false;
+            const enrolled = cls.signups?.filter((s: any) => !s.isWaitlisted)?.length || 0;
+            return enrolled > 0;
+          })
+          .map((cls: any) => cls.title || "(no title)");
+        console.log(
+          `[overview-report] ${community.name || community.id} classes (${includedClassNames.length}):`,
+          includedClassNames,
+        );
 
         crcStats[community.id] = {
           classCount,

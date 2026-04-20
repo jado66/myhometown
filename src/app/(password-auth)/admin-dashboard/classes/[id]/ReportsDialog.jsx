@@ -159,7 +159,7 @@ export const ReportsDialog = ({ open, onClose, semester }) => {
         <Box display="flex" alignItems="center" gap={1}>
           <FileDownload />
           <Typography variant="h6">
-            Generate Reports for {semester?.title || "Semester"}
+            Generate Reports for {semester?.communityName || semester?.title || "Community"}
           </Typography>
         </Box>
         <IconButton

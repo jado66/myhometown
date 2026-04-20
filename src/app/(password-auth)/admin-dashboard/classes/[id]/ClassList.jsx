@@ -346,7 +346,6 @@ const SemesterAccordion = ({
   expanded,
   onChange,
   index,
-  setSemester,
   showHidden,
 }) => {
   // Show all sections if showHidden is true, otherwise filter by visibility
@@ -392,19 +391,6 @@ const SemesterAccordion = ({
             {semester.title}
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
-
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<Assignment />}
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              setSemester(semester);
-            }}
-          >
-            Generate Reports
-          </Button>
         </Box>
       </AccordionSummary>
       <AccordionDetails>
@@ -533,6 +519,18 @@ export default function ClassList({
     community?.name,
     community?.title,
   ]);
+
+  // Synthetic semester combining all community classes for reports
+  const allClassesSemester = useMemo(() => {
+    const cityName = community?.city || community?.city_name || "";
+    const communityName = community?.name || community?.title || "";
+    return {
+      title: communityName || "Community Classes",
+      cityName,
+      communityName,
+      sections: semesters.flatMap((s) => s.sections),
+    };
+  }, [semesters, community?.city, community?.city_name, community?.name, community?.title]);
 
   // Cleaned semesters: only id and title fields
   const cleanedSemesters = useMemo(() => {
@@ -745,6 +743,14 @@ export default function ClassList({
         }}
       >
         <Button
+          variant="outlined"
+          size="medium"
+          startIcon={<Assignment />}
+          onClick={() => setSemester(allClassesSemester)}
+        >
+          Generate Reports
+        </Button>
+        <Button
           variant={showHidden ? "contained" : "outlined"}
           color={showHidden ? "primary" : "inherit"}
           startIcon={showHidden ? <VisibilityOff /> : <Visibility />}
@@ -772,7 +778,6 @@ export default function ClassList({
             viewType={viewType}
             expanded={expandedAccordion}
             onChange={handleAccordionChange}
-            setSemester={setSemester}
             index={index}
             showHidden={showHidden}
           />
