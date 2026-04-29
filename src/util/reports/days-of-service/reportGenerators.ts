@@ -3,15 +3,44 @@ import { jsPDF } from "jspdf";
 import moment from "moment";
 import { toast } from "react-toastify";
 
-// Helper function to fetch image as base64
-const fetchImageAsBase64 = async (url: string): Promise<string> => {
+// Helper function to fetch, downscale, and compress an image as a base64 JPEG.
+// maxDimension caps the longest edge (px); quality is a 0–1 JPEG quality value.
+const fetchImageAsBase64 = async (
+  url: string,
+  maxDimension = 800,
+  quality = 0.55,
+): Promise<string> => {
   const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch image: ${response.status} ${response.statusText}`,
+    );
+  }
   const blob = await response.blob();
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.readAsDataURL(blob);
-  });
+
+  // Decode the blob into an ImageBitmap (no DOM element needed)
+  const bitmap = await createImageBitmap(blob);
+
+  // Calculate scaled dimensions, capping the longest edge at maxDimension
+  let { width, height } = bitmap;
+  if (width > maxDimension || height > maxDimension) {
+    if (width >= height) {
+      height = Math.round((height / width) * maxDimension);
+      width = maxDimension;
+    } else {
+      width = Math.round((width / height) * maxDimension);
+      height = maxDimension;
+    }
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  return canvas.toDataURL("image/jpeg", quality);
 };
 
 // Helper function to parse Lexical JSON content and extract plain text
@@ -1132,16 +1161,18 @@ export const generatePDFReport = async (
             for (const photoUrl of task.photos) {
               yPosition = checkForNewPage(yPosition, 30);
               try {
-                const response = await fetch(photoUrl);
-                const blob = await response.blob();
-                const imgData = await new Promise((resolve) => {
-                  const reader = new FileReader();
-                  reader.onloadend = () => resolve(reader.result as string);
-                  reader.readAsDataURL(blob);
-                });
-                doc.addImage(imgData, "JPEG", margin, yPosition, 50, 25); // Smaller images
+                const imgData = await fetchImageAsBase64(photoUrl);
+                doc.addImage(
+                  imgData as string,
+                  "JPEG",
+                  margin,
+                  yPosition,
+                  50,
+                  25,
+                );
                 yPosition += 28;
               } catch (imgError) {
+                console.error("Failed to load task photo:", imgError);
                 doc.text("[Image could not be loaded]", margin, yPosition);
                 yPosition += 4;
               }
@@ -1893,7 +1924,10 @@ export const generateStakeSummaryReport = async (
 
       // If it would exceed, check how to handle it:
       if (wouldExceedPage) {
-        if (useLeftColumn && rightColY + estimatedCardHeight <= pageHeight - margin) {
+        if (
+          useLeftColumn &&
+          rightColY + estimatedCardHeight <= pageHeight - margin
+        ) {
           // Right column still has space for this card, switch to it
           currentColumn = "right";
           continue;
