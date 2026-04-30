@@ -10,7 +10,13 @@ const fetchImageAsBase64 = async (
   maxDimension = 800,
   quality = 0.55,
 ): Promise<string> => {
-  const response = await fetch(url);
+  // The S3 bucket hosting our uploads doesn't return CORS headers, so a direct
+  // browser fetch is blocked. Route through our server-side proxy which can
+  // fetch the bytes without the CORS check.
+  // Why: avoids needing to reconfigure the existing S3 bucket and keeps
+  // already-uploaded image URLs working in printable reports.
+  const proxiedUrl = `/api/proxy-image?url=${encodeURIComponent(url)}`;
+  const response = await fetch(proxiedUrl);
   if (!response.ok) {
     throw new Error(
       `Failed to fetch image: ${response.status} ${response.statusText}`,

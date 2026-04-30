@@ -34,7 +34,7 @@ export const useImageUpload = (setUrl: (url: string) => void) => {
     const targetFolder = folder || PROFILE_PICTURE_FOLDER;
     const result = await uploadToS3(file, targetFolder);
 
-    if (result) {
+    if (result?.url) {
       console.log("Successfully uploaded file.");
       toast.success(
         "Image uploaded successfully. Make sure to save your changes.",
@@ -44,8 +44,9 @@ export const useImageUpload = (setUrl: (url: string) => void) => {
       );
       setUrl(result.url);
     } else {
-      console.error("File upload failed.");
-      toast.error("Failed to upload image. Please try again.");
+      const message = result?.error?.message || "Failed to upload image. Please try again.";
+      console.error("File upload failed:", message);
+      toast.error(message);
     }
   };
 

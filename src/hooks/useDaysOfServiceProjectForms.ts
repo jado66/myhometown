@@ -91,6 +91,17 @@ export const useDaysOfServiceProjectForm = ({
           updated_at: new Date().toISOString(),
         };
 
+        // Log per-field payload sizes to diagnose statement timeouts
+        const fieldSizes = Object.entries(projectData)
+          .map(([key, val]) => ({
+            field: key,
+            bytes: new Blob([JSON.stringify(val ?? "")]).size,
+          }))
+          .sort((a, b) => b.bytes - a.bytes);
+        const totalBytes = fieldSizes.reduce((sum, f) => sum + f.bytes, 0);
+        console.table(fieldSizes);
+        console.log(`Total payload size: ${(totalBytes / 1024).toFixed(2)} KB`);
+
         if (!projectId) {
           // Create new project
           projectData.created_by = user?.id;

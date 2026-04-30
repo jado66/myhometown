@@ -9,6 +9,8 @@
     "lint": "next lint",
     "update-password": "node updatePassword.js",
     "cleanup-redis-streams": "node scripts/cleanupRedisStream.js",
+    "migrate-classes": "node scripts/migrateMongoClassesToSupabase.js",
+    "migrate-categories": "node scripts/migrateMongoCategoriesToSupabase.js",
     "lt": "lt --port 3000 --subdomain myhometown-twilio-server",
     "prepare": "husky"
   },
