@@ -35,7 +35,7 @@ const AddEditCommunityDialog = ({
   initialCommunityState,
 }) => {
   const [community, setCommunity] = useState(
-    initialCommunityState || initialState
+    initialCommunityState || initialState,
   );
 
   useEffect(() => {
