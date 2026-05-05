@@ -180,7 +180,7 @@ const AddEditCommunityDialog = ({
             <UserSelect
               label="Community Admins"
               value={
-                community.communityOwners.length > 0
+                community.communityOwners?.length > 0
                   ? community.communityOwners.map((user) => ({
                       value: user._id,
                       label: `${user.firstName} ${user.lastName}`,

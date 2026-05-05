@@ -216,7 +216,7 @@ export default function Management() {
           </>
         )}
 
-        {communities.length < 3 &&
+        {communities.length < 4 &&
           user.role !== "Admin" &&
           communities.length > 0 &&
           hasLoaded && (
@@ -305,7 +305,7 @@ export default function Management() {
             </Box>
           )}
 
-        {hasLoaded && (communities.length >= 3 || user.role === "Admin") && (
+        {hasLoaded && (communities.length >= 4 || user.role === "Admin") && (
           <CommunityDataTable
             data={communities}
             onRowClick={(row) => setCommunityToEdit(row)}
