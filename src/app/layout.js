@@ -6,6 +6,7 @@ const inter = Inter({ subsets: ["latin"] });
 import { Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import RegisterSW from "@/components/RegisterSW";
+import ErrorReporter from "@/components/ErrorReporter";
 
 export const metadata = {
   title: {
@@ -51,6 +52,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         <RegisterSW />
+        <ErrorReporter />
         <ToastContainer />
         {children}
         <Analytics />
