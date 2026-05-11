@@ -4,9 +4,14 @@ export async function POST(request) {
   try {
     const body = await request.json();
 
+    const headers = { "Content-Type": "application/json" };
+    if (process.env.PLATINUM_BYPASS_SECRET) {
+      headers["x-vercel-protection-bypass"] = process.env.PLATINUM_BYPASS_SECRET;
+    }
+
     const response = await fetch(ERROR_ENDPOINT, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(body),
     });
 

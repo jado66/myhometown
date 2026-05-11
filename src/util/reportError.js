@@ -19,12 +19,14 @@ export async function reportError(error, extra = {}) {
       body: JSON.stringify({
         message,
         stack,
-        page_url: typeof window !== "undefined" ? window.location.href : undefined,
+        page_url:
+          typeof window !== "undefined" ? window.location.href : undefined,
         reporter: "myhometown",
         project_id: PROJECT_ID,
         metadata: {
           ...extra,
-          userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+          userAgent:
+            typeof navigator !== "undefined" ? navigator.userAgent : undefined,
         },
       }),
     });
