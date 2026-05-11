@@ -39,8 +39,7 @@ function compressImage(file) {
       canvas.height = height;
       canvas.getContext("2d").drawImage(img, 0, 0, width, height);
 
-      const outputType =
-        file.type === "image/png" ? "image/png" : "image/jpeg";
+      const outputType = file.type === "image/png" ? "image/png" : "image/jpeg";
       canvas.toBlob(
         (blob) => {
           if (!blob) {
@@ -109,15 +108,16 @@ export function useUploadFile() {
 
     try {
       // Compress raster images that exceed the server body-size limit.
-      const { file: fileToUpload, wasCompressed } = file.type.startsWith("image/")
+      const { file: fileToUpload, wasCompressed } = file.type.startsWith(
+        "image/",
+      )
         ? await compressImage(file)
         : { file, wasCompressed: false };
 
       if (wasCompressed) {
-        toast.info(
-          "Image was resized to reduce file size before uploading.",
-          { toastId: "image-compressed-before-upload" },
-        );
+        toast.info("Image was resized to reduce file size before uploading.", {
+          toastId: "image-compressed-before-upload",
+        });
       }
 
       const formData = new FormData();
@@ -146,8 +146,7 @@ export function useUploadFile() {
             resolve({ url: parsed.url });
           } else {
             const message =
-              parsed?.error ||
-              `Upload failed (status ${xhr.status})`;
+              parsed?.error || `Upload failed (status ${xhr.status})`;
             reject(new Error(message));
           }
         };
