@@ -1,4 +1,4 @@
-const ERROR_ENDPOINT = "https://platinumprogramming.com/api/errors";
+const ERROR_ENDPOINT = "/api/report-error";
 const PROJECT_ID = "myhome";
 
 /**
