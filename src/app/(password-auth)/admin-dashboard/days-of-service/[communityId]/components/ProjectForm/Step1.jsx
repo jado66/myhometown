@@ -346,8 +346,8 @@ const Step1 = ({ date }) => {
             src={formData.signature_image || "/placeholder.svg"}
             alt="Homeowner Signature"
             style={{
-              maxWidth: "200px",
-              maxHeight: "60px",
+              maxWidth: "100%",
+              height: "auto",
               padding: "4px",
             }}
           />

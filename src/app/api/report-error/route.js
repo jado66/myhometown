@@ -9,6 +9,10 @@ export async function POST(request) {
       headers["x-vercel-protection-bypass"] =
         process.env.PLATINUM_BYPASS_SECRET;
     }
+    if (process.env.PLATINUM_ERROR_API_KEY) {
+      headers["x-api-key"] = process.env.PLATINUM_ERROR_API_KEY;
+    }
+    console.log("[report-error] headers being sent:", JSON.stringify(headers));
 
     const response = await fetch(ERROR_ENDPOINT, {
       method: "POST",
@@ -16,7 +20,13 @@ export async function POST(request) {
       body: JSON.stringify(body),
     });
 
-    return new Response(null, { status: response.ok ? 204 : response.status });
+    if (!response.ok) {
+      const text = await response.text();
+      console.error(`[report-error] upstream ${response.status}:`, text);
+      return new Response(text, { status: response.status });
+    }
+
+    return new Response(null, { status: 204 });
   } catch {
     return new Response(null, { status: 500 });
   }
