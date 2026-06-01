@@ -393,7 +393,9 @@ export const generateBeforeAndAfterReport = async (
         if (beforeImage && beforeImage.url) {
           try {
             // You'd need to implement a function to fetch and convert the image
-            const { data: beforeImgData } = await fetchImageAsBase64(beforeImage.url);
+            const { data: beforeImgData } = await fetchImageAsBase64(
+              beforeImage.url,
+            );
             doc.setFontSize(8);
             doc.setFont("helvetica", "normal");
             doc.text("BEFORE:", margin, currentY - 2);
@@ -417,7 +419,9 @@ export const generateBeforeAndAfterReport = async (
         // Add "After" image if available
         if (afterImage && afterImage.url) {
           try {
-            const { data: afterImgData } = await fetchImageAsBase64(afterImage.url);
+            const { data: afterImgData } = await fetchImageAsBase64(
+              afterImage.url,
+            );
             doc.setFontSize(8);
             doc.setFont("helvetica", "normal");
             doc.text("AFTER:", margin + imageWidth + 10, currentY - 2);
@@ -1166,11 +1170,22 @@ export const generatePDFReport = async (
           if (task.photos?.length > 0) {
             for (const photoUrl of task.photos) {
               try {
-                const { data: imgData, width: imgW, height: imgH } = await fetchImageAsBase64(photoUrl);
+                const {
+                  data: imgData,
+                  width: imgW,
+                  height: imgH,
+                } = await fetchImageAsBase64(photoUrl);
                 const maxImgWidth = 60;
                 const pdfImgHeight = Math.round(maxImgWidth * (imgH / imgW));
                 yPosition = checkForNewPage(yPosition, pdfImgHeight + 5);
-                doc.addImage(imgData, "JPEG", margin, yPosition, maxImgWidth, pdfImgHeight);
+                doc.addImage(
+                  imgData,
+                  "JPEG",
+                  margin,
+                  yPosition,
+                  maxImgWidth,
+                  pdfImgHeight,
+                );
                 yPosition += pdfImgHeight + 3;
               } catch (imgError) {
                 console.error("Failed to load task photo:", imgError);
@@ -1290,20 +1305,37 @@ export const generatePDFReport = async (
           const hasImages = beforeImg || duringImg || afterImg;
           if (hasImages) {
             // Fetch all images in parallel to get aspect-ratio-correct heights
-            const [beforeResult, duringResult, afterResult] = await Promise.allSettled([
-              beforeImg?.url ? fetchImageAsBase64(beforeImg.url) : Promise.resolve(null),
-              duringImg?.url ? fetchImageAsBase64(duringImg.url) : Promise.resolve(null),
-              afterImg?.url ? fetchImageAsBase64(afterImg.url) : Promise.resolve(null),
-            ]);
-            const getImg = (r: PromiseSettledResult<{ data: string; width: number; height: number } | null>) =>
-              r.status === "fulfilled" ? r.value : null;
+            const [beforeResult, duringResult, afterResult] =
+              await Promise.allSettled([
+                beforeImg?.url
+                  ? fetchImageAsBase64(beforeImg.url)
+                  : Promise.resolve(null),
+                duringImg?.url
+                  ? fetchImageAsBase64(duringImg.url)
+                  : Promise.resolve(null),
+                afterImg?.url
+                  ? fetchImageAsBase64(afterImg.url)
+                  : Promise.resolve(null),
+              ]);
+            const getImg = (
+              r: PromiseSettledResult<{
+                data: string;
+                width: number;
+                height: number;
+              } | null>,
+            ) => (r.status === "fulfilled" ? r.value : null);
             const beforeFetched = getImg(beforeResult);
             const duringFetched = getImg(duringResult);
             const afterFetched = getImg(afterResult);
 
             const toH = (r: { width: number; height: number } | null) =>
               r ? Math.round(imageWidth * (r.height / r.width)) : 0;
-            const rowHeight = Math.max(toH(beforeFetched), toH(duringFetched), toH(afterFetched), 1);
+            const rowHeight = Math.max(
+              toH(beforeFetched),
+              toH(duringFetched),
+              toH(afterFetched),
+              1,
+            );
 
             yPosition = checkForNewPage(yPosition, rowHeight + 15);
 
@@ -1321,19 +1353,48 @@ export const generatePDFReport = async (
 
             // Images side by side, each at its natural aspect ratio
             if (beforeFetched) {
-              doc.addImage(beforeFetched.data, "JPEG", margin, yPosition, imageWidth, toH(beforeFetched));
+              doc.addImage(
+                beforeFetched.data,
+                "JPEG",
+                margin,
+                yPosition,
+                imageWidth,
+                toH(beforeFetched),
+              );
             } else if (beforeImg?.url) {
               doc.text("[Image not available]", margin, yPosition + 10);
             }
             if (duringFetched) {
-              doc.addImage(duringFetched.data, "JPEG", margin + imageWidth + 4, yPosition, imageWidth, toH(duringFetched));
+              doc.addImage(
+                duringFetched.data,
+                "JPEG",
+                margin + imageWidth + 4,
+                yPosition,
+                imageWidth,
+                toH(duringFetched),
+              );
             } else if (duringImg?.url) {
-              doc.text("[Image not available]", margin + imageWidth + 4, yPosition + 10);
+              doc.text(
+                "[Image not available]",
+                margin + imageWidth + 4,
+                yPosition + 10,
+              );
             }
             if (afterFetched) {
-              doc.addImage(afterFetched.data, "JPEG", margin + 2 * (imageWidth + 4), yPosition, imageWidth, toH(afterFetched));
+              doc.addImage(
+                afterFetched.data,
+                "JPEG",
+                margin + 2 * (imageWidth + 4),
+                yPosition,
+                imageWidth,
+                toH(afterFetched),
+              );
             } else if (afterImg?.url) {
-              doc.text("[Image not available]", margin + 2 * (imageWidth + 4), yPosition + 10);
+              doc.text(
+                "[Image not available]",
+                margin + 2 * (imageWidth + 4),
+                yPosition + 10,
+              );
             }
             yPosition += rowHeight + 6;
           }
