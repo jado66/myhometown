@@ -295,13 +295,19 @@ export function generateOverviewReportCSV({
     a[1].name.localeCompare(b[1].name),
   );
 
-  const emptyCrc = { classCount: 0, uniqueStudents: 0, totalAttendance: 0, classesNotTakingRole: 0 };
+  const emptyCrc = {
+    classCount: 0,
+    uniqueStudents: 0,
+    totalAttendance: 0,
+    classesNotTakingRole: 0,
+  };
 
   const addCrc = (a, b) => ({
     classCount: (a.classCount || 0) + (b.classCount || 0),
     uniqueStudents: (a.uniqueStudents || 0) + (b.uniqueStudents || 0),
     totalAttendance: (a.totalAttendance || 0) + (b.totalAttendance || 0),
-    classesNotTakingRole: (a.classesNotTakingRole || 0) + (b.classesNotTakingRole || 0),
+    classesNotTakingRole:
+      (a.classesNotTakingRole || 0) + (b.classesNotTakingRole || 0),
   });
 
   // Collect computed stats per community/city for reuse across both sections
