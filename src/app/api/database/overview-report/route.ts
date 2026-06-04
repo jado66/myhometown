@@ -332,9 +332,9 @@ export async function POST(request: NextRequest) {
 
     console.log("[overview-report] Hours found:", allHours.length);
 
-    // 4. Fetch DOS project forms directly by community_id and created_at.
-    //    Querying via the parent days_of_service event misses forms whose
-    //    parent event falls outside the date range, so we filter here instead.
+    // 4. Fetch DOS project forms filtered by the related days_of_service.end_date
+    //    so the date range matches the actual day of service, not when the form
+    //    was created (created_at). This aligns with the direct DB query behaviour.
     let allDosProjects: any[] = [];
     {
       const idChunkSize = 50;
@@ -348,22 +348,16 @@ export async function POST(request: NextRequest) {
           let query = supabase
             .from("days_of_service_project_forms")
             .select(
-              "id, community_id, actual_volunteers, actual_project_duration, days_of_service_id, days_of_service(end_date)",
+              "id, community_id, actual_volunteers, actual_project_duration, days_of_service_id, days_of_service!inner(end_date)",
             )
             .in("community_id", idChunk)
             .range(dosFrom, dosFrom + pageSize - 1);
 
           if (startDate) {
-            query = query.gte("created_at", startDate);
+            query = query.gte("days_of_service.end_date", startDate);
           }
           if (endDate) {
-            // Include the full end day by using less-than the next day
-            const endPlusOne = new Date(endDate);
-            endPlusOne.setDate(endPlusOne.getDate() + 1);
-            query = query.lt(
-              "created_at",
-              endPlusOne.toISOString().split("T")[0],
-            );
+            query = query.lte("days_of_service.end_date", endDate);
           }
 
           const { data, error } = await query;

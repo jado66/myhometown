@@ -10,7 +10,7 @@
  *
  *   Section 2 — CRC and Days of Service Statistics
  *     Location, CRC Classes Taught, CRC Students Attended,
- *     CRC Total Attendance, DOS Community Hours, DOS Community Volunteers,
+ *     Attendance Percent, DOS Community Hours, DOS Community Volunteers,
  *     DOS # Projects,
  *     (blank), Total Volunteers, Total Service Hours, (blank)
  *
@@ -129,6 +129,14 @@ function computeOverviewStats(
     classCount: crcData.classCount || 0,
     studentsAttended: crcData.uniqueStudents || 0,
     totalAttendance: crcData.totalAttendance || 0,
+    attendancePercent:
+      (crcData.classCount || 0) > 0 && (crcData.uniqueStudents || 0) > 0
+        ? Math.round(
+            ((crcData.totalAttendance || 0) /
+              ((crcData.classCount || 0) * (crcData.uniqueStudents || 0))) *
+              100,
+          )
+        : 0,
     dosServiceHours,
     dosCommunityHours: communityHoursNum,
     dosCommunityVolunteers: communityVolunteersNum,
@@ -160,7 +168,7 @@ function section2Row(location, stats) {
     escapeCSV(location),
     fmtNum(stats.classCount),
     fmtNum(stats.studentsAttended),
-    fmtNum(stats.totalAttendance),
+    stats.attendancePercent > 0 ? stats.attendancePercent + "%" : "-",
     fmtNum(stats.dosCommunityHours),
     fmtNum(stats.dosCommunityVolunteers),
     fmtNum(stats.dosProjectCount),
@@ -229,8 +237,8 @@ export function generateOverviewReportCSV({
   const section2Headers = [
     "Community",
     "CRC Classes Taught",
-    "CRC Students Attended",
-    "CRC Total Attendance",
+    "CRC Students Headcount",
+    "Attendance Percent",
     "DOS Community Hours",
     "DOS Community Volunteers",
     "DOS # Projects",
@@ -310,11 +318,14 @@ export function generateOverviewReportCSV({
   let allDosProjects = [];
   let allCrc = { ...emptyCrc };
 
+  const allCommunityAttendancePercents = [];
+
   for (const [cityId, cityInfo] of sortedCityEntries) {
     let cityMissionariesList = [];
     let cityHoursEntries = [];
     let cityDosProjects = [];
     let cityCrc = { ...emptyCrc };
+    const cityAttendancePercents = [];
 
     const communitiesInCity = communities
       .filter((c) => cityInfo.communityIds.includes(c.id))
@@ -344,6 +355,8 @@ export function generateOverviewReportCSV({
           : `${cityName} ${commName}`;
 
       communityEntries.push({ name: displayName, stats });
+      cityAttendancePercents.push(stats.attendancePercent);
+      allCommunityAttendancePercents.push(stats.attendancePercent);
 
       cityMissionariesList = cityMissionariesList.concat(commMissionaries);
       cityHoursEntries = cityHoursEntries.concat(commHours);
@@ -365,6 +378,7 @@ export function generateOverviewReportCSV({
       hours: cityHoursEntries,
       dosProjects: cityDosProjects,
       crc: cityCrc,
+      attendancePercents: cityAttendancePercents,
     });
 
     allMissionaries = allMissionaries.concat(cityMissionariesList);
@@ -381,16 +395,24 @@ export function generateOverviewReportCSV({
   allHoursEntries = allHoursEntries.concat(stateLevelHours);
 
   // Pre-compute aggregate stats
-  const cityStatsMap = cityRows.map((city) => ({
-    name: city.name,
-    stats: computeOverviewStats(
+  const cityStatsMap = cityRows.map((city) => {
+    const stats = computeOverviewStats(
       city.missionaries,
       city.hours,
       city.dosProjects,
       city.crc,
       elapsedMonths,
-    ),
-  }));
+    );
+    // Attendance percent for city totals = average of its communities' percents
+    const validPercents = city.attendancePercents.filter((p) => p > 0);
+    stats.attendancePercent =
+      validPercents.length > 0
+        ? Math.round(
+            validPercents.reduce((a, b) => a + b, 0) / validPercents.length,
+          )
+        : 0;
+    return { name: city.name, stats };
+  });
 
   const totalStats = computeOverviewStats(
     allMissionaries,
@@ -399,6 +421,14 @@ export function generateOverviewReportCSV({
     allCrc,
     elapsedMonths,
   );
+  // Attendance percent for grand total = average of all communities' percents
+  const validAllPercents = allCommunityAttendancePercents.filter((p) => p > 0);
+  totalStats.attendancePercent =
+    validAllPercents.length > 0
+      ? Math.round(
+          validAllPercents.reduce((a, b) => a + b, 0) / validAllPercents.length,
+        )
+      : 0;
 
   // --- Build CSV rows ---
   const rows = [];
