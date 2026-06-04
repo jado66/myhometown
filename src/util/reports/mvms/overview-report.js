@@ -10,7 +10,7 @@
  *
  *   Section 2 — CRC and Days of Service Statistics
  *     Location, CRC Classes Taught, CRC Students Attended,
- *     Attendance Percent, DOS Community Hours, DOS Community Volunteers,
+ *     Classes Not Taking Role, DOS Community Hours, DOS Community Volunteers,
  *     DOS # Projects,
  *     (blank), Total Volunteers, Total Service Hours, (blank)
  *
@@ -30,7 +30,7 @@ function escapeCSV(value) {
 
 function fmtNum(num) {
   const rounded = Math.round(num);
-  if (rounded === 0) return "-";
+  if (rounded === 0) return "0";
   return escapeCSV(rounded.toLocaleString("en-US"));
 }
 
@@ -129,14 +129,7 @@ function computeOverviewStats(
     classCount: crcData.classCount || 0,
     studentsAttended: crcData.uniqueStudents || 0,
     totalAttendance: crcData.totalAttendance || 0,
-    attendancePercent:
-      (crcData.classCount || 0) > 0 && (crcData.uniqueStudents || 0) > 0
-        ? Math.round(
-            ((crcData.totalAttendance || 0) /
-              ((crcData.classCount || 0) * (crcData.uniqueStudents || 0))) *
-              100,
-          )
-        : 0,
+    classesNotTakingRole: crcData.classesNotTakingRole || 0,
     dosServiceHours,
     dosCommunityHours: communityHoursNum,
     dosCommunityVolunteers: communityVolunteersNum,
@@ -154,7 +147,7 @@ function section1Row(location, stats) {
     fmtNum(stats.mvCount),
     fmtNum(stats.smvTotalHours),
     fmtNum(stats.avgMonthlyHours),
-    stats.pctLogged > 0 ? stats.pctLogged + "%" : "-",
+    stats.pctLogged > 0 ? stats.pctLogged + "%" : "0%",
     fmtNum(stats.adminHours),
     fmtNum(stats.crcHours),
     fmtNum(stats.dosServiceHours),
@@ -168,7 +161,7 @@ function section2Row(location, stats) {
     escapeCSV(location),
     fmtNum(stats.classCount),
     fmtNum(stats.studentsAttended),
-    stats.attendancePercent > 0 ? stats.attendancePercent + "%" : "-",
+    escapeCSV(String(stats.classesNotTakingRole ?? 0)),
     fmtNum(stats.dosCommunityHours),
     fmtNum(stats.dosCommunityVolunteers),
     fmtNum(stats.dosProjectCount),
@@ -187,7 +180,7 @@ function section2Row(location, stats) {
  * @param {Array} params.missionaries - missionary objects with id, community_id
  * @param {Array} params.hours - missionary_hours objects with missionary_id, total_hours, activities JSONB
  * @param {Array} params.dosProjects - DOS project form objects with community_id, actual_volunteers, actual_project_duration, days_of_service: { end_date }
- * @param {Object} params.crcStats - { [communityId]: { classCount, uniqueStudents, totalAttendance } }
+ * @param {Object} params.crcStats - { [communityId]: { classCount, uniqueStudents, totalAttendance, classesNotTakingRole } }
  * @param {Object} params.dateRange - { startDate, endDate }
  * @param {Array} params.cityMissionaries - city-level missionary objects with id, city_id
  * @param {Array} params.stateMissionaries - state-level missionary objects with id
@@ -238,7 +231,7 @@ export function generateOverviewReportCSV({
     "Community",
     "CRC Classes Taught",
     "CRC Students Headcount",
-    "Attendance Percent",
+    "Classes Not Taking Role",
     "DOS Community Hours",
     "DOS Community Volunteers",
     "DOS # Projects",
@@ -302,12 +295,13 @@ export function generateOverviewReportCSV({
     a[1].name.localeCompare(b[1].name),
   );
 
-  const emptyCrc = { classCount: 0, uniqueStudents: 0, totalAttendance: 0 };
+  const emptyCrc = { classCount: 0, uniqueStudents: 0, totalAttendance: 0, classesNotTakingRole: 0 };
 
   const addCrc = (a, b) => ({
     classCount: (a.classCount || 0) + (b.classCount || 0),
     uniqueStudents: (a.uniqueStudents || 0) + (b.uniqueStudents || 0),
     totalAttendance: (a.totalAttendance || 0) + (b.totalAttendance || 0),
+    classesNotTakingRole: (a.classesNotTakingRole || 0) + (b.classesNotTakingRole || 0),
   });
 
   // Collect computed stats per community/city for reuse across both sections
@@ -318,14 +312,11 @@ export function generateOverviewReportCSV({
   let allDosProjects = [];
   let allCrc = { ...emptyCrc };
 
-  const allCommunityAttendancePercents = [];
-
   for (const [cityId, cityInfo] of sortedCityEntries) {
     let cityMissionariesList = [];
     let cityHoursEntries = [];
     let cityDosProjects = [];
     let cityCrc = { ...emptyCrc };
-    const cityAttendancePercents = [];
 
     const communitiesInCity = communities
       .filter((c) => cityInfo.communityIds.includes(c.id))
@@ -355,8 +346,6 @@ export function generateOverviewReportCSV({
           : `${cityName} ${commName}`;
 
       communityEntries.push({ name: displayName, stats });
-      cityAttendancePercents.push(stats.attendancePercent);
-      allCommunityAttendancePercents.push(stats.attendancePercent);
 
       cityMissionariesList = cityMissionariesList.concat(commMissionaries);
       cityHoursEntries = cityHoursEntries.concat(commHours);
@@ -378,7 +367,6 @@ export function generateOverviewReportCSV({
       hours: cityHoursEntries,
       dosProjects: cityDosProjects,
       crc: cityCrc,
-      attendancePercents: cityAttendancePercents,
     });
 
     allMissionaries = allMissionaries.concat(cityMissionariesList);
@@ -403,14 +391,6 @@ export function generateOverviewReportCSV({
       city.crc,
       elapsedMonths,
     );
-    // Attendance percent for city totals = average of its communities' percents
-    const validPercents = city.attendancePercents.filter((p) => p > 0);
-    stats.attendancePercent =
-      validPercents.length > 0
-        ? Math.round(
-            validPercents.reduce((a, b) => a + b, 0) / validPercents.length,
-          )
-        : 0;
     return { name: city.name, stats };
   });
 
@@ -421,14 +401,6 @@ export function generateOverviewReportCSV({
     allCrc,
     elapsedMonths,
   );
-  // Attendance percent for grand total = average of all communities' percents
-  const validAllPercents = allCommunityAttendancePercents.filter((p) => p > 0);
-  totalStats.attendancePercent =
-    validAllPercents.length > 0
-      ? Math.round(
-          validAllPercents.reduce((a, b) => a + b, 0) / validAllPercents.length,
-        )
-      : 0;
 
   // --- Build CSV rows ---
   const rows = [];

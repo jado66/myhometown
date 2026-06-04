@@ -391,6 +391,7 @@ export async function POST(request: NextRequest) {
         studentsEnrolled: number;
         uniqueStudents: number;
         totalAttendance: number;
+        classesNotTakingRole: number;
       }
     > = {};
     try {
@@ -420,6 +421,7 @@ export async function POST(request: NextRequest) {
         let studentsEnrolled = 0;
         const allUniqueStudents = new Set<string>();
         let totalAttendance = 0;
+        let classesNotTakingRole = 0;
 
         for (const cls of classes) {
           // Filter classes by date range overlap
@@ -440,6 +442,7 @@ export async function POST(request: NextRequest) {
           classCount++;
           studentsEnrolled += enrolled;
 
+          let classHasAttendance = false;
           if (Array.isArray(cls.attendance)) {
             for (const record of cls.attendance) {
               if (record.present !== true) continue;
@@ -448,8 +451,10 @@ export async function POST(request: NextRequest) {
               if (d && startDate && d < startDate) continue;
               allUniqueStudents.add(record.studentId);
               totalAttendance++;
+              classHasAttendance = true;
             }
           }
+          if (!classHasAttendance) classesNotTakingRole++;
         }
 
         const includedClassNames = classes
@@ -473,6 +478,7 @@ export async function POST(request: NextRequest) {
           studentsEnrolled,
           uniqueStudents: allUniqueStudents.size,
           totalAttendance,
+          classesNotTakingRole,
         };
       }
     } catch (mongoErr: any) {
