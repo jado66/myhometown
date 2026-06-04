@@ -214,7 +214,7 @@ export function generateOverviewReportCSV({
   const elapsedMonths = daysElapsed / 30.5;
 
   const section1Headers = [
-    "Location",
+    "Community Totals",
     "# Service Missionaries and Volunteers",
     "Service Missionaries/Volunteers Total Hours",
     "Average Monthly Hours",
@@ -227,7 +227,7 @@ export function generateOverviewReportCSV({
   ];
 
   const section2Headers = [
-    "Location",
+    "Community",
     "CRC Classes Taught",
     "CRC Students Attended",
     "CRC Total Attendance",
@@ -420,12 +420,13 @@ export function generateOverviewReportCSV({
   }
   rows.push(EMPTY_ROW);
 
+  rows.push(labelRow("City Totals (Including City Leaders)"));
   for (const city of cityStatsMap) {
     rows.push(section1Row(city.name, city.stats));
   }
   rows.push(EMPTY_ROW);
 
-  rows.push(section1Row("Total", totalStats));
+  rows.push(section1Row("Grand Total (including Utah Leaders)", totalStats));
 
   // Gap between sections
   rows.push(EMPTY_ROW);
@@ -440,12 +441,13 @@ export function generateOverviewReportCSV({
   }
   rows.push(EMPTY_ROW);
 
+  rows.push(labelRow("City Totals (Including City Leaders)"));
   for (const city of cityStatsMap) {
     rows.push(section2Row(city.name, city.stats));
   }
   rows.push(EMPTY_ROW);
 
-  rows.push(section2Row("Total", totalStats));
+  rows.push(section2Row("Grand Total (including Utah Leaders)", totalStats));
 
   return rows.join("\n");
 }

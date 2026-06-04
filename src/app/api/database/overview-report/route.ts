@@ -242,8 +242,9 @@ export async function POST(request: NextRequest) {
     );
 
     // 2c. Fetch state-level missionaries (assignment_level = 'state', no city or community)
+    // Always fetched so they are always included in the Grand Total row.
     let stateMissionaries: any[] = [];
-    if (includeUtahMissionaries) {
+    {
       let stateFrom = 0;
       let stateHasMore = true;
 

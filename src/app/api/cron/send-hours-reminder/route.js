@@ -50,12 +50,13 @@ async function fetchAllMissionaries() {
  */
 function getMonthBoundaries() {
   const now = new Date();
-  const monthName = now.toLocaleString("en-US", { month: "long" });
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
+  // Use the previous month
+  const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const monthName = prevMonthDate.toLocaleString("en-US", { month: "long" });
+  const year = prevMonthDate.getFullYear();
+  const month = prevMonthDate.getMonth() + 1;
   const periodStartDate = `${year}-${String(month).padStart(2, "0")}-01`;
-  const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  const nextMonthStart = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-01`;
+  const nextMonthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
   return { monthName, periodStartDate, nextMonthStart };
 }
 
