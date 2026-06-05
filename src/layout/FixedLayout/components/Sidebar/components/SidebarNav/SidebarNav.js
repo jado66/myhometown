@@ -5,11 +5,19 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
+import LogoutIcon from "@mui/icons-material/Logout";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 // import RoleGuard from '@/guards/role-guard';
 import { useUser } from "@/hooks/use-user";
 import Loading from "@/components/util/Loading";
 import PermissionGuard from "@/guards/permission-guard";
-import { Divider } from "@mui/material";
+import {
+  Avatar,
+  Divider,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+} from "@mui/material";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/util/supabase";
@@ -21,13 +29,25 @@ const SidebarNav = ({ pages, onClose }) => {
 
   const router = useRouter();
 
+  const [anchorEl, setAnchorEl] = useState(null);
+  const menuOpen = Boolean(anchorEl);
+
   useEffect(() => {
     setActiveLink(window && window.location ? window.location.pathname : "");
   }, []);
 
   const rootUrl = process.env.NEXT_PUBLIC_DOMAIN;
 
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   const handleLogOut = async () => {
+    handleMenuClose();
     const { error } = await supabase.auth.signOut();
 
     if (error) {
@@ -38,6 +58,16 @@ const SidebarNav = ({ pages, onClose }) => {
       router.push("/");
     }
   };
+
+  const displayName =
+    [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
+    user?.email ||
+    "";
+  const avatarInitial = (
+    user?.first_name?.[0] ||
+    user?.email?.[0] ||
+    ""
+  ).toUpperCase();
 
   if (isLoading) {
     return (
@@ -134,21 +164,87 @@ const SidebarNav = ({ pages, onClose }) => {
         ))}
       </Box>
 
-      <Box>
-        {user ? (
-          <Button variant="outlined" fullWidth onClick={handleLogOut}>
-            Log Out
-          </Button>
-        ) : (
+      {user?.id && (
+        <Box>
           <Button
-            variant="outlined"
             fullWidth
-            href={process.env.NEXT_PUBLIC_DOMAIN + "/auth/login"}
-          >
-            Admin Log In
-          </Button>
-        )}
-      </Box>
+            variant="outlined"
+            onClick={handleMenuOpen}
+              aria-haspopup="true"
+              aria-expanded={menuOpen ? "true" : undefined}
+              endIcon={<ExpandMoreIcon />}
+              sx={{
+                justifyContent: "space-between",
+                textTransform: "none",
+                px: 1.5,
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  minWidth: 0,
+                }}
+              >
+                <Avatar
+                  sx={{
+                    width: 28,
+                    height: 28,
+                    fontSize: 14,
+                    bgcolor: theme.palette.primary.main,
+                  }}
+                >
+                  {avatarInitial}
+                </Avatar>
+                <Box sx={{ minWidth: 0, textAlign: "left" }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 600,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {displayName}
+                  </Typography>
+                  {user?.email && displayName !== user.email && (
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        display: "block",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {user.email}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            </Button>
+            <Menu
+              anchorEl={anchorEl}
+              open={menuOpen}
+              onClose={handleMenuClose}
+              anchorOrigin={{ vertical: "top", horizontal: "center" }}
+              transformOrigin={{ vertical: "bottom", horizontal: "center" }}
+              slotProps={{
+                paper: { sx: { width: anchorEl?.offsetWidth } },
+              }}
+            >
+              <MenuItem onClick={handleLogOut}>
+                <ListItemIcon>
+                  <LogoutIcon fontSize="small" />
+                </ListItemIcon>
+                Log Out
+              </MenuItem>
+            </Menu>
+        </Box>
+      )}
     </Box>
   );
 };
