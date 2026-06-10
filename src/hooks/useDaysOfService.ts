@@ -83,14 +83,17 @@ export const useDaysOfService = () => {
             `,
         )
         .eq("short_id", shortId)
-        .single();
+        .limit(1);
 
       if (supabaseError) throw supabaseError;
 
+      const row = data?.[0];
+      if (!row) return { data: null, error: { message: "No day of service found" } };
+
       const flattenedData = {
-        ...data,
-        city_name: data.cities?.city_name,
-        community_name: data.communities?.community_name,
+        ...row,
+        city_name: row.cities?.city_name,
+        community_name: row.communities?.community_name,
       };
 
       delete flattenedData.cities;
@@ -128,14 +131,17 @@ export const useDaysOfService = () => {
           )
           .eq("community_id", communityId)
           .eq("end_date", isoDate)
-          .single();
+          .limit(1);
 
         if (supabaseError) throw supabaseError;
 
+        const row = data?.[0];
+        if (!row) return { data: null, error: { message: "No day of service found" } };
+
         const flattenedData = {
-          ...data,
-          city_name: data.cities?.city_name,
-          community_name: data.communities?.community_name,
+          ...row,
+          city_name: row.cities?.city_name,
+          community_name: row.communities?.community_name,
         };
 
         delete flattenedData.cities;

@@ -11,13 +11,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useUser } from "@/hooks/use-user";
 import Loading from "@/components/util/Loading";
 import PermissionGuard from "@/guards/permission-guard";
-import {
-  Avatar,
-  Divider,
-  ListItemIcon,
-  Menu,
-  MenuItem,
-} from "@mui/material";
+import { Avatar, Divider, ListItemIcon, Menu, MenuItem } from "@mui/material";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/util/supabase";
@@ -170,79 +164,79 @@ const SidebarNav = ({ pages, onClose }) => {
             fullWidth
             variant="outlined"
             onClick={handleMenuOpen}
-              aria-haspopup="true"
-              aria-expanded={menuOpen ? "true" : undefined}
-              endIcon={<ExpandMoreIcon />}
+            aria-haspopup="true"
+            aria-expanded={menuOpen ? "true" : undefined}
+            endIcon={<ExpandMoreIcon />}
+            sx={{
+              justifyContent: "space-between",
+              textTransform: "none",
+              px: 1.5,
+            }}
+          >
+            <Box
               sx={{
-                justifyContent: "space-between",
-                textTransform: "none",
-                px: 1.5,
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                minWidth: 0,
               }}
             >
-              <Box
+              <Avatar
                 sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  minWidth: 0,
+                  width: 28,
+                  height: 28,
+                  fontSize: 14,
+                  bgcolor: theme.palette.primary.main,
                 }}
               >
-                <Avatar
+                {avatarInitial}
+              </Avatar>
+              <Box sx={{ minWidth: 0, textAlign: "left" }}>
+                <Typography
+                  variant="body2"
                   sx={{
-                    width: 28,
-                    height: 28,
-                    fontSize: 14,
-                    bgcolor: theme.palette.primary.main,
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
                   }}
                 >
-                  {avatarInitial}
-                </Avatar>
-                <Box sx={{ minWidth: 0, textAlign: "left" }}>
+                  {displayName}
+                </Typography>
+                {user?.email && displayName !== user.email && (
                   <Typography
-                    variant="body2"
+                    variant="caption"
+                    color="text.secondary"
                     sx={{
-                      fontWeight: 600,
+                      display: "block",
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                     }}
                   >
-                    {displayName}
+                    {user.email}
                   </Typography>
-                  {user?.email && displayName !== user.email && (
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{
-                        display: "block",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {user.email}
-                    </Typography>
-                  )}
-                </Box>
+                )}
               </Box>
-            </Button>
-            <Menu
-              anchorEl={anchorEl}
-              open={menuOpen}
-              onClose={handleMenuClose}
-              anchorOrigin={{ vertical: "top", horizontal: "center" }}
-              transformOrigin={{ vertical: "bottom", horizontal: "center" }}
-              slotProps={{
-                paper: { sx: { width: anchorEl?.offsetWidth } },
-              }}
-            >
-              <MenuItem onClick={handleLogOut}>
-                <ListItemIcon>
-                  <LogoutIcon fontSize="small" />
-                </ListItemIcon>
-                Log Out
-              </MenuItem>
-            </Menu>
+            </Box>
+          </Button>
+          <Menu
+            anchorEl={anchorEl}
+            open={menuOpen}
+            onClose={handleMenuClose}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            transformOrigin={{ vertical: "bottom", horizontal: "center" }}
+            slotProps={{
+              paper: { sx: { width: anchorEl?.offsetWidth } },
+            }}
+          >
+            <MenuItem onClick={handleLogOut}>
+              <ListItemIcon>
+                <LogoutIcon fontSize="small" />
+              </ListItemIcon>
+              Log Out
+            </MenuItem>
+          </Menu>
         </Box>
       )}
     </Box>
