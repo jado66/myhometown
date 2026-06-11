@@ -83,7 +83,7 @@ export default function Management() {
     router.push(
       `/edit/${state.toLowerCase()}/${city.name
         .toLowerCase()
-        .replaceAll(/\s/g, "-")}`
+        .replaceAll(/\s/g, "-")}`,
     );
   };
 
@@ -96,7 +96,7 @@ export default function Management() {
   const cityColumns = createCityColumns(
     handleAskDeleteCity,
     setCityToEdit,
-    toggleVisibility
+    toggleVisibility,
   );
 
   if (!hasLoaded) {
@@ -395,7 +395,7 @@ export function SingleCity({ city, goToEditCity, handleEditCity }) {
       const csv = await generateFullReport(
         city,
         includedCommunities,
-        getCommunity
+        getCommunity,
       );
 
       // Create and trigger download
@@ -512,41 +512,6 @@ export function SingleCity({ city, goToEditCity, handleEditCity }) {
             />
           ))}
       </Grid>
-
-      <Divider width="100%" sx={{ mx: "auto", mb: 3 }} />
-
-      <Typography
-        variant="h4"
-        component="h2"
-        color="primary"
-        textAlign="center"
-        gutterBottom
-      >
-        Reports
-      </Typography>
-
-      <Button
-        variant="outlined"
-        color="primary"
-        size="large"
-        onClick={() => setOpenReportDialog(true)}
-        disabled={isGenerating}
-      >
-        {isGenerating ? "Generating Report..." : "Generate Complete Report"}
-      </Button>
-
-      <GenerateReportDialog
-        open={openReportDialog}
-        handleClose={handleCloseReportDialog}
-        city={city}
-        onSubmit={handleGenerateReport}
-      />
-      {/* <EventsCalendar events={city.events} onSelectEvent={() => {}} /> */}
-
-      {/* Form for adding volunteer hours */}
-      {/* <Grid item xs={12} mt={4}>
-        <AddCityStatsForm city={city} updateCityStats={updateCityStats} />
-      </Grid> */}
     </Grid>
   );
 }
