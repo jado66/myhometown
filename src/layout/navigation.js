@@ -93,7 +93,7 @@ export const pages = () => {
         {
           title: "Global Reporting",
           href: rootUrl + "/admin-dashboard/global-reports",
-          requiredPermission: "administrator",
+          requiredPermission: "content_development",
         },
         {
           title: "QR Code Generator",

@@ -88,7 +88,8 @@ export const useDaysOfService = () => {
       if (supabaseError) throw supabaseError;
 
       const row = data?.[0];
-      if (!row) return { data: null, error: { message: "No day of service found" } };
+      if (!row)
+        return { data: null, error: { message: "No day of service found" } };
 
       const flattenedData = {
         ...row,
@@ -136,7 +137,8 @@ export const useDaysOfService = () => {
         if (supabaseError) throw supabaseError;
 
         const row = data?.[0];
-        if (!row) return { data: null, error: { message: "No day of service found" } };
+        if (!row)
+          return { data: null, error: { message: "No day of service found" } };
 
         const flattenedData = {
           ...row,
