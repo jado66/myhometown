@@ -2,6 +2,12 @@
 import { supabase } from "@/util/supabase";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
+import {
+  applyProductionCityFilter,
+  applyProductionCommunityFilter,
+  filterProductionCommunities,
+  isProductionCommunity,
+} from "@/util/supabase/locationFilters";
 
 // This hook previously used internal API route fetches (e.g. /api/database/communities).
 // It is now refactored to use Supabase directly for all CRUD operations.
@@ -42,8 +48,10 @@ export function useCommunitiesSupabase(
 
   const fetchNewCommunities = useCallback(async ({ query = null } = {}) => {
     try {
-      let baseQuery = supabase.from("communities").select(
-        `*, cities:communities_city_id_fkey ( name )` // alias relation name -> cities
+      let baseQuery = applyProductionCommunityFilter(
+        supabase.from("communities").select(
+          `*, cities:communities_city_id_fkey ( name )`, // alias relation name -> cities
+        ),
       );
 
       if (query) baseQuery = query(baseQuery);
@@ -51,12 +59,14 @@ export function useCommunitiesSupabase(
       const { data, error } = await baseQuery;
       if (error) throw error;
 
-      let flattened = (data || []).map((c) => ({
-        ...c,
-        city_name: c.cities?.name || null,
-        city: c.cities?.name || null, // backward compatibility field used in legacy components
-        _id: c.id, // legacy id naming
-      }));
+      let flattened = filterProductionCommunities(
+        (data || []).map((c) => ({
+          ...c,
+          city_name: c.cities?.name || null,
+          city: c.cities?.name || null, // backward compatibility field used in legacy components
+          _id: c.id, // legacy id naming
+        })),
+      );
 
       // Fallback enrichment if join returned null city names (likely RLS issue)
       if (flattened.some((c) => !c.city)) {
@@ -72,36 +82,42 @@ export function useCommunitiesSupabase(
   const fetchCommunitiesByCity = useCallback(async (cityName) => {
     try {
       // First attempt: inner join filter by city name
-      const { data, error } = await supabase
-        .from("communities")
-        .select(`*, cities:communities_city_id_fkey!inner ( name )`)
+      const { data, error } = await applyProductionCommunityFilter(
+        supabase
+          .from("communities")
+          .select(`*, cities:communities_city_id_fkey!inner ( name )`),
+      )
+        .eq("cities.is_dev", false)
         .eq("cities.name", cityName);
       if (error) throw error;
-      let flattened = (data || []).map((c) => ({
-        ...c,
-        city_name: c.cities?.name || null,
-        city: c.cities?.name || null,
-        _id: c.id,
-      }));
+      let flattened = filterProductionCommunities(
+        (data || []).map((c) => ({
+          ...c,
+          city_name: c.cities?.name || null,
+          city: c.cities?.name || null,
+          _id: c.id,
+        })),
+      );
       if (flattened.length === 0) {
         // Fallback path: resolve city id then fetch by city_id (in case RLS blocks join)
-        const { data: cityRow, error: cityErr } = await supabase
-          .from("cities")
-          .select("id, name")
+        const { data: cityRow, error: cityErr } = await applyProductionCityFilter(
+          supabase.from("cities").select("id, name"),
+        )
           .eq("name", cityName)
           .maybeSingle();
         if (!cityErr && cityRow) {
-          const { data: comms, error: commErr } = await supabase
-            .from("communities")
-            .select("*")
-            .eq("city_id", cityRow.id);
+          const { data: comms, error: commErr } = await applyProductionCommunityFilter(
+            supabase.from("communities").select("*"),
+          ).eq("city_id", cityRow.id);
           if (!commErr) {
-            flattened = (comms || []).map((c) => ({
-              ...c,
-              city_name: cityRow.name,
-              city: cityRow.name,
-              _id: c.id,
-            }));
+            flattened = filterProductionCommunities(
+              (comms || []).map((c) => ({
+                ...c,
+                city_name: cityRow.name,
+                city: cityRow.name,
+                _id: c.id,
+              })),
+            );
           }
         }
       }
@@ -120,20 +136,24 @@ export function useCommunitiesSupabase(
 
     async function fetchAllCommunities() {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("communities")
-        .select(`*, cities:communities_city_id_fkey ( name )`);
+      const { data, error } = await applyProductionCommunityFilter(
+        supabase
+          .from("communities")
+          .select(`*, cities:communities_city_id_fkey ( name )`),
+      );
       if (!isMounted) return;
       if (error) {
         console.error("Error fetching communities", error);
         setError(error.message);
       }
-      let flattened = (data || []).map((c) => ({
-        ...c,
-        city_name: c.cities?.name || null,
-        city: c.cities?.name || null,
-        _id: c.id,
-      }));
+      let flattened = filterProductionCommunities(
+        (data || []).map((c) => ({
+          ...c,
+          city_name: c.cities?.name || null,
+          city: c.cities?.name || null,
+          _id: c.id,
+        })),
+      );
       if (flattened.some((c) => !c.city)) {
         flattened = await enrichMissingCities(flattened);
       }
@@ -149,21 +169,24 @@ export function useCommunitiesSupabase(
         return;
       }
       setLoading(true);
-      const { data, error } = await supabase
-        .from("communities")
-        .select(`*, cities:communities_city_id_fkey ( name )`)
-        .in("id", ids);
+      const { data, error } = await applyProductionCommunityFilter(
+        supabase
+          .from("communities")
+          .select(`*, cities:communities_city_id_fkey ( name )`),
+      ).in("id", ids);
       if (!isMounted) return;
       if (error) {
         console.error("Error fetching communities by ids", error);
         setError(error.message);
       }
-      let flattened = (data || []).map((c) => ({
-        ...c,
-        city_name: c.cities?.name || null,
-        city: c.cities?.name || null,
-        _id: c.id,
-      }));
+      let flattened = filterProductionCommunities(
+        (data || []).map((c) => ({
+          ...c,
+          city_name: c.cities?.name || null,
+          city: c.cities?.name || null,
+          _id: c.id,
+        })),
+      );
       if (flattened.some((c) => !c.city)) {
         flattened = await enrichMissingCities(flattened);
       }
@@ -192,14 +215,18 @@ export function useCommunitiesSupabase(
     setLoading(true);
     setError(null);
     try {
-      const { data, error } = await supabase
-        .from("communities")
-        .select(`*, cities:communities_city_id_fkey ( name )`)
+      const { data, error } = await applyProductionCommunityFilter(
+        supabase
+          .from("communities")
+          .select(`*, cities:communities_city_id_fkey ( name )`),
+      )
         .eq("id", id)
         .maybeSingle();
       if (error) throw error;
       setLoading(false);
-      if (!data) throw new Error("Community not found");
+      if (!data || !isProductionCommunity(data)) {
+        throw new Error("Community not found");
+      }
       if (!data.cities?.name) {
         const enriched = await enrichMissingCities([
           { ...data, city: null, city_name: null, _id: data.id },
@@ -347,10 +374,9 @@ async function enrichMissingCities(rows) {
       new Set(rows.filter((r) => !r.city).map((r) => r.city_id))
     );
     if (missingIds.length === 0) return rows;
-    const { data: citiesData, error } = await supabase
-      .from("cities")
-      .select("id, name")
-      .in("id", missingIds);
+    const { data: citiesData, error } = await applyProductionCityFilter(
+      supabase.from("cities").select("id, name"),
+    ).in("id", missingIds);
     if (error) {
       console.warn("Could not enrich cities", error.message);
       return rows;

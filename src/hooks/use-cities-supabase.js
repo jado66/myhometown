@@ -2,6 +2,10 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { supabase } from "@/util/supabase";
+import {
+  applyProductionCityFilter,
+  filterProductionCities,
+} from "@/util/supabase/locationFilters";
 
 export function useCitiesSupabase(userfilter, forDropDownCityMenu = false) {
   const [groupedCityStrings, setGroupedCityStrings] = useState({});
@@ -30,9 +34,9 @@ export function useCitiesSupabase(userfilter, forDropDownCityMenu = false) {
     async function fetchAllCities() {
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from("cities")
-          .select("*")
+        const { data, error } = await applyProductionCityFilter(
+          supabase.from("cities").select("*"),
+        )
           .order("state", { ascending: true })
           .order("name", { ascending: true });
 
@@ -42,7 +46,7 @@ export function useCitiesSupabase(userfilter, forDropDownCityMenu = false) {
           return;
         }
 
-        setCities(data || []);
+        setCities(filterProductionCities(data));
       } catch (e) {
         console.error("Error occurred while fetching cities", e);
         toast.error("An error occurred while fetching cities");
@@ -55,9 +59,9 @@ export function useCitiesSupabase(userfilter, forDropDownCityMenu = false) {
     async function fetchCitiesByIds(ids) {
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from("cities")
-          .select("*")
+        const { data, error } = await applyProductionCityFilter(
+          supabase.from("cities").select("*"),
+        )
           .in("id", ids)
           .order("state", { ascending: true })
           .order("name", { ascending: true });
@@ -68,7 +72,7 @@ export function useCitiesSupabase(userfilter, forDropDownCityMenu = false) {
           return;
         }
 
-        setCities(data || []);
+        setCities(filterProductionCities(data));
       } catch (e) {
         console.error("Error occurred while fetching cities", e);
         toast.error("An error occurred while fetching cities");

@@ -1,4 +1,7 @@
 import { supabaseServer } from "@/util/supabaseServer";
+import {
+  applyProductionCommunityFilter,
+} from "@/util/supabase/locationFilters";
 
 export const newToOldCommunity = {
   "a78e8c7c-eca4-4f13-b6c8-e5603d1c36da": "66a811814800d08c300d88fd", // Orem - Geneva Heights
@@ -150,10 +153,9 @@ export async function POST(request) {
 
           if (userCities.length > 0) {
             // Fetch communities that belong to user's cities
-            const { data: cityCommunities } = await supabaseServer
-              .from("communities")
-              .select("id")
-              .in("city_id", userCities);
+            const { data: cityCommunities } = await applyProductionCommunityFilter(
+              supabaseServer.from("communities").select("id"),
+            ).in("city_id", userCities);
 
             if (cityCommunities) {
               const cityCommunitiesIds = cityCommunities.map((c) => c.id);
@@ -275,9 +277,9 @@ export async function POST(request) {
 
     // Check if volunteering community exists
     const { data: communityExists, error: communityError } =
-      await supabaseServer
-        .from("communities")
-        .select("id")
+      await applyProductionCommunityFilter(
+        supabaseServer.from("communities").select("id"),
+      )
         .eq("id", normalizedCommunityId)
         .single();
 

@@ -27,6 +27,7 @@ const ServiceDayDialog = ({
   fetchDays,
   handleDeleteDay,
   dayOfServicePrefix,
+  existingDaysOfService = [],
 }) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -70,6 +71,19 @@ const ServiceDayDialog = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const duplicate = existingDaysOfService.find(
+      (day) =>
+        moment(day.end_date).format("YYYY-MM-DD") === formData.end_date &&
+        day.id !== initialData?.id,
+    );
+    if (duplicate) {
+      toast.error(
+        `A Day of Service already exists on ${moment(formData.end_date).format("MMM DD, YYYY")}. Each day of service must have a unique date.`,
+      );
+      return;
+    }
+
     setIsLoading(true);
     try {
       if (initialData?.id) {

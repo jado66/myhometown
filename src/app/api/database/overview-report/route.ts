@@ -1,6 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getSupabaseServer } from "@/util/supabaseServer";
 import { connectToMongoDatabase } from "@/util/db/mongodb";
+import {
+  applyProductionCommunityFilter,
+  filterProductionCommunities,
+} from "@/util/supabase/locationFilters";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -80,12 +84,11 @@ export async function POST(request: NextRequest) {
     let communities: any[] = [];
 
     if (uuidIds.length > 0) {
-      const { data, error } = await supabase
-        .from("communities")
-        .select(
+      const { data, error } = await applyProductionCommunityFilter(
+        supabase.from("communities").select(
           "id, name, city_id, mongo_id, cities:communities_city_id_fkey ( id, name, state )",
-        )
-        .in("id", uuidIds);
+        ),
+      ).in("id", uuidIds);
       if (error) {
         console.error(
           "[overview-report] Error fetching communities by id:",
@@ -100,12 +103,12 @@ export async function POST(request: NextRequest) {
       const foundIds = new Set((data || []).map((c: any) => c.id));
       const unmatchedUuids = uuidIds.filter((id: string) => !foundIds.has(id));
       if (unmatchedUuids.length > 0) {
-        const { data: mongoData, error: mongoError } = await supabase
-          .from("communities")
-          .select(
-            "id, name, city_id, mongo_id, cities:communities_city_id_fkey ( id, name, state )",
-          )
-          .in("mongo_id", unmatchedUuids);
+        const { data: mongoData, error: mongoError } =
+          await applyProductionCommunityFilter(
+            supabase.from("communities").select(
+              "id, name, city_id, mongo_id, cities:communities_city_id_fkey ( id, name, state )",
+            ),
+          ).in("mongo_id", unmatchedUuids);
         if (mongoError) {
           console.error(
             "[overview-report] Error fetching communities by mongo_id (uuid fallback):",
@@ -117,12 +120,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (mongoIds.length > 0) {
-      const { data, error } = await supabase
-        .from("communities")
-        .select(
+      const { data, error } = await applyProductionCommunityFilter(
+        supabase.from("communities").select(
           "id, name, city_id, mongo_id, cities:communities_city_id_fkey ( id, name, state )",
-        )
-        .in("mongo_id", mongoIds);
+        ),
+      ).in("mongo_id", mongoIds);
       if (error) {
         console.error(
           "[overview-report] Error fetching communities by mongo_id:",
@@ -132,6 +134,8 @@ export async function POST(request: NextRequest) {
       }
       if (data) communities = communities.concat(data);
     }
+
+    communities = filterProductionCommunities(communities);
 
     const resolvedCommunityIds = communities.map((c: any) => c.id);
     console.log(

@@ -47,6 +47,12 @@ import { useCitiesSupabase } from "@/hooks/use-cities-supabase";
 import Loading from "@/components/util/Loading";
 import { toast } from "react-toastify";
 import { supabase } from "@/util/supabase";
+import {
+  applyProductionCityFilter,
+  applyProductionCommunityFilter,
+  filterProductionCities,
+  filterProductionCommunities,
+} from "@/util/supabase/locationFilters";
 
 interface Missionary {
   id: string;
@@ -111,20 +117,24 @@ export default function MissionaryDirectory({
     const fetchData = async () => {
       try {
         const [communitiesResult, citiesResult] = await Promise.all([
-          supabase.from("communities").select("*"),
-          supabase.from("cities").select("*"),
+          applyProductionCommunityFilter(
+            supabase.from("communities").select("*"),
+          ),
+          applyProductionCityFilter(supabase.from("cities").select("*")),
         ]);
 
         if (communitiesResult.error) {
           console.error("Error fetching communities:", communitiesResult.error);
         } else {
-          setAllCommunities(communitiesResult.data || []);
+          setAllCommunities(
+            filterProductionCommunities(communitiesResult.data || []),
+          );
         }
 
         if (citiesResult.error) {
           console.error("Error fetching cities:", citiesResult.error);
         } else {
-          setAllCities(citiesResult.data || []);
+          setAllCities(filterProductionCities(citiesResult.data || []));
         }
       } catch (err) {
         console.error("Failed to fetch data:", err);

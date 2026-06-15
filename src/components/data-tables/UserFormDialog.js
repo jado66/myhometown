@@ -12,6 +12,10 @@ import { Delete, Key, Email } from "@mui/icons-material";
 import JsonViewer from "../util/debug/DebugOutput";
 import UserFormFields from "./UserFormFields";
 import { supabase } from "@/util/supabase";
+import {
+  applyProductionCityFilter,
+  filterProductionCities,
+} from "@/util/supabase/locationFilters";
 
 const initialPermissions = {
   // administrator: false,
@@ -53,15 +57,16 @@ export const UserFormDialog = ({
       // Fetch city details and populate cities_details
       if (newFormData.cities) {
         const fetchCityDetails = async () => {
-          const { data: citiesData, error } = await supabase
-            .from("cities")
-            .select("*")
-            .in("id", newFormData.cities); // Fetch cities with matching IDs
+          const { data: citiesData, error } = await applyProductionCityFilter(
+            supabase.from("cities").select("*"),
+          ).in("id", newFormData.cities); // Fetch cities with matching IDs
 
           if (error) {
             console.error("Error fetching city details:", error);
           } else {
-            newFormData.cities_details = citiesData.map((city) => ({
+            newFormData.cities_details = filterProductionCities(
+              citiesData,
+            ).map((city) => ({
               value: city.id,
               label: city.name,
             }));

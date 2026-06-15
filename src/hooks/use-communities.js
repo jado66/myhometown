@@ -2,6 +2,10 @@
 import { supabase } from "@/util/supabase";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import {
+  applyProductionCommunityFilter,
+  filterProductionCommunities,
+} from "@/util/supabase/locationFilters";
 
 export function useCommunities(userfilter, forDropDownCommunityMenu = false) {
   const [communities, setCommunities] = useState([]);
@@ -29,11 +33,13 @@ export function useCommunities(userfilter, forDropDownCommunityMenu = false) {
 
   async function fetchNewCommunities({ query = null }) {
     try {
-      let baseQuery = supabase.from("communities").select(`
+      let baseQuery = applyProductionCommunityFilter(
+        supabase.from("communities").select(`
         *,
         cities!communities_city_id_fkey (
           city_name:name
-        )`);
+        )`),
+      );
 
       // Apply the query if provided
       if (query) {
@@ -47,13 +53,15 @@ export function useCommunities(userfilter, forDropDownCommunityMenu = false) {
       }
 
       // Remove the nested cities object and flatten the city_name
-      const flattenedData = citiesData?.map((community) => {
-        const { cities, ...rest } = community;
-        return {
-          ...rest,
-          city_name: cities?.city_name,
-        };
-      });
+      const flattenedData = filterProductionCommunities(
+        citiesData?.map((community) => {
+          const { cities, ...rest } = community;
+          return {
+            ...rest,
+            city_name: cities?.city_name,
+          };
+        }),
+      );
 
       return { data: flattenedData, error: null };
     } catch (error) {
@@ -86,7 +94,7 @@ export function useCommunities(userfilter, forDropDownCommunityMenu = false) {
       try {
         const res = await fetch(`/api/database/communities`);
         const data = await res.json();
-        setCommunities(data);
+        setCommunities(filterProductionCommunities(data));
         setHasLoaded(true);
       } catch (e) {
         console.error("Error occurred while fetching communities", e);
@@ -96,30 +104,31 @@ export function useCommunities(userfilter, forDropDownCommunityMenu = false) {
 
     async function fetchCommunitiesByIds(ids) {
       try {
-        const { data: citiesData, error } = await supabase
-          .from("communities")
-          .select(
+        const { data: citiesData, error } = await applyProductionCommunityFilter(
+          supabase.from("communities").select(
             `
             *,
             cities!communities_city_id_fkey (
               city_name:name
             )
-          `
-          )
-          .in("id", ids);
+          `,
+          ),
+        ).in("id", ids);
 
         if (error) {
           throw error;
         }
 
         // Remove the nested cities object and flatten the city_name
-        const flattenedData = citiesData?.map((community) => {
-          const { cities, ...rest } = community;
-          return {
-            ...rest,
-            city_name: cities?.city_name,
-          };
-        });
+        const flattenedData = filterProductionCommunities(
+          citiesData?.map((community) => {
+            const { cities, ...rest } = community;
+            return {
+              ...rest,
+              city_name: cities?.city_name,
+            };
+          }),
+        );
 
         setCommunities(flattenedData || []);
         setHasLoaded(true);

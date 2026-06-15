@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { filterProductionCities } from "@/util/supabase/locationFilters";
 export const newToOldCity = {
   "1ffc6f04-4c38-438a-8c48-dc9a2bbc0305": "66df5865f05bd41ef9493f43",
   "2e4f79c6-bd84-4d48-9538-959ecd07b027": "6876c0292a087f662c17feec",
@@ -45,7 +46,7 @@ export default function useManageCities(
         if (data.length === 0) {
         }
 
-        setCities(data);
+        setCities(filterProductionCities(data));
       } catch (e) {
         console.error("Error occurred while fetching cities", e);
       }
@@ -65,7 +66,7 @@ export default function useManageCities(
           body: JSON.stringify(convertedIds),
         });
         const data = await res.json();
-        setCities(data);
+        setCities(filterProductionCities(data));
       } catch (e) {
         console.error("Error occurred while fetching cities", e);
       }

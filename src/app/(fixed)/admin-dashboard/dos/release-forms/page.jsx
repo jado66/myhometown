@@ -34,6 +34,10 @@ import {
 } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import { supabase } from "@/util/supabase";
+import {
+  applyProductionCityFilter,
+  filterProductionCities,
+} from "@/util/supabase/locationFilters";
 
 // ─── Variable interpolation (shared with signature page) ─────────────────────
 const SAMPLE_VARS = {
@@ -118,11 +122,13 @@ export default function ReleaseFormsAdminPage() {
     const load = async () => {
       setLoading(true);
       const [{ data: citiesData }, { data: formsData }] = await Promise.all([
-        supabase.from("cities").select("id, name, state").order("name"),
+        applyProductionCityFilter(
+          supabase.from("cities").select("id, name, state"),
+        ).order("name"),
         supabase.from("property_release_forms").select("*"),
       ]);
 
-      setCities(citiesData ?? []);
+      setCities(filterProductionCities(citiesData ?? []));
 
       // Build a map: null -> default form, cityId -> city form
       const map = {};

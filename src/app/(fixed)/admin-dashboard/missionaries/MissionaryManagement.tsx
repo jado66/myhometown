@@ -529,11 +529,11 @@ export default function MissionaryManagement() {
 
       const [citiesResp, communitiesResp] = await Promise.all([
         fetch(
-          `${supabaseUrl}/rest/v1/cities?select=id,name,state,country&order=name`,
+          `${supabaseUrl}/rest/v1/cities?select=id,name,state,country&is_dev=eq.false&order=name`,
           { headers },
         ),
         fetch(
-          `${supabaseUrl}/rest/v1/communities?select=id,name,city_id,state,country&order=name`,
+          `${supabaseUrl}/rest/v1/communities?select=id,name,city_id,state,country&is_dev=eq.false&order=name`,
           { headers },
         ),
       ]);

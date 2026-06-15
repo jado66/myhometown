@@ -1,4 +1,8 @@
 import { supabaseServer } from "./supabaseServer";
+import {
+  applyProductionCityFilter,
+  applyProductionCommunityFilter,
+} from "./supabase/locationFilters";
 
 /**
  * Fetches cities and communities from the database server-side
@@ -8,14 +12,12 @@ export async function fetchCitiesAndCommunities() {
   try {
     // Fetch cities and communities in parallel for better performance
     const [citiesResponse, communitiesResponse] = await Promise.all([
-      supabaseServer
-        .from("cities")
-        .select("*")
+      applyProductionCityFilter(supabaseServer.from("cities").select("*"))
         .order("state", { ascending: true })
         .order("name", { ascending: true }),
-      supabaseServer
-        .from("communities")
-        .select("*")
+      applyProductionCommunityFilter(
+        supabaseServer.from("communities").select("*"),
+      )
         .order("state", { ascending: true })
         .order("name", { ascending: true }),
     ]);

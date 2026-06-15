@@ -760,6 +760,7 @@ const CommunitySelectionPage = ({ params }) => {
           fetchDays={fetchDays}
           handleDeleteDay={handleDeleteDay}
           dayOfServicePrefix={communityId === "dev" ? "dev" : community.name}
+          existingDaysOfService={daysOfService}
         />
         <AddOrganizationDialog
           open={showStakeDialog}
