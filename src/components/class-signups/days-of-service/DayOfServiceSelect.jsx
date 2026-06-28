@@ -148,6 +148,8 @@ export const keyToCommunityId = {
   "west granger": "2bc57e19-0c73-4781-9fc6-ef26fc729847",
   "central valley view": "0076ad61-e165-4cd0-b6af-f4a30af2510c",
   "sharon park": "a6c19a50-7fc3-4759-b386-6ebdeca3ed9e",
-  layton: "7d059ebc-78ee-4b47-97ab-276ae480b8de",
+  layton: "5a8ae569-ff30-465e-978f-01a6aad83e14",
+  "layton east": "5a8ae569-ff30-465e-978f-01a6aad83e14",
+  "layton west": "7d059ebc-78ee-4b47-97ab-276ae480b8de",
   santaquin: "724b1aa6-0950-40ba-9453-cdd80085c5d4",
 };

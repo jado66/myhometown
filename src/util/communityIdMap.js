@@ -108,9 +108,13 @@ export const CommunityIdToPasswordHash = {
     name: "West Valley City - Central Granger",
     password: "6521",
   },
-  "7d059ebc-78ee-4b47-97ab-276ae480b8de": {
-    name: "Layton - Layton",
+  "5a8ae569-ff30-465e-978f-01a6aad83e14": {
+    name: "Layton - Layton East",
     password: "9786",
+  },
+  "7d059ebc-78ee-4b47-97ab-276ae480b8de": {
+    name: "Layton - Layton West",
+    password: "8612",
   },
   "4687e12e-497f-40a2-ab1b-ab455f250fce": {
     name: "West Valley City - North East Granger",

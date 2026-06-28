@@ -60,9 +60,13 @@ export const CommunityIdToPasswordHash = {
     name: "Dev - Dev",
     password: "1234",
   },
-  "7d059ebc-78ee-4b47-97ab-276ae480b8de": {
-    name: "Layton - Layton",
+  "5a8ae569-ff30-465e-978f-01a6aad83e14": {
+    name: "Layton - Layton East",
     password: "9786",
+  },
+  "7d059ebc-78ee-4b47-97ab-276ae480b8de": {
+    name: "Layton - Layton West",
+    password: "8612",
   },
   "a78e8c7c-eca4-4f13-b6c8-e5603d1c36da": {
     name: "Orem - Geneva Heights",
