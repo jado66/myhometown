@@ -155,7 +155,7 @@ async function buildMessageForMissionary(missionary) {
     return `Thank you for serving with myHometown Utah. You have reported ${hours} hours for ${monthName}. If this is incorrect, please update your hours at: https://www.myhometownut.com/admin-dashboard/hours-and-directory. Thank you!`;
   }
 
-  return `Please report your missionary hours for ${monthName}. If you didn't serve this month, log 0 hours. This lets us know you didn't work, rather than assume you forgot to log your hours. Submit your hours at: https://www.myhometownut.com/admin-dashboard/hours-and-directory and entering your email. Thank you!`;
+  return `Please report your service hours for ${monthName}. If you didn't serve this month, log 0 hours. This lets us know you didn't work, rather than assume you forgot to log your hours. Submit your hours at: https://www.myhometownut.com/admin-dashboard/hours-and-directory and entering your email. Thank you!`;
 }
 
 /**
